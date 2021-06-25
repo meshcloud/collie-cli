@@ -14,7 +14,7 @@ import {
   MeshNotLoggedInError,
 } from "../errors.ts";
 import { sleep } from "../promises.ts";
-import { CLIName } from "../config/config.model.ts";
+import { CLICommand } from "../config/config.model.ts";
 
 export class AwsCliFacade {
   constructor(
@@ -110,7 +110,7 @@ export class AwsCliFacade {
       );
     } else if (result.code === 254) {
       log.info(
-        `The provided credentials in "aws config" are not valid. Please check it or disconnect from AWS with "${CLIName} config --disconnect AWS"`,
+        `The provided credentials in "aws config" are not valid. Please check it or disconnect from AWS with "${CLICommand} config --disconnect AWS"`,
       );
       throw new MeshNotLoggedInError(
         ErrorCodes.NOT_LOGGED_IN,

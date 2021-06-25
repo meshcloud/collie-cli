@@ -7,6 +7,7 @@ import {
 } from "../mesh/mesh-tenant.model.ts";
 import { Account, isAccount } from "./aws.model.ts";
 import { moment } from "../deps.ts";
+import { makeRunWithLimit } from '../run-with-limit.ts';
 
 export class AwsMeshAdapter implements MeshAdapter {
   constructor(
@@ -16,7 +17,10 @@ export class AwsMeshAdapter implements MeshAdapter {
   async getMeshTenants(): Promise<MeshTenant[]> {
     const accounts = await this.awsCli.listAccounts();
 
-    return Promise.all(accounts.map(async (account) => {
+    const concurrentTagRequests = 3;
+    const { runWithLimit } = makeRunWithLimit<MeshTenant>(concurrentTagRequests);
+
+    return Promise.all(accounts.map(async account => runWithLimit(async () => {
       const tags = await this.awsCli.listTags(account);
 
       const meshTags = tags.map((t) => {
@@ -31,7 +35,7 @@ export class AwsMeshAdapter implements MeshAdapter {
         tags: meshTags,
         costs: [],
       };
-    }));
+    })));
   }
 
   async loadTenantCosts(
