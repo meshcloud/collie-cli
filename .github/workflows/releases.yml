@@ -1,0 +1,82 @@
+name: releases
+
+on:
+  push:
+    branches: ["main"]
+
+
+jobs:
+
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: checkout-main
+      uses: actions/checkout@v1
+      with:
+        ref: main
+        fetch-depth: 0
+
+    - name: new-version
+      id: version
+      shell: bash
+      run: |
+        version=$(git describe --tags `git rev-list --tags --max-count=1` --always)
+        echo "::set-output name=old-version::$(echo "${version}")"
+        if [[ ! "$version" =~ ^v.*$ ]]
+        then
+          echo "::set-output name=version::$(echo "v0.1.0")"
+          exit 0
+        fi
+        breaking=$(echo ${version/v/''} | cut -d'.' -f1)
+        minor=$(($(echo ${version/v/''} | cut -d'.' -f2) + 1))
+        patch=$(echo ${version/v/''} | cut -d'.' -f3)
+        echo "::set-output name=version::$(echo "v${breaking}.${minor}.${patch}")"
+
+    - name: create-tag
+      uses: actions/github-script@v3
+      with:
+        github-token: ${{ github.token }}
+        script: |
+          github.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: "refs/tags/${{ steps.version.outputs.version }}",
+            sha: context.sha
+          })
+    
+    - name: download-artifact
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        workflow: build.yml
+        workflow_conclusion: success
+        branch: develop
+        event: push
+        path: bin/
+
+    - name: zip-artifacts
+      shell: bash
+      run: |
+        mkdir bin/gz
+        cd /bin/collie
+        tar -czvf bin/gz/collie-x86_64-apple-darwin.tar.gz collie-x86_64-apple-darwin
+        tar -czvf bin/gz/collie-x86_64-unknown-linux-gnu.tar.gz collie-x86_64-unknown-linux-gnu
+
+    - name: build-changelog
+      id: build_changelog
+      uses: mikepenz/release-changelog-builder-action@v1.8.2
+      with:
+        fromTag: ${{ steps.version.outputs.old-version }}
+        toTag: ${{ steps.version.outputs.version }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: create-release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: bin/gz/*
+        body: ${{ steps.github_release.outputs.changelog }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ steps.version.outputs.version }}
+        
