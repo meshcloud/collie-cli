@@ -1,0 +1,79 @@
+name: build
+on:
+  push:
+    branches: [ develop ]
+    paths:
+      - "src/*"
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  fmt-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: deno-fmt
+        id: fmt
+        uses: denoland/setup-deno@main
+        with:
+          deno-version: "~1.10"
+      - run: |
+          deno fmt src --check
+
+      - name: comment-pr
+        if: ${{  failure() }}
+        uses: actions/github-script@0.3.0
+        with: 
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.issues.createComment({ issue_number, owner, repo, body: 'Error in `deno fmt`. Please check the Action logs.' });
+
+  linting-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: check-linting
+        id: lint
+        uses: denoland/setup-deno@main
+        with:
+          deno-version: "~1.10"
+      - run: |
+          deno lint src
+
+      - name: comment-pr
+        if: ${{  failure() }}
+        uses: actions/github-script@0.3.0
+        with: 
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.issues.createComment({ issue_number, owner, repo, body: 'Error in `deno lint`. Please check the Action logs.' });
+
+  build:
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: denoland/setup-deno@main
+        with:
+          deno-version: "~1.10"
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/deno        # see https://deno.land/manual/linking_to_external_code
+          key: ${{ runner.os }}-deno # it seems there's no particular cache keying required
+          restore-keys: |
+            ${{ runner.os }}-deno
+      - run: |
+          deno --version
+          deno info
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Archive production artifacts
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: collie
+          path: |
+            bin/collie-*
