@@ -6,6 +6,7 @@ import {
   MeshTenantCost,
 } from "../mesh/mesh-tenant.model.ts";
 import { Account, isAccount } from "./aws.model.ts";
+import { makeRunWithLimit, moment } from "../deps.ts";
 import { moment } from "../deps.ts";
 
 export class AwsMeshAdapter implements MeshAdapter {
@@ -16,22 +17,31 @@ export class AwsMeshAdapter implements MeshAdapter {
   async getMeshTenants(): Promise<MeshTenant[]> {
     const accounts = await this.awsCli.listAccounts();
 
-    return Promise.all(accounts.map(async (account) => {
-      const tags = await this.awsCli.listTags(account);
+    const concurrentTagRequests = 5;
+    const { runWithLimit } = makeRunWithLimit<MeshTenant>(
+      concurrentTagRequests,
+    );
 
-      const meshTags = tags.map((t) => {
-        return { tagName: t.Key, tagValues: [t.Value] };
-      });
+    return Promise.all(
+      accounts.map((account) =>
+        runWithLimit(async () => {
+          const tags = await this.awsCli.listTags(account);
 
-      return {
-        platformTenantId: account.Id,
-        platformTenantName: account.Name,
-        platform: MeshPlatform.AWS,
-        nativeObj: account,
-        tags: meshTags,
-        costs: [],
-      };
-    }));
+          const meshTags = tags.map((t) => {
+            return { tagName: t.Key, tagValues: [t.Value] };
+          });
+
+          return {
+            platformTenantId: account.Id,
+            platformTenantName: account.Name,
+            platform: MeshPlatform.AWS,
+            nativeObj: account,
+            tags: meshTags,
+            costs: [],
+          };
+        })
+      ),
+    );
   }
 
   async loadTenantCosts(

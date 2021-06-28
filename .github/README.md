@@ -1,4 +1,9 @@
 <h1 align="center">🐶 Collie CLI</h1>
+
+<p align="center">
+  <img src="/.github/collie-logo-blue.png" width="250">
+</p>
+
 <p align="center">
   <i>Herd your cloud 🐑 environments with Collie</i>
 </p>
@@ -29,9 +34,11 @@
 ## ⛅️ Overview
 
 - **View all cloud tenants in one single overview** - View your AWS Accounts, Azure Subscriptions, and Google Cloud Projects with their metadata with only one command.
-- **View billing information across all clouds** - See what you spend per day, month, or week in all cloud platforms, including the right metadata. Includes support for CSV, YML and JSON.
+- **View billing information across all clouds** - See what you spend per day, month, or week in all cloud platforms*, including the right metadata. Includes support for CSV, YML and JSON.
 - **Analyze tag inconsistencies** - See at a glance what tags are used, by which tenants (and which not), and what potential inconsistencies are in place to fix any governance issues.
 - **Track your cloud history** - Collie CLI is built on the principles of GitOps and its data can easily be written to git repositories for tracking changes in your cloud environments.
+
+<sup><sub>*GCP is currently not supported. Follow the issue [here](https://github.com/meshcloud/collie-cli/issues/17) to get updated on progress.</sub></sup>
 
 ## ☝️ Prerequisites
 
@@ -49,12 +56,20 @@ That's it! Let's get Collie installed ⤵️
 
 ## 🕹 Install and Usage
 
-**Unix-based systems**
+We have an easy-to-use install script prepared that will install Collie for you in under a minute. To use it, run the command below depending on your operating system.
+Additionally, check the content of the file to be sure that the install script is safe. If you want, you could also download the `install.sh` script in this repository and execute it locally.
 
-We have an easy-to-use install script prepared that will install Collie for you in under a minute. To use it, run the command below:
+**Linux / Ubuntu**
 
 ```
-TODO
+curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo sh
+```
+
+**Mac OS X**
+
+```
+curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sh
+
 ```
 
 **Windows**
