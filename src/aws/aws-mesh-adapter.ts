@@ -23,7 +23,7 @@ export class AwsMeshAdapter implements MeshAdapter {
     );
 
     return Promise.all(
-      accounts.map(account =>
+      accounts.map((account) =>
         runWithLimit(async () => {
           const tags = await this.awsCli.listTags(account);
 
