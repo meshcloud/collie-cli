@@ -4,10 +4,9 @@ import { MeshAdapterFactory } from "../mesh/mesh-adapter.factory.ts";
 import { TenantListPresenterFactory } from "../presentation/tenant-list-presenter-factory.ts";
 import { TenantUsagePresenterFactory } from "../presentation/tenant-usage-presenter-factory.ts";
 import { CmdGlobalOptions, OutputFormatType } from "./cmd-options.ts";
-import { loadConfig } from "./config.command.ts";
 import { dateType } from "./custom-types.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import { CLICommand } from "../config/config.model.ts";
+import { CLICommand, loadConfig } from "../config/config.model.ts";
 
 interface CmdListCostsOptions extends CmdGlobalOptions {
   from: string;

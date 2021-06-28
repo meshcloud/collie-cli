@@ -1,7 +1,12 @@
 import { Confirm } from "../deps.ts";
 import { ErrorCodes, MeshAzurePlatformError } from "../errors.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
-import { ConsumptionInfo, Subscription, Tag } from "./azure.model.ts";
+import {
+  ConsumptionInfo,
+  SimpleCostManagementInfo,
+  Subscription,
+  Tag,
+} from "./azure.model.ts";
 
 /**
  * If a AzureCliFacade is wrapped with this one, the user will be asked if
@@ -11,6 +16,14 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   constructor(
     private readonly azureFacade: AzureCliFacade,
   ) {}
+
+  async getCostInfo(
+    mgmtGroupId: string,
+    from: string,
+    to: string,
+  ): Promise<SimpleCostManagementInfo[]> {
+    return await this.azureFacade.getCostInfo(mgmtGroupId, from, to);
+  }
 
   setDynamicInstallValue(value: DynamicInstallValue): void {
     this.azureFacade.setDynamicInstallValue(value);

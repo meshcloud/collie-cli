@@ -9,8 +9,14 @@ import { ShellOutput } from "../process/shell-output.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
 import { log, moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
-import { ConsumptionInfo, Subscription, Tag } from "./azure.model.ts";
-import { CLICommand } from "../config/config.model.ts";
+import {
+  ConsumptionInfo,
+  CostManagementInfo,
+  SimpleCostManagementInfo,
+  Subscription,
+  Tag,
+} from "./azure.model.ts";
+import { CLIName } from "../config/config.model.ts";
 
 interface ConfigValue {
   name: string;
@@ -71,6 +77,44 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     return JSON.parse(result.stdout) as Tag[];
   }
 
+  /**
+   *
+   * @param mgmtGroupId
+   * @param from Should be a date string like 2021-01-01T00:00:00
+   * @param to Should be a date string like 2021-01-01T00:00:00
+   * @returns
+   */
+  async getCostInfo(
+    mgmtGroupId: string,
+    from: string,
+    to: string,
+  ): Promise<SimpleCostManagementInfo[]> {
+    const cmd =
+      `az costmanagement query --type AmortizedCost --dataset-aggregation {"totalCost":{"name":"PreTaxCost","function":"Sum"}} ` +
+      `--dataset-grouping name=SubscriptionId type=Dimension --timeframe Custom --time-period from=${from} to=${to} --scope providers/Microsoft.Management/managementGroups/${mgmtGroupId}`;
+
+    const result = await this.shellRunner.run(cmd);
+    this.checkForErrors(result);
+
+    log.debug(`getCostInfo: ${JSON.stringify(result)}`);
+
+    const costManagementInfo = JSON.parse(result.stdout) as CostManagementInfo;
+    if (costManagementInfo.nextLinks != null) {
+      log.warning(
+        `Azure response signals that there is paging information available, but we are unable to fetch it. So the results are possibly incomplete.`,
+      );
+    }
+
+    return costManagementInfo.rows.map((r) => {
+      return {
+        amount: r[0],
+        date: r[1],
+        subscriptionId: r[2],
+        currency: r[3],
+      };
+    });
+  }
+
   async getCostInformation(
     subscription: Subscription,
     startDate: Date,
@@ -91,6 +135,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   private checkForErrors(result: ShellOutput) {
+    console.log(JSON.stringify(result));
     if (result.code == 2) {
       const errMatch = this.errRegexExtensionMissing.exec(result.stderr);
       if (!!errMatch && errMatch.length > 0) {
@@ -121,7 +166,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     }
     if (result.stderr.includes("az login")) {
       log.info(
-        `You are not logged in into Azure CLI. Please disconnect from azure with "${CLICommand} config --disconnect Azure" or login into Azure CLI.`,
+        `You are not logged in into Azure CLI. Please disconnect from azure with "${CLIName} config --disconnect Azure" or login into Azure CLI.`,
       );
       throw new MeshNotLoggedInError(
         ErrorCodes.NOT_LOGGED_IN,

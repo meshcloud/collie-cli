@@ -5,7 +5,12 @@ import {
 } from "../errors.ts";
 import { sleep } from "../promises.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
-import { ConsumptionInfo, Subscription, Tag } from "./azure.model.ts";
+import {
+  ConsumptionInfo,
+  SimpleCostManagementInfo,
+  Subscription,
+  Tag,
+} from "./azure.model.ts";
 
 /**
  * Retries a call into Azure in case there Azure CLI threw an error which indicated
@@ -16,6 +21,16 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
   constructor(
     private readonly wrapped: AzureCliFacade,
   ) {}
+
+  async getCostInfo(
+    mgmtGroupId: string,
+    from: string,
+    to: string,
+  ): Promise<SimpleCostManagementInfo[]> {
+    return await this.retryable(async () => {
+      return await this.wrapped.getCostInfo(mgmtGroupId, from, to);
+    });
+  }
 
   setDynamicInstallValue(value: DynamicInstallValue): void {
     this.wrapped.setDynamicInstallValue(value);
