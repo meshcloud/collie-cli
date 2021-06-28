@@ -59,9 +59,9 @@ jobs:
       shell: bash
       run: |
         mkdir bin/gz
-        cd /bin/collie
-        tar -czvf bin/gz/collie-x86_64-apple-darwin.tar.gz collie-x86_64-apple-darwin
-        tar -czvf bin/gz/collie-x86_64-unknown-linux-gnu.tar.gz collie-x86_64-unknown-linux-gnu
+        cd bin/collie
+        tar -czvf ../gz/collie-x86_64-apple-darwin.tar.gz collie-x86_64-apple-darwin
+        tar -czvf ../gz/collie-x86_64-unknown-linux-gnu.tar.gz collie-x86_64-unknown-linux-gnu
 
     - name: build-changelog
       id: build_changelog

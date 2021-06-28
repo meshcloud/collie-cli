@@ -69,6 +69,7 @@ curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.
 
 ```
 curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sh
+
 ```
 
 **Windows**
