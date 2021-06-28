@@ -7,7 +7,6 @@ import {
 } from "../mesh/mesh-tenant.model.ts";
 import { Account, isAccount } from "./aws.model.ts";
 import { makeRunWithLimit, moment } from "../deps.ts";
-import { moment } from "../deps.ts";
 
 export class AwsMeshAdapter implements MeshAdapter {
   constructor(
