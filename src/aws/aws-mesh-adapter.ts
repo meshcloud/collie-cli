@@ -66,6 +66,7 @@ export class AwsMeshAdapter implements MeshAdapter {
         }
 
         const costItem: MeshTenantCost = {
+          currency: "", // TODO Moved it to toplevel but inclusion of currency is not that easy.
           from: from.toDate().toUTCString(),
           to: to.toDate().toUTCString(),
           totalUsageCost: "0",

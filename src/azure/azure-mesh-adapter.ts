@@ -9,7 +9,7 @@ import { AzureCliFacade } from "./azure-cli-facade.ts";
 import { MeshAdapter } from "../mesh/mesh-adapter.ts";
 import { log, moment } from "../deps.ts";
 import { CLICommand, CLIName, loadConfig } from "../config/config.model.ts";
-import { MeshError } from "../errors.ts";
+import { ErrorCodes, MeshAzurePlatformError, MeshError } from "../errors.ts";
 import {
   TimeWindow,
   TimeWindowCalculator,
@@ -66,9 +66,18 @@ export class AzureMeshAdapter implements MeshAdapter {
       costInformations.push(...costInformation);
     }
 
+    let currencySymbol: string | null = null;
     const summedCosts = new Map<string, number>();
     for (const ci of costInformations) {
       // TODO manage the currency symbol.
+      if (currencySymbol === null || currencySymbol === ci.currency) {
+        currencySymbol = ci.currency;
+      } else {
+        throw new MeshAzurePlatformError(
+          ErrorCodes.AZURE_CLI_GENERAL,
+          "Encoutered two different currency during cost collection. This is currently not supported.",
+        );
+      }
       let currentCost = summedCosts.get(ci.subscriptionId) || 0;
       currentCost += ci.amount;
       summedCosts.set(ci.subscriptionId, currentCost);
@@ -76,6 +85,7 @@ export class AzureMeshAdapter implements MeshAdapter {
 
     for (const t of azureTenants) {
       t.costs.push({
+        currency: currencySymbol || "Unknown", // should usually be set by now.
         totalUsageCost: (summedCosts.get(t.platformTenantId) || 0).toString(),
         from: startDate.toUTCString(),
         to: endDate.toUTCString(),
@@ -143,6 +153,7 @@ export class AzureMeshAdapter implements MeshAdapter {
     ].reduce((acc, val) => acc + val);
 
     return {
+      currency: "",
       totalUsageCost: totalUsagePretaxCost.toFixed(2),
       details: [], // Can hold daily usages
       from: timeWindow.from.toUTCString(),

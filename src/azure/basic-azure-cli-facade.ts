@@ -135,7 +135,6 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   private checkForErrors(result: ShellOutput) {
-    console.log(JSON.stringify(result));
     if (result.code == 2) {
       const errMatch = this.errRegexExtensionMissing.exec(result.stderr);
       if (!!errMatch && errMatch.length > 0) {
