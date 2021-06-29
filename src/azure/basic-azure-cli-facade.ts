@@ -10,6 +10,7 @@ import { log, moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
+  RoleAssignment,
   CostManagementInfo,
   SimpleCostManagementInfo,
   Subscription,
@@ -143,6 +144,28 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     log.debug(`getConsumptionInformation: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog(result.stdout);
+  }
+
+  async getRoleAssignments(
+    subscription: Subscription,
+  ): Promise<RoleAssignment[]> {
+    const queryFields = [
+      "principalId",
+      "principalName",
+      "principalType",
+      "roleDefinitionId",
+      "roleDefinitionName",
+    ];
+    const cmd =
+      `az role assignment list --subscription likvid-central-services --include-inherited --all --output json
+       --query '[].{${queryFields.map((x) => x + ":" + x).join(",")}'`;
+
+    const result = await this.shellRunner.run(cmd);
+    this.checkForErrors(result);
+
+    log.debug(`getRoleAssignments: ${JSON.stringify(result)}`);
+
+    return JSON.parse(result.stdout) as RoleAssignment[];
   }
 
   private checkForErrors(result: ShellOutput) {

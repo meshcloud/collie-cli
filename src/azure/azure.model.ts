@@ -82,3 +82,11 @@ export function isSubscription(
 ): object is Subscription {
   return "tenantId" in object && "id" in object;
 }
+
+export interface RoleAssignment {
+  principalId: string;
+  principalName: string;
+  principalType: string;
+  roleDefinitionId: string; // Comes in the format '/subscriptions/<sub-id>/providers/Microsoft.Authorization/roleDefinitions/<role-id>
+  roleDefinitionName: string;
+}

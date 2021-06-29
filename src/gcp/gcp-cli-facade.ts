@@ -1,5 +1,5 @@
 import { ShellRunner } from "../process/shell-runner.ts";
-import { Project } from "./gcp.model.ts";
+import { IamResponse, Project } from "./gcp.model.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import {
   GcpErrorCode,
@@ -24,6 +24,17 @@ export class GcpCliFacade {
     log.debug(`listProjects: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog<Project[]>(result.stdout);
+  }
+
+  async listIamPolicy(project: Project): Promise<IamResponse[]> {
+    const result = await this.shellRunner.run(
+      `gcloud projects get-ancestors-iam-policy ${project.projectId} --format json`,
+    );
+    this.checkForErrors(result);
+
+    log.debug(`listIamPolicy: ${JSON.stringify(result)}`);
+
+    return JSON.parse(result.stdout) as IamResponse[];
   }
 
   private checkForErrors(result: ShellOutput) {

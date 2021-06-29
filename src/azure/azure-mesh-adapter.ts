@@ -18,6 +18,10 @@ import {
   TimeWindow,
   TimeWindowCalculator,
 } from "../mesh/time-window-calculator.ts";
+import {
+  MeshPrincipalType,
+  MeshRoleAssignment,
+} from "../mesh/mesh-iam-model.ts";
 
 export class AzureMeshAdapter implements MeshAdapter {
   constructor(
@@ -215,9 +219,57 @@ export class AzureMeshAdapter implements MeshAdapter {
           platform: MeshPlatform.Azure,
           nativeObj: sub,
           costs: [],
+          roleAssignments: [],
         };
       }),
     );
+  }
+
+  async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+    // Only work on Azure tenants
+    const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
+
+    for (const t of azureTenants) {
+      const roleAssignments = await this.loadRoleAssignmentsForTenant(t);
+      t.roleAssignments.push(...roleAssignments);
+    }
+  }
+
+  private async loadRoleAssignmentsForTenant(
+    tenant: MeshTenant,
+  ): Promise<MeshRoleAssignment[]> {
+    if (!isSubscription(tenant.nativeObj)) {
+      throw new MeshError(
+        "Given tenant did not contain an Azure Subscription native object",
+      );
+    }
+    const roleAssignments = await this.azureCli.getRoleAssignments(
+      tenant.nativeObj,
+    );
+    return roleAssignments.map((x) => {
+      return {
+        principalId: x.principalId,
+        principalName: x.principalName,
+        principalType: this.toMeshPrincipalType(x.principalType),
+        roleId: x.roleDefinitionId,
+        roleName: x.roleDefinitionName,
+      };
+    });
+  }
+
+  private toMeshPrincipalType(principalType: string): MeshPrincipalType {
+    switch (principalType) {
+      case "User":
+        return MeshPrincipalType.User;
+      case "Group":
+        return MeshPrincipalType.Group;
+      case "ServicePrincipal":
+        return MeshPrincipalType.TechnicalUser;
+      default:
+        throw new MeshError(
+          "Found unknown principalType for Azure: " + principalType,
+        );
+    }
   }
 
   private convertTags(tags: Tag[]): MeshTag[] {

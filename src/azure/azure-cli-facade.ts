@@ -1,5 +1,6 @@
 import {
   ConsumptionInfo,
+  RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
   Tag,
@@ -22,4 +23,5 @@ export interface AzureCliFacade {
     startDate: Date,
     endDate: Date,
   ): Promise<ConsumptionInfo[]>;
+  getRoleAssignments(subscription: Subscription): Promise<RoleAssignment[]>;
 }

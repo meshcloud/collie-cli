@@ -15,4 +15,6 @@ export interface MeshAdapter {
     startDate: Date,
     endDate: Date,
   ): Promise<void>;
+
+  loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void>;
 }
