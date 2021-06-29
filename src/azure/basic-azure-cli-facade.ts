@@ -9,7 +9,13 @@ import { ShellOutput } from "../process/shell-output.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
 import { log, moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
-import { ConsumptionInfo, Subscription, Tag } from "./azure.model.ts";
+import {
+  ConsumptionInfo,
+  CostManagementInfo,
+  SimpleCostManagementInfo,
+  Subscription,
+  Tag,
+} from "./azure.model.ts";
 import { CLICommand } from "../config/config.model.ts";
 
 interface ConfigValue {
@@ -69,6 +75,44 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     this.checkForErrors(result);
 
     return JSON.parse(result.stdout) as Tag[];
+  }
+
+  /**
+   *
+   * @param mgmtGroupId
+   * @param from Should be a date string like 2021-01-01T00:00:00
+   * @param to Should be a date string like 2021-01-01T00:00:00
+   * @returns
+   */
+  async getCostInfo(
+    mgmtGroupId: string,
+    from: string,
+    to: string,
+  ): Promise<SimpleCostManagementInfo[]> {
+    const cmd =
+      `az costmanagement query --type AmortizedCost --dataset-aggregation {"totalCost":{"name":"PreTaxCost","function":"Sum"}} ` +
+      `--dataset-grouping name=SubscriptionId type=Dimension --timeframe Custom --time-period from=${from} to=${to} --scope providers/Microsoft.Management/managementGroups/${mgmtGroupId}`;
+
+    const result = await this.shellRunner.run(cmd);
+    this.checkForErrors(result);
+
+    log.debug(`getCostInfo: ${JSON.stringify(result)}`);
+
+    const costManagementInfo = JSON.parse(result.stdout) as CostManagementInfo;
+    if (costManagementInfo.nextLinks != null) {
+      log.warning(
+        `Azure response signals that there is paging information available, but we are unable to fetch it. So the results are possibly incomplete.`,
+      );
+    }
+
+    return costManagementInfo.rows.map((r) => {
+      return {
+        amount: r[0],
+        date: r[1],
+        subscriptionId: r[2],
+        currency: r[3],
+      };
+    });
   }
 
   async getCostInformation(

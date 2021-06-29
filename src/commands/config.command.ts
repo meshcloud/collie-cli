@@ -4,6 +4,7 @@ import {
   Config,
   configFilePath,
   emptyConfig,
+  loadConfig,
   PlatformCommand,
 } from "../config/config.model.ts";
 import { Command, dirname, ensureDir, EnumType, exists, log } from "../deps.ts";
@@ -23,13 +24,7 @@ interface CmdConfigOpts extends CmdGlobalOptions {
 }
 
 export function registerConfigCmd(program: Command) {
-  const listCmd = new Command()
-    .description(
-      "Show config.",
-    )
-    .action(showConfig);
-
-  const configCmd = new Command()
+  const connectCmd = new Command()
     .type("platform", platform)
     .option(
       "-c, --connect [platform:platform]",
@@ -39,7 +34,7 @@ export function registerConfigCmd(program: Command) {
       "-d, --disconnect [platform:platform]",
       `Disconnect ${CLIName} from a specific enterprise cloud.`,
     )
-    .description(`Configure ${CLIName} CLI.`)
+    .description(`Configure the ${CLIName} CLI.`)
     .example(
       "Connect to Google Cloud Platform",
       `${CLICommand} config --connect GCP`,
@@ -48,15 +43,49 @@ export function registerConfigCmd(program: Command) {
       "Disconnect from Google Cloud Platform",
       `${CLICommand} config --disconnect GCP`,
     )
-    .action(async (options: CmdConfigOpts) => {
-      await config(options, configCmd);
-    });
+    .action(configurePlatforms);
 
-  program
-    .command("config", configCmd.command("list", listCmd));
+  program.command("config", connectCmd);
+
+  const listCmd = new Command()
+    .description(
+      "Show config.",
+    )
+    .action(showConfig);
+
+  const setupAzureManagementGroupCmd = new Command()
+    .arguments("<management_group_id:string>")
+    .description(
+      "Setup a parent Management Group in Azure for all your Subscriptions to query. This will speed up price collection because an optimized query can be used.",
+    )
+    .example(
+      "Set a parent management group ID",
+      `${CLICommand} config azure managementgroup set 4a2ef91d-7697-4759-ab36-0f8049d274df`,
+    )
+    .action(setupAzureManagementGroup);
+
+  const azureSubCmd = new Command().description(
+    "Configure Azure related options",
+  ).command("managementgroup", setupAzureManagementGroupCmd);
+
+  connectCmd
+    .command("list", listCmd)
+    .command("azure", azureSubCmd);
 }
 
-function config(options: CmdConfigOpts, program: Command) {
+function setupAzureManagementGroup(
+  options: CmdConfigOpts,
+  managementGroupId: string,
+) {
+  setupLogger(options);
+
+  const config = loadConfig();
+  config.azure.parentManagementGroups = [managementGroupId];
+  writeConfig(config);
+  log.info(`Set Azure root management group ID to: ${managementGroupId}`);
+}
+
+function configurePlatforms(options: CmdConfigOpts, program: Command) {
   setupLogger(options);
 
   if (Object.keys(options).length === 0) {
@@ -125,10 +154,6 @@ export async function checkIfConfigExists() {
       Deno.exit(0);
     }
   }
-}
-
-export function loadConfig(): Config {
-  return JSON.parse(readFile(configFilePath)) as Config;
 }
 
 async function getInstalledClis(): Promise<Config> {

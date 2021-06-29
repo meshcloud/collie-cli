@@ -3,7 +3,6 @@ import { dirname, ensureDir, os } from "../deps.ts";
 
 export const configPath = getConfigPath();
 export const configFilePath = configPath + "/config.json";
-
 // Use the CLI Name when mentioning it somewhere in a sentence, e.g.: Have fun using ${CLIName}!
 export const CLIName = "Collie";
 // Use the CLI Command when mentioning it as a command to run, e.g.: Please run "${CLICommand} -h" to see more.
@@ -14,6 +13,9 @@ export const GitHubUrl = "https://github.com/meshcloud/collie-cli";
 export interface Config {
   connected: ConnectedConfig;
   cache: CacheConfig;
+  azure: {
+    parentManagementGroups: string[];
+  };
 }
 
 export interface CacheConfig {
@@ -41,18 +43,23 @@ export const emptyConfig: Config = {
   cache: {
     evictionDelayHrs: 24,
   },
+  azure: {
+    parentManagementGroups: [],
+  },
 };
 
 function getConfigPath(): string {
   if (os.default.platform() === "windows") {
-    return Deno.env.get("%APPDATA%") + "/.config/meshcloudShepherd";
+    return Deno.env.get("%APPDATA%") + "/.config/collie-cli";
   } else {
-    return Deno.env.get("HOME") + "/.config/meshcloudShepherd";
+    return Deno.env.get("HOME") + "/.config/collie-cli";
   }
 }
 
 export function loadConfig(): Config {
-  return JSON.parse(readFile(configFilePath)) as Config;
+  const config = JSON.parse(readFile(configFilePath)) as Config;
+
+  return Object.assign(emptyConfig, config);
 }
 
 export async function writeConfig(config: Config) {

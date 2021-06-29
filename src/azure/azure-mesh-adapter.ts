@@ -6,9 +6,10 @@ import {
 } from "../mesh/mesh-tenant.model.ts";
 import { isSubscription, Tag } from "./azure.model.ts";
 import { AzureCliFacade } from "./azure-cli-facade.ts";
-import { Big, log } from "../deps.ts";
 import { MeshAdapter } from "../mesh/mesh-adapter.ts";
-import { MeshError } from "../errors.ts";
+import { log, moment } from "../deps.ts";
+import { CLICommand, CLIName, loadConfig } from "../config/config.model.ts";
+import { ErrorCodes, MeshAzurePlatformError, MeshError } from "../errors.ts";
 import {
   TimeWindow,
   TimeWindowCalculator,
@@ -25,20 +26,79 @@ export class AzureMeshAdapter implements MeshAdapter {
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
-    // Only work on Azure tenants
-    const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
-
-    for (const t of azureTenants) {
-      const costs = await this.getTenantCosts(t, startDate, endDate);
-      t.costs.push(...costs);
+    const config = loadConfig();
+    if (config.azure.parentManagementGroups.length == 0) {
+      log.info(
+        "It seems you have not configured a Azure Management Group for Subscription lookup. " +
+          `Because of a bug in the Azure API, ${CLIName} can not detect this automatically. By ` +
+          "configuring an Azure management group, cost & usage information lookups are significantly faster. " +
+          `Run '${CLICommand} config azure -h' for more information.`,
+      );
+      await this.getTenantCostsWithSingleQueries(tenants, startDate, endDate);
+    } else {
+      await this.getTenantCostsWithManagementGroupQuery(
+        config.azure.parentManagementGroups,
+        tenants,
+        startDate,
+        endDate,
+      );
     }
   }
 
-  private async getTenantCosts(
-    tenant: MeshTenant,
+  private async getTenantCostsWithManagementGroupQuery(
+    managementGroupIds: string[],
+    tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
-  ): Promise<MeshTenantCost[]> {
+  ): Promise<void> {
+    // Only work on Azure tenants
+    const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
+    const from = moment(startDate).format("YYYY-MM-DDT00:00:00");
+    const to = moment(endDate).format("YYYY-MM-DDT23:59:59");
+
+    const costInformations = [];
+    for (const mgmntGroupId of managementGroupIds) {
+      const costInformation = await this.azureCli.getCostInfo(
+        mgmntGroupId,
+        from,
+        to,
+      );
+      costInformations.push(...costInformation);
+    }
+
+    let currencySymbol: string | null = null;
+    const summedCosts = new Map<string, number>();
+    for (const ci of costInformations) {
+      // TODO manage the currency symbol.
+      if (currencySymbol === null || currencySymbol === ci.currency) {
+        currencySymbol = ci.currency;
+      } else {
+        throw new MeshAzurePlatformError(
+          ErrorCodes.AZURE_CLI_GENERAL,
+          "Encoutered two different currency during cost collection. This is currently not supported.",
+        );
+      }
+      let currentCost = summedCosts.get(ci.subscriptionId) || 0;
+      currentCost += ci.amount;
+      summedCosts.set(ci.subscriptionId, currentCost);
+    }
+
+    for (const t of azureTenants) {
+      t.costs.push({
+        currency: currencySymbol || "Unknown", // should usually be set by now.
+        totalUsageCost: (summedCosts.get(t.platformTenantId) || 0).toString(),
+        from: startDate.toUTCString(),
+        to: endDate.toUTCString(),
+        details: [],
+      });
+    }
+  }
+
+  private async getTenantCostsWithSingleQueries(
+    tenants: MeshTenant[],
+    startDate: Date,
+    endDate: Date,
+  ): Promise<void> {
     if (endDate < startDate) {
       throw new MeshError("endDate must be after startDate");
     }
@@ -48,18 +108,23 @@ export class AzureMeshAdapter implements MeshAdapter {
       endDate,
     );
 
-    const results = [];
-    for (const tw of timeWindows) {
-      log.debug(
-        `Quering Azure for tenant ${tenant.platformTenantName}: ${
-          JSON.stringify(tw)
-        }`,
-      );
-      const result = await this.getTenantCostsForWindow(tenant, tw);
-      results.push(result);
-    }
+    // Only work on Azure tenants
+    const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
 
-    return results;
+    for (const t of azureTenants) {
+      const results = [];
+      for (const tw of timeWindows) {
+        log.debug(
+          `Quering Azure for tenant ${t.platformTenantName}: ${
+            JSON.stringify(tw)
+          }`,
+        );
+        const result = await this.getTenantCostsForWindow(t, tw);
+        results.push(result);
+      }
+
+      t.costs.push(...results);
+    }
   }
 
   private async getTenantCostsForWindow(
@@ -83,11 +148,12 @@ export class AzureMeshAdapter implements MeshAdapter {
     log.debug(`Fetched ${tenantCostInfo.length} cost infos from Azure`);
 
     const totalUsagePretaxCost = [
-      new Big(0.0),
-      ...tenantCostInfo.map((tci) => new Big(tci.pretaxCost)),
-    ].reduce((acc, val) => acc.plus(val));
+      0.0,
+      ...tenantCostInfo.map((tci) => parseFloat(tci.pretaxCost)),
+    ].reduce((acc, val) => acc + val);
 
     return {
+      currency: "",
       totalUsageCost: totalUsagePretaxCost.toFixed(2),
       details: [], // Can hold daily usages
       from: timeWindow.from.toUTCString(),
