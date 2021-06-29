@@ -1,5 +1,5 @@
 import { Confirm } from "../deps.ts";
-import { ErrorCodes, MeshAzurePlatformError } from "../errors.ts";
+import { MeshAzurePlatformError } from "../errors.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
@@ -17,12 +17,12 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
     private readonly azureFacade: AzureCliFacade,
   ) {}
 
-  async getCostInfo(
+  async getCostManagementInfo(
     mgmtGroupId: string,
     from: string,
     to: string,
   ): Promise<SimpleCostManagementInfo[]> {
-    return await this.azureFacade.getCostInfo(mgmtGroupId, from, to);
+    return await this.azureFacade.getCostManagementInfo(mgmtGroupId, from, to);
   }
 
   setDynamicInstallValue(value: DynamicInstallValue): void {
@@ -45,13 +45,13 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
     });
   }
 
-  async getCostInformation(
+  async getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,
     endDate: Date,
   ): Promise<ConsumptionInfo[]> {
     return await this.wrapCallWithInstallInterception(() => {
-      return this.azureFacade.getCostInformation(
+      return this.azureFacade.getConsumptionInformation(
         subscription,
         startDate,
         endDate,
@@ -85,9 +85,8 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   }
 
   private isAzureModuleMissingError(e: Error): boolean {
-    return (e instanceof MeshAzurePlatformError) &&
-      (e as MeshAzurePlatformError).errorCode ===
-        ErrorCodes.AZURE_CLI_MISSING_EXTENSION;
+    return e instanceof MeshAzurePlatformError &&
+      e.errorCode === "AZURE_CLI_MISSING_EXTENSION";
   }
 
   private isTTY(): boolean {

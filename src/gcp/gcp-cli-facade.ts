@@ -35,10 +35,7 @@ export class GcpCliFacade {
       log.info(
         `You are not logged in into GCP CLI. Please disconnect GCP with "${CLIName} config --disconnect GCP or login into GCP CLI."`,
       );
-      throw new MeshNotLoggedInError(
-        ErrorCodes.NOT_LOGGED_IN,
-        result.stderr,
-      );
+      throw new MeshNotLoggedInError(result.stderr);
     }
   }
 }

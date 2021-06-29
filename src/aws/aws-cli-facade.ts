@@ -112,10 +112,7 @@ export class AwsCliFacade {
       log.info(
         `The provided credentials in "aws config" are not valid. Please check it or disconnect from AWS with "${CLICommand} config --disconnect AWS"`,
       );
-      throw new MeshNotLoggedInError(
-        ErrorCodes.NOT_LOGGED_IN,
-        result.stderr,
-      );
+      throw new MeshNotLoggedInError(result.stderr);
     }
   }
 }
