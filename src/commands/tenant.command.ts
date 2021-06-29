@@ -22,7 +22,7 @@ interface CmdAnalyzeTagsOptions extends CmdGlobalOptions {
 export function registerTenantCommand(program: Command) {
   const tenantCmd = new Command()
     .description(
-      `Work with cloud tenants (AWS Accounts, Azure Subscriptions, GCP Projects) and list all of them, or see tags, costs, and more. Run "${CLICommand} tenant -h" to see what's possible.`,
+      `Work with cloud tenants (AWS Accounts, Azure Subscriptions, GCP Projects) and list all of them, or see tags, costs, and more. Run "${CLICommand} tenant -h" to see what is possible.`,
     )
     .example(
       "List all tenants across all connected clouds in a table.",
