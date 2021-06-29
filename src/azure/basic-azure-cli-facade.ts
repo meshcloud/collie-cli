@@ -16,7 +16,7 @@ import {
   Subscription,
   Tag,
 } from "./azure.model.ts";
-import { CLIName } from "../config/config.model.ts";
+import { CLICommand } from "../config/config.model.ts";
 
 interface ConfigValue {
   name: string;
@@ -166,7 +166,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     }
     if (result.stderr.includes("az login")) {
       log.info(
-        `You are not logged in into Azure CLI. Please disconnect from azure with "${CLIName} config --disconnect Azure" or login into Azure CLI.`,
+        `You are not logged in into Azure CLI. Please disconnect from azure with "${CLICommand} config --disconnect Azure" or login into Azure CLI.`,
       );
       throw new MeshNotLoggedInError(
         ErrorCodes.NOT_LOGGED_IN,

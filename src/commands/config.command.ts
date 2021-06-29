@@ -1,5 +1,5 @@
 import {
-CLICommand,
+  CLICommand,
   CLIName,
   Config,
   configFilePath,
@@ -89,7 +89,7 @@ function configurePlatforms(options: CmdConfigOpts, program: Command) {
   setupLogger(options);
 
   if (Object.keys(options).length === 0) {
-    log.info(`Please see ${CLICommand} config -h for more information.`);
+    log.info(`Please see "${CLICommand} config -h" for more information.`);
   }
   exists(configFilePath).then(async (ex) => {
     if (!ex) {

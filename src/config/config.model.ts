@@ -50,9 +50,9 @@ export const emptyConfig: Config = {
 
 function getConfigPath(): string {
   if (os.default.platform() === "windows") {
-    return Deno.env.get("%APPDATA%") + "/.config/meshcloud-collie";
+    return Deno.env.get("%APPDATA%") + "/.config/collie-cli";
   } else {
-    return Deno.env.get("HOME") + "/.config/meshcloud-collie";
+    return Deno.env.get("HOME") + "/.config/collie-cli";
   }
 }
 

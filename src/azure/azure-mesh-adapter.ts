@@ -8,7 +8,7 @@ import { isSubscription, Tag } from "./azure.model.ts";
 import { AzureCliFacade } from "./azure-cli-facade.ts";
 import { MeshAdapter } from "../mesh/mesh-adapter.ts";
 import { log, moment } from "../deps.ts";
-import { loadConfig } from "../config/config.model.ts";
+import { CLICommand, CLIName, loadConfig } from "../config/config.model.ts";
 import { MeshError } from "../errors.ts";
 import {
   TimeWindow,
@@ -28,9 +28,11 @@ export class AzureMeshAdapter implements MeshAdapter {
   ): Promise<void> {
     const config = loadConfig();
     if (config.azure.parentManagementGroups.length == 0) {
-      log.warning(
-        "Please configure an Azure management group ID under which your Subscriptions are placed. " +
-          "Because of a bug in the Azure API collie can not detect this automatically and with this info cost usage lookups are significantly faster.",
+      log.info(
+        "It seems you have not configured a Azure Management Group for Subscription lookup. " +
+          `Because of a bug in the Azure API, ${CLIName} can not detect this automatically. By ` +
+          "configuring an Azure management group, cost & usage information lookups are significantly faster. " +
+          `Run '${CLICommand} config azure -h' for more information.`,
       );
       await this.getTenantCostsWithSingleQueries(tenants, startDate, endDate);
     } else {
