@@ -12,12 +12,12 @@ export interface AzureCliFacade {
   getDynamicInstallValue(): Promise<DynamicInstallValue | null>;
   listAccounts(): Promise<Subscription[]>;
   listTags(subscription: Subscription): Promise<Tag[]>;
-  getCostInfo(
+  getCostManagementInfo(
     mgmtGroupId: string,
     from: string,
     to: string,
   ): Promise<SimpleCostManagementInfo[]>;
-  getCostInformation(
+  getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,
     endDate: Date,

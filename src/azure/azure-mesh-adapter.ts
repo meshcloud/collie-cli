@@ -9,7 +9,11 @@ import { AzureCliFacade } from "./azure-cli-facade.ts";
 import { MeshAdapter } from "../mesh/mesh-adapter.ts";
 import { log, moment } from "../deps.ts";
 import { CLICommand, CLIName, loadConfig } from "../config/config.model.ts";
-import { ErrorCodes, MeshAzurePlatformError, MeshError } from "../errors.ts";
+import {
+  AzureErrorCode,
+  MeshAzurePlatformError,
+  MeshError,
+} from "../errors.ts";
 import {
   TimeWindow,
   TimeWindowCalculator,
@@ -26,6 +30,13 @@ export class AzureMeshAdapter implements MeshAdapter {
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
+    // Only work on Azure tenants
+    const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
+
+    if (moment(endDate).isBefore(moment(startDate))) {
+      throw new MeshError("endDate must be after startDate");
+    }
+
     const config = loadConfig();
     if (config.azure.parentManagementGroups.length == 0) {
       log.info(
@@ -34,11 +45,15 @@ export class AzureMeshAdapter implements MeshAdapter {
           "configuring an Azure management group, cost & usage information lookups are significantly faster. " +
           `Run '${CLICommand} config azure -h' for more information.`,
       );
-      await this.getTenantCostsWithSingleQueries(tenants, startDate, endDate);
+      await this.getTenantCostsWithSingleQueries(
+        azureTenants,
+        startDate,
+        endDate,
+      );
     } else {
       await this.getTenantCostsWithManagementGroupQuery(
         config.azure.parentManagementGroups,
-        tenants,
+        azureTenants,
         startDate,
         endDate,
       );
@@ -47,18 +62,17 @@ export class AzureMeshAdapter implements MeshAdapter {
 
   private async getTenantCostsWithManagementGroupQuery(
     managementGroupIds: string[],
-    tenants: MeshTenant[],
+    azureTenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
     // Only work on Azure tenants
-    const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
     const from = moment(startDate).format("YYYY-MM-DDT00:00:00");
     const to = moment(endDate).format("YYYY-MM-DDT23:59:59");
 
     const costInformations = [];
     for (const mgmntGroupId of managementGroupIds) {
-      const costInformation = await this.azureCli.getCostInfo(
+      const costInformation = await this.azureCli.getCostManagementInfo(
         mgmntGroupId,
         from,
         to,
@@ -74,7 +88,7 @@ export class AzureMeshAdapter implements MeshAdapter {
         currencySymbol = ci.currency;
       } else {
         throw new MeshAzurePlatformError(
-          ErrorCodes.AZURE_CLI_GENERAL,
+          AzureErrorCode.AZURE_CLI_GENERAL,
           "Encoutered two different currency during cost collection. This is currently not supported.",
         );
       }
@@ -95,21 +109,14 @@ export class AzureMeshAdapter implements MeshAdapter {
   }
 
   private async getTenantCostsWithSingleQueries(
-    tenants: MeshTenant[],
+    azureTenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
-    if (endDate < startDate) {
-      throw new MeshError("endDate must be after startDate");
-    }
-
     const timeWindows = this.timeWindowCalculator.calculateTimeWindows(
       startDate,
       endDate,
     );
-
-    // Only work on Azure tenants
-    const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
 
     for (const t of azureTenants) {
       const results = [];
@@ -119,8 +126,20 @@ export class AzureMeshAdapter implements MeshAdapter {
             JSON.stringify(tw)
           }`,
         );
-        const result = await this.getTenantCostsForWindow(t, tw);
-        results.push(result);
+
+        try {
+          const result = await this.getTenantCostsForWindow(t, tw);
+          results.push(result);
+        } catch (e) {
+          if (
+            e instanceof MeshAzurePlatformError &&
+            e.errorCode === AzureErrorCode.AZURE_INVALID_SUBSCRIPTION
+          ) {
+            log.warning(
+              `The Subscription ${t.platformTenantId} can not be cost collected as Azure only supports Enterprise Agreement, Web Direct and Customer Agreements offer type Subscriptions to get cost collected via API.`,
+            );
+          }
+        }
       }
 
       t.costs.push(...results);
@@ -139,7 +158,7 @@ export class AzureMeshAdapter implements MeshAdapter {
 
     // This can throw an error because of too many requests. We should catch this and
     // wait here.
-    const tenantCostInfo = await this.azureCli.getCostInformation(
+    const tenantCostInfo = await this.azureCli.getConsumptionInformation(
       tenant.nativeObj,
       timeWindow.from,
       timeWindow.to,

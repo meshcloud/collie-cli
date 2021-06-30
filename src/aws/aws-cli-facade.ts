@@ -9,7 +9,7 @@ import {
 import { ShellOutput } from "../process/shell-output.ts";
 import { log, moment } from "../deps.ts";
 import {
-  ErrorCodes,
+  AwsErrorCode,
   MeshAwsPlatformError,
   MeshNotLoggedInError,
 } from "../errors.ts";
@@ -105,17 +105,14 @@ export class AwsCliFacade {
   private checkForErrors(result: ShellOutput) {
     if (result.code === 2) {
       throw new MeshAwsPlatformError(
-        ErrorCodes.AWS_CLI_GENERAL,
+        AwsErrorCode.AWS_CLI_GENERAL,
         result.stderr,
       );
     } else if (result.code === 254) {
       log.info(
         `The provided credentials in "aws config" are not valid. Please check it or disconnect from AWS with "${CLICommand} config --disconnect AWS"`,
       );
-      throw new MeshNotLoggedInError(
-        ErrorCodes.NOT_LOGGED_IN,
-        result.stderr,
-      );
+      throw new MeshNotLoggedInError(result.stderr);
     }
   }
 }

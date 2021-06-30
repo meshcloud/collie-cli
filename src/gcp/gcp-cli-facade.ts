@@ -2,7 +2,7 @@ import { ShellRunner } from "../process/shell-runner.ts";
 import { Project } from "./gcp.model.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import {
-  ErrorCodes,
+  GcpErrorCode,
   MeshGcpPlatformError,
   MeshNotLoggedInError,
 } from "../errors.ts";
@@ -28,17 +28,14 @@ export class GcpCliFacade {
   private checkForErrors(result: ShellOutput) {
     if (result.code === 2) {
       throw new MeshGcpPlatformError(
-        ErrorCodes.GCP_CLI_GENERAL,
+        GcpErrorCode.GCP_CLI_GENERAL,
         result.stderr,
       );
     } else if (result.code === 1) {
       log.info(
         `You are not logged in into GCP CLI. Please disconnect GCP with "${CLIName} config --disconnect GCP or login into GCP CLI."`,
       );
-      throw new MeshNotLoggedInError(
-        ErrorCodes.NOT_LOGGED_IN,
-        result.stderr,
-      );
+      throw new MeshNotLoggedInError(result.stderr);
     }
   }
 }
