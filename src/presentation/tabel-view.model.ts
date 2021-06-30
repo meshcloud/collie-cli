@@ -4,9 +4,14 @@ import { bold } from "../deps.ts";
 
 export abstract class TableOutput implements TableConfig {
   public abstract info: string;
+
+  private isatty: boolean;
+
   constructor(
     readonly columns: string[],
-  ) {}
+  ) {
+    this.isatty = Deno.isatty(Deno.stdout.rid);
+  }
 
   public abstract generateRows(): string[][];
 
@@ -22,7 +27,7 @@ export abstract class TableOutput implements TableConfig {
     table
       .header(this.columns.map((value) => bold(value)))
       .body(rows);
-    if (Deno.isatty(Deno.stdout.rid)) {
+    if (this.isatty) {
       table
         .border(true)
         .render();
