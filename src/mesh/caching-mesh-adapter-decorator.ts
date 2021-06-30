@@ -151,4 +151,8 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
 
     return Promise.resolve();
   }
+
+  async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+    return await this.meshAdapter.loadTenantRoleAssignments(tenants);
+  }
 }

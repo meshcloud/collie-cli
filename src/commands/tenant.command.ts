@@ -87,9 +87,17 @@ export function registerTenantCommand(program: Command) {
     )
     .action(analyzeTagsAction);
 
+  const listIam = new Command()
+    .type("output", OutputFormatType)
+    .description(
+      "todo",
+    )
+    .action(listIamAction);
+
   tenantCmd
     .command("list", listTenants)
     .command("costs", listCosts)
+    .command("iam", listIam)
     .command("analyze-tags", analyzeTags);
 }
 
@@ -108,6 +116,24 @@ async function listTenantAction(options: CmdGlobalOptions) {
     allTenants,
   );
   presenter.present();
+}
+
+async function listIamAction(options: CmdGlobalOptions) {
+  setupLogger(options);
+
+  const config = loadConfig();
+  const meshAdapterFactory = new MeshAdapterFactory(config);
+  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+  const allTenants = (await meshAdapter.getMeshTenants()).slice(0, 5);
+  await meshAdapter.loadTenantRoleAssignments(allTenants);
+  console.log(allTenants);
+
+  // const presenterFactory = new TenantListPresenterFactory();
+  // const presenter = presenterFactory.buildPresenter(
+  //   options.output,
+  //   allTenants,
+  // );
+  // presenter.present();
 }
 
 export async function listTenantsCostAction(options: CmdListCostsOptions) {

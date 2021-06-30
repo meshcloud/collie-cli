@@ -156,9 +156,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       "roleDefinitionId",
       "roleDefinitionName",
     ];
-    const cmd =
-      `az role assignment list --subscription likvid-central-services --include-inherited --all --output json
-       --query '[].{${queryFields.map((x) => x + ":" + x).join(",")}'`;
+    const jsonQuery = queryFields.map((x) => x + ":" + x).join(",");
+    //  --query '[].{${jsonQuery}}' -> could be added but stdout gets weird?
+    const cmd = `az role assignment list --subscription ${subscription.name} --include-inherited --all --output json`;
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
@@ -182,7 +182,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
       throw new MeshAzurePlatformError(
         AzureErrorCode.AZURE_CLI_GENERAL,
-        `Error executing Azure CLI: ${result.stdout}`,
+        `Error executing Azure CLI: ${result.stdout} - ${result.stderr}`,
       );
     } else if (result.code == 1) {
       // Too many requests error

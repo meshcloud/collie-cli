@@ -3,6 +3,7 @@ import { AzureErrorCode, MeshAzurePlatformError } from "../errors.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
+  RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
   Tag,
@@ -56,6 +57,12 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
         startDate,
         endDate,
       );
+    });
+  }
+
+  async getRoleAssignments(subscription: Subscription): Promise<RoleAssignment[]> {
+    return await this.wrapCallWithInstallInterception(() => {
+      return this.azureFacade.getRoleAssignments(subscription);
     });
   }
 

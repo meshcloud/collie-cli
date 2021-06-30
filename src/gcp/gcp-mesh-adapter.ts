@@ -54,7 +54,7 @@ export class GcpMeshAdapter implements MeshAdapter {
   }
 
   async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
-    const gcpTenants = tenants.filter((t) => isProject(t));
+    const gcpTenants = tenants.filter((t) => isProject(t.nativeObj));
 
     for (const tenant of gcpTenants) {
       const roleAssignments = await this.getRoleAssignmentsForTenant(tenant);
@@ -65,7 +65,7 @@ export class GcpMeshAdapter implements MeshAdapter {
   private async getRoleAssignmentsForTenant(
     tenant: MeshTenant,
   ): Promise<MeshRoleAssignment[]> {
-    if (!isProject(tenant)) {
+    if (!isProject(tenant.nativeObj)) {
       throw new MeshError(
         "Given tenant did not contain a GCP Project native object",
       );
@@ -73,7 +73,7 @@ export class GcpMeshAdapter implements MeshAdapter {
 
     const result: MeshRoleAssignment[] = [];
 
-    const iamPolicies = await this.gcpCli.listIamPolicy(tenant);
+    const iamPolicies = await this.gcpCli.listIamPolicy(tenant.nativeObj);
     for (let policy of iamPolicies) {
       for (let binding of policy.policy.bindings) {
         for (let member of binding.members) {
