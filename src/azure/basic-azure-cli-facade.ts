@@ -16,6 +16,7 @@ import {
   Tag,
 } from "./azure.model.ts";
 import { CLICommand } from "../config/config.model.ts";
+import { parseJsonWithLog } from "../json.ts";
 
 interface ConfigValue {
   name: string;
@@ -57,7 +58,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       return Promise.resolve(null);
     }
 
-    const cv = JSON.parse(result.stdout) as ConfigValue;
+    const cv = parseJsonWithLog<ConfigValue>(result.stdout);
 
     return Promise.resolve(cv.value);
   }
@@ -66,7 +67,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     const result = await this.shellRunner.run("az account list");
     this.checkForErrors(result);
 
-    return JSON.parse(result.stdout) as Subscription[];
+    log.debug(`listAccounts: ${JSON.stringify(result)}`);
+
+    return parseJsonWithLog(result.stdout);
   }
 
   async listTags(subscription: Subscription): Promise<Tag[]> {
@@ -75,7 +78,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     );
     this.checkForErrors(result);
 
-    return JSON.parse(result.stdout) as Tag[];
+    log.debug(`listTags: ${JSON.stringify(result)}`);
+
+    return parseJsonWithLog(result.stdout);
   }
 
   /**
@@ -100,7 +105,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`getCostManagementInfo: ${JSON.stringify(result)}`);
 
-    const costManagementInfo = JSON.parse(result.stdout) as CostManagementInfo;
+    const costManagementInfo = parseJsonWithLog<CostManagementInfo>(
+      result.stdout,
+    );
     if (costManagementInfo.nextLinks != null) {
       log.warning(
         `Azure response signals that there is paging information available, but we are unable to fetch it. So the results are possibly incomplete.`,
@@ -127,7 +134,6 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   ): Promise<ConsumptionInfo[]> {
     const startDateStr = moment(startDate).format("YYYY-MM-DD");
     const endDateStr = moment(endDate).format("YYYY-MM-DD");
-
     const cmd =
       `az consumption usage list --subscription ${subscription.id} --start-date ${startDateStr} --end-date ${endDateStr}`;
 
@@ -136,7 +142,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`getConsumptionInformation: ${JSON.stringify(result)}`);
 
-    return JSON.parse(result.stdout) as ConsumptionInfo[];
+    return parseJsonWithLog(result.stdout);
   }
 
   private checkForErrors(result: ShellOutput) {

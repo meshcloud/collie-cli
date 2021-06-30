@@ -8,6 +8,7 @@ import {
 } from "../errors.ts";
 import { log } from "../deps.ts";
 import { CLIName } from "../config/config.model.ts";
+import { parseJsonWithLog } from "../json.ts";
 
 export class GcpCliFacade {
   constructor(
@@ -22,7 +23,7 @@ export class GcpCliFacade {
 
     log.debug(`listProjects: ${JSON.stringify(result)}`);
 
-    return JSON.parse(result.stdout) as Project[];
+    return parseJsonWithLog<Project[]>(result.stdout);
   }
 
   private checkForErrors(result: ShellOutput) {
