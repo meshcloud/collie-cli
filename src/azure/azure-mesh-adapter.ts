@@ -9,7 +9,11 @@ import { AzureCliFacade } from "./azure-cli-facade.ts";
 import { MeshAdapter } from "../mesh/mesh-adapter.ts";
 import { log, moment } from "../deps.ts";
 import { CLICommand, CLIName, loadConfig } from "../config/config.model.ts";
-import { MeshAzurePlatformError, MeshError } from "../errors.ts";
+import {
+  AzureErrorCode,
+  MeshAzurePlatformError,
+  MeshError,
+} from "../errors.ts";
 import {
   TimeWindow,
   TimeWindowCalculator,
@@ -84,7 +88,7 @@ export class AzureMeshAdapter implements MeshAdapter {
         currencySymbol = ci.currency;
       } else {
         throw new MeshAzurePlatformError(
-          "AZURE_CLI_GENERAL",
+          AzureErrorCode.AZURE_CLI_GENERAL,
           "Encoutered two different currency during cost collection. This is currently not supported.",
         );
       }
@@ -129,7 +133,7 @@ export class AzureMeshAdapter implements MeshAdapter {
         } catch (e) {
           if (
             e instanceof MeshAzurePlatformError &&
-            e.errorCode === "AZURE_INVALID_SUBSCRIPTION"
+            e.errorCode === AzureErrorCode.AZURE_INVALID_SUBSCRIPTION
           ) {
             log.warning(
               `The Subscription ${t.platformTenantId} can not be cost collected as Azure only supports Enterprise Agreement, Web Direct and Customer Agreements offer type Subscriptions to get cost collected via API.`,

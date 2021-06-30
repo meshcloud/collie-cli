@@ -2,7 +2,7 @@ import { ShellRunner } from "../process/shell-runner.ts";
 import { Project } from "./gcp.model.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import {
-  ErrorCodes,
+  GcpErrorCode,
   MeshGcpPlatformError,
   MeshNotLoggedInError,
 } from "../errors.ts";
@@ -28,7 +28,7 @@ export class GcpCliFacade {
   private checkForErrors(result: ShellOutput) {
     if (result.code === 2) {
       throw new MeshGcpPlatformError(
-        ErrorCodes.GCP_CLI_GENERAL,
+        GcpErrorCode.GCP_CLI_GENERAL,
         result.stderr,
       );
     } else if (result.code === 1) {

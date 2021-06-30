@@ -1,15 +1,18 @@
-export const ErrorCodes = {
-  AWS_CLI_GENERAL: "aws_cli_general",
-  GCP_CLI_GENERAL: "gcp_cli_general",
-};
+export enum GcpErrorCode {
+  GCP_CLI_GENERAL = "GCP_CLI_GENERAL",
+}
 
-export type AzureErrorCode =
-  | "NOT_LOGGED_IN"
-  | "AZURE_CLI_GENERAL"
-  | "AZURE_RETRYABLE_ERROR"
-  | "AZURE_TOO_MANY_REQUESTS"
-  | "AZURE_INVALID_SUBSCRIPTION"
-  | "AZURE_CLI_MISSING_EXTENSION";
+export enum AwsErrorCode {
+  AWS_CLI_GENERAL = "AWS_CLI_GENERAL",
+}
+
+export enum AzureErrorCode {
+  NOT_LOGGED_IN = "NOT_LOGGED_IN",
+  AZURE_CLI_GENERAL = "AZURE_CLI_GENERAL",
+  AZURE_TOO_MANY_REQUESTS = "AZURE_TOO_MANY_REQUESTS",
+  AZURE_INVALID_SUBSCRIPTION = "AZURE_INVALID_SUBSCRIPTION",
+  AZURE_CLI_MISSING_EXTENSION = "AZURE_CLI_MISSING_EXTENSION",
+}
 
 export class MeshError extends Error {
   constructor(message: string) {
@@ -40,7 +43,7 @@ export class MeshAzureRetryableError extends MeshAzurePlatformError {
 
 export class MeshGcpPlatformError extends MeshError {
   constructor(
-    public readonly errorCode: string,
+    public readonly errorCode: GcpErrorCode,
     public readonly message: string,
   ) {
     super(`MeshGcpPlatformError: ${message}`);
@@ -49,7 +52,7 @@ export class MeshGcpPlatformError extends MeshError {
 
 export class MeshAwsPlatformError extends MeshError {
   constructor(
-    public readonly errorCode: string,
+    public readonly errorCode: AwsErrorCode,
     public readonly message: string,
   ) {
     super(`MeshAwsPlatformError: ${message}`);

@@ -1,5 +1,5 @@
 import { Confirm } from "../deps.ts";
-import { MeshAzurePlatformError } from "../errors.ts";
+import { AzureErrorCode, MeshAzurePlatformError } from "../errors.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
@@ -86,7 +86,7 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
 
   private isAzureModuleMissingError(e: Error): boolean {
     return e instanceof MeshAzurePlatformError &&
-      e.errorCode === "AZURE_CLI_MISSING_EXTENSION";
+      e.errorCode === AzureErrorCode.AZURE_CLI_MISSING_EXTENSION;
   }
 
   private isTTY(): boolean {

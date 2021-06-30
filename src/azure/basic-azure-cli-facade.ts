@@ -1,4 +1,5 @@
 import {
+  AzureErrorCode,
   MeshAzurePlatformError,
   MeshAzureRetryableError,
   MeshNotLoggedInError,
@@ -145,13 +146,13 @@ export class BasicAzureCliFacade implements AzureCliFacade {
         const missingExtension = errMatch[1];
 
         throw new MeshAzurePlatformError(
-          "AZURE_CLI_MISSING_EXTENSION",
+          AzureErrorCode.AZURE_CLI_MISSING_EXTENSION,
           `Missing the Azure cli extention: ${missingExtension}, please install it first.`,
         );
       }
 
       throw new MeshAzurePlatformError(
-        "AZURE_CLI_GENERAL",
+        AzureErrorCode.AZURE_CLI_GENERAL,
         `Error executing Azure CLI: ${result.stdout}`,
       );
     } else if (result.code == 1) {
@@ -160,19 +161,22 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       if (!!errMatch && errMatch.length > 0) {
         const delayS = parseInt(errMatch[1]);
 
-        throw new MeshAzureRetryableError("AZURE_TOO_MANY_REQUESTS", delayS);
+        throw new MeshAzureRetryableError(
+          AzureErrorCode.AZURE_TOO_MANY_REQUESTS,
+          delayS,
+        );
       }
 
       // Strange cert invalid error
       errMatch = this.errCertInvalid.exec(result.stderr);
       if (errMatch) {
-        throw new MeshAzureRetryableError("AZURE_RETRYABLE_ERROR", 60);
+        throw new MeshAzureRetryableError(AzureErrorCode.AZURE_CLI_GENERAL, 60);
       }
 
       errMatch = this.errInvalidSubscription.exec(result.stderr);
       if (errMatch) {
         throw new MeshAzurePlatformError(
-          "AZURE_INVALID_SUBSCRIPTION",
+          AzureErrorCode.AZURE_INVALID_SUBSCRIPTION,
           "Subscription cost could not be requested via the Cost Management API",
         );
       }
