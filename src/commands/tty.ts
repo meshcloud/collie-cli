@@ -23,5 +23,5 @@ export function showCursor() {
 }
 
 function writeCommand(command: string) {
-  Deno.stdout.write(enc.encode(ESC + command));
+  Deno.stdout.writeSync(enc.encode(ESC + command));
 }
