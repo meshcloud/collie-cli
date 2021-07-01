@@ -124,17 +124,17 @@ export async function init() {
     // check if required CLIs are installed
     if (config.connected.GCP && !await checkCLI(PlatformCommand.GCP)) {
       throw new MeshError(
-        `gcloud cli is not installed. Please disconnect platform via "${CLICommand} config -d gcp"`,
+        `gcloud cli is not installed. Please disconnect platform via "${CLICommand} config -d GCP"`,
       );
     }
     if (config.connected.AWS && !await checkCLI(PlatformCommand.AWS)) {
       throw new MeshError(
-        `aws cli is not installed. Please disconnect platform via "${CLICommand} config -d aws"`,
+        `aws cli is not installed. Please disconnect platform via "${CLICommand} config -d AWS"`,
       );
     }
     if (config.connected.Azure && !await checkCLI(PlatformCommand.Azure)) {
       throw new MeshError(
-        `azure cli (az) is not installed. Please disconnect platform via "${CLICommand} config -d azure"`,
+        `azure cli (az) is not installed. Please disconnect platform via "${CLICommand} config -d Azure"`,
       );
     }
 
