@@ -1,6 +1,6 @@
 import { TimeWindowCalculator } from "./time-window-calculator.ts";
-import { assertEquals } from "https://deno.land/std@0.99.0/testing/asserts.ts";
 import { moment } from "../deps.ts";
+import { assertEquals } from '../dev-deps.ts';
 
 const sut = new TimeWindowCalculator();
 

@@ -22,10 +22,10 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       log.debug("Repository is valid. Fetching tenants from cache.");
       return this.repository.loadTenants();
     } else {
-      const tenants = await this.meshAdapter.getMeshTenants();
       log.debug(
-        `Repository is not valid anymore. Fetching ${tenants.length} tenants from cloud.`,
+        "Repository is not valid anymore. Fetching fresh tenants from cloud."
       );
+      const tenants = await this.meshAdapter.getMeshTenants();
 
       const cachedTenants = await this.repository.loadTenants();
       const tenantsById = new Map<string, MeshTenant>();
@@ -153,6 +153,37 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
   }
 
   async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
-    return await this.meshAdapter.loadTenantRoleAssignments(tenants);
+    if (await this.repository.isIamCollectionValid()) {
+      const cachedTenants = await this.repository.loadTenants();
+      const cachedTenantsById = new Map<string, MeshTenant>();
+      cachedTenants.forEach((ct) =>
+        cachedTenantsById.set(ct.platformTenantId, ct)
+      );
+
+      for (const t of tenants) {
+        const cached = cachedTenantsById.get(t.platformTenantId);
+        if (!cached) {
+          throw new MeshError(
+            `The tenant ${t.platformTenantName} (${t.platformTenantId}) was missing in the cache. Please clear the cache and retry.`,
+          );
+        }
+        t.roleAssignments = [...cached.roleAssignments];
+      }
+    } else {
+      log.debug("IAM collection is no longer valid - collecting new role assignments");
+      await this.meshAdapter.loadTenantRoleAssignments(tenants);
+
+      for (const t of tenants) {
+        this.repository.save(t);
+      }
+
+      // Update meta info. TODO handle in repo
+      let meta = await this.repository.loadMeta();
+      if (meta == null) {
+        meta = this.repository.newMeta();
+      }
+      meta.iamCollection = { lastCollection: new Date().toUTCString() }
+      this.repository.saveMeta(meta);
+    }
   }
 }

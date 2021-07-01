@@ -1,16 +1,9 @@
 import { log } from "../deps.ts";
 import { MeshAdapter } from "../mesh/mesh-adapter.ts";
-import {
-  MeshPlatform,
-  MeshTag,
-  MeshTenant,
-} from "../mesh/mesh-tenant.model.ts";
+import { MeshPlatform, MeshTag, MeshTenant, } from "../mesh/mesh-tenant.model.ts";
 import { GcpCliFacade } from "./gcp-cli-facade.ts";
 import { isProject } from "./gcp.model.ts";
-import {
-  MeshPrincipalType,
-  MeshRoleAssignment,
-} from "../mesh/mesh-iam-model.ts";
+import { MeshPrincipalType, MeshRoleAssignmentSource, MeshTenantRoleAssignment, } from "../mesh/mesh-iam-model.ts";
 import { MeshError } from "../errors.ts";
 
 export class GcpMeshAdapter implements MeshAdapter {
@@ -55,6 +48,7 @@ export class GcpMeshAdapter implements MeshAdapter {
 
   async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     const gcpTenants = tenants.filter((t) => isProject(t.nativeObj));
+    console.log("heya " + gcpTenants.length);
 
     for (const tenant of gcpTenants) {
       const roleAssignments = await this.getRoleAssignmentsForTenant(tenant);
@@ -64,17 +58,19 @@ export class GcpMeshAdapter implements MeshAdapter {
 
   private async getRoleAssignmentsForTenant(
     tenant: MeshTenant,
-  ): Promise<MeshRoleAssignment[]> {
+  ): Promise<MeshTenantRoleAssignment[]> {
     if (!isProject(tenant.nativeObj)) {
       throw new MeshError(
         "Given tenant did not contain a GCP Project native object",
       );
     }
 
-    const result: MeshRoleAssignment[] = [];
+    const result: MeshTenantRoleAssignment[] = [];
 
     const iamPolicies = await this.gcpCli.listIamPolicy(tenant.nativeObj);
     for (let policy of iamPolicies) {
+      const assignmentSource = this.toAssignmentSource(policy.type);
+      const assignmentId = policy.id;
       for (let binding of policy.policy.bindings) {
         for (let member of binding.members) {
           // The member string is given as e.g. -> group:demo-project-user@dev.example.com
@@ -87,6 +83,8 @@ export class GcpMeshAdapter implements MeshAdapter {
             // We supply the same value for ID & Name as we do not have more information than this.
             roleId: binding.role,
             roleName: binding.role,
+            assignmentSource,
+            assignmentId
           });
         }
       }
@@ -106,6 +104,18 @@ export class GcpMeshAdapter implements MeshAdapter {
       default:
         throw new MeshError(
           "Found unknown principalType for GCP: " + principalType,
+        );
+    }
+  }
+
+  private toAssignmentSource(type: string): MeshRoleAssignmentSource {
+    switch (type) {
+      case "organization": return MeshRoleAssignmentSource.Organization;
+      case "folder": return MeshRoleAssignmentSource.Ancestor;
+      case "project": return MeshRoleAssignmentSource.Tenant;
+      default:
+        throw new MeshError(
+          "Found unknown assignment source type: " + type
         );
     }
   }

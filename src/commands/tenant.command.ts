@@ -6,6 +6,7 @@ import { TenantUsagePresenterFactory } from "../presentation/tenant-usage-presen
 import { CmdGlobalOptions, OutputFormatType } from "./cmd-options.ts";
 import { dateType } from "./custom-types.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { TenantIamPresenterFactory } from '../presentation/tenant-iam-presenter-factory.ts';
 import { CLICommand, loadConfig } from "../config/config.model.ts";
 import { isatty } from "./tty.ts";
 import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
@@ -126,14 +127,10 @@ async function listIamAction(options: CmdGlobalOptions) {
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
   const allTenants = (await meshAdapter.getMeshTenants()).slice(0, 5);
   await meshAdapter.loadTenantRoleAssignments(allTenants);
-  console.log(allTenants);
 
-  // const presenterFactory = new TenantListPresenterFactory();
-  // const presenter = presenterFactory.buildPresenter(
-  //   options.output,
-  //   allTenants,
-  // );
-  // presenter.present();
+  new TenantIamPresenterFactory()
+    .buildPresenter(options.output, allTenants)
+    .present();
 }
 
 export async function listTenantsCostAction(options: CmdListCostsOptions) {

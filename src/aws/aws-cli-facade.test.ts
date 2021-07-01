@@ -1,10 +1,10 @@
-import { assertEquals } from "https://deno.land/std@0.97.0/testing/asserts.ts";
 import { moment } from "../deps.ts";
 import { MeshPlatform, MeshTenantCost } from "../mesh/mesh-tenant.model.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
 import { AwsCliFacade } from "./aws-cli-facade.ts";
 import { AwsMeshAdapter } from "./aws-mesh-adapter.ts";
+import { assertEquals } from '../dev-deps.ts';
 
 const response = {
   GroupDefinitions: [{ Type: "DIMENSION", Key: "LINKED_ACCOUNT" }],
@@ -140,6 +140,7 @@ Deno.test("Requesting the tenant cost info respondes with a proper filled MeshTe
         JoinedTimestamp: "timestamp",
       },
       costs: [],
+      roleAssignments: []
     },
   ];
   await sut.loadTenantCosts(tenants, start, end);

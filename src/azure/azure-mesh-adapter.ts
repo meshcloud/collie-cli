@@ -19,8 +19,8 @@ import {
   TimeWindowCalculator,
 } from "../mesh/time-window-calculator.ts";
 import {
-  MeshPrincipalType,
-  MeshRoleAssignment,
+  MeshPrincipalType, MeshRoleAssignmentSource,
+  MeshTenantRoleAssignment,
 } from "../mesh/mesh-iam-model.ts";
 
 export class AzureMeshAdapter implements MeshAdapter {
@@ -237,22 +237,27 @@ export class AzureMeshAdapter implements MeshAdapter {
 
   private async loadRoleAssignmentsForTenant(
     tenant: MeshTenant,
-  ): Promise<MeshRoleAssignment[]> {
+  ): Promise<MeshTenantRoleAssignment[]> {
     if (!isSubscription(tenant.nativeObj)) {
       throw new MeshError(
         "Given tenant did not contain an Azure Subscription native object",
       );
     }
+
     const roleAssignments = await this.azureCli.getRoleAssignments(
       tenant.nativeObj,
     );
+
     return roleAssignments.map((x) => {
+      const { assignmentSource, assignmentId } = this.getAssignmentFromScope(x.scope);
       return {
         principalId: x.principalId,
         principalName: x.principalName,
         principalType: this.toMeshPrincipalType(x.principalType),
         roleId: x.roleDefinitionId,
         roleName: x.roleDefinitionName,
+        assignmentSource,
+        assignmentId
       };
     });
   }
@@ -278,5 +283,25 @@ export class AzureMeshAdapter implements MeshAdapter {
 
       return { tagName: t.tagName, tagValues };
     });
+  }
+
+  private getAssignmentFromScope(scope: string): { assignmentId: string, assignmentSource: MeshRoleAssignmentSource } {
+    const map: { [key in MeshRoleAssignmentSource]: RegExp } = {
+      Organization: /^\/$/, // This means string should equal exactly to "/".
+      Ancestor: /\/managementGroups\//,
+      Tenant: /\/subscriptions\//
+    };
+    for (let key in map) {
+      if (map.hasOwnProperty(key)) {
+        // Looping through an enum-key map sucks a bit: https://github.com/microsoft/TypeScript/issues/33123
+        if (map[key as MeshRoleAssignmentSource].test(scope)) {
+          return {
+            assignmentId: scope.split(map[key as MeshRoleAssignmentSource])[1],
+            assignmentSource: key as MeshRoleAssignmentSource
+          }
+        }
+      }
+    }
+    throw new MeshError("Could not detect assignment source from scope: " + scope);
   }
 }

@@ -1,7 +1,7 @@
 import { Account } from "../aws/aws.model.ts";
 import { Subscription } from "../azure/azure.model.ts";
 import { Project } from "../gcp/gcp.model.ts";
-import { MeshRoleAssignment } from "./mesh-iam-model.ts";
+import { MeshTenantRoleAssignment } from "./mesh-iam-model.ts";
 
 export interface MeshTag {
   tagName: string;
@@ -15,7 +15,7 @@ export interface MeshTenant {
   tags: MeshTag[];
   nativeObj: Account | Subscription | Project;
   costs: MeshTenantCost[];
-  roleAssignments: MeshRoleAssignment[];
+  roleAssignments: MeshTenantRoleAssignment[];
 }
 
 export interface MeshTenantCostDetails {
