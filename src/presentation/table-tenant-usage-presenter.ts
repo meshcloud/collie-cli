@@ -11,6 +11,7 @@ export class CliTableTenantUsagePresenter implements Presenter {
     new MeshTenantCostTableView(this.meshTenantCost, [
       "relatedTenant",
       "totalUsageCost",
+      "currency",
       "from",
       "to",
     ]).draw();
