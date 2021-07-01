@@ -18,7 +18,7 @@ export class CsvTenantUsagePresenter extends CsvTenantPresenter {
     const tagNames = this.combineExistingTagNames(tags);
 
     const rows = [
-      [...this.printedKeys, "from", "to", "totalCost", ...tagNames],
+      [...this.printedKeys, "from", "to", "totalCost", "currency", ...tagNames],
     ];
 
     this.meshTenant.forEach((mt) => {
@@ -44,6 +44,7 @@ export class CsvTenantUsagePresenter extends CsvTenantPresenter {
     row.push(moment(tenantCost.from).toISOString());
     row.push(moment(tenantCost.to).toISOString());
     row.push(tenantCost.totalUsageCost);
+    row.push(tenantCost.currency);
 
     // Add the tags here in the right order to the current row.
     const tagValues = this.extractTagValues(

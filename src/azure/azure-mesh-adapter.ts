@@ -80,27 +80,34 @@ export class AzureMeshAdapter implements MeshAdapter {
       costInformations.push(...costInformation);
     }
 
-    let currencySymbol: string | null = null;
     const summedCosts = new Map<string, number>();
+    const currencySymbols = new Map<string, string>();
     for (const ci of costInformations) {
-      // TODO manage the currency symbol.
-      if (currencySymbol === null || currencySymbol === ci.currency) {
-        currencySymbol = ci.currency;
+      if (!currencySymbols.has(ci.subscriptionId)) {
+        currencySymbols.set(ci.subscriptionId, ci.currency);
       } else {
-        throw new MeshAzurePlatformError(
-          AzureErrorCode.AZURE_CLI_GENERAL,
-          "Encoutered two different currency during cost collection. This is currently not supported.",
-        );
+        // Make sure we only collect the same currency for one tenant.
+        // Multiple currency for the same tenant are currently not supported.
+        if (currencySymbols.get(ci.subscriptionId) !== ci.currency) {
+          throw new MeshAzurePlatformError(
+            AzureErrorCode.AZURE_CLI_GENERAL,
+            "Encountered two different currencies within one Subscription during cost collection. This is currently not supported.",
+          );
+        }
       }
+
       let currentCost = summedCosts.get(ci.subscriptionId) || 0;
       currentCost += ci.amount;
       summedCosts.set(ci.subscriptionId, currentCost);
     }
 
     for (const t of azureTenants) {
+      const summedCost = summedCosts.get(t.platformTenantId) || 0;
+      const currencySymbol = currencySymbols.get(t.platformTenantId) || "";
+
       t.costs.push({
-        currency: currencySymbol || "Unknown", // should usually be set by now.
-        totalUsageCost: (summedCosts.get(t.platformTenantId) || 0).toString(),
+        currency: currencySymbol,
+        totalUsageCost: summedCost.toString(),
         from: startDate.toUTCString(),
         to: endDate.toUTCString(),
         details: [],
@@ -171,8 +178,21 @@ export class AzureMeshAdapter implements MeshAdapter {
       ...tenantCostInfo.map((tci) => parseFloat(tci.pretaxCost)),
     ].reduce((acc, val) => acc + val);
 
+    let currencySymbol = "";
+    if (tenantCostInfo.length > 0) {
+      currencySymbol = tenantCostInfo[0].currency;
+      for (const tci of tenantCostInfo) {
+        if (tci.currency !== currencySymbol) {
+          throw new MeshAzurePlatformError(
+            AzureErrorCode.AZURE_CLI_GENERAL,
+            `Encountered two different currency during cost collection for tenant ${tenant.platformTenantId}. This is currently not supported.`,
+          );
+        }
+      }
+    }
+
     return {
-      currency: "",
+      currency: currencySymbol,
       totalUsageCost: totalUsagePretaxCost.toFixed(2),
       details: [], // Can hold daily usages
       from: timeWindow.from.toUTCString(),

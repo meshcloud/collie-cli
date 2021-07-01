@@ -66,7 +66,7 @@ export class AwsMeshAdapter implements MeshAdapter {
         }
 
         const costItem: MeshTenantCost = {
-          currency: "", // TODO Moved it to toplevel but inclusion of currency is not that easy.
+          currency: "",
           from: from.toDate().toUTCString(),
           to: to.toDate().toUTCString(),
           totalUsageCost: "0",
@@ -77,7 +77,9 @@ export class AwsMeshAdapter implements MeshAdapter {
           g.Keys[0] === account.Id
         );
         if (costForTenant) {
-          costItem.totalUsageCost = costForTenant.Metrics["BlendedCost"].Amount;
+          const blendedCost = costForTenant.Metrics["BlendedCost"];
+          costItem.totalUsageCost = blendedCost.Amount;
+          costItem.currency = blendedCost.Unit;
         }
 
         tenant.costs.push(costItem);
