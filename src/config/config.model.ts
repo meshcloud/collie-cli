@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "../commands/io.ts";
 import { dirname, ensureDir, os } from "../deps.ts";
+import { parseJsonWithLog } from "../json.ts";
 
 export const configPath = getConfigPath();
 export const configFilePath = configPath + "/config.json";
@@ -57,7 +58,7 @@ function getConfigPath(): string {
 }
 
 export function loadConfig(): Config {
-  const config = JSON.parse(readFile(configFilePath)) as Config;
+  const config = parseJsonWithLog<Config>(readFile(configFilePath));
 
   return Object.assign(emptyConfig, config);
 }

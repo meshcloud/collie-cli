@@ -15,8 +15,9 @@ export abstract class TableOutput implements TableConfig {
 
     if (rows.length === 0) {
       log.info("No objects to list");
-      Deno.exit(0);
+      return;
     }
+
     const table = new Table();
     table
       .header(this.columns.map((value) => bold(value)))
