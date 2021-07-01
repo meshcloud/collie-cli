@@ -1,26 +1,22 @@
 import { dim, yellow } from "../deps.ts";
 
 import { Table } from "../deps.ts";
-import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import { MeshTableTag, TableOutput } from "./tabel-view.model.ts";
+import { MeshPlatform, MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshTableTag, TableGenerator } from "./mesh-table.ts";
 
-export class MeshTenantTableView extends TableOutput {
-  public info = "";
-
+export class MeshTenantTableViewGenerator implements TableGenerator {
   constructor(
     readonly meshTenants: MeshTenant[],
-    readonly columns: (keyof MeshTenant)[],
+    private readonly columns: (keyof MeshTenant)[],
   ) {
-    super(columns);
-    this.info = `GCP: ${
-      meshTenants.filter((mt) => mt.platform === "GCP").length
-    }, AWS: ${
-      meshTenants.filter((mt) => mt.platform === "AWS").length
-    }, Azure: ${meshTenants.filter((mt) => mt.platform === "Azure").length}`;
   }
 
-  public generateRows(): string[][] {
-    var rows: Array<string>[] = [];
+  getColumns(): string[] {
+    return this.columns;
+  }
+
+  getRows(): string[][] {
+    const rows: Array<string>[] = [];
     this.meshTenants.forEach((meshTenant: MeshTenant) => {
       var row: string[] = [];
       this.columns.forEach((header: string, index: number) => {
@@ -44,5 +40,17 @@ export class MeshTenantTableView extends TableOutput {
       rows.push(row);
     });
     return rows;
+  }
+
+  getInfo(): string {
+    const gcpCount =
+      this.meshTenants.filter((mt) => mt.platform === MeshPlatform.GCP).length;
+    const awsCount =
+      this.meshTenants.filter((mt) => mt.platform === MeshPlatform.AWS).length;
+    const azureCount =
+      this.meshTenants.filter((mt) => mt.platform === MeshPlatform.Azure)
+        .length;
+
+    return `GCP: ${gcpCount}, AWS: ${awsCount}, Azure: ${azureCount}`;
   }
 }

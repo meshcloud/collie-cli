@@ -9,9 +9,11 @@ import {
 import { Command, EnumType, exists, log } from "../deps.ts";
 import { setupLogger } from "../logger.ts";
 import { MeshPlatform } from "../mesh/mesh-tenant.model.ts";
+import { ConfigTableViewGenerator } from "../presentation/config-table-view-generator.ts";
+import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
 import { CmdGlobalOptions } from "./cmd-options.ts";
 import { readFile, writeFile } from "./io.ts";
-import { ConfigTableView } from "../presentation/config-table-view.ts";
+import { isatty } from "./tty.ts";
 
 type Platform = MeshPlatform[number];
 const platform = new EnumType(Object.values(MeshPlatform));
@@ -114,5 +116,14 @@ function changeConfig(options: CmdConfigOpts, program: Command) {
 }
 
 function showConfig() {
-  new ConfigTableView(loadConfig(), ["AWS", "GCP", "Azure"]).draw();
+  const viewGenerator = new ConfigTableViewGenerator(loadConfig(), [
+    "AWS",
+    "GCP",
+    "Azure",
+  ]);
+  // This could be wrapped in a presenter class but because of simplicity reasons
+  // that would be a bit overengineering.
+  const tableFactory = new MeshTableFactory(isatty);
+  const meshTable = tableFactory.buildMeshTable();
+  meshTable.draw(viewGenerator);
 }

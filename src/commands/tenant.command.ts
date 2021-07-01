@@ -7,6 +7,8 @@ import { CmdGlobalOptions, OutputFormatType } from "./cmd-options.ts";
 import { dateType } from "./custom-types.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
 import { CLICommand, loadConfig } from "../config/config.model.ts";
+import { isatty } from "./tty.ts";
+import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
 
 interface CmdListCostsOptions extends CmdGlobalOptions {
   from: string;
@@ -98,8 +100,9 @@ async function listTenantAction(options: CmdGlobalOptions) {
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
   const allTenants = await meshAdapter.getMeshTenants();
+  const tableFactory = new MeshTableFactory(isatty);
 
-  const presenterFactory = new TenantListPresenterFactory();
+  const presenterFactory = new TenantListPresenterFactory(tableFactory);
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
@@ -128,7 +131,8 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
     end,
   );
 
-  const presenterFactory = new TenantUsagePresenterFactory();
+  const tableFactory = new MeshTableFactory(isatty);
+  const presenterFactory = new TenantUsagePresenterFactory(tableFactory);
   // FIXME this now poses a problem. The presenter must only display the asked time range from the exisiting costs.
   const presenter = presenterFactory.buildPresenter(
     options.output,

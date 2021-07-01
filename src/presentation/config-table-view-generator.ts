@@ -1,16 +1,20 @@
 import { Config, ConnectedConfig } from "../config/config.model.ts";
 import { green, red } from "../deps.ts";
-import { TableOutput } from "./tabel-view.model.ts";
+import { TableGenerator } from "./mesh-table.ts";
 
-export class ConfigTableView extends TableOutput {
-  public info = "";
-
-  constructor(readonly config: Config, columns: (keyof ConnectedConfig)[]) {
-    super(columns);
+export class ConfigTableViewGenerator implements TableGenerator {
+  constructor(
+    readonly config: Config,
+    private columns: (keyof ConnectedConfig)[],
+  ) {
   }
 
-  public generateRows(): string[][] {
-    var row: string[] = [];
+  getColumns(): string[] {
+    return this.columns;
+  }
+
+  getRows(): string[][] {
+    const row: string[] = [];
     this.columns.forEach((column) => {
       if (column === "GCP" || column === "AWS" || column === "Azure") {
         if (this.config.connected[column]) {
@@ -20,6 +24,11 @@ export class ConfigTableView extends TableOutput {
         }
       }
     });
+
     return [row];
+  }
+
+  getInfo(): string {
+    return "";
   }
 }

@@ -4,24 +4,28 @@ const HIDE = "?25l";
 const SHOW = "?25h";
 const CLEAR_LINE = "2K";
 
-const enc = new TextEncoder();
+export const isatty = Deno.isatty(Deno.stdout.rid);
 
-export function goUp(rows: number) {
-  writeCommand(rows + UP);
-}
+export class TTY {
+  private enc = new TextEncoder();
 
-export function hideCursor() {
-  writeCommand(HIDE);
-}
+  goUp(rows: number) {
+    this.writeCommand(rows + UP);
+  }
 
-export function clearLine() {
-  writeCommand(CLEAR_LINE);
-}
+  hideCursor() {
+    this.writeCommand(HIDE);
+  }
 
-export function showCursor() {
-  writeCommand(SHOW);
-}
+  clearLine() {
+    this.writeCommand(CLEAR_LINE);
+  }
 
-function writeCommand(command: string) {
-  Deno.stdout.writeSync(enc.encode(ESC + command));
+  showCursor() {
+    this.writeCommand(SHOW);
+  }
+
+  private writeCommand(command: string) {
+    Deno.stdout.writeSync(this.enc.encode(ESC + command));
+  }
 }
