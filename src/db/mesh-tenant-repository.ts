@@ -93,6 +93,14 @@ export class MeshTenantRepository {
     emptyDir(this.dbDirectory);
   }
 
+  async loadOrBuildMeta(): Promise<Meta> {
+    let meta = await this.loadMeta();
+    if (meta === null) {
+      meta = this.newMeta();
+    }
+    return meta;
+  }
+
   async loadMeta(): Promise<Meta | null> {
     if (existsSync(this.metaPath)) {
       const metaFile = await this.readFile(this.dbDirectory + this.metaFile);

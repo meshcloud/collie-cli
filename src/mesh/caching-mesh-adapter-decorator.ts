@@ -27,13 +27,11 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       );
       const tenants = await this.meshAdapter.getMeshTenants();
 
-      const cachedTenants = await this.repository.loadTenants();
-      const tenantsById = new Map<string, MeshTenant>();
-      cachedTenants.forEach((ct) => tenantsById.set(ct.platformTenantId, ct));
+      const cachedTenantsById = await this.getCachedTenantsMappedById();
 
       // Transfer cost data from cached repo tenants to new collected tenants.
       for (const t of tenants) {
-        const ct = tenantsById.get(t.platformTenantId);
+        const ct = cachedTenantsById.get(t.platformTenantId);
         if (ct) {
           t.costs.push(...ct.costs);
         }
@@ -42,12 +40,8 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       }
 
       // Update meta info.
-      let meta = await this.repository.loadMeta();
-      if (meta == null) {
-        meta = this.repository.newMeta();
-      } else {
-        meta.tenantCollection.lastCollection = new Date().toUTCString();
-      }
+      let meta = await this.repository.loadOrBuildMeta();
+      meta.tenantCollection.lastCollection = new Date().toUTCString();
       this.repository.saveMeta(meta);
 
       return tenants;
@@ -112,11 +106,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       // load from cache. This now has a bit of a strange dynamic, as the requested data should already be attached to the tenant
       // as the cache is in a valid state. Just to make less dependent on external call flow we clear and reset the entries here for
       // safety. Maybe in general there is a better way to control this calls.
-      const cachedTenants = await this.repository.loadTenants();
-      const cachedTenantsById = new Map<string, MeshTenant>();
-      cachedTenants.forEach((ct) =>
-        cachedTenantsById.set(ct.platformTenantId, ct)
-      );
+      const cachedTenantsById = await this.getCachedTenantsMappedById();
 
       for (const t of tenants) {
         const cached = cachedTenantsById.get(t.platformTenantId);
@@ -154,11 +144,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
 
   async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     if (await this.repository.isIamCollectionValid()) {
-      const cachedTenants = await this.repository.loadTenants();
-      const cachedTenantsById = new Map<string, MeshTenant>();
-      cachedTenants.forEach((ct) =>
-        cachedTenantsById.set(ct.platformTenantId, ct)
-      );
+      const cachedTenantsById = await this.getCachedTenantsMappedById();
 
       for (const t of tenants) {
         const cached = cachedTenantsById.get(t.platformTenantId);
@@ -177,13 +163,18 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
         this.repository.save(t);
       }
 
-      // Update meta info. TODO handle in repo
-      let meta = await this.repository.loadMeta();
-      if (meta == null) {
-        meta = this.repository.newMeta();
-      }
+      let meta = await this.repository.loadOrBuildMeta();
       meta.iamCollection = { lastCollection: new Date().toUTCString() }
       this.repository.saveMeta(meta);
     }
+  }
+
+  private async getCachedTenantsMappedById(): Promise<Map<string, MeshTenant>> {
+    const cachedTenants = await this.repository.loadTenants();
+    const cachedTenantsById = new Map<string, MeshTenant>();
+    cachedTenants.forEach((ct) =>
+      cachedTenantsById.set(ct.platformTenantId, ct)
+    );
+    return cachedTenantsById;
   }
 }

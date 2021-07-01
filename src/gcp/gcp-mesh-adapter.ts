@@ -48,7 +48,6 @@ export class GcpMeshAdapter implements MeshAdapter {
 
   async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     const gcpTenants = tenants.filter((t) => isProject(t.nativeObj));
-    console.log("heya " + gcpTenants.length);
 
     for (const tenant of gcpTenants) {
       const roleAssignments = await this.getRoleAssignmentsForTenant(tenant);
