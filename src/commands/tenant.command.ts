@@ -21,6 +21,10 @@ interface CmdAnalyzeTagsOptions extends CmdGlobalOptions {
   details?: boolean;
 }
 
+interface CmdIamOptions extends CmdGlobalOptions {
+  includeAncestors: boolean;
+}
+
 export function registerTenantCommand(program: Command) {
   const tenantCmd = new Command()
     .description(
@@ -91,7 +95,11 @@ export function registerTenantCommand(program: Command) {
   const listIam = new Command()
     .type("output", OutputFormatType)
     .description(
-      "todo",
+      "// TODO",
+    )
+    .option(
+      "--include-ancestors [includeAncestors:boolean]",
+      "Shows the IAM Role Assignments inherited from an ancestor level as well (Azure Management Groups & Root, GCP Folders & Organization)",
     )
     .action(listIamAction);
 
@@ -119,17 +127,21 @@ async function listTenantAction(options: CmdGlobalOptions) {
   presenter.present();
 }
 
-async function listIamAction(options: CmdGlobalOptions) {
+async function listIamAction(options: CmdIamOptions) {
   setupLogger(options);
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
-  const allTenants = (await meshAdapter.getMeshTenants()).slice(0, 5);
+  const allTenants = await meshAdapter.getMeshTenants();
   await meshAdapter.loadTenantRoleAssignments(allTenants);
 
   new TenantIamPresenterFactory()
-    .buildPresenter(options.output, allTenants)
+    .buildPresenter(
+      options.output,
+      options.includeAncestors,
+      allTenants,
+    )
     .present();
 }
 

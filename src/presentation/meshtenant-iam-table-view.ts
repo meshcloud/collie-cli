@@ -28,12 +28,12 @@ export class MeshTenantIamTableView extends TableOutput {
           //   - <principal-name> (<principal-type>)
           const groupedRoles: { [roleName: string]: MeshTenantRoleAssignment[] } = {};
           meshTenant.roleAssignments.forEach((x) => {
-            if (x.assignmentSource === MeshRoleAssignmentSource.Tenant) {
-              if (groupedRoles[x.roleName]) {
-                groupedRoles[x.roleName].push(x);
-              } else {
-                groupedRoles[x.roleName] = [ x ];
-              }
+            // TODO table view currently does not contain assignment info (what level is this coming from)
+            // Might need an additional grouping level
+            if (groupedRoles[x.roleName]) {
+              groupedRoles[x.roleName].push(x);
+            } else {
+              groupedRoles[x.roleName] = [ x ];
             }
           });
           for (let roleName in groupedRoles) {

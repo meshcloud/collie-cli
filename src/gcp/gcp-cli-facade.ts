@@ -7,7 +7,7 @@ import {
   MeshNotLoggedInError,
 } from "../errors.ts";
 import { log } from "../deps.ts";
-import { CLIName } from "../config/config.model.ts";
+import { CLICommand, CLIName } from "../config/config.model.ts";
 import { parseJsonWithLog } from "../json.ts";
 
 export class GcpCliFacade {
@@ -30,6 +30,7 @@ export class GcpCliFacade {
     const result = await this.shellRunner.run(
       `gcloud projects get-ancestors-iam-policy ${project.projectId} --format json`,
     );
+    console.log("qwe -. " + project.name);
     this.checkForErrors(result);
 
     log.debug(`listIamPolicy: ${JSON.stringify(result)}`);
@@ -45,7 +46,7 @@ export class GcpCliFacade {
       );
     } else if (result.code === 1) {
       log.info(
-        `You are not logged in into GCP CLI. Please disconnect GCP with "${CLIName} config --disconnect GCP or login into GCP CLI."`,
+        `You are not logged in into GCP CLI. Please disconnect GCP with "${CLICommand} config --disconnect GCP or login into GCP CLI."`,
       );
       throw new MeshNotLoggedInError(result.stderr);
     }
