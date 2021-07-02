@@ -1,23 +1,24 @@
-import { TableOutput } from "./tabel-view.model.ts";
 import { MeshTenant, MeshTenantCost } from "../mesh/mesh-tenant.model.ts";
+import { TableGenerator } from "./mesh-table.ts";
 
 type CostTableColums = keyof MeshTenantCost | "relatedTenant";
 
-export class MeshTenantCostTableView extends TableOutput {
-  public info = "";
-
+export class MeshTenantCostTableViewGenerator implements TableGenerator {
   constructor(
-    readonly meshTenants: MeshTenant[],
-    readonly columns: CostTableColums[],
+    private readonly meshTenants: MeshTenant[],
+    private readonly columns: CostTableColums[],
   ) {
-    super(columns);
   }
 
-  public generateRows(): string[][] {
-    var rows: Array<string>[] = [];
+  getColumns(): string[] {
+    return this.columns;
+  }
+
+  getRows(): string[][] {
+    const rows: Array<string>[] = [];
 
     this.meshTenants.forEach((mt) => {
-      var row: string[] = [];
+      const row: string[] = [];
 
       mt.costs.forEach((mc) => {
         this.columns.forEach((column: string, index: number) => {
@@ -38,5 +39,9 @@ export class MeshTenantCostTableView extends TableOutput {
     });
 
     return rows;
+  }
+
+  getInfo(): string {
+    return "";
   }
 }

@@ -65,7 +65,7 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
     try {
       return await callFn();
     } catch (e) {
-      if (this.isAzureModuleMissingError(e) && this.isTTY()) {
+      if (this.isAzureModuleMissingError(e)) {
         const confirmed: boolean = await Confirm.prompt(
           "A Azure CLI extention is missing for this call. Should the Azure extension get installed automatically?",
         );
@@ -87,9 +87,5 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   private isAzureModuleMissingError(e: Error): boolean {
     return e instanceof MeshAzurePlatformError &&
       e.errorCode === AzureErrorCode.AZURE_CLI_MISSING_EXTENSION;
-  }
-
-  private isTTY(): boolean {
-    return Deno.isatty(Deno.stdout.rid);
   }
 }
