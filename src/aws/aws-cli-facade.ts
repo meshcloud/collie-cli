@@ -9,12 +9,13 @@ import {
 import { ShellOutput } from "../process/shell-output.ts";
 import { log, moment } from "../deps.ts";
 import {
-  ErrorCodes,
+  AwsErrorCode,
   MeshAwsPlatformError,
   MeshNotLoggedInError,
 } from "../errors.ts";
 import { sleep } from "../promises.ts";
 import { CLICommand } from "../config/config.model.ts";
+import { parseJsonWithLog } from "../json.ts";
 
 export class AwsCliFacade {
   constructor(
@@ -34,7 +35,7 @@ export class AwsCliFacade {
 
       log.debug(`listAccounts: ${JSON.stringify(result)}`);
 
-      const jsonResult = JSON.parse(result.stdout) as AccountResponse;
+      const jsonResult = parseJsonWithLog<AccountResponse>(result.stdout);
       nextToken = jsonResult.NextToken;
       accounts = accounts.concat(jsonResult.Accounts);
     } while (nextToken != null);
@@ -57,7 +58,7 @@ export class AwsCliFacade {
       return await this.listTags(account);
     }
 
-    return (JSON.parse(result.stdout) as TagResponse).Tags;
+    return parseJsonWithLog<TagResponse>(result.stdout).Tags;
   }
 
   /**
@@ -83,7 +84,7 @@ export class AwsCliFacade {
 
       log.debug(`listCosts: ${JSON.stringify(rawResult)}`);
 
-      const costResult = JSON.parse(rawResult.stdout) as CostResponse;
+      const costResult = parseJsonWithLog<CostResponse>(rawResult.stdout);
 
       if (costResult.NextPageToken) {
         nextToken = costResult.NextPageToken;
@@ -105,17 +106,14 @@ export class AwsCliFacade {
   private checkForErrors(result: ShellOutput) {
     if (result.code === 2) {
       throw new MeshAwsPlatformError(
-        ErrorCodes.AWS_CLI_GENERAL,
+        AwsErrorCode.AWS_CLI_GENERAL,
         result.stderr,
       );
     } else if (result.code === 254) {
       log.info(
         `The provided credentials in "aws config" are not valid. Please check it or disconnect from AWS with "${CLICommand} config --disconnect AWS"`,
       );
-      throw new MeshNotLoggedInError(
-        ErrorCodes.NOT_LOGGED_IN,
-        result.stderr,
-      );
+      throw new MeshNotLoggedInError(result.stderr);
     }
   }
 }

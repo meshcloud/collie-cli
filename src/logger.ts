@@ -1,4 +1,5 @@
 import { CmdGlobalOptions } from "./commands/cmd-options.ts";
+import { isatty } from "./commands/tty.ts";
 import { log } from "./deps.ts";
 
 export async function setupLogger(options: CmdGlobalOptions) {
@@ -24,7 +25,9 @@ export async function setupLogger(options: CmdGlobalOptions) {
     };
   }
 
-  if (!Deno.isatty(Deno.stdout.rid)) {
+  // We more or less use a global var here even if this makes testing harder in order to
+  // keep the function usage simple and argument count low.
+  if (!isatty) {
     // We disable logging when somebody is using pipes (|) or redirects (>)
     defaultLogLevel.loggers = {};
   }

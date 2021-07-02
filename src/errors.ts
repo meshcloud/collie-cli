@@ -1,10 +1,18 @@
-export const ErrorCodes = {
-  NOT_LOGGED_IN: "not_logged_in",
-  AZURE_CLI_GENERAL: "azure_cli_general",
-  AZURE_CLI_MISSING_EXTENSION: "azure_cli_missing_extension",
-  AWS_CLI_GENERAL: "aws_cli_general",
-  GCP_CLI_GENERAL: "gcp_cli_general",
-};
+export enum GcpErrorCode {
+  GCP_CLI_GENERAL = "GCP_CLI_GENERAL",
+}
+
+export enum AwsErrorCode {
+  AWS_CLI_GENERAL = "AWS_CLI_GENERAL",
+}
+
+export enum AzureErrorCode {
+  NOT_LOGGED_IN = "NOT_LOGGED_IN",
+  AZURE_CLI_GENERAL = "AZURE_CLI_GENERAL",
+  AZURE_TOO_MANY_REQUESTS = "AZURE_TOO_MANY_REQUESTS",
+  AZURE_INVALID_SUBSCRIPTION = "AZURE_INVALID_SUBSCRIPTION",
+  AZURE_CLI_MISSING_EXTENSION = "AZURE_CLI_MISSING_EXTENSION",
+}
 
 export class MeshError extends Error {
   constructor(message: string) {
@@ -14,37 +22,28 @@ export class MeshError extends Error {
 
 export class MeshAzurePlatformError extends MeshError {
   constructor(
-    public readonly errorCode: string,
+    public readonly errorCode: AzureErrorCode,
     public readonly message: string,
   ) {
     super(`MeshAzurePlatformError: ${message}`);
   }
 }
 
-// TODO we must unify this design. Its getting a bit out of hand here.
-export class MeshAzureRetryableError extends MeshError {
+export class MeshAzureRetryableError extends MeshAzurePlatformError {
   constructor(
+    public readonly errorCode: AzureErrorCode,
     public readonly retryInSeconds: number,
   ) {
     super(
+      errorCode,
       `MeshAzureRetryableError: Retry possible in ${retryInSeconds}`,
-    );
-  }
-}
-
-export class MeshAzureTooManyRequestsError extends MeshError {
-  constructor(
-    public readonly retryInSeconds: number,
-  ) {
-    super(
-      `MeshAzureTooManyRequestsError: Retry possible in ${retryInSeconds}`,
     );
   }
 }
 
 export class MeshGcpPlatformError extends MeshError {
   constructor(
-    public readonly errorCode: string,
+    public readonly errorCode: GcpErrorCode,
     public readonly message: string,
   ) {
     super(`MeshGcpPlatformError: ${message}`);
@@ -53,7 +52,7 @@ export class MeshGcpPlatformError extends MeshError {
 
 export class MeshAwsPlatformError extends MeshError {
   constructor(
-    public readonly errorCode: string,
+    public readonly errorCode: AwsErrorCode,
     public readonly message: string,
   ) {
     super(`MeshAwsPlatformError: ${message}`);
@@ -62,7 +61,6 @@ export class MeshAwsPlatformError extends MeshError {
 
 export class MeshNotLoggedInError extends MeshError {
   constructor(
-    public readonly errorCode: string,
     public readonly message: string,
   ) {
     super(`MeshNotLoggedInError: ${message}`);

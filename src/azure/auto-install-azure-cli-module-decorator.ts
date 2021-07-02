@@ -1,7 +1,12 @@
 import { Confirm } from "../deps.ts";
-import { ErrorCodes, MeshAzurePlatformError } from "../errors.ts";
+import { AzureErrorCode, MeshAzurePlatformError } from "../errors.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
-import { ConsumptionInfo, Subscription, Tag } from "./azure.model.ts";
+import {
+  ConsumptionInfo,
+  SimpleCostManagementInfo,
+  Subscription,
+  Tag,
+} from "./azure.model.ts";
 
 /**
  * If a AzureCliFacade is wrapped with this one, the user will be asked if
@@ -11,6 +16,14 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   constructor(
     private readonly azureFacade: AzureCliFacade,
   ) {}
+
+  async getCostManagementInfo(
+    mgmtGroupId: string,
+    from: string,
+    to: string,
+  ): Promise<SimpleCostManagementInfo[]> {
+    return await this.azureFacade.getCostManagementInfo(mgmtGroupId, from, to);
+  }
 
   setDynamicInstallValue(value: DynamicInstallValue): void {
     this.azureFacade.setDynamicInstallValue(value);
@@ -32,13 +45,13 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
     });
   }
 
-  async getCostInformation(
+  async getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,
     endDate: Date,
   ): Promise<ConsumptionInfo[]> {
     return await this.wrapCallWithInstallInterception(() => {
-      return this.azureFacade.getCostInformation(
+      return this.azureFacade.getConsumptionInformation(
         subscription,
         startDate,
         endDate,
@@ -52,7 +65,7 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
     try {
       return await callFn();
     } catch (e) {
-      if (this.isAzureModuleMissingError(e) && this.isTTY()) {
+      if (this.isAzureModuleMissingError(e)) {
         const confirmed: boolean = await Confirm.prompt(
           "A Azure CLI extention is missing for this call. Should the Azure extension get installed automatically?",
         );
@@ -72,12 +85,7 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   }
 
   private isAzureModuleMissingError(e: Error): boolean {
-    return (e instanceof MeshAzurePlatformError) &&
-      (e as MeshAzurePlatformError).errorCode ===
-        ErrorCodes.AZURE_CLI_MISSING_EXTENSION;
-  }
-
-  private isTTY(): boolean {
-    return Deno.isatty(Deno.stdout.rid);
+    return e instanceof MeshAzurePlatformError &&
+      e.errorCode === AzureErrorCode.AZURE_CLI_MISSING_EXTENSION;
   }
 }

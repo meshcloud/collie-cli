@@ -4,10 +4,11 @@ import { MeshAdapterFactory } from "../mesh/mesh-adapter.factory.ts";
 import { TenantListPresenterFactory } from "../presentation/tenant-list-presenter-factory.ts";
 import { TenantUsagePresenterFactory } from "../presentation/tenant-usage-presenter-factory.ts";
 import { CmdGlobalOptions, OutputFormatType } from "./cmd-options.ts";
-import { loadConfig } from "./config.command.ts";
 import { dateType } from "./custom-types.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import { CLICommand } from "../config/config.model.ts";
+import { CLICommand, loadConfig } from "../config/config.model.ts";
+import { isatty } from "./tty.ts";
+import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
 
 interface CmdListCostsOptions extends CmdGlobalOptions {
   from: string;
@@ -22,7 +23,7 @@ interface CmdAnalyzeTagsOptions extends CmdGlobalOptions {
 export function registerTenantCommand(program: Command) {
   const tenantCmd = new Command()
     .description(
-      `Work with cloud tenants (AWS Accounts, Azure Subscriptions, GCP Projects) and list all of them, or see tags, costs, and more. Run "${CLICommand} tenant -h" to see what's possible.`,
+      `Work with cloud tenants (AWS Accounts, Azure Subscriptions, GCP Projects) and list all of them, or see tags, costs, and more. Run "${CLICommand} tenant -h" to see what is possible.`,
     )
     .example(
       "List all tenants across all connected clouds in a table.",
@@ -99,8 +100,9 @@ async function listTenantAction(options: CmdGlobalOptions) {
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
   const allTenants = await meshAdapter.getMeshTenants();
+  const tableFactory = new MeshTableFactory(isatty);
 
-  const presenterFactory = new TenantListPresenterFactory();
+  const presenterFactory = new TenantListPresenterFactory(tableFactory);
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
@@ -129,7 +131,8 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
     end,
   );
 
-  const presenterFactory = new TenantUsagePresenterFactory();
+  const tableFactory = new MeshTableFactory(isatty);
+  const presenterFactory = new TenantUsagePresenterFactory(tableFactory);
   // FIXME this now poses a problem. The presenter must only display the asked time range from the exisiting costs.
   const presenter = presenterFactory.buildPresenter(
     options.output,

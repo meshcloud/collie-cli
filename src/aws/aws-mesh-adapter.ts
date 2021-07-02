@@ -7,7 +7,6 @@ import {
 } from "../mesh/mesh-tenant.model.ts";
 import { Account, isAccount } from "./aws.model.ts";
 import { makeRunWithLimit, moment } from "../deps.ts";
-import { moment } from "../deps.ts";
 
 export class AwsMeshAdapter implements MeshAdapter {
   constructor(
@@ -67,6 +66,7 @@ export class AwsMeshAdapter implements MeshAdapter {
         }
 
         const costItem: MeshTenantCost = {
+          currency: "",
           from: from.toDate().toUTCString(),
           to: to.toDate().toUTCString(),
           totalUsageCost: "0",
@@ -77,7 +77,9 @@ export class AwsMeshAdapter implements MeshAdapter {
           g.Keys[0] === account.Id
         );
         if (costForTenant) {
-          costItem.totalUsageCost = costForTenant.Metrics["BlendedCost"].Amount;
+          const blendedCost = costForTenant.Metrics["BlendedCost"];
+          costItem.totalUsageCost = blendedCost.Amount;
+          costItem.currency = blendedCost.Unit;
         }
 
         tenant.costs.push(costItem);

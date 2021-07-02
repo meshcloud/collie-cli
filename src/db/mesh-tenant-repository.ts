@@ -1,6 +1,7 @@
 import { configPath, loadConfig } from "../config/config.model.ts";
 import { emptyDir, ensureDirSync, existsSync, log, moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
+import { parseJsonWithLog } from "../json.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
 import { Meta } from "./meta.ts";
 
@@ -83,7 +84,7 @@ export class MeshTenantRepository {
     if (existsSync(this.metaPath)) {
       const metaFile = await this.readFile(this.dbDirectory + this.metaFile);
 
-      return JSON.parse(metaFile) as Meta;
+      return parseJsonWithLog<Meta>(metaFile);
     } else {
       return null;
     }
@@ -128,7 +129,7 @@ export class MeshTenantRepository {
         const dataStr = await this.readFile(tenantFile);
 
         try {
-          const tenant = JSON.parse(dataStr) as MeshTenant;
+          const tenant = parseJsonWithLog<MeshTenant>(dataStr);
           tenants.push(tenant);
         } catch (_) {
           log.debug("Invalid tenant JSON:\n" + dataStr);

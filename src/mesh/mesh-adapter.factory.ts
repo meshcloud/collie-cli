@@ -16,6 +16,8 @@ import { LoaderShellRunner } from "../process/loader-shell-runner.ts";
 import { AutoInstallAzureCliModuleDecorator } from "../azure/auto-install-azure-cli-module-decorator.ts";
 import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { CachingMeshAdapterDecorator } from "./caching-mesh-adapter-decorator.ts";
+import { isatty, TTY } from "../commands/tty.ts";
+import { AzureCliFacade } from "../azure/azure-cli-facade.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -28,10 +30,11 @@ export class MeshAdapterFactory {
 
   buildMeshAdapter(options: CmdGlobalOptions): MeshAdapter {
     let shellRunner = new ShellRunner();
+
     if (options.verbose) {
       shellRunner = new VerboseShellRunner(shellRunner);
-    } else {
-      shellRunner = new LoaderShellRunner(shellRunner);
+    } else if (isatty) {
+      shellRunner = new LoaderShellRunner(shellRunner, new TTY());
     }
     const timeWindowCalc = new TimeWindowCalculator();
     const adapters = [];
@@ -43,12 +46,17 @@ export class MeshAdapterFactory {
     }
 
     if (this.config.connected.Azure) {
-      const azure = new BasicAzureCliFacade(shellRunner);
-      const autoInstallDecorator = new AutoInstallAzureCliModuleDecorator(
-        azure,
-      );
+      let azure: AzureCliFacade = new BasicAzureCliFacade(shellRunner);
+
+      // We can only ask the user if we are in a tty terminal.
+      if (isatty) {
+        azure = new AutoInstallAzureCliModuleDecorator(
+          azure,
+        );
+      }
+
       const retryingDecorator = new RetryingAzureCliFacadeDecorator(
-        autoInstallDecorator,
+        azure,
       );
       const azureAdapter = new AzureMeshAdapter(
         retryingDecorator,

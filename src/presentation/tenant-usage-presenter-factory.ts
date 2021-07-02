@@ -1,13 +1,19 @@
 import { MeshError } from "../errors.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import { CliTableTenantUsagePresenter } from "./table-tenant-usage-presenter.ts";
 import { CsvTenantUsagePresenter } from "./csv-tenant-usage-presenter.ts";
 import { Presenter } from "./presenter.ts";
 import { OutputFormat } from "./output-format.ts";
 import { YamlPresenter } from "./yaml-presenter.ts";
 import { JsonMeshTenantCostView, JsonPresenter } from "./json-presenter.ts";
+import { MeshTenantCostTableViewGenerator } from "./meshtenantcost-table-view-generator.ts";
+import { TablePresenter } from "./table-presenter.ts";
+import { MeshTableFactory } from "./mesh-table-factory.ts";
 
 export class TenantUsagePresenterFactory {
+  constructor(
+    private readonly tableFactory: MeshTableFactory,
+  ) {}
+
   buildPresenter(
     format: OutputFormat,
     meshTenants: MeshTenant[],
@@ -26,7 +32,21 @@ export class TenantUsagePresenterFactory {
   }
 
   private buildTablePresenter(meshTenant: MeshTenant[]): Presenter {
-    return new CliTableTenantUsagePresenter(meshTenant);
+    const costTableViewGenerator = new MeshTenantCostTableViewGenerator(
+      meshTenant,
+      [
+        "relatedTenant",
+        "totalUsageCost",
+        "currency",
+        "from",
+        "to",
+      ],
+    );
+
+    return new TablePresenter(
+      costTableViewGenerator,
+      this.tableFactory.buildMeshTable(),
+    );
   }
 
   private buildCsvPresenter(

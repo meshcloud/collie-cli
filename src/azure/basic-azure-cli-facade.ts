@@ -1,16 +1,22 @@
 import {
-  ErrorCodes,
+  AzureErrorCode,
   MeshAzurePlatformError,
   MeshAzureRetryableError,
-  MeshAzureTooManyRequestsError,
   MeshNotLoggedInError,
 } from "../errors.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
 import { log, moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
-import { ConsumptionInfo, Subscription, Tag } from "./azure.model.ts";
+import {
+  ConsumptionInfo,
+  CostManagementInfo,
+  SimpleCostManagementInfo,
+  Subscription,
+  Tag,
+} from "./azure.model.ts";
 import { CLICommand } from "../config/config.model.ts";
+import { parseJsonWithLog } from "../json.ts";
 
 interface ConfigValue {
   name: string;
@@ -28,6 +34,8 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
   private readonly errTooManyRequests = /ERROR: \(429\).*?(\d+) seconds/;
   private readonly errCertInvalid = /ERROR: \(401\) Certificate is not/;
+  private readonly errInvalidSubscription =
+    /\(422\) Cost Management supports only Enterprise Agreement/;
 
   async setDynamicInstallValue(value: DynamicInstallValue) {
     const result = await this.shellRunner.run(
@@ -50,7 +58,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       return Promise.resolve(null);
     }
 
-    const cv = JSON.parse(result.stdout) as ConfigValue;
+    const cv = parseJsonWithLog<ConfigValue>(result.stdout);
 
     return Promise.resolve(cv.value);
   }
@@ -59,7 +67,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     const result = await this.shellRunner.run("az account list");
     this.checkForErrors(result);
 
-    return JSON.parse(result.stdout) as Subscription[];
+    log.debug(`listAccounts: ${JSON.stringify(result)}`);
+
+    return parseJsonWithLog(result.stdout);
   }
 
   async listTags(subscription: Subscription): Promise<Tag[]> {
@@ -68,26 +78,71 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     );
     this.checkForErrors(result);
 
-    return JSON.parse(result.stdout) as Tag[];
+    log.debug(`listTags: ${JSON.stringify(result)}`);
+
+    return parseJsonWithLog(result.stdout);
   }
 
-  async getCostInformation(
+  /**
+   * Uses cost management info.
+   *
+   * @param mgmtGroupId
+   * @param from Should be a date string like 2021-01-01T00:00:00
+   * @param to Should be a date string like 2021-01-01T00:00:00
+   * @returns
+   */
+  async getCostManagementInfo(
+    mgmtGroupId: string,
+    from: string,
+    to: string,
+  ): Promise<SimpleCostManagementInfo[]> {
+    const cmd =
+      `az costmanagement query --type AmortizedCost --dataset-aggregation {"totalCost":{"name":"PreTaxCost","function":"Sum"}} ` +
+      `--dataset-grouping name=SubscriptionId type=Dimension --timeframe Custom --time-period from=${from} to=${to} --scope providers/Microsoft.Management/managementGroups/${mgmtGroupId}`;
+
+    const result = await this.shellRunner.run(cmd);
+    this.checkForErrors(result);
+
+    log.debug(`getCostManagementInfo: ${JSON.stringify(result)}`);
+
+    const costManagementInfo = parseJsonWithLog<CostManagementInfo>(
+      result.stdout,
+    );
+    if (costManagementInfo.nextLinks != null) {
+      log.warning(
+        `Azure response signals that there is paging information available, but we are unable to fetch it. So the results are possibly incomplete.`,
+      );
+    }
+
+    return costManagementInfo.rows.map((r) => {
+      return {
+        amount: r[0],
+        date: r[1],
+        subscriptionId: r[2],
+        currency: r[3],
+      };
+    });
+  }
+
+  /**
+   * Uses the consumptions API on a per Subscription level. This is quite costly to query for every Subscription.
+   */
+  async getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,
     endDate: Date,
   ): Promise<ConsumptionInfo[]> {
     const startDateStr = moment(startDate).format("YYYY-MM-DD");
     const endDateStr = moment(endDate).format("YYYY-MM-DD");
-
     const cmd =
       `az consumption usage list --subscription ${subscription.id} --start-date ${startDateStr} --end-date ${endDateStr}`;
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
 
-    log.debug(`getCostInformation: ${JSON.stringify(result)}`);
+    log.debug(`getConsumptionInformation: ${JSON.stringify(result)}`);
 
-    return JSON.parse(result.stdout) as ConsumptionInfo[];
+    return parseJsonWithLog(result.stdout);
   }
 
   private checkForErrors(result: ShellOutput) {
@@ -97,36 +152,48 @@ export class BasicAzureCliFacade implements AzureCliFacade {
         const missingExtension = errMatch[1];
 
         throw new MeshAzurePlatformError(
-          ErrorCodes.AZURE_CLI_MISSING_EXTENSION,
+          AzureErrorCode.AZURE_CLI_MISSING_EXTENSION,
           `Missing the Azure cli extention: ${missingExtension}, please install it first.`,
         );
       }
 
       throw new MeshAzurePlatformError(
-        ErrorCodes.AZURE_CLI_GENERAL,
+        AzureErrorCode.AZURE_CLI_GENERAL,
         `Error executing Azure CLI: ${result.stdout}`,
       );
     } else if (result.code == 1) {
+      // Too many requests error
       let errMatch = this.errTooManyRequests.exec(result.stderr);
       if (!!errMatch && errMatch.length > 0) {
         const delayS = parseInt(errMatch[1]);
 
-        throw new MeshAzureTooManyRequestsError(delayS);
+        throw new MeshAzureRetryableError(
+          AzureErrorCode.AZURE_TOO_MANY_REQUESTS,
+          delayS,
+        );
       }
 
+      // Strange cert invalid error
       errMatch = this.errCertInvalid.exec(result.stderr);
       if (errMatch) {
-        throw new MeshAzureRetryableError(60);
+        throw new MeshAzureRetryableError(AzureErrorCode.AZURE_CLI_GENERAL, 60);
+      }
+
+      errMatch = this.errInvalidSubscription.exec(result.stderr);
+      if (errMatch) {
+        throw new MeshAzurePlatformError(
+          AzureErrorCode.AZURE_INVALID_SUBSCRIPTION,
+          "Subscription cost could not be requested via the Cost Management API",
+        );
       }
     }
+
+    // Detect login error
     if (result.stderr.includes("az login")) {
       log.info(
         `You are not logged in into Azure CLI. Please disconnect from azure with "${CLICommand} config --disconnect Azure" or login into Azure CLI.`,
       );
-      throw new MeshNotLoggedInError(
-        ErrorCodes.NOT_LOGGED_IN,
-        `"${result.stderr.replace("\n", "")}"`,
-      );
+      throw new MeshNotLoggedInError(`"${result.stderr.replace("\n", "")}"`);
     }
   }
 }

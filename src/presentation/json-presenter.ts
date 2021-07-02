@@ -15,6 +15,7 @@ export interface JsonMeshTenantView {
 export interface JsonMeshTenantCostView {
   relatedTenant: JsonMeshTenantView;
   totalUsageCost: string;
+  currency: string;
   from: string;
   to: string;
 }
@@ -45,6 +46,7 @@ export class JsonPresenter<T> implements Presenter {
       return {
         relatedTenant: JsonPresenter.meshTenantToJsonView(meshTenant),
         totalUsageCost: c.totalUsageCost,
+        currency: c.currency,
         from: c.from,
         to: c.to,
       };

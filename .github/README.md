@@ -62,14 +62,13 @@ Additionally, check the content of the file to be sure that the install script i
 **Linux / Ubuntu**
 
 ```
-curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo sh
+curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
 ```
 
 **Mac OS X**
 
 ```
 curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sh
-
 ```
 
 **Windows**

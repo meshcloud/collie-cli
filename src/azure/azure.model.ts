@@ -60,6 +60,22 @@ export interface ConsumptionInfo {
   usageStart: string;
 }
 
+export interface CostManagementInfo {
+  columns: [{ name: string; type: string }];
+  id: string;
+  name: string;
+  nextLinks: string | null;
+  // PreTaxCost, Date, SubscriptionId, Currency
+  rows: [[number, number, string, string]];
+}
+
+export interface SimpleCostManagementInfo {
+  amount: number;
+  date: number;
+  subscriptionId: string;
+  currency: string;
+}
+
 export function isSubscription(
   // deno-lint-ignore no-explicit-any
   object: any,

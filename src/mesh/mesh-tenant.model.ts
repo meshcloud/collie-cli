@@ -21,17 +21,13 @@ export interface MeshTenantCostDetails {
   from: string;
   to: string;
   usageCost: string;
-  currency: string;
 }
 
-/**
- * TODO Should it handle usage costs for multiple currencies at once?
- *
- */
 export interface MeshTenantCost {
   totalUsageCost: string;
   from: string;
   to: string;
+  currency: string;
   details: MeshTenantCostDetails[];
 }
 

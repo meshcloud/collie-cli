@@ -1,11 +1,13 @@
 import { log } from "../deps.ts";
-import {
-  MeshAzureRetryableError,
-  MeshAzureTooManyRequestsError,
-} from "../errors.ts";
+import { MeshAzureRetryableError } from "../errors.ts";
 import { sleep } from "../promises.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
-import { ConsumptionInfo, Subscription, Tag } from "./azure.model.ts";
+import {
+  ConsumptionInfo,
+  SimpleCostManagementInfo,
+  Subscription,
+  Tag,
+} from "./azure.model.ts";
 
 /**
  * Retries a call into Azure in case there Azure CLI threw an error which indicated
@@ -16,6 +18,16 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
   constructor(
     private readonly wrapped: AzureCliFacade,
   ) {}
+
+  async getCostManagementInfo(
+    mgmtGroupId: string,
+    from: string,
+    to: string,
+  ): Promise<SimpleCostManagementInfo[]> {
+    return await this.retryable(async () => {
+      return await this.wrapped.getCostManagementInfo(mgmtGroupId, from, to);
+    });
+  }
 
   setDynamicInstallValue(value: DynamicInstallValue): void {
     this.wrapped.setDynamicInstallValue(value);
@@ -37,13 +49,13 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
     });
   }
 
-  async getCostInformation(
+  async getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,
     endDate: Date,
   ): Promise<ConsumptionInfo[]> {
     return await this.retryable(async () => {
-      return await this.wrapped.getCostInformation(
+      return await this.wrapped.getConsumptionInformation(
         subscription,
         startDate,
         endDate,
@@ -55,18 +67,13 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
     try {
       return await fn();
     } catch (e) {
-      if (e instanceof MeshAzureTooManyRequestsError) {
-        log.debug("Cought retryable error");
-        console.log(
-          `Azure has had too many requests. Need to wait ${e.retryInSeconds}s`,
-        );
-        // Retry once more after we waited out the delay + safety
-        await sleep(e.retryInSeconds * 1000 + 500);
-
-        return await fn();
-      }
-
       if (e instanceof MeshAzureRetryableError) {
+        if (e.errorCode === "AZURE_TOO_MANY_REQUESTS") {
+          console.log(
+            `Azure complains about too many requests. Need to wait ${e.retryInSeconds}s`,
+          );
+        }
+
         log.debug("Cought retryable error");
         await sleep(e.retryInSeconds * 1000 + 500);
 
