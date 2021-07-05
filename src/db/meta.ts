@@ -8,6 +8,9 @@ export interface Meta {
   tenantCollection: {
     lastCollection: string;
   };
+  iamCollection?: {
+    lastCollection: string;
+  };
   costCollection?: {
     from: string;
     to: string;

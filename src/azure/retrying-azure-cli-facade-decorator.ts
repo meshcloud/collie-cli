@@ -4,6 +4,7 @@ import { sleep } from "../promises.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
+  RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
   Tag,
@@ -60,6 +61,14 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
         startDate,
         endDate,
       );
+    });
+  }
+
+  async getRoleAssignments(
+    subscription: Subscription,
+  ): Promise<RoleAssignment[]> {
+    return await this.retryable(async () => {
+      return await this.wrapped.getRoleAssignments(subscription);
     });
   }
 

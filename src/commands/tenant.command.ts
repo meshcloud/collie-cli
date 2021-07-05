@@ -6,6 +6,7 @@ import { TenantUsagePresenterFactory } from "../presentation/tenant-usage-presen
 import { CmdGlobalOptions, OutputFormatType } from "./cmd-options.ts";
 import { dateType } from "./custom-types.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { TenantIamPresenterFactory } from "../presentation/tenant-iam-presenter-factory.ts";
 import { CLICommand, loadConfig } from "../config/config.model.ts";
 import { isatty } from "./tty.ts";
 import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
@@ -18,6 +19,10 @@ interface CmdListCostsOptions extends CmdGlobalOptions {
 interface CmdAnalyzeTagsOptions extends CmdGlobalOptions {
   tags?: string[];
   details?: boolean;
+}
+
+interface CmdIamOptions extends CmdGlobalOptions {
+  includeAncestors: boolean;
 }
 
 export function registerTenantCommand(program: Command) {
@@ -87,9 +92,21 @@ export function registerTenantCommand(program: Command) {
     )
     .action(analyzeTagsAction);
 
+  const listIam = new Command()
+    .type("output", OutputFormatType)
+    .description(
+      "View all IAM assets applied per tenant. This includes users, groups and technical users that are directly assigned to the tenant.",
+    )
+    .option(
+      "--include-ancestors [includeAncestors:boolean]",
+      "Shows the IAM Role Assignments inherited from an ancestor level as well (Azure Management Groups & Root, GCP Folders & Organizations)",
+    )
+    .action(listIamAction);
+
   tenantCmd
     .command("list", listTenants)
     .command("costs", listCosts)
+    .command("iam", listIam)
     .command("analyze-tags", analyzeTags);
 }
 
@@ -110,6 +127,26 @@ async function listTenantAction(options: CmdGlobalOptions) {
   presenter.present();
 }
 
+async function listIamAction(options: CmdIamOptions) {
+  setupLogger(options);
+
+  const config = loadConfig();
+  const meshAdapterFactory = new MeshAdapterFactory(config);
+  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+  const allTenants = await meshAdapter.getMeshTenants();
+  await meshAdapter.attachTenantRoleAssignments(allTenants);
+
+  const tableFactory = new MeshTableFactory(isatty);
+
+  new TenantIamPresenterFactory(tableFactory)
+    .buildPresenter(
+      options.output,
+      options.includeAncestors,
+      allTenants,
+    )
+    .present();
+}
+
 export async function listTenantsCostAction(options: CmdListCostsOptions) {
   setupLogger(options);
 
@@ -125,7 +162,7 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
   // how to do error management to improve UX.
   const allTenants = await meshAdapter.getMeshTenants();
 
-  await meshAdapter.loadTenantCosts(
+  await meshAdapter.attachTenantCosts(
     allTenants,
     start,
     end,

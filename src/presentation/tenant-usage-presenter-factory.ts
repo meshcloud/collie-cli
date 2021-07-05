@@ -23,7 +23,7 @@ export class TenantUsagePresenterFactory {
     } else if (format === OutputFormat.TABLE) {
       return this.buildTablePresenter(meshTenants);
     } else if (format === OutputFormat.JSON) {
-      return this.builJsonPresenter(meshTenants);
+      return this.buildJsonPresenter(meshTenants);
     } else if (format === OutputFormat.YAML) {
       return this.buildYamlPresenter(meshTenants);
     } else {
@@ -59,9 +59,9 @@ export class TenantUsagePresenterFactory {
     ], meshTenants);
   }
 
-  private builJsonPresenter(meshTenant: MeshTenant[]): Presenter {
+  private buildJsonPresenter(meshTenant: MeshTenant[]): Presenter {
     const jsonMeshTenantView = meshTenant.flatMap(
-      JsonPresenter.meshTenanToCostJsonViews,
+      JsonPresenter.meshTenantToCostJsonViews,
     );
 
     return new JsonPresenter<JsonMeshTenantCostView[]>(jsonMeshTenantView);
@@ -69,7 +69,7 @@ export class TenantUsagePresenterFactory {
 
   private buildYamlPresenter(meshTenant: MeshTenant[]): Presenter {
     const jsonMeshTenantView = meshTenant.flatMap(
-      JsonPresenter.meshTenanToCostJsonViews,
+      JsonPresenter.meshTenantToCostJsonViews,
     );
 
     return new YamlPresenter<JsonMeshTenantCostView[]>(jsonMeshTenantView);
