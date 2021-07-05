@@ -37,6 +37,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   private readonly errCertInvalid = /ERROR: \(401\) Certificate is not/;
   private readonly errInvalidSubscription =
     /\(422\) Cost Management supports only Enterprise Agreement/;
+  private readonly errNotAuthorized = /\((AuthorizationFailed)\)/;
 
   async setDynamicInstallValue(value: DynamicInstallValue) {
     const result = await this.shellRunner.run(
@@ -77,7 +78,23 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     const result = await this.shellRunner.run(
       `az tag list --subscription ${subscription.id}`,
     );
-    this.checkForErrors(result);
+
+    // we need to catch the case where certain subscriptions might not be accessible for the user.
+    // we will just ignore this in that case and continue.
+    try {
+      this.checkForErrors(result);
+    } catch (e) {
+      if (
+        e instanceof MeshAzurePlatformError &&
+        e.errorCode == AzureErrorCode.AZURE_UNAUTHORIZED
+      ) {
+        log.warning(
+          `Could not list tags for Subscription ${subscription.id}: Access was denied`,
+        );
+
+        return Promise.resolve([]);
+      }
+    }
 
     log.debug(`listTags: ${JSON.stringify(result)}`);
 
@@ -201,6 +218,20 @@ export class BasicAzureCliFacade implements AzureCliFacade {
           "Subscription cost could not be requested via the Cost Management API",
         );
       }
+
+      errMatch = this.errNotAuthorized.exec(result.stderr);
+      if (errMatch) {
+        throw new MeshAzurePlatformError(
+          AzureErrorCode.AZURE_UNAUTHORIZED,
+          "Request could not be made because the current user is not allowed to access this resource",
+        );
+      }
+
+      // We encountered an error so we will just throw here.
+      throw new MeshAzurePlatformError(
+        AzureErrorCode.AZURE_CLI_GENERAL,
+        result.stderr,
+      );
     }
 
     // Detect login error
