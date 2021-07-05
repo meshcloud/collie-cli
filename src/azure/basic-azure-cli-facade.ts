@@ -11,6 +11,7 @@ import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
   CostManagementInfo,
+  RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
   Tag,
@@ -145,6 +146,20 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     return parseJsonWithLog(result.stdout);
   }
 
+  async getRoleAssignments(
+    subscription: Subscription,
+  ): Promise<RoleAssignment[]> {
+    const cmd =
+      `az role assignment list --subscription ${subscription.name} --include-inherited --all --output json`;
+
+    const result = await this.shellRunner.run(cmd);
+    this.checkForErrors(result);
+
+    log.debug(`getRoleAssignments: ${JSON.stringify(result)}`);
+
+    return JSON.parse(result.stdout) as RoleAssignment[];
+  }
+
   private checkForErrors(result: ShellOutput) {
     if (result.code == 2) {
       const errMatch = this.errRegexExtensionMissing.exec(result.stderr);
@@ -159,7 +174,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
       throw new MeshAzurePlatformError(
         AzureErrorCode.AZURE_CLI_GENERAL,
-        `Error executing Azure CLI: ${result.stdout}`,
+        `Error executing Azure CLI: ${result.stdout} - ${result.stderr}`,
       );
     } else if (result.code == 1) {
       // Too many requests error

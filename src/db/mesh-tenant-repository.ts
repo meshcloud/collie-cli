@@ -63,8 +63,21 @@ export class MeshTenantRepository {
       return false;
     }
 
+    return this.isCacheEvicted(meta.tenantCollection.lastCollection);
+  }
+
+  async isIamCollectionValid(): Promise<boolean> {
+    const meta = await this.loadMeta();
+    if (meta === null || !meta.iamCollection) {
+      return false;
+    }
+
+    return this.isCacheEvicted(meta.iamCollection.lastCollection);
+  }
+
+  private isCacheEvicted(lastCollectionDate: string) {
     const now = moment();
-    const lastCollection = moment(meta.tenantCollection.lastCollection);
+    const lastCollection = moment(lastCollectionDate);
     const hoursSinceLastCollection = moment.duration(now.diff(lastCollection))
       .asHours();
     const config = loadConfig();
@@ -78,6 +91,14 @@ export class MeshTenantRepository {
 
   clearAll(): void {
     emptyDir(this.dbDirectory);
+  }
+
+  async loadOrBuildMeta(): Promise<Meta> {
+    let meta = await this.loadMeta();
+    if (meta === null) {
+      meta = this.newMeta();
+    }
+    return meta;
   }
 
   async loadMeta(): Promise<Meta | null> {

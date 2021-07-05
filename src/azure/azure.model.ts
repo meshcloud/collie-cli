@@ -82,3 +82,17 @@ export function isSubscription(
 ): object is Subscription {
   return "tenantId" in object && "id" in object;
 }
+
+export interface RoleAssignment {
+  principalId: string;
+  principalName: string;
+  principalType: string;
+  roleDefinitionId: string; // Comes in the format '/subscriptions/<sub-id>/providers/Microsoft.Authorization/roleDefinitions/<role-id>
+  roleDefinitionName: string;
+  scope: string;
+  // Scope can either be:
+  // '/' -> meaning the Root. This only goes for the role 'User Access Administrator'
+  // (https://docs.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin)
+  // "/providers/Microsoft.Management/managementGroups/<mg-id>" -> meaning from a management group
+  // "/subscriptions/<sub-id>" -> meaning directly assigned on a subscription.
+}

@@ -10,9 +10,11 @@ export interface MeshAdapter {
    * @param startDate
    * @param endDate
    */
-  loadTenantCosts(
+  attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
   ): Promise<void>;
+
+  attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void>;
 }
