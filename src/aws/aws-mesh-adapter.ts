@@ -89,7 +89,7 @@ export class AwsMeshAdapter implements MeshAdapter {
     return Promise.resolve();
   }
 
-  attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+  attachTenantRoleAssignments(_tenants: MeshTenant[]): Promise<void> {
     log.warning(
       `This CLI does not support AWS Role Assignment analysis at the moment. Please keep an eye out for further development on this.`,
     );

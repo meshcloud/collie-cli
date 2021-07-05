@@ -7,7 +7,7 @@ import {
   MeshNotLoggedInError,
 } from "../errors.ts";
 import { log } from "../deps.ts";
-import { CLICommand, CLIName } from "../config/config.model.ts";
+import { CLICommand } from "../config/config.model.ts";
 import { parseJsonWithLog } from "../json.ts";
 
 export class GcpCliFacade {

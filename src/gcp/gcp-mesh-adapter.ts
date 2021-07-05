@@ -75,11 +75,11 @@ export class GcpMeshAdapter implements MeshAdapter {
     const result: MeshTenantRoleAssignment[] = [];
 
     const iamPolicies = await this.gcpCli.listIamPolicy(tenant.nativeObj);
-    for (let policy of iamPolicies) {
+    for (const policy of iamPolicies) {
       const assignmentSource = this.toAssignmentSource(policy.type);
       const assignmentId = policy.id;
-      for (let binding of policy.policy.bindings) {
-        for (let member of binding.members) {
+      for (const binding of policy.policy.bindings) {
+        for (const member of binding.members) {
           // The member string is given as e.g. -> group:demo-project-user@dev.example.com
           const [principalType, principalName] = member.split(":");
           result.push({

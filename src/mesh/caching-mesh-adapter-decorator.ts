@@ -40,7 +40,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       }
 
       // Update meta info.
-      let meta = await this.repository.loadOrBuildMeta();
+      const meta = await this.repository.loadOrBuildMeta();
       meta.tenantCollection.lastCollection = new Date().toUTCString();
       this.repository.saveMeta(meta);
 
@@ -165,7 +165,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
         this.repository.save(t);
       }
 
-      let meta = await this.repository.loadOrBuildMeta();
+      const meta = await this.repository.loadOrBuildMeta();
       meta.iamCollection = { lastCollection: new Date().toUTCString() };
       this.repository.saveMeta(meta);
     }

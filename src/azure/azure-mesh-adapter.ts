@@ -299,7 +299,7 @@ export class AzureMeshAdapter implements MeshAdapter {
       Ancestor: /\/managementGroups\//,
       Tenant: /\/subscriptions\//,
     };
-    for (let key in map) {
+    for (const key in map) {
       // Looping through an enum-key map sucks a bit: https://github.com/microsoft/TypeScript/issues/33123
       if (map[key as MeshRoleAssignmentSource].test(scope)) {
         return {

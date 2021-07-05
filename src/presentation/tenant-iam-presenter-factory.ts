@@ -27,7 +27,7 @@ export class TenantIamPresenterFactory {
   ): Presenter {
     // If includeAncestors is not given, we will remove those roleAssignments so they will not be presented to the user.
     if (!includeAncestors) {
-      for (let tenant of meshTenants) {
+      for (const tenant of meshTenants) {
         // We skip assignment that are *not* coming from the tenant level.
         tenant.roleAssignments = tenant.roleAssignments.filter((x) =>
           x.assignmentSource === MeshRoleAssignmentSource.Tenant

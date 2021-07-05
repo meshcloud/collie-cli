@@ -1,5 +1,5 @@
-import { moment, writeCSV } from "../deps.ts";
-import { MeshTenant, MeshTenantCost } from "../mesh/mesh-tenant.model.ts";
+import { writeCSV } from "../deps.ts";
+import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
 import {
   CsvTenantPresenter,
   PrintedTenantKey,
@@ -18,9 +18,6 @@ export class CsvTenantIamPresenter extends CsvTenantPresenter {
   }
 
   async present() {
-    const tags = this.meshTenant.flatMap((t) => t.tags);
-    const tagNames = this.combineExistingTagNames(tags);
-
     const rows: string[][] = [
       [...this.printedKeys, ...this.printedIamKeys],
     ];

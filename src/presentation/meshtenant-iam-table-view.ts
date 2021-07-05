@@ -1,9 +1,6 @@
 import { bold, Table } from "../deps.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import {
-  MeshRoleAssignmentSource,
-  MeshTenantRoleAssignment,
-} from "../mesh/mesh-iam-model.ts";
+import { MeshTenantRoleAssignment } from "../mesh/mesh-iam-model.ts";
 import { TableGenerator } from './mesh-table.ts';
 
 export class MeshTenantIamTableView implements TableGenerator {
@@ -48,8 +45,8 @@ export class MeshTenantIamTableView implements TableGenerator {
               groupedRoles[x.roleName] = [x];
             }
           });
-          for (let roleName in groupedRoles) {
-            let roleAssignments = groupedRoles[roleName];
+          for (const roleName in groupedRoles) {
+            const roleAssignments = groupedRoles[roleName];
 
             tmpRows.push([`${bold(roleName)}`]);
             roleAssignments.forEach((r) =>
