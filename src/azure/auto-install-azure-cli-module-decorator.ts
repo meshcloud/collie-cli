@@ -4,7 +4,8 @@ import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
   RoleAssignment,
- SimpleCostManagementInfo, Subscription,
+  SimpleCostManagementInfo,
+  Subscription,
   Tag,
 } from "./azure.model.ts";
 

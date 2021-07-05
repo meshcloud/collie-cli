@@ -1,7 +1,7 @@
 import { bold, Table } from "../deps.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
 import { MeshTenantRoleAssignment } from "../mesh/mesh-iam-model.ts";
-import { TableGenerator } from './mesh-table.ts';
+import { TableGenerator } from "./mesh-table.ts";
 
 export class MeshTenantIamTableView implements TableGenerator {
   info = "";

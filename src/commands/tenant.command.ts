@@ -6,7 +6,7 @@ import { TenantUsagePresenterFactory } from "../presentation/tenant-usage-presen
 import { CmdGlobalOptions, OutputFormatType } from "./cmd-options.ts";
 import { dateType } from "./custom-types.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import { TenantIamPresenterFactory } from '../presentation/tenant-iam-presenter-factory.ts';
+import { TenantIamPresenterFactory } from "../presentation/tenant-iam-presenter-factory.ts";
 import { CLICommand, loadConfig } from "../config/config.model.ts";
 import { isatty } from "./tty.ts";
 import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";

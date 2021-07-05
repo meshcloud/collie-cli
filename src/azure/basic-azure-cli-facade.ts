@@ -10,8 +10,8 @@ import { log, moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
-  RoleAssignment,
   CostManagementInfo,
+  RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
   Tag,

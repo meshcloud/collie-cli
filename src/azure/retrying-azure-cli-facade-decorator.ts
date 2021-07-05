@@ -4,8 +4,8 @@ import { sleep } from "../promises.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
-  SimpleCostManagementInfo,
   RoleAssignment,
+  SimpleCostManagementInfo,
   Subscription,
   Tag,
 } from "./azure.model.ts";
