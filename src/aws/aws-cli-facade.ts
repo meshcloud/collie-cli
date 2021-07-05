@@ -14,7 +14,7 @@ import {
   MeshNotLoggedInError,
 } from "../errors.ts";
 import { sleep } from "../promises.ts";
-import { CLICommand } from "../config/config.model.ts";
+import { CLICommand, CLIName } from "../config/config.model.ts";
 import { parseJsonWithLog } from "../json.ts";
 
 export class AwsCliFacade {
@@ -109,11 +109,19 @@ export class AwsCliFacade {
         AwsErrorCode.AWS_CLI_GENERAL,
         result.stderr,
       );
-    } else if (result.code === 254) {
+    } else if (result.code === 253) {
       log.info(
         `The provided credentials in "aws config" are not valid. Please check it or disconnect from AWS with "${CLICommand} config --disconnect AWS"`,
       );
       throw new MeshNotLoggedInError(result.stderr);
+    } else if (result.code === 254) {
+      log.info(
+        `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.`,
+      );
+      throw new MeshAwsPlatformError(
+        AwsErrorCode.AWS_UNAUTHORIZED,
+        result.stderr,
+      );
     }
   }
 }

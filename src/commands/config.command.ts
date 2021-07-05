@@ -6,6 +6,7 @@ import {
   loadConfig,
   writeConfig,
 } from "../config/config.model.ts";
+import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { Command, EnumType, exists, log } from "../deps.ts";
 import { setupLogger } from "../logger.ts";
 import { MeshPlatform } from "../mesh/mesh-tenant.model.ts";
@@ -108,6 +109,14 @@ function changeConfig(options: CmdConfigOpts, program: Command) {
     } else if (options.disconnect) {
       json.connected[options.disconnect] = false;
     }
+
+    // Cache must be invalidated after a connection has happened in order to fetch the latest data.
+    // It could obviously be better if we just fetch the missing tenants but then we probably need
+    // to design a per platform cache which is actually not super hard to do with the design we have
+    // in place.
+    const repository = newMeshTenantRepository();
+    repository.clearAll();
+
     writeFile(configFilePath, JSON.stringify(json));
     log.info(`Changed config file in ${configFilePath}`);
   } else {

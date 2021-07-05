@@ -5,6 +5,7 @@ export enum GcpErrorCode {
 
 export enum AwsErrorCode {
   AWS_CLI_GENERAL = "AWS_CLI_GENERAL",
+  AWS_UNAUTHORIZED = "AWS_UNAUTHORIZED",
 }
 
 export enum AzureErrorCode {
