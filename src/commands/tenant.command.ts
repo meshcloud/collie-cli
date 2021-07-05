@@ -95,11 +95,11 @@ export function registerTenantCommand(program: Command) {
   const listIam = new Command()
     .type("output", OutputFormatType)
     .description(
-      "// TODO",
+      "View all IAM assets applied per tenant. This includes users, groups and technical users that are directly assigned to the tenant.",
     )
     .option(
       "--include-ancestors [includeAncestors:boolean]",
-      "Shows the IAM Role Assignments inherited from an ancestor level as well (Azure Management Groups & Root, GCP Folders & Organization)",
+      "Shows the IAM Role Assignments inherited from an ancestor level as well (Azure Management Groups & Root, GCP Folders & Organizations)",
     )
     .action(listIamAction);
 
@@ -134,9 +134,11 @@ async function listIamAction(options: CmdIamOptions) {
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
   const allTenants = await meshAdapter.getMeshTenants();
-  await meshAdapter.loadTenantRoleAssignments(allTenants);
+  await meshAdapter.attachTenantRoleAssignments(allTenants);
 
-  new TenantIamPresenterFactory()
+  const tableFactory = new MeshTableFactory(isatty);
+
+  new TenantIamPresenterFactory(tableFactory)
     .buildPresenter(
       options.output,
       options.includeAncestors,
@@ -160,7 +162,7 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
   // how to do error management to improve UX.
   const allTenants = await meshAdapter.getMeshTenants();
 
-  await meshAdapter.loadTenantCosts(
+  await meshAdapter.attachTenantCosts(
     allTenants,
     start,
     end,

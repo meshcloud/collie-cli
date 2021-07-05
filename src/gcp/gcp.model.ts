@@ -1,5 +1,3 @@
-import { Subscription } from "../azure/azure.model.ts";
-
 export interface Project {
   createTime: string;
   labels?: { [labelKey: string]: string };

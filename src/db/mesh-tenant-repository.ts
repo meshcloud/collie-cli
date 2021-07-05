@@ -116,7 +116,7 @@ export class MeshTenantRepository {
       version: 1,
       tenantCollection: {
         lastCollection: new Date().toUTCString(),
-      }
+      },
     };
   }
 

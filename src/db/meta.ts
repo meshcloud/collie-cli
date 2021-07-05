@@ -10,7 +10,7 @@ export interface Meta {
   };
   iamCollection?: {
     lastCollection: string;
-  }
+  };
   costCollection?: {
     from: string;
     to: string;

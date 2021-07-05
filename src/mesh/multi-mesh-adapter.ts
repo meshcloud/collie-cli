@@ -12,22 +12,22 @@ export class MultiMeshAdapter implements MeshAdapter {
     return (await Promise.all(promises)).flatMap((x) => x);
   }
 
-  async loadTenantCosts(
+  async attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
     const promises = this.adapters.map((x) =>
-      x.loadTenantCosts(tenants, startDate, endDate)
+      x.attachTenantCosts(tenants, startDate, endDate)
     );
 
     // we wait until all functions have resolved then we can return.
     await Promise.all(promises);
   }
 
-  async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     const promises = this.adapters.map((x) =>
-      x.loadTenantRoleAssignments(tenants)
+      x.attachTenantRoleAssignments(tenants)
     );
 
     await Promise.all(promises);

@@ -19,7 +19,8 @@ import {
   TimeWindowCalculator,
 } from "../mesh/time-window-calculator.ts";
 import {
-  MeshPrincipalType, MeshRoleAssignmentSource,
+  MeshPrincipalType,
+  MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
 } from "../mesh/mesh-iam-model.ts";
 
@@ -29,7 +30,7 @@ export class AzureMeshAdapter implements MeshAdapter {
     private readonly timeWindowCalculator: TimeWindowCalculator,
   ) {}
 
-  async loadTenantCosts(
+  async attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
@@ -162,7 +163,8 @@ export class AzureMeshAdapter implements MeshAdapter {
     timeWindow: TimeWindow,
   ): Promise<MeshTenantCost> {
     if (!isSubscription(tenant.nativeObj)) {
-      throw new MeshError(
+      throw new MeshAzurePlatformError(
+        AzureErrorCode.AZURE_TENANT_IS_NOT_SUBSCRIPTION,
         "Given tenant did not contain an Azure Subscription native object",
       );
     }
@@ -225,7 +227,7 @@ export class AzureMeshAdapter implements MeshAdapter {
     );
   }
 
-  async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     // Only work on Azure tenants
     const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
 
@@ -239,7 +241,8 @@ export class AzureMeshAdapter implements MeshAdapter {
     tenant: MeshTenant,
   ): Promise<MeshTenantRoleAssignment[]> {
     if (!isSubscription(tenant.nativeObj)) {
-      throw new MeshError(
+      throw new MeshAzurePlatformError(
+        AzureErrorCode.AZURE_TENANT_IS_NOT_SUBSCRIPTION,
         "Given tenant did not contain an Azure Subscription native object",
       );
     }
@@ -249,7 +252,9 @@ export class AzureMeshAdapter implements MeshAdapter {
     );
 
     return roleAssignments.map((x) => {
-      const { assignmentSource, assignmentId } = this.getAssignmentFromScope(x.scope);
+      const { assignmentSource, assignmentId } = this.getAssignmentFromScope(
+        x.scope,
+      );
       return {
         principalId: x.principalId,
         principalName: x.principalName,
@@ -257,7 +262,7 @@ export class AzureMeshAdapter implements MeshAdapter {
         roleId: x.roleDefinitionId,
         roleName: x.roleDefinitionName,
         assignmentSource,
-        assignmentId
+        assignmentId,
       };
     });
   }
@@ -271,7 +276,8 @@ export class AzureMeshAdapter implements MeshAdapter {
       case "ServicePrincipal":
         return MeshPrincipalType.TechnicalUser;
       default:
-        throw new MeshError(
+        throw new MeshAzurePlatformError(
+          AzureErrorCode.AZURE_UNKNOWN_PRINCIPAL_TYPE,
           "Found unknown principalType for Azure: " + principalType,
         );
     }
@@ -285,23 +291,26 @@ export class AzureMeshAdapter implements MeshAdapter {
     });
   }
 
-  private getAssignmentFromScope(scope: string): { assignmentId: string, assignmentSource: MeshRoleAssignmentSource } {
+  private getAssignmentFromScope(
+    scope: string,
+  ): { assignmentId: string; assignmentSource: MeshRoleAssignmentSource } {
     const map: { [key in MeshRoleAssignmentSource]: RegExp } = {
       Organization: /^\/$/, // This means string should equal exactly to "/".
       Ancestor: /\/managementGroups\//,
-      Tenant: /\/subscriptions\//
+      Tenant: /\/subscriptions\//,
     };
     for (let key in map) {
-      if (map.hasOwnProperty(key)) {
-        // Looping through an enum-key map sucks a bit: https://github.com/microsoft/TypeScript/issues/33123
-        if (map[key as MeshRoleAssignmentSource].test(scope)) {
-          return {
-            assignmentId: scope.split(map[key as MeshRoleAssignmentSource])[1],
-            assignmentSource: key as MeshRoleAssignmentSource
-          }
-        }
+      // Looping through an enum-key map sucks a bit: https://github.com/microsoft/TypeScript/issues/33123
+      if (map[key as MeshRoleAssignmentSource].test(scope)) {
+        return {
+          assignmentId: scope.split(map[key as MeshRoleAssignmentSource])[1],
+          assignmentSource: key as MeshRoleAssignmentSource,
+        };
       }
     }
-    throw new MeshError("Could not detect assignment source from scope: " + scope);
+    throw new MeshAzurePlatformError(
+      AzureErrorCode.AZURE_UNKNOWN_PRINCIPAL_ASSIGNMENT_SOURCE,
+      "Could not detect assignment source from scope: " + scope,
+    );
   }
 }

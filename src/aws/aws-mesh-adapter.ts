@@ -44,7 +44,7 @@ export class AwsMeshAdapter implements MeshAdapter {
     );
   }
 
-  async loadTenantCosts(
+  async attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
@@ -89,7 +89,7 @@ export class AwsMeshAdapter implements MeshAdapter {
     return Promise.resolve();
   }
 
-  loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+  attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     log.warning(
       `This CLI does not support AWS Role Assignment analysis at the moment. Please keep an eye out for further development on this.`,
     );

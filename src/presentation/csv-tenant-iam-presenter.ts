@@ -4,7 +4,7 @@ import {
   CsvTenantPresenter,
   PrintedTenantKey,
 } from "./csv-tenant-presenter.ts";
-import { MeshTenantRoleAssignment } from '../mesh/mesh-iam-model.ts';
+import { MeshTenantRoleAssignment } from "../mesh/mesh-iam-model.ts";
 
 export type PrintedIamKey = keyof MeshTenantRoleAssignment;
 
@@ -12,7 +12,7 @@ export class CsvTenantIamPresenter extends CsvTenantPresenter {
   constructor(
     private readonly printedKeys: PrintedTenantKey[],
     private readonly meshTenant: MeshTenant[],
-    private readonly printedIamKeys: PrintedIamKey[]
+    private readonly printedIamKeys: PrintedIamKey[],
   ) {
     super();
   }
@@ -41,7 +41,10 @@ export class CsvTenantIamPresenter extends CsvTenantPresenter {
     const row: string[] = [];
 
     this.printedKeys.forEach((k) => {
-      if (k !== "tags" && k !== "roleAssignments" && k !== "nativeObj" && k !== "costs") {
+      if (
+        k !== "tags" && k !== "roleAssignments" && k !== "nativeObj" &&
+        k !== "costs"
+      ) {
         row.push(tenant[k]);
       }
     });

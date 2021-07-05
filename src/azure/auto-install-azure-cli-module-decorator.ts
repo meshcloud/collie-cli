@@ -4,8 +4,7 @@ import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
   RoleAssignment,
-  SimpleCostManagementInfo,
-  Subscription,
+ SimpleCostManagementInfo, Subscription,
   Tag,
 } from "./azure.model.ts";
 
@@ -60,7 +59,9 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
     });
   }
 
-  async getRoleAssignments(subscription: Subscription): Promise<RoleAssignment[]> {
+  async getRoleAssignments(
+    subscription: Subscription,
+  ): Promise<RoleAssignment[]> {
     return await this.wrapCallWithInstallInterception(() => {
       return this.azureFacade.getRoleAssignments(subscription);
     });

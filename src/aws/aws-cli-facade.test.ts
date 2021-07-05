@@ -4,7 +4,7 @@ import { ShellOutput } from "../process/shell-output.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
 import { AwsCliFacade } from "./aws-cli-facade.ts";
 import { AwsMeshAdapter } from "./aws-mesh-adapter.ts";
-import { assertEquals } from '../dev-deps.ts';
+import { assertEquals } from "../dev-deps.ts";
 
 const response = {
   GroupDefinitions: [{ Type: "DIMENSION", Key: "LINKED_ACCOUNT" }],
@@ -140,10 +140,10 @@ Deno.test("Requesting the tenant cost info respondes with a proper filled MeshTe
         JoinedTimestamp: "timestamp",
       },
       costs: [],
-      roleAssignments: []
+      roleAssignments: [],
     },
   ];
-  await sut.loadTenantCosts(tenants, start, end);
+  await sut.attachTenantCosts(tenants, start, end);
 
   assertEquals(
     (tenants[0].costs[0] as MeshTenantCost).totalUsageCost,

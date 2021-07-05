@@ -4,12 +4,22 @@ import { JsonMeshTenantIamView, JsonPresenter } from "./json-presenter.ts";
 import { OutputFormat } from "./output-format.ts";
 import { Presenter } from "./presenter.ts";
 import { YamlPresenter } from "./yaml-presenter.ts";
-import { TableTenantIamPresenter } from './table-tenant-iam-presenter.ts';
-import { CsvTenantIamPresenter, PrintedIamKey } from './csv-tenant-iam-presenter.ts';
-import { MeshRoleAssignmentSource } from '../mesh/mesh-iam-model.ts';
+import {
+  CsvTenantIamPresenter,
+  PrintedIamKey,
+} from "./csv-tenant-iam-presenter.ts";
+import { MeshRoleAssignmentSource } from "../mesh/mesh-iam-model.ts";
+import { TablePresenter } from './table-presenter.ts';
+import { MeshTenantTableViewGenerator } from './meshtenant-table-view-generator.ts';
+import { MeshTableFactory } from './mesh-table-factory.ts';
 
 // This buildPresenter & individual methods might be a good argument for building a parent abstract class to DRY.
 export class TenantIamPresenterFactory {
+  constructor(
+    private readonly tableFactory: MeshTableFactory,
+  ) {
+  }
+
   buildPresenter(
     format: OutputFormat,
     includeAncestors: boolean,
@@ -19,7 +29,9 @@ export class TenantIamPresenterFactory {
     if (!includeAncestors) {
       for (let tenant of meshTenants) {
         // We skip assignment that are *not* coming from the tenant level.
-        tenant.roleAssignments = tenant.roleAssignments.filter(x => x.assignmentSource === MeshRoleAssignmentSource.Tenant);
+        tenant.roleAssignments = tenant.roleAssignments.filter((x) =>
+          x.assignmentSource === MeshRoleAssignmentSource.Tenant
+        );
       }
     }
     if (format === OutputFormat.TABLE) {
@@ -36,7 +48,20 @@ export class TenantIamPresenterFactory {
   }
 
   private buildTablePresenter(meshTenants: MeshTenant[]): Presenter {
-    return new TableTenantIamPresenter(meshTenants);
+    const tableViewGenerator = new MeshTenantTableViewGenerator(
+      meshTenants,
+      [
+        "platform",
+        "platformTenantName",
+        "platformTenantId",
+        "tags",
+      ],
+    );
+
+    return new TablePresenter(
+      tableViewGenerator,
+      this.tableFactory.buildMeshTable(),
+    );
   }
 
   private buildCsvPresenter(
@@ -51,13 +76,17 @@ export class TenantIamPresenterFactory {
       "roleName",
     ];
     if (includeAncestors) {
-      iamKeys.push("assignmentId", "assignmentSource")
+      iamKeys.push("assignmentId", "assignmentSource");
     }
-    return new CsvTenantIamPresenter([
-      "platform",
-      "platformTenantName",
-      "platformTenantId",
-    ], meshTenants, iamKeys);
+    return new CsvTenantIamPresenter(
+      [
+        "platform",
+        "platformTenantName",
+        "platformTenantId",
+      ],
+      meshTenants,
+      iamKeys,
+    );
   }
 
   private buildJsonPresenter(meshTenant: MeshTenant[]): Presenter {

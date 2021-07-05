@@ -1,9 +1,17 @@
 import { log } from "../deps.ts";
 import { MeshAdapter } from "../mesh/mesh-adapter.ts";
-import { MeshPlatform, MeshTag, MeshTenant, } from "../mesh/mesh-tenant.model.ts";
+import {
+  MeshPlatform,
+  MeshTag,
+  MeshTenant,
+} from "../mesh/mesh-tenant.model.ts";
 import { GcpCliFacade } from "./gcp-cli-facade.ts";
 import { isProject } from "./gcp.model.ts";
-import { MeshPrincipalType, MeshRoleAssignmentSource, MeshTenantRoleAssignment, } from "../mesh/mesh-iam-model.ts";
+import {
+  MeshPrincipalType,
+  MeshRoleAssignmentSource,
+  MeshTenantRoleAssignment,
+} from "../mesh/mesh-iam-model.ts";
 import { MeshError } from "../errors.ts";
 
 export class GcpMeshAdapter implements MeshAdapter {
@@ -34,7 +42,7 @@ export class GcpMeshAdapter implements MeshAdapter {
     });
   }
 
-  loadTenantCosts(
+  attachTenantCosts(
     _tenants: MeshTenant[],
     _startDate: Date,
     _endDate: Date,
@@ -46,7 +54,7 @@ export class GcpMeshAdapter implements MeshAdapter {
     return Promise.resolve();
   }
 
-  async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     const gcpTenants = tenants.filter((t) => isProject(t.nativeObj));
 
     for (const tenant of gcpTenants) {
@@ -83,7 +91,7 @@ export class GcpMeshAdapter implements MeshAdapter {
             roleId: binding.role,
             roleName: binding.role,
             assignmentSource,
-            assignmentId
+            assignmentId,
           });
         }
       }
@@ -109,12 +117,15 @@ export class GcpMeshAdapter implements MeshAdapter {
 
   private toAssignmentSource(type: string): MeshRoleAssignmentSource {
     switch (type) {
-      case "organization": return MeshRoleAssignmentSource.Organization;
-      case "folder": return MeshRoleAssignmentSource.Ancestor;
-      case "project": return MeshRoleAssignmentSource.Tenant;
+      case "organization":
+        return MeshRoleAssignmentSource.Organization;
+      case "folder":
+        return MeshRoleAssignmentSource.Ancestor;
+      case "project":
+        return MeshRoleAssignmentSource.Tenant;
       default:
         throw new MeshError(
-          "Found unknown assignment source type: " + type
+          "Found unknown assignment source type: " + type,
         );
     }
   }

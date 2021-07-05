@@ -4,7 +4,10 @@ import {
   MeshTenant,
 } from "../mesh/mesh-tenant.model.ts";
 import { Presenter } from "./presenter.ts";
-import { MeshPrincipalType, MeshRoleAssignmentSource } from '../mesh/mesh-iam-model.ts';
+import {
+  MeshPrincipalType,
+  MeshRoleAssignmentSource,
+} from "../mesh/mesh-iam-model.ts";
 
 export interface JsonMeshTenantView {
   platformTenantId: string;
@@ -66,7 +69,7 @@ export class JsonPresenter<T> implements Presenter {
   }
 
   static meshTenantToIamJsonViews(
-    meshTenant: MeshTenant
+    meshTenant: MeshTenant,
   ): JsonMeshTenantIamView[] {
     return meshTenant.roleAssignments.map((r) => {
       return {
@@ -77,8 +80,8 @@ export class JsonPresenter<T> implements Presenter {
         roleId: r.roleId,
         roleName: r.roleName,
         assignmentId: r.assignmentId,
-        assignmentSource: r.assignmentSource
-      }
+        assignmentSource: r.assignmentSource,
+      };
     });
   }
 }

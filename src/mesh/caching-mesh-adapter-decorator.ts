@@ -23,7 +23,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       return this.repository.loadTenants();
     } else {
       log.debug(
-        "Repository is not valid anymore. Fetching fresh tenants from cloud."
+        "Repository is not valid anymore. Fetching fresh tenants from cloud.",
       );
       const tenants = await this.meshAdapter.getMeshTenants();
 
@@ -80,7 +80,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     return notCachedTenants.length == 0;
   }
 
-  async loadTenantCosts(
+  async attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
@@ -123,7 +123,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       );
 
       // load new and set cache
-      await this.meshAdapter.loadTenantCosts(
+      await this.meshAdapter.attachTenantCosts(
         tenants,
         startDate,
         endDate,
@@ -142,7 +142,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     return Promise.resolve();
   }
 
-  async loadTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     if (await this.repository.isIamCollectionValid()) {
       const cachedTenantsById = await this.getCachedTenantsMappedById();
 
@@ -156,15 +156,17 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
         t.roleAssignments = [...cached.roleAssignments];
       }
     } else {
-      log.debug("IAM collection is no longer valid - collecting new role assignments");
-      await this.meshAdapter.loadTenantRoleAssignments(tenants);
+      log.debug(
+        "IAM collection is no longer valid - collecting new role assignments",
+      );
+      await this.meshAdapter.attachTenantRoleAssignments(tenants);
 
       for (const t of tenants) {
         this.repository.save(t);
       }
 
       let meta = await this.repository.loadOrBuildMeta();
-      meta.iamCollection = { lastCollection: new Date().toUTCString() }
+      meta.iamCollection = { lastCollection: new Date().toUTCString() };
       this.repository.saveMeta(meta);
     }
   }

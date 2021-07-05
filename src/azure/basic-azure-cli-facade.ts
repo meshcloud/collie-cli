@@ -149,16 +149,8 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   async getRoleAssignments(
     subscription: Subscription,
   ): Promise<RoleAssignment[]> {
-    const queryFields = [
-      "principalId",
-      "principalName",
-      "principalType",
-      "roleDefinitionId",
-      "roleDefinitionName",
-    ];
-    const jsonQuery = queryFields.map((x) => x + ":" + x).join(",");
-    //  --query '[].{${jsonQuery}}' -> could be added but stdout gets weird?
-    const cmd = `az role assignment list --subscription ${subscription.name} --include-inherited --all --output json`;
+    const cmd =
+      `az role assignment list --subscription ${subscription.name} --include-inherited --all --output json`;
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);

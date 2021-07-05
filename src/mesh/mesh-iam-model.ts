@@ -12,7 +12,7 @@ export interface MeshTenantRoleAssignment {
 export enum MeshRoleAssignmentSource {
   Organization = "Organization",
   Ancestor = "Ancestor",
-  Tenant = "Tenant"
+  Tenant = "Tenant",
 }
 
 export enum MeshPrincipalType {

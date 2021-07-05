@@ -1,19 +1,29 @@
 import { bold, Table } from "../deps.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import { TableOutput } from "./tabel-view.model.ts";
-import { MeshRoleAssignmentSource, MeshTenantRoleAssignment } from '../mesh/mesh-iam-model.ts';
+import {
+  MeshRoleAssignmentSource,
+  MeshTenantRoleAssignment,
+} from "../mesh/mesh-iam-model.ts";
+import { TableGenerator } from './mesh-table.ts';
 
-export class MeshTenantIamTableView extends TableOutput {
+export class MeshTenantIamTableView implements TableGenerator {
   info = "";
 
   constructor(
     readonly meshTenants: MeshTenant[],
     readonly columns: (keyof MeshTenant)[],
   ) {
-    super(columns);
   }
 
-  public generateRows(): string[][] {
+  getColumns(): string[] {
+    return this.columns;
+  }
+
+  getInfo(): string {
+    return "";
+  }
+
+  getRows(): string[][] {
     var rows: Array<string>[] = [];
     this.meshTenants.forEach((meshTenant: MeshTenant) => {
       var row: string[] = [];
@@ -26,21 +36,25 @@ export class MeshTenantIamTableView extends TableOutput {
           //   - <principal-name> (<principal-type>)
           // <role-name>
           //   - <principal-name> (<principal-type>)
-          const groupedRoles: { [roleName: string]: MeshTenantRoleAssignment[] } = {};
+          const groupedRoles: {
+            [roleName: string]: MeshTenantRoleAssignment[];
+          } = {};
           meshTenant.roleAssignments.forEach((x) => {
             // TODO table view currently does not contain assignment info (what level is this coming from)
             // Might need an additional grouping level
             if (groupedRoles[x.roleName]) {
               groupedRoles[x.roleName].push(x);
             } else {
-              groupedRoles[x.roleName] = [ x ];
+              groupedRoles[x.roleName] = [x];
             }
           });
           for (let roleName in groupedRoles) {
             let roleAssignments = groupedRoles[roleName];
 
-            tmpRows.push([`${bold(roleName)}`])
-            roleAssignments.forEach((r) => tmpRows.push([` - ${r.principalName} (${r.principalType})`]));
+            tmpRows.push([`${bold(roleName)}`]);
+            roleAssignments.forEach((r) =>
+              tmpRows.push([` - ${r.principalName} (${r.principalType})`])
+            );
           }
           const tmpTable = new Table();
           tmpTable.body(tmpRows).border(false).maxColWidth(90);
