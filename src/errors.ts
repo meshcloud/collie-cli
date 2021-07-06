@@ -1,5 +1,6 @@
 export enum GcpErrorCode {
   GCP_CLI_GENERAL = "GCP_CLI_GENERAL",
+  GCP_UNAUTHORIZED = "GCP_UNAUTHORIZED",
 }
 
 export enum AwsErrorCode {
