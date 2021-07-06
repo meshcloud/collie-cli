@@ -51,9 +51,12 @@ export class MeshTenantIamTableViewGenerator implements TableGenerator {
 
             tmpRows.push([`${bold(roleName)}`]);
             roleAssignments.forEach((r) => {
-              let prefix = this.includeAncestors ? `[${r.assignmentSource}] ` : "";
-              const principalString = ` - ${prefix}${r.principalName} (${r.principalType})`;
-              tmpRows.push([principalString])
+              const prefix = this.includeAncestors
+                ? `[${r.assignmentSource}] `
+                : "";
+              const principalString =
+                ` - ${prefix}${r.principalName} (${r.principalType})`;
+              tmpRows.push([principalString]);
             });
           }
           const tmpTable = new Table();

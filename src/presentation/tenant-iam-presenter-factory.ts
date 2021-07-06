@@ -47,7 +47,10 @@ export class TenantIamPresenterFactory {
     }
   }
 
-  private buildTablePresenter(meshTenants: MeshTenant[], includeAncestors: boolean): Presenter {
+  private buildTablePresenter(
+    meshTenants: MeshTenant[],
+    includeAncestors: boolean,
+  ): Presenter {
     const tableViewGenerator = new MeshTenantIamTableViewGenerator(
       meshTenants,
       [
@@ -56,7 +59,7 @@ export class TenantIamPresenterFactory {
         "platformTenantId",
         "roleAssignments",
       ],
-      includeAncestors
+      includeAncestors,
     );
 
     return new TablePresenter(
