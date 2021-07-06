@@ -45,6 +45,8 @@
 - **Track your cloud history** - Collie CLI is built on the principles of GitOps
   and its data can easily be written to git repositories for tracking changes in
   your cloud environments.
+- **View IAM assignments** - See who or what has access in what roles to what
+  cloud tenants, including inherited roles from ancestors.
 
 <sup><sub>*GCP is currently not supported. Follow the issue
 [here](https://github.com/meshcloud/collie-cli/issues/17) to get updated on

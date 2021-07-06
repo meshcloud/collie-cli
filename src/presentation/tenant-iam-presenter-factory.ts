@@ -35,7 +35,7 @@ export class TenantIamPresenterFactory {
       }
     }
     if (format === OutputFormat.TABLE) {
-      return this.buildTablePresenter(meshTenants);
+      return this.buildTablePresenter(meshTenants, includeAncestors);
     } else if (format === OutputFormat.JSON) {
       return this.buildJsonPresenter(meshTenants);
     } else if (format === OutputFormat.YAML) {
@@ -47,7 +47,7 @@ export class TenantIamPresenterFactory {
     }
   }
 
-  private buildTablePresenter(meshTenants: MeshTenant[]): Presenter {
+  private buildTablePresenter(meshTenants: MeshTenant[], includeAncestors: boolean): Presenter {
     const tableViewGenerator = new MeshTenantIamTableViewGenerator(
       meshTenants,
       [
@@ -56,6 +56,7 @@ export class TenantIamPresenterFactory {
         "platformTenantId",
         "roleAssignments",
       ],
+      includeAncestors
     );
 
     return new TablePresenter(
