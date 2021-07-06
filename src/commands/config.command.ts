@@ -44,7 +44,7 @@ export function registerConfigCmd(program: Command) {
       "Disconnect from Google Cloud Platform",
       `${CLICommand} config --disconnect GCP`,
     )
-    .action(configurePlatforms);
+    .action((opts) => configurePlatforms(opts, connectCmd));
 
   program.command("config", connectCmd);
 
