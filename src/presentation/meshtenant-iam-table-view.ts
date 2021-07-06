@@ -3,7 +3,7 @@ import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
 import { MeshTenantRoleAssignment } from "../mesh/mesh-iam-model.ts";
 import { TableGenerator } from "./mesh-table.ts";
 
-export class MeshTenantIamTableView implements TableGenerator {
+export class MeshTenantIamTableViewGenerator implements TableGenerator {
   info = "";
 
   constructor(
