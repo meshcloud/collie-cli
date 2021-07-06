@@ -9,6 +9,7 @@ export class MeshTenantIamTableViewGenerator implements TableGenerator {
   constructor(
     readonly meshTenants: MeshTenant[],
     readonly columns: (keyof MeshTenant)[],
+    readonly includeAncestors: boolean,
   ) {
   }
 
@@ -33,11 +34,11 @@ export class MeshTenantIamTableViewGenerator implements TableGenerator {
           //   - <principal-name> (<principal-type>)
           // <role-name>
           //   - <principal-name> (<principal-type>)
+          // If includeAncestors is true, the assignment source should be prefixed to the principal
           const groupedRoles: {
             [roleName: string]: MeshTenantRoleAssignment[];
           } = {};
           meshTenant.roleAssignments.forEach((x) => {
-            // TODO table view currently does not contain assignment info (what level is this coming from)
             // Might need an additional grouping level
             if (groupedRoles[x.roleName]) {
               groupedRoles[x.roleName].push(x);
@@ -49,9 +50,14 @@ export class MeshTenantIamTableViewGenerator implements TableGenerator {
             const roleAssignments = groupedRoles[roleName];
 
             tmpRows.push([`${bold(roleName)}`]);
-            roleAssignments.forEach((r) =>
-              tmpRows.push([` - ${r.principalName} (${r.principalType})`])
-            );
+            roleAssignments.forEach((r) => {
+              const prefix = this.includeAncestors
+                ? `[${r.assignmentSource}] `
+                : "";
+              const principalString =
+                ` - ${prefix}${r.principalName} (${r.principalType})`;
+              tmpRows.push([principalString]);
+            });
           }
           const tmpTable = new Table();
           tmpTable.body(tmpRows).border(false).maxColWidth(90);
