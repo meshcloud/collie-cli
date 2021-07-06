@@ -30,7 +30,6 @@ export class GcpCliFacade {
     const result = await this.shellRunner.run(
       `gcloud projects get-ancestors-iam-policy ${project.projectId} --format json`,
     );
-    console.log("qwe -. " + project.name);
     this.checkForErrors(result);
 
     log.debug(`listIamPolicy: ${JSON.stringify(result)}`);

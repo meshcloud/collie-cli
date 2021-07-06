@@ -10,8 +10,8 @@ import {
 } from "./csv-tenant-iam-presenter.ts";
 import { MeshRoleAssignmentSource } from "../mesh/mesh-iam-model.ts";
 import { TablePresenter } from "./table-presenter.ts";
-import { MeshTenantTableViewGenerator } from "./meshtenant-table-view-generator.ts";
 import { MeshTableFactory } from "./mesh-table-factory.ts";
+import { MeshTenantIamTableViewGenerator } from "./meshtenant-iam-table-view.ts";
 
 // This buildPresenter & individual methods might be a good argument for building a parent abstract class to DRY.
 export class TenantIamPresenterFactory {
@@ -48,13 +48,13 @@ export class TenantIamPresenterFactory {
   }
 
   private buildTablePresenter(meshTenants: MeshTenant[]): Presenter {
-    const tableViewGenerator = new MeshTenantTableViewGenerator(
+    const tableViewGenerator = new MeshTenantIamTableViewGenerator(
       meshTenants,
       [
         "platform",
         "platformTenantName",
         "platformTenantId",
-        "tags",
+        "roleAssignments",
       ],
     );
 
