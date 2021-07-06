@@ -14,6 +14,7 @@ export class GcpCliFacade {
   constructor(
     private readonly shellRunner: ShellRunner,
   ) {}
+  private unauthorizedProject = /User is not permitted/;
 
   async listProjects(): Promise<Project[]> {
     const result = await this.shellRunner.run(
@@ -30,7 +31,20 @@ export class GcpCliFacade {
     const result = await this.shellRunner.run(
       `gcloud projects get-ancestors-iam-policy ${project.projectId} --format json`,
     );
-    this.checkForErrors(result);
+
+    try {
+      this.checkForErrors(result);
+    } catch (e) {
+      if (
+        e instanceof MeshGcpPlatformError &&
+        e.errorCode == GcpErrorCode.GCP_UNAUTHORIZED
+      ) {
+        log.warning(
+          `Could not list IAM policies for Project ${project.projectId}: Access was denied`,
+        );
+      }
+      return Promise.resolve([]);
+    }
 
     log.debug(`listIamPolicy: ${JSON.stringify(result)}`);
 
@@ -44,10 +58,17 @@ export class GcpCliFacade {
         result.stderr,
       );
     } else if (result.code === 1) {
-      log.info(
-        `You are not logged in into GCP CLI. Please disconnect GCP with "${CLICommand} config --disconnect GCP or login into GCP CLI."`,
-      );
-      throw new MeshNotLoggedInError(result.stderr);
+      if (this.unauthorizedProject.exec(result.stderr)) {
+        throw new MeshGcpPlatformError(
+          GcpErrorCode.GCP_UNAUTHORIZED,
+          "Request could not be made because the current user is not allowed to access this resource",
+        );
+      } else {
+        log.info(
+          `You are not logged in into GCP CLI. Please disconnect GCP with "${CLICommand} config --disconnect GCP or login into GCP CLI."`,
+        );
+        throw new MeshNotLoggedInError(result.stderr);
+      }
     }
   }
 }
