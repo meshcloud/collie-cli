@@ -82,8 +82,9 @@ That's it! Let's get Collie installed ⤵️
 We have an easy-to-use install script prepared that will install Collie for you
 in under a minute. To use it, run the command below depending on your operating
 system. Additionally, check the content of the file to be sure that the install
-script is safe. If you want, you could also download the [`install.sh`](https://github.com/meshcloud/collie-cli/blob/develop/install.sh) script in
-this repository and execute it locally.
+script is safe. If you want, you could also download the
+[`install.sh`](https://github.com/meshcloud/collie-cli/blob/develop/install.sh)
+script in this repository and execute it locally.
 
 **Linux / Ubuntu**
 
