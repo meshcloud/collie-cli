@@ -17,7 +17,7 @@ import {
   Tag,
 } from "./azure.model.ts";
 import { CLICommand } from "../config/config.model.ts";
-import { parseJsonWithLog } from "../json.ts";
+import { parseJsonStdoutWithLog } from "../json.ts";
 
 interface ConfigValue {
   name: string;
@@ -49,8 +49,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   async getDynamicInstallValue(): Promise<DynamicInstallValue | null> {
+    const command = "az config get extension.use_dynamic_install";
     const result = await this.shellRunner.run(
-      "az config get extension.use_dynamic_install",
+      command,
     );
     this.checkForErrors(result);
 
@@ -60,23 +61,25 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       return Promise.resolve(null);
     }
 
-    const cv = parseJsonWithLog<ConfigValue>(result.stdout);
+    const cv = parseJsonStdoutWithLog<ConfigValue>(result, command);
 
     return Promise.resolve(cv.value);
   }
 
   async listAccounts(): Promise<Subscription[]> {
-    const result = await this.shellRunner.run("az account list");
+    const command = "az account list";
+    const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
 
     log.debug(`listAccounts: ${JSON.stringify(result)}`);
 
-    return parseJsonWithLog(result.stdout);
+    return parseJsonStdoutWithLog(result, command);
   }
 
   async listTags(subscription: Subscription): Promise<Tag[]> {
+    const command = `az tag list --subscription ${subscription.id}`;
     const result = await this.shellRunner.run(
-      `az tag list --subscription ${subscription.id}`,
+      command,
     );
 
     // we need to catch the case where certain subscriptions might not be accessible for the user.
@@ -98,7 +101,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`listTags: ${JSON.stringify(result)}`);
 
-    return parseJsonWithLog(result.stdout);
+    return parseJsonStdoutWithLog(result, command);
   }
 
   /**
@@ -123,8 +126,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`getCostManagementInfo: ${JSON.stringify(result)}`);
 
-    const costManagementInfo = parseJsonWithLog<CostManagementInfo>(
-      result.stdout,
+    const costManagementInfo = parseJsonStdoutWithLog<CostManagementInfo>(
+      result,
+      cmd,
     );
     if (costManagementInfo.nextLinks != null) {
       log.warning(
@@ -160,7 +164,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`getConsumptionInformation: ${JSON.stringify(result)}`);
 
-    return parseJsonWithLog(result.stdout);
+    return parseJsonStdoutWithLog(result, cmd);
   }
 
   async getRoleAssignments(
@@ -174,7 +178,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`getRoleAssignments: ${JSON.stringify(result)}`);
 
-    return JSON.parse(result.stdout) as RoleAssignment[];
+    return parseJsonStdoutWithLog<RoleAssignment[]>(result, cmd);
   }
 
   private checkForErrors(result: ShellOutput) {

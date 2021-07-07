@@ -15,7 +15,7 @@ import {
 } from "../errors.ts";
 import { sleep } from "../promises.ts";
 import { CLICommand, CLIName } from "../config/config.model.ts";
-import { parseJsonWithLog } from "../json.ts";
+import { parseJsonStdoutWithLog } from "../json.ts";
 
 export class AwsCliFacade {
   constructor(
@@ -35,7 +35,10 @@ export class AwsCliFacade {
 
       log.debug(`listAccounts: ${JSON.stringify(result)}`);
 
-      const jsonResult = parseJsonWithLog<AccountResponse>(result.stdout);
+      const jsonResult = parseJsonStdoutWithLog<AccountResponse>(
+        result,
+        command,
+      );
       nextToken = jsonResult.NextToken;
       accounts = accounts.concat(jsonResult.Accounts);
     } while (nextToken != null);
@@ -44,8 +47,10 @@ export class AwsCliFacade {
   }
 
   async listTags(account: Account): Promise<Tag[]> {
+    const command =
+      `aws organizations list-tags-for-resource --resource-id ${account.Id}`;
     const result = await this.shellRunner.run(
-      `aws organizations list-tags-for-resource --resource-id ${account.Id}`,
+      command,
     );
     this.checkForErrors(result);
 
@@ -58,7 +63,7 @@ export class AwsCliFacade {
       return await this.listTags(account);
     }
 
-    return parseJsonWithLog<TagResponse>(result.stdout).Tags;
+    return parseJsonStdoutWithLog<TagResponse>(result, command).Tags;
   }
 
   /**
@@ -84,7 +89,10 @@ export class AwsCliFacade {
 
       log.debug(`listCosts: ${JSON.stringify(rawResult)}`);
 
-      const costResult = parseJsonWithLog<CostResponse>(rawResult.stdout);
+      const costResult = parseJsonStdoutWithLog<CostResponse>(
+        rawResult,
+        command,
+      );
 
       if (costResult.NextPageToken) {
         nextToken = costResult.NextPageToken;
