@@ -103,8 +103,6 @@ We sadly do not support Windows at the moment. Follow
 [this issue](https://github.com/meshcloud/collie-cli/issues/2) to get updated on
 the progress of Collie for Windows.
 
-
-
 ## 👋 Need help or have feedback?
 
 Having some difficulties and need some help? No worries! Visit our forum
