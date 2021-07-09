@@ -38,19 +38,17 @@
 
 ## ⛅️ Overview
 
-- **[View all cloud tenants](https://github.com/meshcloud/collie-cli/wiki#listing-tenants)
-  in one single overview** - View your AWS Accounts, Azure Subscriptions, and
-  Google Cloud Projects with their metadata with only one command.
-- **[View billing information](https://github.com/meshcloud/collie-cli/wiki#listing-costs-per-tenant)
-  across all clouds** - See what you spend per day, month, or week in all cloud
-  platforms*, including the right metadata. Includes support for CSV, YML and
-  JSON.
-- **[Analyze tag inconsistencies](https://github.com/meshcloud/collie-cli/wiki#identifying-inconsistencies-in-the-use-of-tags)** -
-  See at a glance what tags are used, by which tenants (and which not), and what
-  potential inconsistencies are in place to fix any governance issues.
-- **[View IAM assignments](https://github.com/meshcloud/collie-cli/wiki#listing-iam-setup-per-tenant)** -
-  See who (or what) has access in what roles to what cloud tenants**, including
-  inherited roles from ancestors.
+- **[View all cloud tenants](https://github.com/meshcloud/collie-cli/wiki#listing-tenants) in one single overview** - View your AWS Accounts,
+  Azure Subscriptions, and Google Cloud Projects with their metadata with only
+  one command.
+- **[View billing information](https://github.com/meshcloud/collie-cli/wiki#listing-costs-per-tenant) across all clouds** - See what you spend per day,
+  month, or week in all cloud platforms*, including the right metadata. Includes
+  support for CSV, YML and JSON.
+- **[Analyze tag inconsistencies](https://github.com/meshcloud/collie-cli/wiki#identifying-inconsistencies-in-the-use-of-tags)** - See at a glance what tags are used, by which
+  tenants (and which not), and what potential inconsistencies are in place to
+  fix any governance issues.
+- **[View IAM assignments](https://github.com/meshcloud/collie-cli/wiki#listing-iam-setup-per-tenant)** - See who (or what) has access in what roles to what
+  cloud tenants**, including inherited roles from ancestors.
 
 <sup><sub>*GCP does not support cost collection. Follow the issue
 [here](https://github.com/meshcloud/collie-cli/issues/17) to get updated on
