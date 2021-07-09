@@ -10,16 +10,16 @@
 <br>
 
 <p align="center">
-  <a href="/">
+  <a href="https://github.com/meshcloud/collie-cli/actions/workflows/build.yml">
     <img src="https://github.com/meshcloud/collie-cli/actions/workflows/build.yml/badge.svg">
   </a>
-  <a href="/">
+  <a href="https://github.com/meshcloud/collie-cli/graphs/contributors">
     <img src="https://img.shields.io/badge/maintained-true-green">
   </a>
-  <a href="/">
+  <a href="https://github.com/meshcloud/collie-cli/blob/develop/LICENSE">
     <img src="https://img.shields.io/github/license/meshcloud/collie-cli">
   </a>
-  <a href="/">
+  <a href="https://github.com/meshcloud/collie-cli/releases">
     <img src="https://img.shields.io/github/v/release/meshcloud/collie-cli?sort=semver">
   </a>
 </p>
