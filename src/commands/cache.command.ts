@@ -5,7 +5,8 @@ import { CmdGlobalOptions } from "./cmd-options.ts";
 
 export function registerCacheCommand(program: Command) {
   const cacheCmd = new Command()
-    .description("Control you cached tenant state.");
+    .description("Control you cached tenant state.")
+    .action(() => cacheCmd.showHelp());
   program.command("cache", cacheCmd);
 
   const clearCache = new Command()
