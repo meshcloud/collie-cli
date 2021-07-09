@@ -33,19 +33,16 @@
 
 ## ⛅️ Overview
 
-- **View all cloud tenants in one single overview** - View your AWS Accounts,
+- **[View all cloud tenants](https://github.com/meshcloud/collie-cli/wiki#listing-tenants) in one single overview** - View your AWS Accounts,
   Azure Subscriptions, and Google Cloud Projects with their metadata with only
   one command.
-- **View billing information across all clouds** - See what you spend per day,
+- **[View billing information](https://github.com/meshcloud/collie-cli/wiki#listing-costs-per-tenant) across all clouds** - See what you spend per day,
   month, or week in all cloud platforms*, including the right metadata. Includes
   support for CSV, YML and JSON.
-- **Analyze tag inconsistencies** - See at a glance what tags are used, by which
+- **[Analyze tag inconsistencies](https://github.com/meshcloud/collie-cli/wiki#listing-iam-setup-per-tenant)** - See at a glance what tags are used, by which
   tenants (and which not), and what potential inconsistencies are in place to
   fix any governance issues.
-- **Track your cloud history** - Collie CLI is built on the principles of GitOps
-  and its data can easily be written to git repositories for tracking changes in
-  your cloud environments.
-- **View IAM assignments** - See who (or what) has access in what roles to what
+- **[View IAM assignments](https://github.com/meshcloud/collie-cli/wiki#identifying-inconsistencies-in-the-use-of-tags)** - See who (or what) has access in what roles to what
   cloud tenants**, including inherited roles from ancestors.
 
 <sup><sub>*GCP does not support cost collection. Follow the issue
@@ -85,6 +82,8 @@ system. Additionally, check the content of the file to be sure that the install
 script is safe. If you want, you could also download the
 [`install.sh`](https://github.com/meshcloud/collie-cli/blob/develop/install.sh)
 script in this repository and execute it locally.
+
+Once you're finished with installing, head over to [our Wiki](https://github.com/meshcloud/collie-cli/wiki#before-using-collie) to learn more!
 
 **Linux / Ubuntu**
 
