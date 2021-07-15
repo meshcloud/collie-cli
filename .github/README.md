@@ -31,7 +31,7 @@
 
 <p align="center">
     One project on AWS, two on Azure, and might there be something on GCP too 😵? Collie helps you get an overview of everything going on in all your clouds.
-  See your costs, IAM, tags, and more across all cloud accounts within minutes - using your existing cloud CLIs - and take control of your cloud landscape.
+  See your costs, IAM, tags, and more across all cloud accounts within minutes - using your existing cloud CLIs - and take control of your cloud landscape. 
 </p>
 
 <img align="center" src="/.github/collie-demo.gif">
