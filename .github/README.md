@@ -25,8 +25,8 @@
 </p>
 
 <p align="center">
-    Collie CLI allows you to manage your tenants (<b>AWS</b> Accounts, <b>Azure</b> Subscriptions & <b>Google Cloud</b> Projects) through a single view.
-    View your tenants, tags, costs, users, access rights and more through a single common model and stay in control of your cloud landscape.
+    One project on AWS, two on Azure, and might there be something on GCP too 😵? Collie helps you get an overview of everything going on in all your clouds.
+  See your costs, IAM, tags, and more across all cloud accounts within minutes - using your existing cloud CLIs - and take control of your cloud landscape. 
 </p>
 
 <img align="center" src="/.github/collie-demo.gif">
