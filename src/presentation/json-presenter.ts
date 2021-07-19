@@ -60,7 +60,7 @@ export class JsonPresenter<T> implements Presenter {
     return meshTenant.costs.map((c) => {
       return {
         relatedTenant: JsonPresenter.meshTenantToJsonView(meshTenant),
-        totalUsageCost: c.totalUsageCost,
+        totalUsageCost: c.cost,
         currency: c.currency,
         from: c.from,
         to: c.to,

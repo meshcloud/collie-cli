@@ -146,15 +146,15 @@ Deno.test("Requesting the tenant cost info respondes with a proper filled MeshTe
   await sut.attachTenantCosts(tenants, start, end);
 
   assertEquals(
-    (tenants[0].costs[0] as MeshTenantCost).totalUsageCost,
+    (tenants[0].costs[0] as MeshTenantCost).cost,
     "0.0228541822",
   );
   assertEquals(
-    (tenants[0].costs[1] as MeshTenantCost).totalUsageCost,
+    (tenants[0].costs[1] as MeshTenantCost).cost,
     "0.1628837257",
   );
   assertEquals(
-    (tenants[0].costs[2] as MeshTenantCost).totalUsageCost,
+    (tenants[0].costs[2] as MeshTenantCost).cost,
     "0.0425271244",
   );
 });
