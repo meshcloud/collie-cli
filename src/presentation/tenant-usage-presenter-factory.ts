@@ -36,7 +36,7 @@ export class TenantUsagePresenterFactory {
       meshTenant,
       [
         "relatedTenant",
-        "totalUsageCost",
+        "cost",
         "currency",
         "from",
         "to",

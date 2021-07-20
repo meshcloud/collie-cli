@@ -70,7 +70,7 @@ export class AwsMeshAdapter implements MeshAdapter {
           currency: "",
           from: from.toDate().toUTCString(),
           to: to.toDate().toUTCString(),
-          totalUsageCost: "0",
+          cost: "0",
           details: [],
         };
 
@@ -79,7 +79,7 @@ export class AwsMeshAdapter implements MeshAdapter {
         );
         if (costForTenant) {
           const blendedCost = costForTenant.Metrics["BlendedCost"];
-          costItem.totalUsageCost = blendedCost.Amount;
+          costItem.cost = blendedCost.Amount;
           costItem.currency = blendedCost.Unit;
         }
 
