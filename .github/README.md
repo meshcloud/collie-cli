@@ -57,7 +57,7 @@ progress.</sub></sup><br>
 [here](https://github.com/meshcloud/collie-cli/issues/41) to get updated on
 progress.</sub></sup>
 
-## ☝️ Prerequisites
+## ☝️ Prerequisites<a name="prerequisites"></a>
 
 For each cloud platform you want to manage, you'll need the equivalent cloud CLI
 installed.

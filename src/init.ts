@@ -14,6 +14,12 @@ import { MeshError } from "./errors.ts";
 import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
 import { ShellRunner } from "./process/shell-runner.ts";
 
+enum PlatformCommandInstallationStatus {
+  Installed,
+  UnsupportedVersion,
+  NotInstalled,
+}
+
 function objectsHaveSameKeys(
   // deno-lint-ignore no-explicit-any
   ref: Record<string, any>,
@@ -54,7 +60,6 @@ async function getInstalledClis(): Promise<Config> {
     if (await checkCliInstalled(PlatformCommand[mp])) {
       config.connected[mp] = true;
     }
-    log.debug(`CLI ${PlatformCommand[mp]} installed.`);
   }
 
   return config;
@@ -149,21 +154,57 @@ async function verifyConnectedCliInstalled(
   platform: MeshPlatform,
 ) {
   const cmd = PlatformCommand[platform];
-  if (config.connected[platform] && await !checkCliInstalled(cmd)) {
-    throw new MeshError(
-      `${platform} cloud cli "${cmd}" is not installed. Please disconnect platform via "${CLICommand} config -d ${platform}"`,
-    );
+  if (!config.connected[platform]) {
+    return;
+  }
+
+  const status = await checkCliInstalled(cmd);
+  switch (status) {
+    case PlatformCommandInstallationStatus.NotInstalled:
+      throw new MeshError(
+        `${platform} cloud cli "${cmd}" is not installed. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions or disconnect platform via "${CLICommand} config -d ${platform}".`,
+      );
+    case PlatformCommandInstallationStatus.UnsupportedVersion:
+      throw new MeshError(
+        `${platform} cloud cli "${cmd}" is not installed in a supported version. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions or disconnect platform via "${CLICommand} config -d ${platform}".`,
+      );
+    case PlatformCommandInstallationStatus.Installed:
+      log.debug(`CLI ${cmd} is correctly installed.`);
+      break;
   }
 }
 
-async function checkCliInstalled(cli: string): Promise<boolean> {
+async function checkCliInstalled(
+  cli: PlatformCommand,
+): Promise<PlatformCommandInstallationStatus> {
   const shellRunner = new ShellRunner();
-  var code = 0;
-  try {
-    code = (await (shellRunner.run(`${cli} --version`))).code;
-  } catch {
-    code = -1;
-  }
 
-  return code === 0;
+  try {
+    const result = await shellRunner.run(`${cli} --version`);
+
+    if (result.code !== 0) {
+      return PlatformCommandInstallationStatus.NotInstalled;
+    }
+
+    const regex = supportedCliVersionRegex(cli);
+    log.debug(result.stdout);
+
+    return regex.test(result.stdout)
+      ? PlatformCommandInstallationStatus.Installed
+      : PlatformCommandInstallationStatus.UnsupportedVersion;
+  } catch {
+    return PlatformCommandInstallationStatus.NotInstalled;
+  }
+}
+
+function supportedCliVersionRegex(cli: PlatformCommand): RegExp {
+  // TODO: maybe this should be part of the CLI facades
+  switch (cli) {
+    case PlatformCommand.AWS:
+      return /^aws-cli\/2\./;
+    case PlatformCommand.GCP:
+      return /^Google Cloud SDK/;
+    case PlatformCommand.Azure:
+      return /azure-cli\s+2\./;
+  }
 }
