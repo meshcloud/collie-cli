@@ -57,7 +57,8 @@ async function getInstalledClis(): Promise<Config> {
 
   for (const platform in MeshPlatform) {
     const mp = platform as MeshPlatform;
-    if (await checkCliInstalled(PlatformCommand[mp])) {
+    const installationStatus = await checkCliInstalled(PlatformCommand[mp]);
+    if (installationStatus == PlatformCommandInstallationStatus.Installed) {
       config.connected[mp] = true;
     }
   }
