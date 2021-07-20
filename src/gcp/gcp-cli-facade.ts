@@ -65,7 +65,7 @@ export class GcpCliFacade {
         );
       } else {
         log.info(
-          `You are not logged in into GCP CLI. Please disconnect GCP with "${CLICommand} config --disconnect GCP or login into GCP CLI."`,
+          `You are not logged in into GCP CLI. Please login with "gcloud auth login" or disconnect with "${CLICommand} config --disconnect"`,
         );
         throw new MeshNotLoggedInError(result.stderr);
       }

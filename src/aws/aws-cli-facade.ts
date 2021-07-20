@@ -111,7 +111,7 @@ export class AwsCliFacade {
       );
     } else if (result.code === 253) {
       log.info(
-        `The provided credentials in "aws config" are not valid. Please check it or disconnect from AWS with "${CLICommand} config --disconnect AWS"`,
+        `You are not correctly logged into AWS CLI. Please verify credentials with "aws config" or disconnect with "${CLICommand} config --disconnect AWS"`,
       );
       throw new MeshNotLoggedInError(result.stderr);
     } else if (result.code === 254) {
