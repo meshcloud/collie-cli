@@ -7,6 +7,11 @@
 <p align="center">
   <i>Herd your cloud 🐑 environments with Collie</i>
 </p>
+
+<p align="center">
+  <a href="https://collie-cli.io/">Visit the Collie website</a>
+</p>
+
 <br>
 
 <p align="center">
