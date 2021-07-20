@@ -1,6 +1,4 @@
-import { exists, log } from "./deps.ts";
 import { askYesNo } from "./commands/io.ts";
-import { ShellRunner } from "./process/shell-runner.ts";
 import {
   CLICommand,
   CLIName,
@@ -11,8 +9,10 @@ import {
   PlatformCommand,
   writeConfig,
 } from "./config/config.model.ts";
-import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
+import { exists, log } from "./deps.ts";
 import { MeshError } from "./errors.ts";
+import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
+import { ShellRunner } from "./process/shell-runner.ts";
 
 function objectsHaveSameKeys(
   // deno-lint-ignore no-explicit-any
@@ -46,24 +46,12 @@ function objectsHaveSameKeys(
   }
 }
 
-async function checkCLI(cli: string): Promise<boolean> {
-  const shellRunner = new ShellRunner();
-  var code = 0;
-  try {
-    code = (await (shellRunner.run(`${cli} --version`))).code;
-  } catch {
-    code = -1;
-  }
-  log.debug(`Exit code for running ${cli} is ${code}`);
-  return code === 0;
-}
-
 async function getInstalledClis(): Promise<Config> {
   const config: Config = emptyConfig;
 
   for (const platform in MeshPlatform) {
     const mp = platform as MeshPlatform;
-    if (await checkCLI(PlatformCommand[mp])) {
+    if (await checkCliInstalled(PlatformCommand[mp])) {
       config.connected[mp] = true;
     }
     log.debug(`CLI ${PlatformCommand[mp]} installed.`);
@@ -140,20 +128,36 @@ export async function init() {
  */
 export async function verifyCliAvailability() {
   const config = loadConfig();
-  // check if required CLIs are installed
-  if (config.connected.GCP && !await checkCLI(PlatformCommand.GCP)) {
+
+  // run checks concurrently to improve responsiveness of collie
+  // checking a cloud provider cli typically takes ~500ms each (most are implemented in Python), so the speedup
+  // we gain from this is significant and perceivable
+  const verifications: Promise<void>[] = [];
+  for (const platform in MeshPlatform) {
+    const promise = verifyConnectedCliInstalled(config, platform as MeshPlatform);
+    verifications.push(promise);
+  }
+
+  await Promise.all(verifications);
+}
+
+async function verifyConnectedCliInstalled(config :Config, platform: MeshPlatform) {
+  const cmd = PlatformCommand[platform];
+  if (config.connected[platform] && await !checkCliInstalled(cmd)) {
     throw new MeshError(
-      `gcloud cli is not installed. Please disconnect platform via "${CLICommand} config -d GCP"`,
+      `${platform} cloud cli "${cmd}" is not installed. Please disconnect platform via "${CLICommand} config -d ${platform}"`,
     );
   }
-  if (config.connected.AWS && !await checkCLI(PlatformCommand.AWS)) {
-    throw new MeshError(
-      `aws cli is not installed. Please disconnect platform via "${CLICommand} config -d AWS"`,
-    );
+}
+
+async function checkCliInstalled(cli: string): Promise<boolean> {
+  const shellRunner = new ShellRunner();
+  var code = 0;
+  try {
+    code = (await (shellRunner.run(`${cli} --version`))).code;
+  } catch {
+    code = -1;
   }
-  if (config.connected.Azure && !await checkCLI(PlatformCommand.Azure)) {
-    throw new MeshError(
-      `azure cli (az) is not installed. Please disconnect platform via "${CLICommand} config -d Azure"`,
-    );
-  }
+
+  return code === 0;
 }
