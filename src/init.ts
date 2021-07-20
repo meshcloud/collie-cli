@@ -1,5 +1,5 @@
 import { exists, log } from "./deps.ts";
-import { askYesNo, readFile } from "./commands/io.ts";
+import { askYesNo } from "./commands/io.ts";
 import { ShellRunner } from "./process/shell-runner.ts";
 import {
   CLICommand,
@@ -7,12 +7,12 @@ import {
   Config,
   configFilePath,
   emptyConfig,
+  loadConfig,
   PlatformCommand,
   writeConfig,
 } from "./config/config.model.ts";
 import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
 import { MeshError } from "./errors.ts";
-import { parseJsonWithLog } from "./json.ts";
 
 function objectsHaveSameKeys(
   // deno-lint-ignore no-explicit-any
@@ -109,32 +109,15 @@ async function checkIfConfigExists() {
 
 export async function init() {
   // check if config file exists
-  if (!(Deno.args[0] === "config")) {
+  if (Deno.args[0] !== "config") {
     await checkIfConfigExists();
 
     // check if config file is valid
-    const config = parseJsonWithLog<Config>(readFile(configFilePath));
+    const config = loadConfig();
 
     if (!objectsHaveSameKeys(emptyConfig, config)) {
       throw new MeshError(
         `Configuration does not match the required format. Please delete the config File at ${configFilePath} and run "${CLICommand} config" again`,
-      );
-    }
-
-    // check if required CLIs are installed
-    if (config.connected.GCP && !await checkCLI(PlatformCommand.GCP)) {
-      throw new MeshError(
-        `gcloud cli is not installed. Please disconnect platform via "${CLICommand} config -d GCP"`,
-      );
-    }
-    if (config.connected.AWS && !await checkCLI(PlatformCommand.AWS)) {
-      throw new MeshError(
-        `aws cli is not installed. Please disconnect platform via "${CLICommand} config -d AWS"`,
-      );
-    }
-    if (config.connected.Azure && !await checkCLI(PlatformCommand.Azure)) {
-      throw new MeshError(
-        `azure cli (az) is not installed. Please disconnect platform via "${CLICommand} config -d Azure"`,
       );
     }
 
@@ -148,5 +131,29 @@ export async function init() {
       );
       Deno.exit(0);
     }
+  }
+}
+
+/**
+ * Checks the availability of the configured CLIs. If they are missing then the collie run is aborted.
+ * Should be checked before a cloud relevant call is initiated.
+ */
+export async function verifyCliAvailability() {
+  const config = loadConfig();
+  // check if required CLIs are installed
+  if (config.connected.GCP && !await checkCLI(PlatformCommand.GCP)) {
+    throw new MeshError(
+      `gcloud cli is not installed. Please disconnect platform via "${CLICommand} config -d GCP"`,
+    );
+  }
+  if (config.connected.AWS && !await checkCLI(PlatformCommand.AWS)) {
+    throw new MeshError(
+      `aws cli is not installed. Please disconnect platform via "${CLICommand} config -d AWS"`,
+    );
+  }
+  if (config.connected.Azure && !await checkCLI(PlatformCommand.Azure)) {
+    throw new MeshError(
+      `azure cli (az) is not installed. Please disconnect platform via "${CLICommand} config -d Azure"`,
+    );
   }
 }
