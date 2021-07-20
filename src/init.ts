@@ -134,14 +134,20 @@ export async function verifyCliAvailability() {
   // we gain from this is significant and perceivable
   const verifications: Promise<void>[] = [];
   for (const platform in MeshPlatform) {
-    const promise = verifyConnectedCliInstalled(config, platform as MeshPlatform);
+    const promise = verifyConnectedCliInstalled(
+      config,
+      platform as MeshPlatform,
+    );
     verifications.push(promise);
   }
 
   await Promise.all(verifications);
 }
 
-async function verifyConnectedCliInstalled(config :Config, platform: MeshPlatform) {
+async function verifyConnectedCliInstalled(
+  config: Config,
+  platform: MeshPlatform,
+) {
   const cmd = PlatformCommand[platform];
   if (config.connected[platform] && await !checkCliInstalled(cmd)) {
     throw new MeshError(
