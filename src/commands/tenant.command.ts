@@ -112,8 +112,8 @@ export function registerTenantCommand(program: Command) {
 }
 
 async function listTenantAction(options: CmdGlobalOptions) {
+  await setupLogger(options);
   await verifyCliAvailability();
-  setupLogger(options);
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
@@ -130,8 +130,8 @@ async function listTenantAction(options: CmdGlobalOptions) {
 }
 
 async function listIamAction(options: CmdIamOptions) {
+  await setupLogger(options);
   await verifyCliAvailability();
-  setupLogger(options);
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
@@ -151,8 +151,8 @@ async function listIamAction(options: CmdIamOptions) {
 }
 
 export async function listTenantsCostAction(options: CmdListCostsOptions) {
+  await setupLogger(options);
   await verifyCliAvailability();
-  setupLogger(options);
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
@@ -183,8 +183,8 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
 }
 
 async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
+  await setupLogger(options);
   await verifyCliAvailability();
-  setupLogger(options);
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
