@@ -29,7 +29,7 @@ export async function setupLogger(options: CmdGlobalOptions) {
   // keep the function usage simple and argument count low.
   if (!isatty) {
     // We disable logging when somebody is using pipes (|) or redirects (>)
-    defaultLogLevel.loggers = {};
+    defaultLogLevel.loggers!.default!.handlers = [];
   }
 
   await log.setup(defaultLogLevel);

@@ -106,3 +106,6 @@ dist
 .tern-port
 
 .idea/
+
+# bin folder with build artifacts
+bin/

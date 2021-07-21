@@ -43,7 +43,7 @@ export class CsvTenantUsagePresenter extends CsvTenantPresenter {
 
     row.push(moment(tenantCost.from).toISOString());
     row.push(moment(tenantCost.to).toISOString());
-    row.push(tenantCost.totalUsageCost);
+    row.push(tenantCost.cost);
     row.push(tenantCost.currency);
 
     // Add the tags here in the right order to the current row.

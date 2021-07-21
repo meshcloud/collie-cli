@@ -8,7 +8,7 @@ import {
 } from "../errors.ts";
 import { log } from "../deps.ts";
 import { CLICommand } from "../config/config.model.ts";
-import { parseJsonWithLog } from "../json.ts";
+import { parseJsonStdoutWithLog } from "../json.ts";
 
 export class GcpCliFacade {
   constructor(
@@ -17,19 +17,22 @@ export class GcpCliFacade {
   private unauthorizedProject = /User is not permitted/;
 
   async listProjects(): Promise<Project[]> {
+    const command = "gcloud projects list --format json";
     const result = await this.shellRunner.run(
-      "gcloud projects list --format json",
+      command,
     );
     this.checkForErrors(result);
 
     log.debug(`listProjects: ${JSON.stringify(result)}`);
 
-    return parseJsonWithLog<Project[]>(result.stdout);
+    return parseJsonStdoutWithLog<Project[]>(result, command);
   }
 
   async listIamPolicy(project: Project): Promise<IamResponse[]> {
+    const command =
+      `gcloud projects get-ancestors-iam-policy ${project.projectId} --format json`;
     const result = await this.shellRunner.run(
-      `gcloud projects get-ancestors-iam-policy ${project.projectId} --format json`,
+      command,
     );
 
     try {
@@ -48,7 +51,7 @@ export class GcpCliFacade {
 
     log.debug(`listIamPolicy: ${JSON.stringify(result)}`);
 
-    return JSON.parse(result.stdout) as IamResponse[];
+    return parseJsonStdoutWithLog<IamResponse[]>(result, command);
   }
 
   private checkForErrors(result: ShellOutput) {
@@ -65,7 +68,7 @@ export class GcpCliFacade {
         );
       } else {
         log.info(
-          `You are not logged in into GCP CLI. Please disconnect GCP with "${CLICommand} config --disconnect GCP or login into GCP CLI."`,
+          `You are not logged in into GCP CLI. Please login with "gcloud auth login" or disconnect with "${CLICommand} config --disconnect"`,
         );
         throw new MeshNotLoggedInError(result.stderr);
       }

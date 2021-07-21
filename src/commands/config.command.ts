@@ -2,6 +2,7 @@ import {
   CLICommand,
   CLIName,
   configFilePath,
+  ConnectedConfig,
   emptyConfig,
   loadConfig,
   writeConfig,
@@ -13,7 +14,6 @@ import { MeshPlatform } from "../mesh/mesh-tenant.model.ts";
 import { ConfigTableViewGenerator } from "../presentation/config-table-view-generator.ts";
 import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
 import { CmdGlobalOptions } from "./cmd-options.ts";
-import { readFile, writeFile } from "./io.ts";
 import { isatty } from "./tty.ts";
 
 type Platform = MeshPlatform[number];
@@ -44,7 +44,7 @@ export function registerConfigCmd(program: Command) {
       "Disconnect from Google Cloud Platform",
       `${CLICommand} config --disconnect GCP`,
     )
-    .action(configurePlatforms);
+    .action((opts) => configurePlatforms(opts, connectCmd));
 
   program.command("config", connectCmd);
 
@@ -97,17 +97,17 @@ function configurePlatforms(options: CmdConfigOpts, program: Command) {
     if (!ex) {
       await writeConfig(emptyConfig);
     }
-    changeConfig(options, program);
+    await changeConfig(options, program);
   });
 }
 
-function changeConfig(options: CmdConfigOpts, program: Command) {
+async function changeConfig(options: CmdConfigOpts, program: Command) {
   if (options.connect || options.disconnect) {
-    const json = JSON.parse(readFile(configFilePath));
+    const config = loadConfig();
     if (options.connect) {
-      json.connected[options.connect] = true;
+      config.connected[options.connect as keyof ConnectedConfig] = true;
     } else if (options.disconnect) {
-      json.connected[options.disconnect] = false;
+      config.connected[options.disconnect as keyof ConnectedConfig] = false;
     }
 
     // Cache must be invalidated after a connection has happened in order to fetch the latest data.
@@ -117,7 +117,7 @@ function changeConfig(options: CmdConfigOpts, program: Command) {
     const repository = newMeshTenantRepository();
     repository.clearAll();
 
-    writeFile(configFilePath, JSON.stringify(json));
+    await writeConfig(config);
     log.info(`Changed config file in ${configFilePath}`);
   } else {
     program.showHelp();

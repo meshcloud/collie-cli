@@ -1,9 +1,12 @@
+import { log } from "../deps.ts";
 import { ShellOutput } from "./shell-output.ts";
 import { IShellRunner } from "./shell-runner.interface.ts";
 
 export class ShellRunner implements IShellRunner {
   public async run(commandStr: string): Promise<ShellOutput> {
     const commands = commandStr.split(" ");
+
+    log.debug(`ShellRunner running '${commandStr}'`);
 
     const p = Deno.run({
       cmd: commands,
@@ -15,6 +18,8 @@ export class ShellRunner implements IShellRunner {
     const rawOutput = await p.output();
     const rawError = await p.stderrOutput();
     const { code } = await p.status();
+
+    log.debug(`Exit code for running '${commandStr}' is ${code}`);
 
     return {
       code: code,

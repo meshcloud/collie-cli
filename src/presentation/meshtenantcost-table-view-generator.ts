@@ -18,9 +18,8 @@ export class MeshTenantCostTableViewGenerator implements TableGenerator {
     const rows: Array<string>[] = [];
 
     this.meshTenants.forEach((mt) => {
-      const row: string[] = [];
-
       mt.costs.forEach((mc) => {
+        const row: string[] = [];
         this.columns.forEach((column: string, index: number) => {
           // Typing here is suboptimal as this is a key now not present anymore in the MeshTenantCosts.
           // However it will work as we redirect here to the tenant itself.
@@ -31,11 +30,11 @@ export class MeshTenantCostTableViewGenerator implements TableGenerator {
             row[index] = mc[x].toString();
           }
         });
-      });
 
-      if (row.length > 0) {
-        rows.push(row);
-      }
+        if (row.length > 0) {
+          rows.push(row);
+        }
+      });
     });
 
     return rows;
