@@ -99,7 +99,6 @@ export class CliDetector {
     }
 
     const regex = this.supportedCliVersionRegex(cli);
-    log.debug(result.stdout);
 
     return regex.test(result.stdout)
       ? PlatformCommandInstallationStatus.Installed
