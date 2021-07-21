@@ -38,3 +38,5 @@ export enum MeshPlatform {
   Azure = "Azure",
   GCP = "GCP",
 }
+
+export const MeshPlatforms = Object.values(MeshPlatform);

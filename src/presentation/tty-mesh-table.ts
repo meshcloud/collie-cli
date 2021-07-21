@@ -18,11 +18,10 @@ export class TtyMeshTable implements MeshTable {
       .border(true)
       .render();
 
+    const entries = rows.length > 1 ? "entries" : "entry";
     console.log(
       brightBlue(
-        `${rows.length} ${
-          rows.length > 1 ? "entries" : "entry"
-        }. ${generator.getInfo()}`,
+        `${rows.length} ${entries}. ${generator.getInfo()}`,
       ),
     );
   }

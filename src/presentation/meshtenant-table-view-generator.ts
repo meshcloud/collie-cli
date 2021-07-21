@@ -1,7 +1,7 @@
 import { dim, yellow } from "../deps.ts";
 
 import { Table } from "../deps.ts";
-import { MeshPlatform, MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshPlatforms, MeshTenant } from "../mesh/mesh-tenant.model.ts";
 import { MeshTableTag, TableGenerator } from "./mesh-table.ts";
 
 export class MeshTenantTableViewGenerator implements TableGenerator {
@@ -43,14 +43,11 @@ export class MeshTenantTableViewGenerator implements TableGenerator {
   }
 
   getInfo(): string {
-    const gcpCount =
-      this.meshTenants.filter((mt) => mt.platform === MeshPlatform.GCP).length;
-    const awsCount =
-      this.meshTenants.filter((mt) => mt.platform === MeshPlatform.AWS).length;
-    const azureCount =
-      this.meshTenants.filter((mt) => mt.platform === MeshPlatform.Azure)
-        .length;
+    const counts = MeshPlatforms.map((mp) => {
+      const count = this.meshTenants.filter((mt) => mt.platform === mp).length;
+      return `${mp}: ${count}`;
+    });
 
-    return `GCP: ${gcpCount}, AWS: ${awsCount}, Azure: ${azureCount}`;
+    return counts.join(", ");
   }
 }
