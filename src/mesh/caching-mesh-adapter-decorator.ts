@@ -4,7 +4,7 @@ import { log, moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
 import { MeshAdapter } from "./mesh-adapter.ts";
 import { MeshTenant } from "./mesh-tenant.model.ts";
-import { QuerySource, QueryStatistics } from "./query-statistics.ts";
+import { QueryStatistics } from "./query-statistics.ts";
 
 /**
  * This adapter will try to fetch tenant data first from the local cache before
@@ -22,7 +22,6 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     if (await this.repository.isTenantCollectionValid()) {
       log.debug("Repository is valid. Fetching tenants from cache.");
 
-      stats.source = QuerySource.Cache;
       return stats.recordQuery(
         "cache",
         async () => await this.repository.loadTenants(),
@@ -178,8 +177,6 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
   private async getCachedTenantsMappedById(
     stats: QueryStatistics,
   ): Promise<Map<string, MeshTenant>> {
-    stats.source = QuerySource.Cache;
-
     return await stats.recordQuery("cache", async () => {
       const cachedTenants = await this.repository.loadTenants();
       const cachedTenantsById = new Map<string, MeshTenant>();
