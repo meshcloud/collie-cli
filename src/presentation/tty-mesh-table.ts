@@ -43,6 +43,6 @@ export class TtyMeshTable implements MeshTable {
       .entries(stats.duration)
       .map(([cloud, d]) => `${cloud}: ${(d || 0) / 1000}s`);
 
-    return `Queried from cloud in ${cloudstats.join(", ")}.`;
+    return `Queried from cloud - ${cloudstats.join(", ")}.`;
   }
 }
