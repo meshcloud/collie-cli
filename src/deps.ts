@@ -20,6 +20,7 @@ export {
   brightBlue,
   dim,
   green,
+  italic,
   red,
   yellow,
 } from "https://deno.land/std@0.99.0/fmt/colors.ts";

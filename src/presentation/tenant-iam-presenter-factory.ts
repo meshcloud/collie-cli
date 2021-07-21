@@ -12,6 +12,7 @@ import { MeshRoleAssignmentSource } from "../mesh/mesh-iam-model.ts";
 import { TablePresenter } from "./table-presenter.ts";
 import { MeshTableFactory } from "./mesh-table-factory.ts";
 import { MeshTenantIamTableViewGenerator } from "./meshtenant-iam-table-view.ts";
+import { QueryStatistics } from "../mesh/mesh-adapter.ts";
 
 // This buildPresenter & individual methods might be a good argument for building a parent abstract class to DRY.
 export class TenantIamPresenterFactory {
@@ -24,6 +25,7 @@ export class TenantIamPresenterFactory {
     format: OutputFormat,
     includeAncestors: boolean,
     meshTenants: MeshTenant[],
+    stats: QueryStatistics,
   ): Presenter {
     // If includeAncestors is not given, we will remove those roleAssignments so they will not be presented to the user.
     if (!includeAncestors) {
@@ -35,7 +37,7 @@ export class TenantIamPresenterFactory {
       }
     }
     if (format === OutputFormat.TABLE) {
-      return this.buildTablePresenter(meshTenants, includeAncestors);
+      return this.buildTablePresenter(meshTenants, includeAncestors, stats);
     } else if (format === OutputFormat.JSON) {
       return this.buildJsonPresenter(meshTenants);
     } else if (format === OutputFormat.YAML) {
@@ -50,6 +52,7 @@ export class TenantIamPresenterFactory {
   private buildTablePresenter(
     meshTenants: MeshTenant[],
     includeAncestors: boolean,
+    stats: QueryStatistics,
   ): Presenter {
     const tableViewGenerator = new MeshTenantIamTableViewGenerator(
       meshTenants,
@@ -65,6 +68,7 @@ export class TenantIamPresenterFactory {
     return new TablePresenter(
       tableViewGenerator,
       this.tableFactory.buildMeshTable(),
+      stats,
     );
   }
 

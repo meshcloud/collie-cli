@@ -1,4 +1,4 @@
-import { MeshAdapter } from "./mesh-adapter.ts";
+import { MeshAdapter, QueryStatistics } from "./mesh-adapter.ts";
 import { MeshTenant } from "./mesh-tenant.model.ts";
 
 export class MultiMeshAdapter implements MeshAdapter {
@@ -6,10 +6,12 @@ export class MultiMeshAdapter implements MeshAdapter {
     private readonly adapters: MeshAdapter[],
   ) {}
 
-  async getMeshTenants(): Promise<MeshTenant[]> {
-    const promises = this.adapters.map((x) => x.getMeshTenants());
+  async getMeshTenants(stats: QueryStatistics): Promise<MeshTenant[]> {
+    const promises = this.adapters.map((x) => x.getMeshTenants(stats));
 
-    return (await Promise.all(promises)).flatMap((x) => x);
+    const all = await Promise.all(promises);
+
+    return all.flatMap((x) => x);
   }
 
   async attachTenantCosts(

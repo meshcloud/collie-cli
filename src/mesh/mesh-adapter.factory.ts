@@ -18,6 +18,8 @@ import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { CachingMeshAdapterDecorator } from "./caching-mesh-adapter-decorator.ts";
 import { isatty, TTY } from "../commands/tty.ts";
 import { AzureCliFacade } from "../azure/azure-cli-facade.ts";
+import { StatsMeshAdapterDecorator } from "./stats-mesh-adapter-decorator.ts";
+import { MeshPlatform } from "./mesh-tenant.model.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -37,12 +39,14 @@ export class MeshAdapterFactory {
       shellRunner = new LoaderShellRunner(shellRunner, new TTY());
     }
     const timeWindowCalc = new TimeWindowCalculator();
-    const adapters = [];
+    const adapters: MeshAdapter[] = [];
 
     if (this.config.connected.AWS) {
       const aws = new AwsCliFacade(shellRunner);
       const awsAdapter = new AwsMeshAdapter(aws);
-      adapters.push(awsAdapter);
+      const stats = new StatsMeshAdapterDecorator(awsAdapter, MeshPlatform.AWS);
+
+      adapters.push(stats);
     }
 
     if (this.config.connected.Azure) {
@@ -62,13 +66,20 @@ export class MeshAdapterFactory {
         retryingDecorator,
         timeWindowCalc,
       );
-      adapters.push(azureAdapter);
+
+      const stats = new StatsMeshAdapterDecorator(
+        azureAdapter,
+        MeshPlatform.Azure,
+      );
+      adapters.push(stats);
     }
 
     if (this.config.connected.GCP) {
       const gcp = new GcpCliFacade(shellRunner);
       const gcpAdapter = new GcpMeshAdapter(gcp);
-      adapters.push(gcpAdapter);
+      const stats = new StatsMeshAdapterDecorator(gcpAdapter, MeshPlatform.GCP);
+
+      adapters.push(stats);
     }
 
     // There are multiple ways of doing it. Currently we only fetch everything or nothing, which is easier I guess.

@@ -134,5 +134,5 @@ function showConfig() {
   // that would be a bit overengineering.
   const tableFactory = new MeshTableFactory(isatty);
   const meshTable = tableFactory.buildMeshTable();
-  meshTable.draw(viewGenerator);
+  meshTable.draw(viewGenerator, null);
 }

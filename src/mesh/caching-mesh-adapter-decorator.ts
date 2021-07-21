@@ -2,7 +2,7 @@ import { MeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { Meta } from "../db/meta.ts";
 import { log, moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
-import { MeshAdapter } from "./mesh-adapter.ts";
+import { MeshAdapter, QuerySource, QueryStatistics } from "./mesh-adapter.ts";
 import { MeshTenant } from "./mesh-tenant.model.ts";
 
 /**
@@ -16,16 +16,21 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
   ) {
   }
 
-  async getMeshTenants(): Promise<MeshTenant[]> {
+  async getMeshTenants(stats: QueryStatistics): Promise<MeshTenant[]> {
     // Update meta info
     if (await this.repository.isTenantCollectionValid()) {
       log.debug("Repository is valid. Fetching tenants from cache.");
-      return this.repository.loadTenants();
+
+      stats.source = QuerySource.Cache;
+      return stats.recordQuery(
+        "cache",
+        async () => await this.repository.loadTenants(),
+      );
     } else {
       log.debug(
         "Repository is not valid anymore. Fetching fresh tenants from cloud.",
       );
-      const tenants = await this.meshAdapter.getMeshTenants();
+      const tenants = await this.meshAdapter.getMeshTenants(stats);
 
       // Transfer cost data from cached repo tenants to new collected tenants.
       for (const t of tenants) {

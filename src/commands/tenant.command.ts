@@ -11,6 +11,7 @@ import { CLICommand, loadConfig } from "../config/config.model.ts";
 import { isatty } from "./tty.ts";
 import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
 import { verifyCliAvailability } from "../init.ts";
+import { QueryStatistics } from "../mesh/mesh-adapter.ts";
 
 interface CmdListCostsOptions extends CmdGlobalOptions {
   from: string;
@@ -118,13 +119,17 @@ async function listTenantAction(options: CmdGlobalOptions) {
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
-  const allTenants = await meshAdapter.getMeshTenants();
+
+  const stats = new QueryStatistics();
+  const allTenants = await meshAdapter.getMeshTenants(stats);
+
   const tableFactory = new MeshTableFactory(isatty);
 
   const presenterFactory = new TenantListPresenterFactory(tableFactory);
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
+    stats,
   );
   presenter.present();
 }
@@ -136,7 +141,10 @@ async function listIamAction(options: CmdIamOptions) {
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
-  const allTenants = await meshAdapter.getMeshTenants();
+
+  const stats = new QueryStatistics();
+  const allTenants = await meshAdapter.getMeshTenants(stats);
+
   await meshAdapter.attachTenantRoleAssignments(allTenants);
 
   const tableFactory = new MeshTableFactory(isatty);
@@ -146,6 +154,7 @@ async function listIamAction(options: CmdIamOptions) {
       options.output,
       options.includeAncestors,
       allTenants,
+      stats,
     )
     .present();
 }
@@ -164,7 +173,8 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
 
   // Every of these methods can throw e.g. because a CLI tool was not installed we should think about
   // how to do error management to improve UX.
-  const allTenants = await meshAdapter.getMeshTenants();
+  const stats = new QueryStatistics();
+  const allTenants = await meshAdapter.getMeshTenants(stats);
 
   await meshAdapter.attachTenantCosts(
     allTenants,
@@ -178,6 +188,7 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
+    stats,
   );
   presenter.present();
 }
@@ -190,7 +201,8 @@ async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
 
-  const allTenants = await meshAdapter.getMeshTenants();
+  const stats = new QueryStatistics();
+  const allTenants = await meshAdapter.getMeshTenants(stats);
 
   let tagList: string[] = [];
   if (options.tags) {
