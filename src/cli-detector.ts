@@ -1,11 +1,15 @@
 import {
-  CLICommand, Config, emptyConfig, loadConfig, PlatformCommand
-} from './config/config.model.ts';
-import { log } from './deps.ts';
-import { MeshError } from './errors.ts';
-import { MeshPlatform } from './mesh/mesh-tenant.model.ts';
+  CLICommand,
+  Config,
+  emptyConfig,
+  loadConfig,
+  PlatformCommand,
+} from "./config/config.model.ts";
+import { log } from "./deps.ts";
+import { MeshError } from "./errors.ts";
+import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
 import { ShellOutput } from "./process/shell-output.ts";
-import { ShellRunner } from './process/shell-runner.ts';
+import { ShellRunner } from "./process/shell-runner.ts";
 
 export enum PlatformCommandInstallationStatus {
   Installed,
@@ -16,13 +20,14 @@ export enum PlatformCommandInstallationStatus {
 export class CliDetector {
   private shellRunner = new ShellRunner();
 
-
   async getInstalledClis(): Promise<Config> {
     const config: Config = emptyConfig;
 
     for (const platform in MeshPlatform) {
       const mp = platform as MeshPlatform;
-      const installationStatus = await this.checkCliInstalled(PlatformCommand[mp]);
+      const installationStatus = await this.checkCliInstalled(
+        PlatformCommand[mp],
+      );
       if (installationStatus == PlatformCommandInstallationStatus.Installed) {
         config.connected[mp] = true;
       }
@@ -80,14 +85,15 @@ export class CliDetector {
   private async checkCliInstalled(
     cli: PlatformCommand,
   ): Promise<PlatformCommandInstallationStatus> {
-
     const result = await this.runVersionCommand(cli);
 
     return this.determineInstallationStatus(cli, result);
-
   }
 
-  public determineInstallationStatus(cli: PlatformCommand, result: ShellOutput) {
+  public determineInstallationStatus(
+    cli: PlatformCommand,
+    result: ShellOutput,
+  ) {
     if (result.code !== 0) {
       return PlatformCommandInstallationStatus.NotInstalled;
     }
@@ -106,7 +112,7 @@ export class CliDetector {
     try {
       return await this.shellRunner.run(`${cli} --version`);
     } catch {
-      return { code: -1, stderr: "", stdout: "" }
+      return { code: -1, stderr: "", stdout: "" };
     }
   }
 
@@ -122,4 +128,3 @@ export class CliDetector {
     }
   }
 }
-

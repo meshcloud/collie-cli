@@ -1,4 +1,7 @@
-import { CliDetector, PlatformCommandInstallationStatus } from "./cli-detector.ts";
+import {
+  CliDetector,
+  PlatformCommandInstallationStatus,
+} from "./cli-detector.ts";
 import { PlatformCommand } from "./config/config.model.ts";
 import { assertEquals } from "./dev-deps.ts";
 
@@ -7,12 +10,12 @@ Deno.test("detects aws cli version correct", () => {
   const out = {
     code: 0,
     stdout: "aws-cli/2.2.20 Python/3.8.8 Darwin/20.5.0 exe/x86_64 prompt/off",
-    stderr: ""
+    stderr: "",
   };
 
   const result = sut.determineInstallationStatus(PlatformCommand.AWS, out);
 
-  assertEquals(result, PlatformCommandInstallationStatus.Installed)
+  assertEquals(result, PlatformCommandInstallationStatus.Installed);
 });
 
 Deno.test("detects aws cli version incorrect", () => {
@@ -20,12 +23,12 @@ Deno.test("detects aws cli version incorrect", () => {
   const out = {
     code: 0,
     stdout: "aws-cli/1.2.9 Python/3.4.3 Linux/3.13.0-85-generic",
-    stderr: ""
+    stderr: "",
   };
 
   const result = sut.determineInstallationStatus(PlatformCommand.AWS, out);
 
-  assertEquals(result, PlatformCommandInstallationStatus.UnsupportedVersion)
+  assertEquals(result, PlatformCommandInstallationStatus.UnsupportedVersion);
 });
 
 Deno.test("detects aws cli not installed", () => {
@@ -33,20 +36,19 @@ Deno.test("detects aws cli not installed", () => {
   const out = {
     code: 127,
     stdout: " aws: command not found",
-    stderr: ""
+    stderr: "",
   };
 
   const result = sut.determineInstallationStatus(PlatformCommand.AWS, out);
 
-  assertEquals(result, PlatformCommandInstallationStatus.NotInstalled)
+  assertEquals(result, PlatformCommandInstallationStatus.NotInstalled);
 });
 
 Deno.test("detects gcloud cli version correct", () => {
   const sut = new CliDetector();
   const out = {
     code: 0,
-    stdout:
-      `Google Cloud SDK 315.0.0
+    stdout: `Google Cloud SDK 315.0.0
 bq 2.0.62
 core 2020.10.16
 gsutil 4.53
@@ -55,21 +57,19 @@ gsutil 4.53
 To take a quick anonymous survey, run:
   $ gcloud survey
     `,
-    stderr: ""
+    stderr: "",
   };
 
   const result = sut.determineInstallationStatus(PlatformCommand.GCP, out);
 
-  assertEquals(result, PlatformCommandInstallationStatus.Installed)
+  assertEquals(result, PlatformCommandInstallationStatus.Installed);
 });
-
 
 Deno.test("detects az cli version correct", () => {
   const sut = new CliDetector();
   const out = {
     code: 0,
-    stdout:
-      `az --version
+    stdout: `az --version
 azure-cli                         2.14.2 *
 
 core                              2.14.2 *
@@ -92,10 +92,10 @@ You have 2 updates available. Consider updating your CLI installation with 'az u
 Please let us know how we are doing: https://aka.ms/azureclihats
 and let us know if you're interested in trying out our newest features: https://aka.ms/CLIUXstudy
 `,
-    stderr: ""
+    stderr: "",
   };
 
   const result = sut.determineInstallationStatus(PlatformCommand.Azure, out);
 
-  assertEquals(result, PlatformCommandInstallationStatus.Installed)
+  assertEquals(result, PlatformCommandInstallationStatus.Installed);
 });

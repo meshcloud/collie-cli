@@ -1,13 +1,18 @@
 import { CliDetector } from "./cli-detector.ts";
-import { askYesNo } from './commands/io.ts';
+import { askYesNo } from "./commands/io.ts";
 import {
-    CLICommand, CLIName, configFilePath, emptyConfig, loadConfig, writeConfig
-} from './config/config.model.ts';
-import { exists, log } from './deps.ts';
-import { MeshError } from './errors.ts';
-import { MeshPlatform } from './mesh/mesh-tenant.model.ts';
+  CLICommand,
+  CLIName,
+  configFilePath,
+  emptyConfig,
+  loadConfig,
+  writeConfig,
+} from "./config/config.model.ts";
+import { exists, log } from "./deps.ts";
+import { MeshError } from "./errors.ts";
+import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
 
-const detector = new CliDetector()
+const detector = new CliDetector();
 
 function objectsHaveSameKeys(
   // deno-lint-ignore no-explicit-any
@@ -40,7 +45,6 @@ function objectsHaveSameKeys(
     return true;
   }
 }
-
 
 async function checkIfConfigExists() {
   const exist = await exists(configFilePath);
@@ -109,6 +113,6 @@ export async function init() {
    * Checks the availability of the configured CLIs. If they are missing then the collie run is aborted.
    * Should be checked before a cloud relevant call is initiated.
    */
- export async function verifyCliAvailability() {
-    await detector.verifyCliAvailability(); 
- }
+export async function verifyCliAvailability() {
+  await detector.verifyCliAvailability();
+}
