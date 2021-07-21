@@ -1,24 +1,13 @@
-import { askYesNo } from "./commands/io.ts";
+import { CliDetector } from "./cli-detector.ts";
+import { askYesNo } from './commands/io.ts';
 import {
-  CLICommand,
-  CLIName,
-  Config,
-  configFilePath,
-  emptyConfig,
-  loadConfig,
-  PlatformCommand,
-  writeConfig,
-} from "./config/config.model.ts";
-import { exists, log } from "./deps.ts";
-import { MeshError } from "./errors.ts";
-import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
-import { ShellRunner } from "./process/shell-runner.ts";
+    CLICommand, CLIName, configFilePath, emptyConfig, loadConfig, writeConfig
+} from './config/config.model.ts';
+import { exists, log } from './deps.ts';
+import { MeshError } from './errors.ts';
+import { MeshPlatform } from './mesh/mesh-tenant.model.ts';
 
-enum PlatformCommandInstallationStatus {
-  Installed,
-  UnsupportedVersion,
-  NotInstalled,
-}
+const detector = new CliDetector()
 
 function objectsHaveSameKeys(
   // deno-lint-ignore no-explicit-any
@@ -52,19 +41,6 @@ function objectsHaveSameKeys(
   }
 }
 
-async function getInstalledClis(): Promise<Config> {
-  const config: Config = emptyConfig;
-
-  for (const platform in MeshPlatform) {
-    const mp = platform as MeshPlatform;
-    const installationStatus = await checkCliInstalled(PlatformCommand[mp]);
-    if (installationStatus == PlatformCommandInstallationStatus.Installed) {
-      config.connected[mp] = true;
-    }
-  }
-
-  return config;
-}
 
 async function checkIfConfigExists() {
   const exist = await exists(configFilePath);
@@ -75,7 +51,8 @@ async function checkIfConfigExists() {
     log.info(
       "... searching for installed cloud CLIs",
     );
-    const config = await getInstalledClis();
+
+    const config = await detector.getInstalledClis();
     const platforms: string[] = [];
     Object.keys(config.connected).forEach((val) => {
       const con = val as MeshPlatform;
@@ -129,83 +106,9 @@ export async function init() {
 }
 
 /**
- * Checks the availability of the configured CLIs. If they are missing then the collie run is aborted.
- * Should be checked before a cloud relevant call is initiated.
- */
-export async function verifyCliAvailability() {
-  const config = loadConfig();
-
-  // run checks concurrently to improve responsiveness of collie
-  // checking a cloud provider cli typically takes ~500ms each (most are implemented in Python), so the speedup
-  // we gain from this is significant and perceivable
-  const verifications: Promise<void>[] = [];
-  for (const platform in MeshPlatform) {
-    const promise = verifyConnectedCliInstalled(
-      config,
-      platform as MeshPlatform,
-    );
-    verifications.push(promise);
-  }
-
-  await Promise.all(verifications);
-}
-
-async function verifyConnectedCliInstalled(
-  config: Config,
-  platform: MeshPlatform,
-) {
-  const cmd = PlatformCommand[platform];
-  if (!config.connected[platform]) {
-    return;
-  }
-
-  const status = await checkCliInstalled(cmd);
-  switch (status) {
-    case PlatformCommandInstallationStatus.NotInstalled:
-      throw new MeshError(
-        `${platform} cloud cli "${cmd}" is not installed. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions or disconnect platform via "${CLICommand} config -d ${platform}".`,
-      );
-    case PlatformCommandInstallationStatus.UnsupportedVersion:
-      throw new MeshError(
-        `${platform} cloud cli "${cmd}" is not installed in a supported version. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions or disconnect platform via "${CLICommand} config -d ${platform}".`,
-      );
-    case PlatformCommandInstallationStatus.Installed:
-      log.debug(`CLI ${cmd} is correctly installed.`);
-      break;
-  }
-}
-
-async function checkCliInstalled(
-  cli: PlatformCommand,
-): Promise<PlatformCommandInstallationStatus> {
-  const shellRunner = new ShellRunner();
-
-  try {
-    const result = await shellRunner.run(`${cli} --version`);
-
-    if (result.code !== 0) {
-      return PlatformCommandInstallationStatus.NotInstalled;
-    }
-
-    const regex = supportedCliVersionRegex(cli);
-    log.debug(result.stdout);
-
-    return regex.test(result.stdout)
-      ? PlatformCommandInstallationStatus.Installed
-      : PlatformCommandInstallationStatus.UnsupportedVersion;
-  } catch {
-    return PlatformCommandInstallationStatus.NotInstalled;
-  }
-}
-
-function supportedCliVersionRegex(cli: PlatformCommand): RegExp {
-  // TODO: maybe this should be part of the CLI facades
-  switch (cli) {
-    case PlatformCommand.AWS:
-      return /^aws-cli\/2\./;
-    case PlatformCommand.GCP:
-      return /^Google Cloud SDK/;
-    case PlatformCommand.Azure:
-      return /azure-cli\s+2\./;
-  }
-}
+   * Checks the availability of the configured CLIs. If they are missing then the collie run is aborted.
+   * Should be checked before a cloud relevant call is initiated.
+   */
+ export async function verifyCliAvailability() {
+    await detector.verifyCliAvailability(); 
+ }
