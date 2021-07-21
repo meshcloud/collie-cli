@@ -171,7 +171,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     subscription: Subscription,
   ): Promise<RoleAssignment[]> {
     const cmd =
-      `az role assignment list --subscription ${subscription.name} --include-inherited --all --output json`;
+      `az role assignment list --subscription ${subscription.id} --include-inherited --all --output json`;
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
