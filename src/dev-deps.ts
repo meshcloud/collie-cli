@@ -5,7 +5,10 @@
 export * from "https://deno.land/x/mock@v0.10.0/mod.ts";
 export { stub } from "https://deno.land/x/mock@v0.9.5/stub.ts";
 export {
+  assert,
   assertEquals,
+  assertMatch,
   assertThrows,
   assertThrowsAsync,
 } from "https://deno.land/std@0.98.0/testing/asserts.ts";
+export { delay } from "https://deno.land/std@0.98.0/async/mod.ts";
