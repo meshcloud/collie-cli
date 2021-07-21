@@ -3,17 +3,16 @@ import { askYesNo } from "./commands/io.ts";
 import {
   CLICommand,
   CLIName,
-  Config,
   configFilePath,
   emptyConfig,
   loadConfig,
-  PlatformCommand,
   writeConfig,
 } from "./config/config.model.ts";
 import { exists, log } from "./deps.ts";
 import { MeshError } from "./errors.ts";
 import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
-import { ShellRunner } from "./process/shell-runner.ts";
+
+const detector = new CliDetector();
 
 const detector = new CliDetector();
 
@@ -47,20 +46,6 @@ function objectsHaveSameKeys(
     });
     return true;
   }
-}
-
-async function getInstalledClis(): Promise<Config> {
-  const config: Config = emptyConfig;
-
-  for (const platform in MeshPlatform) {
-    const mp = platform as MeshPlatform;
-    if (await checkCliInstalled(PlatformCommand[mp])) {
-      config.connected[mp] = true;
-    }
-    log.debug(`CLI ${PlatformCommand[mp]} installed.`);
-  }
-
-  return config;
 }
 
 async function checkIfConfigExists() {
@@ -127,47 +112,9 @@ export async function init() {
 }
 
 /**
- * Checks the availability of the configured CLIs. If they are missing then the collie run is aborted.
- * Should be checked before a cloud relevant call is initiated.
- */
+   * Checks the availability of the configured CLIs. If they are missing then the collie run is aborted.
+   * Should be checked before a cloud relevant call is initiated.
+   */
 export async function verifyCliAvailability() {
-  const config = loadConfig();
-
-  // run checks concurrently to improve responsiveness of collie
-  // checking a cloud provider cli typically takes ~500ms each (most are implemented in Python), so the speedup
-  // we gain from this is significant and perceivable
-  const verifications: Promise<void>[] = [];
-  for (const platform in MeshPlatform) {
-    const promise = verifyConnectedCliInstalled(
-      config,
-      platform as MeshPlatform,
-    );
-    verifications.push(promise);
-  }
-
-  await Promise.all(verifications);
-}
-
-async function verifyConnectedCliInstalled(
-  config: Config,
-  platform: MeshPlatform,
-) {
-  const cmd = PlatformCommand[platform];
-  if (config.connected[platform] && await !checkCliInstalled(cmd)) {
-    throw new MeshError(
-      `${platform} cloud cli "${cmd}" is not installed. Please disconnect platform via "${CLICommand} config -d ${platform}"`,
-    );
-  }
-}
-
-async function checkCliInstalled(cli: string): Promise<boolean> {
-  const shellRunner = new ShellRunner();
-  var code = 0;
-  try {
-    code = (await (shellRunner.run(`${cli} --version`))).code;
-  } catch {
-    code = -1;
-  }
-
-  return code === 0;
+  await detector.verifyCliAvailability();
 }
