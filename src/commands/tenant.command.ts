@@ -10,6 +10,7 @@ import { TenantIamPresenterFactory } from "../presentation/tenant-iam-presenter-
 import { CLICommand, loadConfig } from "../config/config.model.ts";
 import { isatty } from "./tty.ts";
 import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
+import { verifyCliAvailability } from "../init.ts";
 
 interface CmdListCostsOptions extends CmdGlobalOptions {
   from: string;
@@ -111,7 +112,8 @@ export function registerTenantCommand(program: Command) {
 }
 
 async function listTenantAction(options: CmdGlobalOptions) {
-  setupLogger(options);
+  await setupLogger(options);
+  await verifyCliAvailability();
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
@@ -128,7 +130,8 @@ async function listTenantAction(options: CmdGlobalOptions) {
 }
 
 async function listIamAction(options: CmdIamOptions) {
-  setupLogger(options);
+  await setupLogger(options);
+  await verifyCliAvailability();
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
@@ -148,7 +151,8 @@ async function listIamAction(options: CmdIamOptions) {
 }
 
 export async function listTenantsCostAction(options: CmdListCostsOptions) {
-  setupLogger(options);
+  await setupLogger(options);
+  await verifyCliAvailability();
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
@@ -179,7 +183,8 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
 }
 
 async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
-  setupLogger(options);
+  await setupLogger(options);
+  await verifyCliAvailability();
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
