@@ -78,6 +78,12 @@ export class GcpMeshAdapter implements MeshAdapter {
     for (const policy of iamPolicies) {
       const assignmentSource = this.toAssignmentSource(policy.type);
       const assignmentId = policy.id;
+
+      // bindings can be empty
+      if (!policy.policy.bindings) {
+        continue;
+      }
+
       for (const binding of policy.policy.bindings) {
         for (const member of binding.members) {
           // The member string is given as e.g. -> group:demo-project-user@dev.example.com
