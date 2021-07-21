@@ -1,5 +1,5 @@
-import { QueryStatistics } from "../mesh/mesh-adapter.ts";
 import { MeshTag } from "../mesh/mesh-tenant.model.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
 
 export interface TableGenerator {
   getColumns(): string[];

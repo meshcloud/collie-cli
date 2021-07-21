@@ -54,7 +54,9 @@ export class GcpMeshAdapter implements MeshAdapter {
     return Promise.resolve();
   }
 
-  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+  async attachTenantRoleAssignments(
+    tenants: MeshTenant[],
+  ): Promise<void> {
     const gcpTenants = tenants.filter((t) => isProject(t.nativeObj));
 
     for (const tenant of gcpTenants) {
@@ -108,6 +110,10 @@ export class GcpMeshAdapter implements MeshAdapter {
         return MeshPrincipalType.Group;
       case "serviceAccount":
         return MeshPrincipalType.TechnicalUser;
+      case "domain":
+        return MeshPrincipalType.Domain;
+      case "deleted":
+        return MeshPrincipalType.Orphan;
       default:
         throw new MeshError(
           "Found unknown principalType for GCP: " + principalType,

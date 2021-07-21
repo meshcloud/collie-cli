@@ -11,7 +11,7 @@ import { CLICommand, loadConfig } from "../config/config.model.ts";
 import { isatty } from "./tty.ts";
 import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
 import { verifyCliAvailability } from "../init.ts";
-import { QueryStatistics } from "../mesh/mesh-adapter.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
 
 interface CmdListCostsOptions extends CmdGlobalOptions {
   from: string;

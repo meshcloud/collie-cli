@@ -2,8 +2,9 @@ import { MeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { Meta } from "../db/meta.ts";
 import { log, moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
-import { MeshAdapter, QuerySource, QueryStatistics } from "./mesh-adapter.ts";
+import { MeshAdapter } from "./mesh-adapter.ts";
 import { MeshTenant } from "./mesh-tenant.model.ts";
+import { QuerySource, QueryStatistics } from "./query-statistics.ts";
 
 /**
  * This adapter will try to fetch tenant data first from the local cache before

@@ -12,7 +12,7 @@ import { MeshRoleAssignmentSource } from "../mesh/mesh-iam-model.ts";
 import { TablePresenter } from "./table-presenter.ts";
 import { MeshTableFactory } from "./mesh-table-factory.ts";
 import { MeshTenantIamTableViewGenerator } from "./meshtenant-iam-table-view.ts";
-import { QueryStatistics } from "../mesh/mesh-adapter.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
 
 // This buildPresenter & individual methods might be a good argument for building a parent abstract class to DRY.
 export class TenantIamPresenterFactory {

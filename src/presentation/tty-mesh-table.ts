@@ -1,7 +1,7 @@
 import { CLICommand } from "../config/config.model.ts";
 import { brightBlue, log, Table } from "../deps.ts";
 import { bold, dim, italic } from "../deps.ts";
-import { QuerySource, QueryStatistics } from "../mesh/mesh-adapter.ts";
+import { QuerySource, QueryStatistics } from "../mesh/query-statistics.ts";
 import { MeshTable, TableGenerator } from "./mesh-table.ts";
 
 export class TtyMeshTable implements MeshTable {

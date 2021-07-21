@@ -1,5 +1,6 @@
-import { MeshAdapter, QueryStatistics } from "./mesh-adapter.ts";
+import { MeshAdapter } from "./mesh-adapter.ts";
 import { MeshTenant } from "./mesh-tenant.model.ts";
+import { QueryStatistics } from "./query-statistics.ts";
 
 export class MultiMeshAdapter implements MeshAdapter {
   constructor(

@@ -1,6 +1,6 @@
 import { Config, ConnectedConfig } from "../config/config.model.ts";
 import { green, red } from "../deps.ts";
-import { QueryStatistics } from "../mesh/mesh-adapter.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
 import { TableGenerator } from "./mesh-table.ts";
 
 export class ConfigTableViewGenerator implements TableGenerator {

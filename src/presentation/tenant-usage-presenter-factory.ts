@@ -8,7 +8,7 @@ import { JsonMeshTenantCostView, JsonPresenter } from "./json-presenter.ts";
 import { MeshTenantCostTableViewGenerator } from "./meshtenantcost-table-view-generator.ts";
 import { TablePresenter } from "./table-presenter.ts";
 import { MeshTableFactory } from "./mesh-table-factory.ts";
-import { QueryStatistics } from "../mesh/mesh-adapter.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
 
 export class TenantUsagePresenterFactory {
   constructor(

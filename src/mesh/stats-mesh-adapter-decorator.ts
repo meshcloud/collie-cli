@@ -1,5 +1,6 @@
-import { MeshAdapter, QueryStatistics } from "./mesh-adapter.ts";
+import { MeshAdapter } from "./mesh-adapter.ts";
 import { MeshPlatform, MeshTenant } from "./mesh-tenant.model.ts";
+import { QueryStatistics } from "./query-statistics.ts";
 
 /**
  * This adapter will try to fetch tenant data first from the local cache before
