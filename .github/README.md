@@ -31,24 +31,26 @@
 
 <p align="center">
     One project on AWS, two on Azure, and might there be something on GCP too 😵? Collie helps you get an overview of everything going on in all your clouds.
-  See your costs, IAM, tags, and more across all cloud accounts within minutes - using your existing cloud CLIs - and take control of your cloud landscape. 
+  See your costs, IAM, tags, and more across all cloud accounts within minutes - using your existing cloud CLIs - and take control of your cloud landscape.
 </p>
 
 <img align="center" src="/.github/collie-demo.gif">
 
 ## ⛅️ Overview
 
-- **[View all cloud tenants](https://github.com/meshcloud/collie-cli/wiki#listing-tenants) in one single overview** - View your AWS Accounts,
-  Azure Subscriptions, and Google Cloud Projects with their metadata with only
-  one command.
-- **[View billing information](https://github.com/meshcloud/collie-cli/wiki#listing-costs-per-tenant) across all clouds** - See what you spend per day,
-  month, or week in all cloud platforms*, including the right metadata. Includes
-  support for CSV, YML and JSON.
-- **[Analyze tag inconsistencies](https://github.com/meshcloud/collie-cli/wiki#identifying-inconsistencies-in-the-use-of-tags)** - See at a glance what tags are used, by which
-  tenants (and which not), and what potential inconsistencies are in place to
-  fix any governance issues.
-- **[View IAM assignments](https://github.com/meshcloud/collie-cli/wiki#listing-iam-setup-per-tenant)** - See who (or what) has access in what roles to what
-  cloud tenants**, including inherited roles from ancestors.
+- **[View all cloud tenants](https://github.com/meshcloud/collie-cli/wiki#listing-tenants)
+  in one single overview** - View your AWS Accounts, Azure Subscriptions, and
+  Google Cloud Projects with their metadata with only one command.
+- **[View billing information](https://github.com/meshcloud/collie-cli/wiki#listing-costs-per-tenant)
+  across all clouds** - See what you spend per day, month, or week in all cloud
+  platforms*, including the right metadata. Includes support for CSV, YML and
+  JSON.
+- **[Analyze tag inconsistencies](https://github.com/meshcloud/collie-cli/wiki#identifying-inconsistencies-in-the-use-of-tags)** -
+  See at a glance what tags are used, by which tenants (and which not), and what
+  potential inconsistencies are in place to fix any governance issues.
+- **[View IAM assignments](https://github.com/meshcloud/collie-cli/wiki#listing-iam-setup-per-tenant)** -
+  See who (or what) has access in what roles to what cloud tenants**, including
+  inherited roles from ancestors.
 
 <sup><sub>*GCP does not support cost collection. Follow the issue
 [here](https://github.com/meshcloud/collie-cli/issues/17) to get updated on
@@ -57,7 +59,7 @@ progress.</sub></sup><br>
 [here](https://github.com/meshcloud/collie-cli/issues/41) to get updated on
 progress.</sub></sup>
 
-## ☝️ Prerequisites
+## ☝️ Prerequisites<a name="prerequisites"></a>
 
 For each cloud platform you want to manage, you'll need the equivalent cloud CLI
 installed.
@@ -88,7 +90,9 @@ script is safe. If you want, you could also download the
 [`install.sh`](https://github.com/meshcloud/collie-cli/blob/develop/install.sh)
 script in this repository and execute it locally.
 
-Once you're finished with installing, head over to [our Wiki](https://github.com/meshcloud/collie-cli/wiki#before-using-collie) to learn more!
+Once you're finished with installing, head over to
+[our Wiki](https://github.com/meshcloud/collie-cli/wiki#before-using-collie) to
+learn more!
 
 **Linux / Ubuntu**
 
