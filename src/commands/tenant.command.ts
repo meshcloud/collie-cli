@@ -145,7 +145,7 @@ async function listIamAction(options: CmdIamOptions) {
   const stats = new QueryStatistics();
   const allTenants = await meshAdapter.getMeshTenants(stats);
 
-  await meshAdapter.attachTenantRoleAssignments(allTenants);
+  await meshAdapter.attachTenantRoleAssignments(allTenants, stats);
 
   const tableFactory = new MeshTableFactory(isatty);
 
@@ -176,11 +176,7 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
   const stats = new QueryStatistics();
   const allTenants = await meshAdapter.getMeshTenants(stats);
 
-  await meshAdapter.attachTenantCosts(
-    allTenants,
-    start,
-    end,
-  );
+  await meshAdapter.attachTenantCosts(allTenants, start, end, stats);
 
   const tableFactory = new MeshTableFactory(isatty);
   const presenterFactory = new TenantUsagePresenterFactory(tableFactory);
@@ -216,6 +212,7 @@ async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
     ];
   }
 
+  // todo: this does not follow the presenter pattern we usually use
   const totalTenantCount = allTenants.length;
   const result: AnalyzeTagResult[] = [];
   console.log(`We analyzed ${totalTenantCount} tenants for tags.`);

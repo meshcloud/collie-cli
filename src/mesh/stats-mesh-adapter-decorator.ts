@@ -15,12 +15,29 @@ export class StatsMeshAdapterDecorator implements MeshAdapter {
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
+    stats: QueryStatistics,
   ): Promise<void> {
-    await this.meshAdapter.attachTenantCosts(tenants, startDate, endDate);
+    return await stats.recordQuery(
+      this.platform,
+      async () =>
+        await this.meshAdapter.attachTenantCosts(
+          tenants,
+          startDate,
+          endDate,
+          stats,
+        ),
+    );
   }
 
-  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
-    await this.meshAdapter.attachTenantRoleAssignments(tenants);
+  async attachTenantRoleAssignments(
+    tenants: MeshTenant[],
+    stats: QueryStatistics,
+  ): Promise<void> {
+    return await stats.recordQuery(
+      this.platform,
+      async () =>
+        await this.meshAdapter.attachTenantRoleAssignments(tenants, stats),
+    );
   }
 
   async getMeshTenants(stats: QueryStatistics): Promise<MeshTenant[]> {

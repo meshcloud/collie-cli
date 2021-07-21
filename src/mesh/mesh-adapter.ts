@@ -21,7 +21,8 @@ export class QueryStatistics {
     const result = await fn();
 
     const end = performance.now();
-    this.duration[source] = end - start;
+    const passed = end - start;
+    this.duration[source] = (this.duration[source] || 0) + passed;
 
     return result;
   }
@@ -31,7 +32,7 @@ export interface MeshAdapter {
   getMeshTenants(stats: QueryStatistics): Promise<MeshTenant[]>;
 
   /**
-   * It fetches the costs in the given interval and attaches it to the given MeshTenant objects.
+   * Fetches the costs in the given interval and attaches it to the given MeshTenant objects.
    *
    * @param tenants Tenants to which the the costs are fetched and updated.
    * @param startDate
@@ -41,7 +42,16 @@ export interface MeshAdapter {
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
+    stats: QueryStatistics,
   ): Promise<void>;
 
-  attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void>;
+  /**
+   * Fetches IAM roles of the given tenants and attaches it to the given MeshTenant objects.
+   * @param tenants Tenants to which the the IAM roles are fetched and updated.
+   * @param stats
+   */
+  attachTenantRoleAssignments(
+    tenants: MeshTenant[],
+    stats: QueryStatistics,
+  ): Promise<void>;
 }
