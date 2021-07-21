@@ -241,7 +241,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     // Detect login error
     if (result.stderr.includes("az login")) {
       log.info(
-        `You are not logged in into Azure CLI. Please disconnect from azure with "${CLICommand} config --disconnect Azure" or login into Azure CLI.`,
+        `You are not logged in into Azure CLI. Please login with "az login" or disconnect with "${CLICommand} config --disconnect Azure".`,
       );
       throw new MeshNotLoggedInError(`"${result.stderr.replace("\n", "")}"`);
     }
