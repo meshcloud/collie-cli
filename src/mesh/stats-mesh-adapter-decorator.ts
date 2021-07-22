@@ -3,48 +3,50 @@ import { MeshPlatform, MeshTenant } from "./mesh-tenant.model.ts";
 import { QueryStatistics } from "./query-statistics.ts";
 
 /**
- * This adapter will try to fetch tenant data first from the local cache before
- * it hits the real cloud platforms.
+ * This decorator will record the time it takes for the command to be invoked.
+ * Can be helpful in order to figure out if there is a bottleneck in call time.
  */
 export class StatsMeshAdapterDecorator implements MeshAdapter {
   constructor(
     private readonly meshAdapter: MeshAdapter,
-    private readonly platform: MeshPlatform,
+    private readonly source: MeshPlatform | "cache",
+    private readonly layer: number,
+    private readonly stats: QueryStatistics,
   ) {
   }
+
   async attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
-    stats: QueryStatistics,
   ): Promise<void> {
-    return await stats.recordQuery(
-      this.platform,
+    return await this.stats.recordQuery(
+      this.source,
+      this.layer,
       async () =>
         await this.meshAdapter.attachTenantCosts(
           tenants,
           startDate,
           endDate,
-          stats,
         ),
     );
   }
 
   async attachTenantRoleAssignments(
     tenants: MeshTenant[],
-    stats: QueryStatistics,
   ): Promise<void> {
-    return await stats.recordQuery(
-      this.platform,
-      async () =>
-        await this.meshAdapter.attachTenantRoleAssignments(tenants, stats),
+    return await this.stats.recordQuery(
+      this.source,
+      this.layer,
+      async () => await this.meshAdapter.attachTenantRoleAssignments(tenants),
     );
   }
 
-  async getMeshTenants(stats: QueryStatistics): Promise<MeshTenant[]> {
-    return await stats.recordQuery(
-      this.platform,
-      async () => await this.meshAdapter.getMeshTenants(stats),
+  async getMeshTenants(): Promise<MeshTenant[]> {
+    return await this.stats.recordQuery(
+      this.source,
+      this.layer,
+      async () => await this.meshAdapter.getMeshTenants(),
     );
   }
 }

@@ -1,14 +1,13 @@
 import { MeshAdapter } from "./mesh-adapter.ts";
 import { MeshTenant } from "./mesh-tenant.model.ts";
-import { QueryStatistics } from "./query-statistics.ts";
 
 export class MultiMeshAdapter implements MeshAdapter {
   constructor(
     private readonly adapters: MeshAdapter[],
   ) {}
 
-  async getMeshTenants(stats: QueryStatistics): Promise<MeshTenant[]> {
-    const promises = this.adapters.map((x) => x.getMeshTenants(stats));
+  async getMeshTenants(): Promise<MeshTenant[]> {
+    const promises = this.adapters.map((x) => x.getMeshTenants());
 
     const all = await Promise.all(promises);
 
@@ -19,10 +18,9 @@ export class MultiMeshAdapter implements MeshAdapter {
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
-    stats: QueryStatistics,
   ): Promise<void> {
     const promises = this.adapters.map((x) =>
-      x.attachTenantCosts(tenants, startDate, endDate, stats)
+      x.attachTenantCosts(tenants, startDate, endDate)
     );
 
     // we wait until all functions have resolved then we can return.
@@ -31,10 +29,9 @@ export class MultiMeshAdapter implements MeshAdapter {
 
   async attachTenantRoleAssignments(
     tenants: MeshTenant[],
-    stats: QueryStatistics,
   ): Promise<void> {
     const promises = this.adapters.map((x) =>
-      x.attachTenantRoleAssignments(tenants, stats)
+      x.attachTenantRoleAssignments(tenants)
     );
 
     await Promise.all(promises);

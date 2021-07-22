@@ -20,6 +20,7 @@ import { isatty, TTY } from "../commands/tty.ts";
 import { AzureCliFacade } from "../azure/azure-cli-facade.ts";
 import { StatsMeshAdapterDecorator } from "./stats-mesh-adapter-decorator.ts";
 import { MeshPlatform } from "./mesh-tenant.model.ts";
+import { QueryStatistics } from "./query-statistics.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -30,7 +31,10 @@ export class MeshAdapterFactory {
     private readonly config: Config,
   ) {}
 
-  buildMeshAdapter(options: CmdGlobalOptions): MeshAdapter {
+  buildMeshAdapter(
+    options: CmdGlobalOptions,
+    queryStats?: QueryStatistics,
+  ): MeshAdapter {
     let shellRunner = new ShellRunner();
 
     if (options.verbose) {
@@ -44,9 +48,18 @@ export class MeshAdapterFactory {
     if (this.config.connected.AWS) {
       const aws = new AwsCliFacade(shellRunner);
       const awsAdapter = new AwsMeshAdapter(aws);
-      const stats = new StatsMeshAdapterDecorator(awsAdapter, MeshPlatform.AWS);
 
-      adapters.push(stats);
+      if (queryStats) {
+        const statsDecorator = new StatsMeshAdapterDecorator(
+          awsAdapter,
+          MeshPlatform.AWS,
+          1,
+          queryStats,
+        );
+        adapters.push(statsDecorator);
+      } else {
+        adapters.push(awsAdapter);
+      }
     }
 
     if (this.config.connected.Azure) {
@@ -67,29 +80,54 @@ export class MeshAdapterFactory {
         timeWindowCalc,
       );
 
-      const stats = new StatsMeshAdapterDecorator(
-        azureAdapter,
-        MeshPlatform.Azure,
-      );
-      adapters.push(stats);
+      if (queryStats) {
+        const statsDecorator = new StatsMeshAdapterDecorator(
+          azureAdapter,
+          MeshPlatform.Azure,
+          1,
+          queryStats,
+        );
+        adapters.push(statsDecorator);
+      } else {
+        adapters.push(azureAdapter);
+      }
     }
 
     if (this.config.connected.GCP) {
       const gcp = new GcpCliFacade(shellRunner);
       const gcpAdapter = new GcpMeshAdapter(gcp);
-      const stats = new StatsMeshAdapterDecorator(gcpAdapter, MeshPlatform.GCP);
 
-      adapters.push(stats);
+      if (queryStats) {
+        const statsDecorator = new StatsMeshAdapterDecorator(
+          gcpAdapter,
+          MeshPlatform.GCP,
+          1,
+          queryStats,
+        );
+        adapters.push(statsDecorator);
+      } else {
+        adapters.push(gcpAdapter);
+      }
     }
 
     // There are multiple ways of doing it. Currently we only fetch everything or nothing, which is easier I guess.
     // we could also split every platform into an individual repository folder and perform fetching and caching on a per-platform
     // basis. For now we go with the easier part.
     const tenantRepository = newMeshTenantRepository();
+
     const cachingMeshAdapter = new CachingMeshAdapterDecorator(
       tenantRepository,
       new MultiMeshAdapter(adapters),
     );
+
+    if (queryStats) {
+      return new StatsMeshAdapterDecorator(
+        cachingMeshAdapter,
+        "cache",
+        0,
+        queryStats,
+      );
+    }
 
     return cachingMeshAdapter;
   }

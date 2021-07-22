@@ -1,8 +1,7 @@
 import { MeshTenant } from "./mesh-tenant.model.ts";
-import { QueryStatistics } from "./query-statistics.ts";
 
 export interface MeshAdapter {
-  getMeshTenants(stats: QueryStatistics): Promise<MeshTenant[]>;
+  getMeshTenants(): Promise<MeshTenant[]>;
 
   /**
    * Fetches the costs in the given interval and attaches it to the given MeshTenant objects.
@@ -15,7 +14,6 @@ export interface MeshAdapter {
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
-    stats: QueryStatistics,
   ): Promise<void>;
 
   /**
@@ -25,6 +23,5 @@ export interface MeshAdapter {
    */
   attachTenantRoleAssignments(
     tenants: MeshTenant[],
-    stats: QueryStatistics,
   ): Promise<void>;
 }

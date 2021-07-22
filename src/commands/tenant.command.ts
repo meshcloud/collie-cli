@@ -118,10 +118,13 @@ async function listTenantAction(options: CmdGlobalOptions) {
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+  const queryStatistics = new QueryStatistics();
+  const meshAdapter = meshAdapterFactory.buildMeshAdapter(
+    options,
+    queryStatistics,
+  );
 
-  const stats = new QueryStatistics();
-  const allTenants = await meshAdapter.getMeshTenants(stats);
+  const allTenants = await meshAdapter.getMeshTenants();
 
   const tableFactory = new MeshTableFactory(isatty);
 
@@ -129,7 +132,7 @@ async function listTenantAction(options: CmdGlobalOptions) {
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
-    stats,
+    queryStatistics,
   );
   presenter.present();
 }
@@ -143,9 +146,9 @@ async function listIamAction(options: CmdIamOptions) {
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
 
   const stats = new QueryStatistics();
-  const allTenants = await meshAdapter.getMeshTenants(stats);
+  const allTenants = await meshAdapter.getMeshTenants();
 
-  await meshAdapter.attachTenantRoleAssignments(allTenants, stats);
+  await meshAdapter.attachTenantRoleAssignments(allTenants);
 
   const tableFactory = new MeshTableFactory(isatty);
 
@@ -165,7 +168,11 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+  const queryStatistics = new QueryStatistics();
+  const meshAdapter = meshAdapterFactory.buildMeshAdapter(
+    options,
+    queryStatistics,
+  );
 
   // We create UTC dates because we do not work with time, hence we do not care about timezones.
   const start = moment.utc(options.from).startOf("day").toDate();
@@ -173,10 +180,9 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
 
   // Every of these methods can throw e.g. because a CLI tool was not installed we should think about
   // how to do error management to improve UX.
-  const stats = new QueryStatistics();
-  const allTenants = await meshAdapter.getMeshTenants(stats);
+  const allTenants = await meshAdapter.getMeshTenants();
 
-  await meshAdapter.attachTenantCosts(allTenants, start, end, stats);
+  await meshAdapter.attachTenantCosts(allTenants, start, end);
 
   const tableFactory = new MeshTableFactory(isatty);
   const presenterFactory = new TenantUsagePresenterFactory(tableFactory);
@@ -184,7 +190,7 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
-    stats,
+    queryStatistics,
   );
   presenter.present();
 }
@@ -197,8 +203,7 @@ async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
 
-  const stats = new QueryStatistics();
-  const allTenants = await meshAdapter.getMeshTenants(stats);
+  const allTenants = await meshAdapter.getMeshTenants();
 
   let tagList: string[] = [];
   if (options.tags) {
