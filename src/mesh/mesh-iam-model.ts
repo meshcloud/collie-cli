@@ -19,4 +19,6 @@ export enum MeshPrincipalType {
   User = "User",
   Group = "Group",
   TechnicalUser = "TechnicalUser",
+  Domain = "Domain",
+  Orphan = "Orphan",
 }

@@ -1,4 +1,5 @@
 import { MeshTag } from "../mesh/mesh-tenant.model.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
 
 export interface TableGenerator {
   getColumns(): string[];
@@ -7,7 +8,7 @@ export interface TableGenerator {
 }
 
 export interface MeshTable {
-  draw(generator: TableGenerator): void;
+  draw(generator: TableGenerator, stats: QueryStatistics | null): void;
 }
 
 export class MeshTableTag implements MeshTag {
