@@ -1,5 +1,6 @@
 import { MeshError } from "../errors.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
 import { CsvTenantListPresenter } from "./csv-tenant-list-presenter.ts";
 import { JsonMeshTenantView, JsonPresenter } from "./json-presenter.ts";
 import { MeshTableFactory } from "./mesh-table-factory.ts";
@@ -17,11 +18,12 @@ export class TenantListPresenterFactory {
   buildPresenter(
     format: OutputFormat,
     meshTenants: MeshTenant[],
+    stats: QueryStatistics,
   ): Presenter {
     if (format === OutputFormat.CSV) {
       return this.buildCsvPresenter(meshTenants);
     } else if (format === OutputFormat.TABLE) {
-      return this.buildTablePresenter(meshTenants);
+      return this.buildTablePresenter(meshTenants, stats);
     } else if (format === OutputFormat.JSON) {
       return this.builJsonPresenter(meshTenants);
     } else if (format === OutputFormat.YAML) {
@@ -31,7 +33,10 @@ export class TenantListPresenterFactory {
     }
   }
 
-  private buildTablePresenter(meshTenants: MeshTenant[]): Presenter {
+  private buildTablePresenter(
+    meshTenants: MeshTenant[],
+    stats: QueryStatistics,
+  ): Presenter {
     const tableViewGenerator = new MeshTenantTableViewGenerator(
       meshTenants,
       [
@@ -45,6 +50,7 @@ export class TenantListPresenterFactory {
     return new TablePresenter(
       tableViewGenerator,
       this.tableFactory.buildMeshTable(),
+      stats,
     );
   }
 
