@@ -22,6 +22,7 @@ export class LoaderShellRunner implements IShellRunner {
 
       return await this.runner.run(commandStr);
     } catch (e) {
+      this.forceStopLoading();
       throw e;
     } finally {
       this.stopLoading();
@@ -41,6 +42,7 @@ export class LoaderShellRunner implements IShellRunner {
     console.log(brightBlue(loader[i]) + " " + bold(commandStr));
     this.tty.goUp(1);
     this.interval = setInterval(() => {
+      this.tty.clearLine();
       const pos = i % loader.length;
       console.log(brightBlue(loader[pos]) + " " + bold(commandStr));
       i++;
@@ -71,8 +73,22 @@ export class LoaderShellRunner implements IShellRunner {
     this.tty.showCursor();
   }
 
+  /**
+   * In case of an exception you probably want to force stop the loading animation. Oftherwise the concurrently
+   * running commands would still keep the loader spinning which messes with the error text display.
+   * This just ignores the commands running in the background and kills off the animation right away.
+   */
+  private forceStopLoading() {
+    this.runningCommandsCount = 0;
+    this.stopLoading();
+  }
+
   private stopLoading() {
-    this.runningCommandsCount--;
+    // A previously issued forceStopLoading() could set the counter to 0 so we need to make sure
+    // other invocations which come in later don't reduce the counter below 0.
+    if (this.runningCommandsCount > 0) {
+      this.runningCommandsCount--;
+    }
     if (this.runningCommandsCount > 0) {
       return;
     }
