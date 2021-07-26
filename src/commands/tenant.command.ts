@@ -49,7 +49,7 @@ export function registerTenantCommand(program: Command) {
       `${CLICommand} tenant analyze-tags --details --tags Environment,CostCenter`,
     )
     .action(() => tenantMenu(tenantCmd));
-  program.command("tenant", tenantCmd);
+  program.command("tenants", tenantCmd);
 
   const listTenants = new Command()
     // type must be added on every level that uses this type. Maybe bug in Cliffy?
