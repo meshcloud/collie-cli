@@ -14,7 +14,7 @@ export {
   exists,
   existsSync,
 } from "https://deno.land/std@0.99.0/fs/mod.ts";
-export { dirname } from "https://deno.land/std@0.99.0/path/mod.ts";
+export { dirname, join } from "https://deno.land/std@0.99.0/path/mod.ts";
 export {
   bold,
   brightBlue,
