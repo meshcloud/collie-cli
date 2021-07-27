@@ -62,8 +62,8 @@ export class JsonPresenter<T> implements Presenter {
         relatedTenant: JsonPresenter.meshTenantToJsonView(meshTenant),
         totalUsageCost: c.cost,
         currency: c.currency,
-        from: c.from,
-        to: c.to,
+        from: c.from.toISOString(),
+        to: c.to.toISOString(),
       };
     });
   }

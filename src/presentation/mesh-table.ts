@@ -1,10 +1,24 @@
 import { MeshTag } from "../mesh/mesh-tenant.model.ts";
 import { QueryStatistics } from "../mesh/query-statistics.ts";
+import { dim, Table, yellow } from "../deps.ts";
 
-export interface TableGenerator {
-  getColumns(): string[];
-  getRows(): string[][];
-  getInfo(): string;
+export abstract class TableGenerator {
+  abstract getColumns(): string[];
+  abstract getRows(): string[][];
+  abstract getInfo(): string;
+
+  protected formatMeshTags(meshTags: MeshTag[]) {
+    const tempRows: Array<string>[] = [];
+    meshTags.forEach((x) => {
+      const t = new MeshTableTag(x);
+
+      tempRows.push([`${dim(t.tagName)}: `, yellow(t.tagValues[0])]);
+      x.tagValues.slice(1).forEach((t) => tempRows.push(["", yellow(t)]));
+    });
+    const tempTable = new Table();
+    tempTable.body(tempRows).border(false).maxColWidth(45);
+    return tempTable.toString();
+  }
 }
 
 export interface MeshTable {

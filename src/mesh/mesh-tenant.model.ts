@@ -27,8 +27,8 @@ export interface MeshTenantCostDetails {
 
 export interface MeshTenantCost {
   cost: string;
-  from: string;
-  to: string;
+  from: Date;
+  to: Date;
   currency: string;
   details: MeshTenantCostDetails[];
 }
