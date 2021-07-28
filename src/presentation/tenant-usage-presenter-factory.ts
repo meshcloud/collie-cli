@@ -45,6 +45,7 @@ export class TenantUsagePresenterFactory {
         "currency",
         "from",
         "to",
+        "tags",
       ],
     );
 

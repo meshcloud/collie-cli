@@ -68,8 +68,8 @@ export class AwsMeshAdapter implements MeshAdapter {
 
         const costItem: MeshTenantCost = {
           currency: "",
-          from: from.toDate().toUTCString(),
-          to: to.toDate().toUTCString(),
+          from: from.toDate(),
+          to: to.toDate(),
           cost: "0",
           details: [],
         };
