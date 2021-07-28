@@ -1,13 +1,15 @@
 import { MeshTenant, MeshTenantCost } from "../mesh/mesh-tenant.model.ts";
 import { TableGenerator } from "./mesh-table.ts";
+import { moment } from "../deps.ts";
 
-type CostTableColums = keyof MeshTenantCost | "relatedTenant";
+type CostTableColumns = keyof MeshTenantCost | "relatedTenant" | "tags";
 
-export class MeshTenantCostTableViewGenerator implements TableGenerator {
+export class MeshTenantCostTableViewGenerator extends TableGenerator {
   constructor(
     private readonly meshTenants: MeshTenant[],
-    private readonly columns: CostTableColums[],
+    private readonly columns: CostTableColumns[],
   ) {
+    super();
   }
 
   getColumns(): string[] {
@@ -25,9 +27,15 @@ export class MeshTenantCostTableViewGenerator implements TableGenerator {
           // However it will work as we redirect here to the tenant itself.
           if (column === "relatedTenant") {
             row[index] = `(${mt.platform}) ${mt.platformTenantName}`;
+          } else if (column === "tags") {
+            row[index] = this.formatMeshTags(mt.tags);
           } else {
             const x = column as keyof MeshTenantCost;
-            row[index] = mc[x].toString();
+            if (mc[x] instanceof Date) {
+              row[index] = moment(mc[x]).format("YYYY-MM-DD");
+            } else {
+              row[index] = mc[x].toString();
+            }
           }
         });
 
