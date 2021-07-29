@@ -10,7 +10,7 @@ export class MeshTableFactory {
   }
 
   buildMeshTable(): MeshTable {
-    if (this.isatty && (os.default.platform() !== "windows")) {
+    if (this.isatty && os.default.platform() !== "windows") {
       // there are output issues with borders in windows terminal
       return new TtyMeshTable();
     } else {

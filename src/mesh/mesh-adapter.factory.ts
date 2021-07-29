@@ -39,9 +39,10 @@ export class MeshAdapterFactory {
 
     if (options.verbose) {
       shellRunner = new VerboseShellRunner(shellRunner);
-    } else if (isatty) {
+    } else if (isatty && Deno.build.os !== "windows") {
       shellRunner = new LoaderShellRunner(shellRunner, new TTY());
     }
+
     const timeWindowCalc = new TimeWindowCalculator();
     const adapters: MeshAdapter[] = [];
 

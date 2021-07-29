@@ -4,8 +4,13 @@ import { IShellRunner } from "./shell-runner.interface.ts";
 
 export class ShellRunner implements IShellRunner {
   public async run(commandStr: string): Promise<ShellOutput> {
-    const commands = commandStr.split(" ");
+    // For Windows machines, we need to prepend cmd /c as it allows you to call internal and external CMD commands.
+    // For more info: https://stackoverflow.com/a/62031448
+    if (Deno.build.os === "windows") {
+      commandStr = "cmd /c " + commandStr;
+    }
 
+    const commands = commandStr.split(" ");
     log.debug(`ShellRunner running '${commandStr}'`);
 
     const p = Deno.run({

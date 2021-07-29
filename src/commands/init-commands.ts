@@ -12,6 +12,10 @@ import { VERSION } from "../config/version.ts";
 export function initCommands(): Command {
   const program = new Command()
     .name(CLICommand)
+    .help({
+      // The darkblue of Cliffy doesn't look great on the blue of PowerShell.
+      colors: Deno.build.os !== "windows",
+    })
     .version(VERSION)
     .type("output", OutputFormatType)
     .option(
@@ -34,7 +38,7 @@ export function initCommands(): Command {
         global: true,
       },
     )
-    .description(`${CLIName} CLI - Herd your cloud 🐑 environments with Collie`);
+    .description(`${CLIName} CLI - Herd your cloud environments with Collie`);
 
   registerConfigCmd(program);
   registerTenantCommand(program);
