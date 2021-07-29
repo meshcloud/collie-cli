@@ -28,8 +28,15 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       );
       const tenants = await this.meshAdapter.getMeshTenants();
 
-      // Transfer cost data from cached repo tenants to new collected tenants.
+      const cachedTenantsById = await this.getCachedTenantsMappedById();
+
+      // Transfer cost & IAM data from cached repo tenants to new collected tenants.
       for (const t of tenants) {
+        const ct = cachedTenantsById.get(t.platformTenantId);
+        if (ct) {
+          t.costs.push(...ct.costs);
+          t.roleAssignments.push(...ct.roleAssignments);
+        }
         this.repository.save(t);
       }
 
