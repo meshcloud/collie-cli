@@ -51,7 +51,7 @@ export const emptyConfig: Config = {
 
 function getConfigPath(): string {
   const path = join(".config", "collie-cli");
-  var home = "";
+  let home = "";
   if (os.default.platform() === "windows") {
     home = Deno.env.get("APPDATA") || "";
   } else {
