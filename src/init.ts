@@ -1,5 +1,4 @@
 import { CliDetector } from "./cli-detector.ts";
-import { askYesNo } from "./commands/io.ts";
 import {
   CLICommand,
   CLIName,
@@ -8,7 +7,7 @@ import {
   loadConfig,
   writeConfig,
 } from "./config/config.model.ts";
-import { exists, log } from "./deps.ts";
+import { Confirm, exists, log } from "./deps.ts";
 import { MeshError } from "./errors.ts";
 import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
 
@@ -66,7 +65,7 @@ async function checkIfConfigExists() {
         platforms.push(val);
       }
     });
-    const answer = await askYesNo(
+    const answer: boolean = await Confirm.prompt(
       `I see you already have these cloud CLIs installed: ${
         platforms.join(", ")
       }.\nDo you want to connect these to ${CLIName}?`,

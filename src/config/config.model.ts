@@ -1,9 +1,10 @@
 import { readFile, writeFile } from "../commands/io.ts";
-import { dirname, ensureDir, os } from "../deps.ts";
+import { dirname, ensureDir, join } from "../deps.ts";
 import { parseJsonWithLog } from "../json.ts";
+import { isWindows } from "../os.ts";
 
 export const configPath = getConfigPath();
-export const configFilePath = configPath + "/config.json";
+export const configFilePath = join(configPath, "config.json");
 // Use the CLI Name when mentioning it somewhere in a sentence, e.g.: Have fun using ${CLIName}!
 export const CLIName = "Collie";
 // Use the CLI Command when mentioning it as a command to run, e.g.: Please run "${CLICommand} -h" to see more.
@@ -50,11 +51,14 @@ export const emptyConfig: Config = {
 };
 
 function getConfigPath(): string {
-  if (os.default.platform() === "windows") {
-    return Deno.env.get("%APPDATA%") + "/.config/collie-cli";
+  const path = join(".config", "collie-cli");
+  let home = "";
+  if (isWindows) {
+    home = Deno.env.get("APPDATA") || "";
   } else {
-    return Deno.env.get("HOME") + "/.config/collie-cli";
+    home = Deno.env.get("HOME") || "";
   }
+  return join(home, path);
 }
 
 export function loadConfig(): Config {

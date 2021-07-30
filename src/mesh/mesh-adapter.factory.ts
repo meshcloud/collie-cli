@@ -21,6 +21,7 @@ import { AzureCliFacade } from "../azure/azure-cli-facade.ts";
 import { StatsMeshAdapterDecorator } from "./stats-mesh-adapter-decorator.ts";
 import { MeshPlatform } from "./mesh-tenant.model.ts";
 import { QueryStatistics } from "./query-statistics.ts";
+import { isWindows } from "../os.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -39,9 +40,10 @@ export class MeshAdapterFactory {
 
     if (options.verbose) {
       shellRunner = new VerboseShellRunner(shellRunner);
-    } else if (isatty) {
+    } else if (isatty && !isWindows) {
       shellRunner = new LoaderShellRunner(shellRunner, new TTY());
     }
+
     const timeWindowCalc = new TimeWindowCalculator();
     const adapters: MeshAdapter[] = [];
 
