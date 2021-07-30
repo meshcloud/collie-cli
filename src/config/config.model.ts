@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "../commands/io.ts";
-import { dirname, ensureDir, join, os } from "../deps.ts";
+import { dirname, ensureDir, join } from "../deps.ts";
 import { parseJsonWithLog } from "../json.ts";
+import { isWindows } from "../os.ts";
 
 export const configPath = getConfigPath();
 export const configFilePath = join(configPath, "config.json");
@@ -52,7 +53,7 @@ export const emptyConfig: Config = {
 function getConfigPath(): string {
   const path = join(".config", "collie-cli");
   let home = "";
-  if (os.default.platform() === "windows") {
+  if (isWindows) {
     home = Deno.env.get("APPDATA") || "";
   } else {
     home = Deno.env.get("HOME") || "";

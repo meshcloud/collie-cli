@@ -8,13 +8,14 @@ import { registerTenantCommand } from "./tenant.command.ts";
 import { CLICommand, CLIName } from "../config/config.model.ts";
 import { registerCreateIssueCommand } from "./create-issue.command.ts";
 import { VERSION } from "../config/version.ts";
+import { isWindows } from "../os.ts";
 
 export function initCommands(): Command {
   const program = new Command()
     .name(CLICommand)
     .help({
       // The darkblue of Cliffy doesn't look great on the blue of PowerShell.
-      colors: Deno.build.os !== "windows",
+      colors: !isWindows,
     })
     .version(VERSION)
     .type("output", OutputFormatType)

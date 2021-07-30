@@ -1,12 +1,13 @@
 import { log } from "../deps.ts";
 import { ShellOutput } from "./shell-output.ts";
 import { IShellRunner } from "./shell-runner.interface.ts";
+import { isWindows } from "../os.ts";
 
 export class ShellRunner implements IShellRunner {
   public async run(commandStr: string): Promise<ShellOutput> {
     // For Windows machines, we need to prepend cmd /c as it allows you to call internal and external CMD commands.
     // For more info: https://stackoverflow.com/a/62031448
-    if (Deno.build.os === "windows") {
+    if (isWindows) {
       commandStr = "cmd /c " + commandStr;
     }
 
