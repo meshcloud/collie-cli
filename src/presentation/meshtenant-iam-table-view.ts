@@ -3,7 +3,7 @@ import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
 import { MeshTenantRoleAssignment } from "../mesh/mesh-iam-model.ts";
 import { TableGenerator } from "./mesh-table.ts";
 
-export class MeshTenantIamTableViewGenerator implements TableGenerator {
+export class MeshTenantIamTableViewGenerator extends TableGenerator {
   info = "";
 
   constructor(
@@ -11,6 +11,7 @@ export class MeshTenantIamTableViewGenerator implements TableGenerator {
     readonly columns: (keyof MeshTenant)[],
     readonly includeAncestors: boolean,
   ) {
+    super();
   }
 
   getColumns(): string[] {

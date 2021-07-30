@@ -76,4 +76,4 @@ jobs:
         with:
           name: collie
           path: |
-            bin/collie-*
+            bin/**/collie-*

@@ -4,7 +4,7 @@ export interface MeshAdapter {
   getMeshTenants(): Promise<MeshTenant[]>;
 
   /**
-   * It fetches the costs in the given interval and attaches it to the given MeshTenant objects.
+   * Fetches the costs in the given interval and attaches it to the given MeshTenant objects.
    *
    * @param tenants Tenants to which the the costs are fetched and updated.
    * @param startDate
@@ -16,5 +16,12 @@ export interface MeshAdapter {
     endDate: Date,
   ): Promise<void>;
 
-  attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void>;
+  /**
+   * Fetches IAM roles of the given tenants and attaches it to the given MeshTenant objects.
+   * @param tenants Tenants to which the the IAM roles are fetched and updated.
+   * @param stats
+   */
+  attachTenantRoleAssignments(
+    tenants: MeshTenant[],
+  ): Promise<void>;
 }

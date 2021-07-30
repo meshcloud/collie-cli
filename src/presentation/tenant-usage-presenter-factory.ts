@@ -8,6 +8,7 @@ import { JsonMeshTenantCostView, JsonPresenter } from "./json-presenter.ts";
 import { MeshTenantCostTableViewGenerator } from "./meshtenantcost-table-view-generator.ts";
 import { TablePresenter } from "./table-presenter.ts";
 import { MeshTableFactory } from "./mesh-table-factory.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
 
 export class TenantUsagePresenterFactory {
   constructor(
@@ -17,11 +18,12 @@ export class TenantUsagePresenterFactory {
   buildPresenter(
     format: OutputFormat,
     meshTenants: MeshTenant[],
+    stats: QueryStatistics,
   ): Presenter {
     if (format === OutputFormat.CSV) {
       return this.buildCsvPresenter(meshTenants);
     } else if (format === OutputFormat.TABLE) {
-      return this.buildTablePresenter(meshTenants);
+      return this.buildTablePresenter(meshTenants, stats);
     } else if (format === OutputFormat.JSON) {
       return this.buildJsonPresenter(meshTenants);
     } else if (format === OutputFormat.YAML) {
@@ -31,7 +33,10 @@ export class TenantUsagePresenterFactory {
     }
   }
 
-  private buildTablePresenter(meshTenant: MeshTenant[]): Presenter {
+  private buildTablePresenter(
+    meshTenant: MeshTenant[],
+    stats: QueryStatistics,
+  ): Presenter {
     const costTableViewGenerator = new MeshTenantCostTableViewGenerator(
       meshTenant,
       [
@@ -40,12 +45,14 @@ export class TenantUsagePresenterFactory {
         "currency",
         "from",
         "to",
+        "tags",
       ],
     );
 
     return new TablePresenter(
       costTableViewGenerator,
       this.tableFactory.buildMeshTable(),
+      stats,
     );
   }
 

@@ -27,8 +27,8 @@ export interface MeshTenantCostDetails {
 
 export interface MeshTenantCost {
   cost: string;
-  from: string;
-  to: string;
+  from: Date;
+  to: Date;
   currency: string;
   details: MeshTenantCostDetails[];
 }
@@ -38,3 +38,5 @@ export enum MeshPlatform {
   Azure = "Azure",
   GCP = "GCP",
 }
+
+export const MeshPlatforms = Object.values(MeshPlatform);

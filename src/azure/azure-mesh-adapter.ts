@@ -113,8 +113,8 @@ export class AzureMeshAdapter implements MeshAdapter {
       t.costs.push({
         currency: currencySymbol,
         cost: summedCost.toString(),
-        from: startDate.toUTCString(),
-        to: endDate.toUTCString(),
+        from: startDate,
+        to: endDate,
         details: [],
       });
     }
@@ -201,8 +201,8 @@ export class AzureMeshAdapter implements MeshAdapter {
       currency: currencySymbol,
       cost: totalUsagePretaxCost.toFixed(2),
       details: [], // Can hold daily usages
-      from: timeWindow.from.toUTCString(),
-      to: timeWindow.to.toUTCString(),
+      from: timeWindow.from,
+      to: timeWindow.to,
     };
   }
 

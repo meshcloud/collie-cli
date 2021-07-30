@@ -8,10 +8,15 @@ import { registerTenantCommand } from "./tenant.command.ts";
 import { CLICommand, CLIName } from "../config/config.model.ts";
 import { registerCreateIssueCommand } from "./create-issue.command.ts";
 import { VERSION } from "../config/version.ts";
+import { isWindows } from "../os.ts";
 
 export function initCommands(): Command {
   const program = new Command()
     .name(CLICommand)
+    .help({
+      // The darkblue of Cliffy doesn't look great on the blue of PowerShell.
+      colors: !isWindows,
+    })
     .version(VERSION)
     .type("output", OutputFormatType)
     .option(
@@ -34,7 +39,7 @@ export function initCommands(): Command {
         global: true,
       },
     )
-    .description(`${CLIName} CLI - Herd your cloud 🐑 environments with Collie`);
+    .description(`${CLIName} CLI - Herd your cloud environments with Collie`);
 
   registerConfigCmd(program);
   registerTenantCommand(program);

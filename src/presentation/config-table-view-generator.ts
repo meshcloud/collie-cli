@@ -1,12 +1,16 @@
 import { Config, ConnectedConfig } from "../config/config.model.ts";
 import { green, red } from "../deps.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
 import { TableGenerator } from "./mesh-table.ts";
 
-export class ConfigTableViewGenerator implements TableGenerator {
+export class ConfigTableViewGenerator extends TableGenerator {
+  readonly stats = new QueryStatistics();
+
   constructor(
     readonly config: Config,
     private columns: (keyof ConnectedConfig)[],
   ) {
+    super();
   }
 
   getColumns(): string[] {

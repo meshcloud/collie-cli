@@ -11,6 +11,8 @@ import { CLICommand, loadConfig } from "../config/config.model.ts";
 import { isatty } from "./tty.ts";
 import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
 import { verifyCliAvailability } from "../init.ts";
+import { QueryStatistics } from "../mesh/query-statistics.ts";
+import { MeshError } from "../errors.ts";
 
 interface CmdListCostsOptions extends CmdGlobalOptions {
   from: string;
@@ -117,14 +119,21 @@ async function listTenantAction(options: CmdGlobalOptions) {
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+  const queryStatistics = new QueryStatistics();
+  const meshAdapter = meshAdapterFactory.buildMeshAdapter(
+    options,
+    queryStatistics,
+  );
+
   const allTenants = await meshAdapter.getMeshTenants();
+
   const tableFactory = new MeshTableFactory(isatty);
 
   const presenterFactory = new TenantListPresenterFactory(tableFactory);
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
+    queryStatistics,
   );
   presenter.present();
 }
@@ -136,7 +145,10 @@ async function listIamAction(options: CmdIamOptions) {
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+
+  const stats = new QueryStatistics();
   const allTenants = await meshAdapter.getMeshTenants();
+
   await meshAdapter.attachTenantRoleAssignments(allTenants);
 
   const tableFactory = new MeshTableFactory(isatty);
@@ -146,6 +158,7 @@ async function listIamAction(options: CmdIamOptions) {
       options.output,
       options.includeAncestors,
       allTenants,
+      stats,
     )
     .present();
 }
@@ -156,21 +169,31 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
 
   const config = loadConfig();
   const meshAdapterFactory = new MeshAdapterFactory(config);
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+  const queryStatistics = new QueryStatistics();
+  const meshAdapter = meshAdapterFactory.buildMeshAdapter(
+    options,
+    queryStatistics,
+  );
 
   // We create UTC dates because we do not work with time, hence we do not care about timezones.
   const start = moment.utc(options.from).startOf("day").toDate();
+  if (isNaN(start.valueOf())) {
+    throw new MeshError(
+      `You have entered an invalid date for '--from':  ${options.from}`,
+    );
+  }
   const end = moment.utc(options.to).endOf("day").toDate();
+  if (isNaN(start.valueOf())) {
+    throw new MeshError(
+      `You have entered an invalid date for '--to': ${options.to}`,
+    );
+  }
 
   // Every of these methods can throw e.g. because a CLI tool was not installed we should think about
   // how to do error management to improve UX.
   const allTenants = await meshAdapter.getMeshTenants();
 
-  await meshAdapter.attachTenantCosts(
-    allTenants,
-    start,
-    end,
-  );
+  await meshAdapter.attachTenantCosts(allTenants, start, end);
 
   const tableFactory = new MeshTableFactory(isatty);
   const presenterFactory = new TenantUsagePresenterFactory(tableFactory);
@@ -178,6 +201,7 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
+    queryStatistics,
   );
   presenter.present();
 }
@@ -204,6 +228,7 @@ async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
     ];
   }
 
+  // todo: this does not follow the presenter pattern we usually use
   const totalTenantCount = allTenants.length;
   const result: AnalyzeTagResult[] = [];
   console.log(`We analyzed ${totalTenantCount} tenants for tags.`);

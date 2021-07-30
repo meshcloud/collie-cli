@@ -20,15 +20,23 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     // Update meta info
     if (await this.repository.isTenantCollectionValid()) {
       log.debug("Repository is valid. Fetching tenants from cache.");
-      return this.repository.loadTenants();
+
+      return await this.repository.loadTenants();
     } else {
       log.debug(
         "Repository is not valid anymore. Fetching fresh tenants from cloud.",
       );
       const tenants = await this.meshAdapter.getMeshTenants();
 
-      // Transfer cost data from cached repo tenants to new collected tenants.
+      const cachedTenantsById = await this.getCachedTenantsMappedById();
+
+      // Transfer cost & IAM data from cached repo tenants to new collected tenants.
       for (const t of tenants) {
+        const ct = cachedTenantsById.get(t.platformTenantId);
+        if (ct) {
+          t.costs.push(...ct.costs);
+          t.roleAssignments.push(...ct.roleAssignments);
+        }
         this.repository.save(t);
       }
 
@@ -86,14 +94,14 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       );
     }
 
-    if (
-      await this.isTenantCostCached(
-        tenants,
-        startDate,
-        endDate,
-        meta,
-      )
-    ) {
+    const isCached = await this.isTenantCostCached(
+      tenants,
+      startDate,
+      endDate,
+      meta,
+    );
+
+    if (isCached) {
       log.debug("Tenant costs are cached. Fetching current state from cache.");
 
       // load from cache. This now has a bit of a strange dynamic, as the requested data should already be attached to the tenant
@@ -170,6 +178,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     cachedTenants.forEach((ct) =>
       cachedTenantsById.set(ct.platformTenantId, ct)
     );
+
     return cachedTenantsById;
   }
 }

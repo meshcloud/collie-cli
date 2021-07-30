@@ -9,7 +9,9 @@ export class MultiMeshAdapter implements MeshAdapter {
   async getMeshTenants(): Promise<MeshTenant[]> {
     const promises = this.adapters.map((x) => x.getMeshTenants());
 
-    return (await Promise.all(promises)).flatMap((x) => x);
+    const all = await Promise.all(promises);
+
+    return all.flatMap((x) => x);
   }
 
   async attachTenantCosts(
@@ -25,7 +27,9 @@ export class MultiMeshAdapter implements MeshAdapter {
     await Promise.all(promises);
   }
 
-  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+  async attachTenantRoleAssignments(
+    tenants: MeshTenant[],
+  ): Promise<void> {
     const promises = this.adapters.map((x) =>
       x.attachTenantRoleAssignments(tenants)
     );

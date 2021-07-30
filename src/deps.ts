@@ -14,12 +14,13 @@ export {
   exists,
   existsSync,
 } from "https://deno.land/std@0.99.0/fs/mod.ts";
-export { dirname } from "https://deno.land/std@0.99.0/path/mod.ts";
+export { dirname, join } from "https://deno.land/std@0.99.0/path/mod.ts";
 export {
   bold,
   brightBlue,
   dim,
   green,
+  italic,
   red,
   yellow,
 } from "https://deno.land/std@0.99.0/fmt/colors.ts";
@@ -45,7 +46,6 @@ export { Confirm } from "https://deno.land/x/cliffy@v0.19.2/prompt/mod.ts";
 // other
 export * as Progress from "https://deno.land/x/progress@v1.2.3/mod.ts";
 export { Big } from "https://deno.land/x/math@v1.1.0/mod.ts";
-export * as os from "https://deno.land/x/dos@v0.11.0/mod.ts";
 export { writeCSV } from "https://deno.land/x/csv@v0.5.1/mod.ts";
 export { moment } from "https://deno.land/x/deno_moment@v1.1.2/mod.ts";
 export { open } from "https://deno.land/x/opener@v1.0.1/mod.ts";

@@ -1,14 +1,12 @@
-import { dim, yellow } from "../deps.ts";
+import { MeshPlatforms, MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { TableGenerator } from "./mesh-table.ts";
 
-import { Table } from "../deps.ts";
-import { MeshPlatform, MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import { MeshTableTag, TableGenerator } from "./mesh-table.ts";
-
-export class MeshTenantTableViewGenerator implements TableGenerator {
+export class MeshTenantTableViewGenerator extends TableGenerator {
   constructor(
     readonly meshTenants: MeshTenant[],
     private readonly columns: (keyof MeshTenant)[],
   ) {
+    super();
   }
 
   getColumns(): string[] {
@@ -20,17 +18,8 @@ export class MeshTenantTableViewGenerator implements TableGenerator {
     this.meshTenants.forEach((meshTenant: MeshTenant) => {
       var row: string[] = [];
       this.columns.forEach((header: string, index: number) => {
-        var tmpRows: Array<string>[] = [];
         if (header === "tags") {
-          meshTenant[header].forEach((x) => {
-            const t = new MeshTableTag(x);
-
-            tmpRows.push([`${dim(t.tagName)}: `, yellow(t.tagValues[0])]);
-            x.tagValues.slice(1).forEach((t) => tmpRows.push(["", yellow(t)]));
-          });
-          const tmpTable = new Table();
-          tmpTable.body(tmpRows).border(false).maxColWidth(45);
-          row[index] = tmpTable.toString();
+          row[index] = this.formatMeshTags(meshTenant.tags);
         } else {
           const x = header as keyof typeof meshTenant;
           row[index] = meshTenant[x]
@@ -43,14 +32,11 @@ export class MeshTenantTableViewGenerator implements TableGenerator {
   }
 
   getInfo(): string {
-    const gcpCount =
-      this.meshTenants.filter((mt) => mt.platform === MeshPlatform.GCP).length;
-    const awsCount =
-      this.meshTenants.filter((mt) => mt.platform === MeshPlatform.AWS).length;
-    const azureCount =
-      this.meshTenants.filter((mt) => mt.platform === MeshPlatform.Azure)
-        .length;
+    const counts = MeshPlatforms.map((mp) => {
+      const count = this.meshTenants.filter((mt) => mt.platform === mp).length;
+      return `${mp}: ${count}`;
+    });
 
-    return `GCP: ${gcpCount}, AWS: ${awsCount}, Azure: ${azureCount}`;
+    return counts.join(", ");
   }
 }
