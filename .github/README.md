@@ -108,9 +108,7 @@ curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.
 
 **Windows**
 
-We sadly do not support Windows at the moment. Follow
-[this issue](https://github.com/meshcloud/collie-cli/issues/2) to get updated on
-the progress of Collie for Windows.
+Simply copy the content of [`install.ps1`](https://github.com/meshcloud/collie-cli/blob/develop/install.ps1) and run it in your PowerShell console.
 
 ## 👋 Need help or have feedback?
 

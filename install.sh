@@ -20,7 +20,7 @@ case "$(uname -s)" in
      name="collie-x86_64-unknown-linux-gnu"
      ;;
    CYGWIN*|MINGW32*|MSYS*|MINGW*)
-     echo 'Collie currently does not support Windows. Please have a look at https://github.com/meshcloud/collie-cli/issues/2 to follow progress.'
+     echo 'Please execute the install.ps1 script as mentioned in our README. Go to https://github.com/meshcloud/collie-cli#-install-and-usage'
      exit 1
      ;;
    *)
