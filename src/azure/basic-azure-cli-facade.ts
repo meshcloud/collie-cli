@@ -17,7 +17,7 @@ import {
   Tag,
 } from "./azure.model.ts";
 import { CLICommand } from "../config/config.model.ts";
-import { parseJsonStdoutWithLog } from "../json.ts";
+import { parseJsonWithLog } from "../json.ts";
 
 interface ConfigValue {
   name: string;
@@ -61,7 +61,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       return Promise.resolve(null);
     }
 
-    const cv = parseJsonStdoutWithLog<ConfigValue>(result, command);
+    const cv = parseJsonWithLog<ConfigValue>(result.stdout);
 
     return Promise.resolve(cv.value);
   }
@@ -73,7 +73,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`listAccounts: ${JSON.stringify(result)}`);
 
-    return parseJsonStdoutWithLog(result, command);
+    return parseJsonWithLog(result.stdout);
   }
 
   async listTags(subscription: Subscription): Promise<Tag[]> {
@@ -101,7 +101,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`listTags: ${JSON.stringify(result)}`);
 
-    return parseJsonStdoutWithLog(result, command);
+    return parseJsonWithLog(result.stdout);
   }
 
   /**
@@ -126,9 +126,8 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`getCostManagementInfo: ${JSON.stringify(result)}`);
 
-    const costManagementInfo = parseJsonStdoutWithLog<CostManagementInfo>(
-      result,
-      cmd,
+    const costManagementInfo = parseJsonWithLog<CostManagementInfo>(
+      result.stdout,
     );
     if (costManagementInfo.nextLinks != null) {
       log.warning(
@@ -164,7 +163,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`getConsumptionInformation: ${JSON.stringify(result)}`);
 
-    return parseJsonStdoutWithLog(result, cmd);
+    return parseJsonWithLog(result.stdout);
   }
 
   async getRoleAssignments(
@@ -178,7 +177,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     log.debug(`getRoleAssignments: ${JSON.stringify(result)}`);
 
-    return parseJsonStdoutWithLog<RoleAssignment[]>(result, cmd);
+    return parseJsonWithLog<RoleAssignment[]>(result.stdout);
   }
 
   private checkForErrors(result: ShellOutput) {

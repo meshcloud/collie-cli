@@ -55,6 +55,8 @@ async function checkIfConfigExists() {
       "... searching for installed cloud CLIs",
     );
 
+    await writeConfig(emptyConfig);
+
     const config = await detector.getInstalledClis();
     const platforms: string[] = [];
     Object.keys(config.connected).forEach((val) => {

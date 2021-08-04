@@ -48,7 +48,10 @@ export class MeshAdapterFactory {
     const adapters: MeshAdapter[] = [];
 
     if (this.config.connected.AWS) {
-      const aws = new AwsCliFacade(shellRunner);
+      const aws = new AwsCliFacade(
+        shellRunner,
+        this.config.aws.selectedProfile,
+      );
       const awsAdapter = new AwsMeshAdapter(aws);
 
       if (queryStats) {

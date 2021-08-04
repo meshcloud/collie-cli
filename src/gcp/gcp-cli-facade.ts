@@ -8,7 +8,7 @@ import {
 } from "../errors.ts";
 import { log } from "../deps.ts";
 import { CLICommand } from "../config/config.model.ts";
-import { parseJsonStdoutWithLog } from "../json.ts";
+import { parseJsonWithLog } from "../json.ts";
 
 export class GcpCliFacade {
   constructor(
@@ -25,7 +25,7 @@ export class GcpCliFacade {
 
     log.debug(`listProjects: ${JSON.stringify(result)}`);
 
-    return parseJsonStdoutWithLog<Project[]>(result, command);
+    return parseJsonWithLog<Project[]>(result.stdout);
   }
 
   async listIamPolicy(project: Project): Promise<IamResponse[]> {
@@ -51,7 +51,7 @@ export class GcpCliFacade {
 
     log.debug(`listIamPolicy: ${JSON.stringify(result)}`);
 
-    return parseJsonStdoutWithLog<IamResponse[]>(result, command);
+    return parseJsonWithLog<IamResponse[]>(result.stdout);
   }
 
   private checkForErrors(result: ShellOutput) {
