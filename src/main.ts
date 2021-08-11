@@ -1,4 +1,4 @@
-import { Command, log } from "./deps.ts";
+import { Command, log, red } from "./deps.ts";
 import { init } from "./init.ts";
 import { initCommands } from "./commands/init-commands.ts";
 import { CmdOptionError } from "./commands/cmd-errors.ts";
@@ -23,7 +23,9 @@ try {
   }
   await program.parse(Deno.args);
 } catch (e) {
-  log.error(e);
+  if (e instanceof Error) {
+    console.error(red(e.stack || ""));
+  }
 
   // if the error indicates a user error, e.g. wrong typing then display the message and the help.
   if (e instanceof CmdOptionError) {

@@ -20,7 +20,7 @@ import { parseJsonWithLog } from "../json.ts";
 export class AwsCliFacade {
   constructor(
     private readonly shellRunner: ShellRunner,
-    private readonly selectedCliProfile?: string,
+    private readonly selectedCliProfile: string,
   ) {}
 
   async listAccounts(): Promise<Account[]> {
@@ -31,9 +31,7 @@ export class AwsCliFacade {
       if (nextToken != null) {
         command += ` --starting-token ${nextToken}`;
       }
-      if (this.selectedCliProfile) {
-        command += ` --profile ${this.selectedCliProfile}`;
-      }
+      command += ` --profile ${this.selectedCliProfile}`;
 
       const result = await this.shellRunner.run(command);
       this.checkForErrors(result);
@@ -51,9 +49,7 @@ export class AwsCliFacade {
   async listTags(account: Account): Promise<Tag[]> {
     let command =
       `aws organizations list-tags-for-resource --resource-id ${account.Id}`;
-    if (this.selectedCliProfile) {
-      command += ` --profile ${this.selectedCliProfile}`;
-    }
+    command += ` --profile ${this.selectedCliProfile}`;
 
     const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
@@ -88,9 +84,8 @@ export class AwsCliFacade {
       if (nextToken != null) {
         command += ` --next-page-token=${nextToken}`;
       }
-      if (this.selectedCliProfile) {
-        command += ` --profile ${this.selectedCliProfile}`;
-      }
+      command += ` --profile ${this.selectedCliProfile}`;
+
       const rawResult = await this.shellRunner.run(command);
       this.checkForErrors(rawResult);
 

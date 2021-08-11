@@ -44,6 +44,8 @@ export interface ConnectedConfig {
   Azure: boolean;
 }
 
+export type ConnectedConfigKey = keyof ConnectedConfig;
+
 export enum PlatformCommand {
   AWS = "aws",
   Azure = "az",

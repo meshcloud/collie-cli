@@ -1,4 +1,4 @@
-import { brightBlue, log, Table } from "../deps.ts";
+import { brightBlue, Table } from "../deps.ts";
 import { bold, dim, italic } from "../deps.ts";
 import { QueryStatistics } from "../mesh/query-statistics.ts";
 import { MeshTable, TableGenerator } from "./mesh-table.ts";
@@ -8,7 +8,7 @@ export class TtyMeshTable extends MeshTable {
     const rows = generator.getRows();
 
     if (rows.length === 0) {
-      log.info("No objects to list");
+      console.log("No objects to list");
       return;
     }
 

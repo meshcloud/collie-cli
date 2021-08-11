@@ -1,17 +1,20 @@
-import { Input } from "https://deno.land/x/cliffy@v0.19.2/prompt/input.ts";
+import { AwsPostPlatformConfigHook } from "../config/aws-post-config.ts";
 import {
   CLICommand,
   CLIName,
   configFilePath,
   configPath,
   ConnectedConfig,
+  ConnectedConfigKey,
   loadConfig,
   writeConfig,
 } from "../config/config.model.ts";
+import { buildConfigHooks } from "../config/post-config-hooks.ts";
 import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { Command, EnumType, log } from "../deps.ts";
 import { setupLogger } from "../logger.ts";
 import { MeshPlatform } from "../mesh/mesh-tenant.model.ts";
+import { ShellRunner } from "../process/shell-runner.ts";
 import { CmdGlobalOptions } from "./cmd-options.ts";
 
 type Platform = MeshPlatform[number];
@@ -26,26 +29,45 @@ interface CmdConfigOpts extends CmdGlobalOptions {
  * Sets the connected configuration depending on the flags the user provided.
  */
 async function changeConnectedConfig(options: CmdConfigOpts, program: Command) {
-  if (options.connect || options.disconnect) {
-    const config = loadConfig();
-    if (options.connect) {
-      config.connected[options.connect as keyof ConnectedConfig] = true;
-    } else if (options.disconnect) {
-      config.connected[options.disconnect as keyof ConnectedConfig] = false;
-    }
+  const config = loadConfig();
 
-    // Cache must be invalidated after a connection has happened in order to fetch the latest data.
-    // It could obviously be better if we just fetch the missing tenants but then we probably need
-    // to design a per platform cache which is actually not super hard to do with the design we have
-    // in place.
-    const repository = newMeshTenantRepository();
-    repository.clearAll();
-
-    await writeConfig(config);
-    console.log(`Changed config file in ${configFilePath}`);
-  } else {
+  if (!options.connect && !options.disconnect) {
     program.showHelp();
+    return;
   }
+
+  // Prepare the hooks.
+  const hooks = buildConfigHooks();
+
+  if (options.connect) {
+    const key = options.connect as ConnectedConfigKey;
+    config.connected[key] = true;
+
+    const executableHandler = hooks.filter((h) => h.isExecutable(key));
+    for (const h of executableHandler) {
+      await h.executeConnected(config);
+    }
+  }
+
+  if (options.disconnect) {
+    const key = options.disconnect as keyof ConnectedConfig;
+    config.connected[key] = true;
+
+    const executableHandler = hooks.filter((h) => h.isExecutable(key));
+    for (const h of executableHandler) {
+      await h.executeDisconnected(config);
+    }
+  }
+
+  // Cache must be invalidated after a connection has happened in order to fetch the latest data.
+  // It could obviously be better if we just fetch the missing tenants but then we probably need
+  // to design a per platform cache which is actually not super hard to do with the design we have
+  // in place.
+  const repository = newMeshTenantRepository();
+  repository.clearAll();
+
+  await writeConfig(config);
+  console.log(`Changed config file in ${configFilePath}`);
 }
 
 export function registerConfigCmd(program: Command) {
@@ -107,17 +129,19 @@ export function registerConfigCmd(program: Command) {
 
 async function setupAwsConfigAction() {
   const config = loadConfig();
-  const currentAwsProfile = config.aws.selectedProfile || "<none>";
-  console.log(`Your current AWS profile is set to: ${currentAwsProfile}`);
-  const newProfile: string = await Input.prompt(
-    "Enter your default profile to use (or leave empty for none): ",
-  );
 
-  if (newProfile.length === 0) {
-    delete config.aws.selectedProfile;
-  } else {
-    config.aws.selectedProfile = newProfile;
+  // Only allow AWS config if AWS is also connected.
+  if (!config.connected.AWS) {
+    console.log(
+      `AWS Cli is not connected. To connect it execute '${CLICommand} config -c AWS'`,
+    );
   }
+
+  delete config.aws.selectedProfile;
+
+  const shellRunner = new ShellRunner();
+  const awsPostConfig = new AwsPostPlatformConfigHook(shellRunner);
+  await awsPostConfig.executeConnected(config);
 
   writeConfig(config);
 }

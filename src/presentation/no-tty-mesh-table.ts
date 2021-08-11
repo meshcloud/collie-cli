@@ -1,4 +1,4 @@
-import { log, Table } from "../deps.ts";
+import { Table } from "../deps.ts";
 import { bold } from "../deps.ts";
 import { MeshTable, TableGenerator } from "./mesh-table.ts";
 import { QueryStatistics } from "../mesh/query-statistics.ts";
@@ -8,7 +8,7 @@ export class NoTtyMeshTable extends MeshTable {
     const rows = generator.getRows();
 
     if (rows.length === 0) {
-      log.info("No objects to list");
+      console.log("No objects to list");
       return;
     }
 
