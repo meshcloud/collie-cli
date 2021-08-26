@@ -39,7 +39,9 @@ export function initCommands(): Command {
         global: true,
       },
     )
-    .description(`${CLIName} CLI - Herd your cloud environments with Collie`);
+    .description(
+      `${CLIName} CLI - Herd your cloud environments with Collie. Built with love by meshcloud.io`,
+    );
 
   registerConfigCmd(program);
   registerTenantCommand(program);
