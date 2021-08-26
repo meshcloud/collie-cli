@@ -53,7 +53,7 @@ async function checkIfConfigExists(): Promise<Config> {
   }
 
   console.log(
-    "No configuration file found. I will create one for you :)",
+    `No configuration file found. I will create one for you in ${configFilePath}`,
   );
 
   await writeConfig(emptyConfig);
@@ -80,9 +80,10 @@ async function checkIfConfigExists(): Promise<Config> {
     }.\nDo you want to connect these to ${CLIName}?`,
   );
   if (shouldConnect) {
-    console.log(
-      `Saved your configuration here: ${configFilePath}. Have fun using ${CLIName}!`,
-    );
+
+    // The user wants to connect the cloud platforms. Let's write the connected platforms to the config first.
+    // Not doing so will result in weird behavior when the user exits Collie within any of the config hooks below.
+    await writeConfig(config);
 
     const hooks = buildConfigHooks();
     const availableHooks = connectedPlatforms.flatMap((cp) =>
@@ -94,10 +95,11 @@ async function checkIfConfigExists(): Promise<Config> {
     for (const h of availableHooks) {
       await h.executeConnected(config);
     }
-
-    console.log();
-
     await writeConfig(config);
+
+    console.log(
+      `Everything is now properly configured and you finished the setup. Have fun using ${CLIName}!`,
+    );
 
     return config;
   } else {
@@ -105,7 +107,7 @@ async function checkIfConfigExists(): Promise<Config> {
       `Ok, we did not connect the cloud CLIs. Run "${CLICommand} config -h" to see how to individually connect a new cloud CLI to ${CLIName}.`,
     );
 
-    return emptyConfig;
+    Deno.exit(0);
   }
 }
 

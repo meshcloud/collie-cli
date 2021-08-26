@@ -1,4 +1,4 @@
-import { Input } from "../deps.ts";
+import { Select } from "../deps.ts";
 import { AwsErrorCode, MeshAwsPlatformError, MeshError } from "../errors.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
 import {
@@ -49,17 +49,16 @@ export class AwsPostPlatformConfigHook implements PostPlatformConfigHook {
       );
     }
 
-    const availableProfiles = result.stdout.trim().split("\n");
+    const availableProfiles = result.stdout.trim().split("\n").map(profile => ({ name: profile, value: profile }));
 
     // Prompt the user with the found profiles.
-    const selectedProfile: string = await Input.prompt({
+    const selectedProfile: string = await Select.prompt({
       message: "Choose an AWS profile",
-      list: true,
-      suggestions: availableProfiles,
+      options: availableProfiles,
     });
 
     // Make a validity check.
-    if (availableProfiles.indexOf(selectedProfile) == -1) {
+    if (!availableProfiles.find(profile => profile.value === selectedProfile)) {
       throw new MeshError(
         `Your selection '${selectedProfile}' is not present in the available profiles: ${
           availableProfiles.join(", ")
