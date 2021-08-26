@@ -80,7 +80,6 @@ async function checkIfConfigExists(): Promise<Config> {
     }.\nDo you want to connect these to ${CLIName}?`,
   );
   if (shouldConnect) {
-
     // The user wants to connect the cloud platforms. Let's write the connected platforms to the config first.
     // Not doing so will result in weird behavior when the user exits Collie within any of the config hooks below.
     await writeConfig(config);

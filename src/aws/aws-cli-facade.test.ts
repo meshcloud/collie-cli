@@ -117,7 +117,7 @@ const mockShellRunner = {
   },
 } as ShellRunner;
 
-const awsCliFacade = new AwsCliFacade(mockShellRunner, "profile");
+const awsCliFacade = new AwsCliFacade(mockShellRunner);
 const sut = new AwsMeshAdapter(awsCliFacade);
 
 Deno.test("Requesting the tenant cost info respondes with a proper filled MeshTenant object", async () => {

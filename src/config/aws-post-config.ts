@@ -49,7 +49,9 @@ export class AwsPostPlatformConfigHook implements PostPlatformConfigHook {
       );
     }
 
-    const availableProfiles = result.stdout.trim().split("\n").map(profile => ({ name: profile, value: profile }));
+    const availableProfiles = result.stdout.trim().split("\n").map(
+      (profile) => ({ name: profile, value: profile }),
+    );
 
     // Prompt the user with the found profiles.
     const selectedProfile: string = await Select.prompt({
@@ -58,7 +60,9 @@ export class AwsPostPlatformConfigHook implements PostPlatformConfigHook {
     });
 
     // Make a validity check.
-    if (!availableProfiles.find(profile => profile.value === selectedProfile)) {
+    if (
+      !availableProfiles.find((profile) => profile.value === selectedProfile)
+    ) {
       throw new MeshError(
         `Your selection '${selectedProfile}' is not present in the available profiles: ${
           availableProfiles.join(", ")

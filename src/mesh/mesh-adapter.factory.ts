@@ -1,6 +1,7 @@
 import { ShellRunner } from "../process/shell-runner.ts";
 import { AwsCliFacade } from "../aws/aws-cli-facade.ts";
 import { AwsMeshAdapter } from "../aws/aws-mesh-adapter.ts";
+import { AwsShellRunner } from "../aws/aws-shell-runner.ts";
 import { AzureMeshAdapter } from "../azure/azure-mesh-adapter.ts";
 import { MultiMeshAdapter } from "./multi-mesh-adapter.ts";
 import { GcpCliFacade } from "../gcp/gcp-cli-facade.ts";
@@ -49,15 +50,16 @@ export class MeshAdapterFactory {
     const adapters: MeshAdapter[] = [];
 
     if (this.config.connected.AWS) {
-      if (!this.config.aws.selectedProfile) {
+      const selectedProfile = this.config.aws.selectedProfile;
+      if (!selectedProfile) {
         throw new MeshError(
           `No AWS CLI profile selected. Please run '${CLICommand} config aws' to configure it`,
         );
       }
 
+      const awsShellRunner = new AwsShellRunner(shellRunner, selectedProfile);
       const aws = new AwsCliFacade(
-        shellRunner,
-        this.config.aws.selectedProfile,
+        awsShellRunner,
       );
       const awsAdapter = new AwsMeshAdapter(aws);
 
