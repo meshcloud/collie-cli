@@ -69,12 +69,12 @@ export function registerTenantCommand(program: Command) {
     .type("date", dateType)
     .option(
       "--from <YYYY-MM-DD:date>",
-      "Date from which the price collection should start",
+      "Date from which the price collection should start. Use the format YYYY-MM-DD, e.g. 2021-01-01.",
       { required: true },
     )
     .option(
       "--to <YYYY-MM-DD:date>",
-      "Date to which the price date is collected",
+      "Date to which the price date is collected. Use the format YYYY-MM-DD, e.g. 2021-12-31.",
       { required: true },
     )
     .action(listTenantsCostAction);
