@@ -28,12 +28,9 @@ export class AwsPostPlatformConfigHook implements PostPlatformConfigHook {
     }
 
     console.log(
-      "There is no default AWS profile selected. You must set a profile with access to a management account.",
+      `There is no default AWS profile selected. You must set a profile with access to a management account which contains your AWS organization.
+Without management account credentials ${CLIName} won't be able to execute the commands it needs in order to log the required account information.`,
     );
-    console.log(
-      `Without management account credentials ${CLIName} won't be able to execute the commands it needs in`,
-    );
-    console.log("order to log the required account information.");
     console.log(
       `${CLIName} will now scan for the usable AWS profiles and give you a selection.`,
     );
@@ -55,7 +52,8 @@ export class AwsPostPlatformConfigHook implements PostPlatformConfigHook {
 
     // Prompt the user with the found profiles.
     const selectedProfile: string = await Select.prompt({
-      message: "Choose an AWS profile",
+      message:
+        "Choose an AWS CLI profile with access to the management account",
       options: availableProfiles,
     });
 
