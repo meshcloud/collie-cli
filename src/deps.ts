@@ -40,8 +40,11 @@ export {
 } from "https://deno.land/x/cliffy@v0.19.2/command/mod.ts";
 export type { ITypeInfo } from "https://deno.land/x/cliffy@v0.19.2/command/mod.ts";
 export { Table } from "https://deno.land/x/cliffy@v0.19.2/table/mod.ts";
-export { Select } from "https://deno.land/x/cliffy@v0.19.2/prompt/mod.ts";
-export { Confirm } from "https://deno.land/x/cliffy@v0.19.2/prompt/mod.ts";
+export {
+  Confirm,
+  Input,
+  Select,
+} from "https://deno.land/x/cliffy@v0.19.2/prompt/mod.ts";
 
 // other
 export * as Progress from "https://deno.land/x/progress@v1.2.3/mod.ts";

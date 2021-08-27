@@ -2,14 +2,16 @@ import { CliDetector } from "./cli-detector.ts";
 import {
   CLICommand,
   CLIName,
+  Config,
   configFilePath,
+  ConnectedConfigKey,
   emptyConfig,
   loadConfig,
   writeConfig,
 } from "./config/config.model.ts";
+import { buildConfigHooks } from "./config/post-config-hooks.ts";
 import { Confirm, exists, log } from "./deps.ts";
 import { MeshError } from "./errors.ts";
-import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
 
 const detector = new CliDetector();
 
@@ -45,66 +47,91 @@ function objectsHaveSameKeys(
   }
 }
 
-async function checkIfConfigExists() {
-  const exist = await exists(configFilePath);
-  if (!exist) {
-    log.info(
-      "No configuration file found. I will create one for you :)",
-    );
-    log.info(
-      "... searching for installed cloud CLIs",
+async function checkIfConfigExists(): Promise<Config> {
+  if (await exists(configFilePath)) {
+    return loadConfig();
+  }
+
+  console.log(
+    `No configuration file found. I will create one for you in ${configFilePath}`,
+  );
+
+  await writeConfig(emptyConfig);
+
+  console.log(
+    "... searching for installed cloud CLIs",
+  );
+
+  const config = await detector.connectInstalledClis(emptyConfig);
+
+  const connectedPlatforms: ConnectedConfigKey[] = [];
+
+  Object.keys(config.connected).forEach((key) => {
+    const con = key as ConnectedConfigKey;
+
+    if (config.connected[con]) {
+      connectedPlatforms.push(con);
+    }
+  });
+
+  const shouldConnect: boolean = await Confirm.prompt(
+    `I see you already have these cloud CLIs installed: ${
+      connectedPlatforms.join(", ")
+    }.\nDo you want to connect these to ${CLIName}?`,
+  );
+  if (shouldConnect) {
+    // The user wants to connect the cloud platforms. Let's write the connected platforms to the config first.
+    // Not doing so will result in weird behavior when the user exits Collie within any of the config hooks below.
+    await writeConfig(config);
+
+    const hooks = buildConfigHooks();
+    const availableHooks = connectedPlatforms.flatMap((cp) =>
+      hooks.filter((h) => h.isExecutable(cp))
     );
 
-    const config = await detector.getInstalledClis();
-    const platforms: string[] = [];
-    Object.keys(config.connected).forEach((val) => {
-      const con = val as MeshPlatform;
-      if (config.connected[con]) {
-        platforms.push(val);
-      }
-    });
-    const answer: boolean = await Confirm.prompt(
-      `I see you already have these cloud CLIs installed: ${
-        platforms.join(", ")
-      }.\nDo you want to connect these to ${CLIName}?`,
-    );
-    if (answer) {
-      await writeConfig(config);
-      log.info(
-        `Saved your configuration here: ${configFilePath}. Have fun using ${CLIName}!`,
-      );
-    } else {
-      log.info(
-        `Ok, we did not connect the cloud CLIs. Run "${CLICommand} config -h" to see how to individually connect a new cloud CLI to ${CLIName}.`,
-      );
+    console.log();
+
+    for (const h of availableHooks) {
+      await h.executeConnected(config);
     }
+    await writeConfig(config);
+
+    console.log(
+      `Everything is now properly configured and you finished the setup. Have fun using ${CLIName}!`,
+    );
+
+    return config;
+  } else {
+    console.log(
+      `Ok, we did not connect the cloud CLIs. Run "${CLICommand} config -h" to see how to individually connect a new cloud CLI to ${CLIName}.`,
+    );
+
+    Deno.exit(0);
   }
 }
 
 export async function init() {
   // check if config file exists
-  if (Deno.args[0] !== "config") {
-    await checkIfConfigExists();
+  const config = await checkIfConfigExists();
 
-    // check if config file is valid
-    const config = loadConfig();
+  // check if config file is valid
+  if (!objectsHaveSameKeys(emptyConfig, config)) {
+    throw new MeshError(
+      `Configuration does not match the required format. Please delete the config File at ${configFilePath} and run "${CLICommand} config" again`,
+    );
+  }
 
-    if (!objectsHaveSameKeys(emptyConfig, config)) {
-      throw new MeshError(
-        `Configuration does not match the required format. Please delete the config File at ${configFilePath} and run "${CLICommand} config" again`,
-      );
-    }
+  const isNoPlatformConnected = !config.connected.AWS &&
+    !config.connected.Azure && !config.connected.GCP;
+  const isConfigInvoked = Deno.args[0] === "config";
 
-    if (
-      !config.connected.AWS && !config.connected.Azure && !config.connected.GCP
-    ) {
-      // This handling somehow feels right as no connection somehow should not be an error and continueing
-      // execution also does not make much sense so we exit here.
-      log.info(
-        `You are not connected with any platform. Run "${CLICommand} config" for more information.`,
-      );
-      Deno.exit(0);
-    }
+  if (isNoPlatformConnected && !isConfigInvoked) {
+    // This handling somehow feels right as no connection somehow should not be an error and continueing
+    // execution also does not make much sense so we exit here.
+    console.log(
+      `You are not connected with any platform. Run "${CLICommand} config" for more information.`,
+    );
+    Deno.exit(0);
   }
 }
 

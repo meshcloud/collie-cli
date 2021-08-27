@@ -3,6 +3,17 @@ import { dirname, ensureDir, join } from "../deps.ts";
 import { parseJsonWithLog } from "../json.ts";
 import { isWindows } from "../os.ts";
 
+function getConfigPath(): string {
+  const path = join(".config", "collie-cli");
+  let home = "";
+  if (isWindows) {
+    home = Deno.env.get("APPDATA") || "";
+  } else {
+    home = Deno.env.get("HOME") || "";
+  }
+  return join(home, path);
+}
+
 export const configPath = getConfigPath();
 export const configFilePath = join(configPath, "config.json");
 // Use the CLI Name when mentioning it somewhere in a sentence, e.g.: Have fun using ${CLIName}!
@@ -18,6 +29,9 @@ export interface Config {
   azure: {
     parentManagementGroups: string[];
   };
+  aws: {
+    selectedProfile?: string;
+  };
 }
 
 export interface CacheConfig {
@@ -29,6 +43,8 @@ export interface ConnectedConfig {
   GCP: boolean;
   Azure: boolean;
 }
+
+export type ConnectedConfigKey = keyof ConnectedConfig;
 
 export enum PlatformCommand {
   AWS = "aws",
@@ -48,18 +64,8 @@ export const emptyConfig: Config = {
   azure: {
     parentManagementGroups: [],
   },
+  aws: {},
 };
-
-function getConfigPath(): string {
-  const path = join(".config", "collie-cli");
-  let home = "";
-  if (isWindows) {
-    home = Deno.env.get("APPDATA") || "";
-  } else {
-    home = Deno.env.get("HOME") || "";
-  }
-  return join(home, path);
-}
 
 export function loadConfig(): Config {
   const config = parseJsonWithLog<Config>(readFile(configFilePath));
@@ -69,5 +75,5 @@ export function loadConfig(): Config {
 
 export async function writeConfig(config: Config) {
   await ensureDir(dirname(configFilePath));
-  writeFile(configFilePath, JSON.stringify(config));
+  writeFile(configFilePath, JSON.stringify(config, null, 2));
 }
