@@ -1,20 +1,21 @@
+import { AwsPostPlatformConfigHook } from "../config/aws-post-config.ts";
 import {
   CLICommand,
   CLIName,
   configFilePath,
+  configPath,
   ConnectedConfig,
-  emptyConfig,
+  ConnectedConfigKey,
   loadConfig,
   writeConfig,
 } from "../config/config.model.ts";
+import { buildConfigHooks } from "../config/post-config-hooks.ts";
 import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
-import { Command, EnumType, exists, log } from "../deps.ts";
+import { Command, EnumType, log } from "../deps.ts";
 import { setupLogger } from "../logger.ts";
 import { MeshPlatform } from "../mesh/mesh-tenant.model.ts";
-import { ConfigTableViewGenerator } from "../presentation/config-table-view-generator.ts";
-import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
+import { ShellRunner } from "../process/shell-runner.ts";
 import { CmdGlobalOptions } from "./cmd-options.ts";
-import { isatty } from "./tty.ts";
 
 type Platform = MeshPlatform[number];
 const platform = new EnumType(Object.values(MeshPlatform));
@@ -24,8 +25,53 @@ interface CmdConfigOpts extends CmdGlobalOptions {
   disconnect?: Platform;
 }
 
+/**
+ * Sets the connected configuration depending on the flags the user provided.
+ */
+async function changeConnectedConfig(options: CmdConfigOpts, program: Command) {
+  const config = loadConfig();
+
+  if (!options.connect && !options.disconnect) {
+    program.showHelp();
+    return;
+  }
+
+  // Prepare the hooks.
+  const hooks = buildConfigHooks();
+
+  if (options.connect) {
+    const key = options.connect as ConnectedConfigKey;
+    config.connected[key] = true;
+
+    const executableHandler = hooks.filter((h) => h.isExecutable(key));
+    for (const h of executableHandler) {
+      await h.executeConnected(config);
+    }
+  }
+
+  if (options.disconnect) {
+    const key = options.disconnect as keyof ConnectedConfig;
+    config.connected[key] = true;
+
+    const executableHandler = hooks.filter((h) => h.isExecutable(key));
+    for (const h of executableHandler) {
+      await h.executeDisconnected(config);
+    }
+  }
+
+  // Cache must be invalidated after a connection has happened in order to fetch the latest data.
+  // It could obviously be better if we just fetch the missing tenants but then we probably need
+  // to design a per platform cache which is actually not super hard to do with the design we have
+  // in place.
+  const repository = newMeshTenantRepository();
+  repository.clearAll();
+
+  await writeConfig(config);
+  console.log(`Changed config file in ${configFilePath}`);
+}
+
 export function registerConfigCmd(program: Command) {
-  const connectCmd = new Command()
+  const configCmd = new Command()
     .type("platform", platform)
     .option(
       "-c, --connect [platform:platform]",
@@ -35,7 +81,9 @@ export function registerConfigCmd(program: Command) {
       "-d, --disconnect [platform:platform]",
       `Disconnect ${CLIName} from a specific enterprise cloud.`,
     )
-    .description(`Configure the ${CLIName} CLI.`)
+    .description(
+      `Configure the ${CLIName} CLI.\n${CLIName} places its configuration in '${configPath}'.`,
+    )
     .example(
       "Connect to Google Cloud Platform",
       `${CLICommand} config --connect GCP`,
@@ -44,15 +92,15 @@ export function registerConfigCmd(program: Command) {
       "Disconnect from Google Cloud Platform",
       `${CLICommand} config --disconnect GCP`,
     )
-    .action((opts) => configurePlatforms(opts, connectCmd));
+    .action((opts) => configurePlatformsAction(opts, configCmd));
 
-  program.command("config", connectCmd);
+  program.command("config", configCmd);
 
-  const listCmd = new Command()
+  const showConfigCmd = new Command()
     .description(
       "Show config.",
     )
-    .action(showConfig);
+    .action(showConfigAction);
 
   const setupAzureManagementGroupCmd = new Command()
     .arguments("<management_group_id:string>")
@@ -69,9 +117,33 @@ export function registerConfigCmd(program: Command) {
     "Configure Azure related options",
   ).command("managementgroup", setupAzureManagementGroupCmd);
 
-  connectCmd
-    .command("list", listCmd)
-    .command("azure", azureSubCmd);
+  const awsSubCmd = new Command().description(
+    "Configure AWS related options",
+  ).action(setupAwsConfigAction);
+
+  configCmd
+    .command("show", showConfigCmd)
+    .command("azure", azureSubCmd)
+    .command("aws", awsSubCmd);
+}
+
+async function setupAwsConfigAction() {
+  const config = loadConfig();
+
+  // Only allow AWS config if AWS is also connected.
+  if (!config.connected.AWS) {
+    console.log(
+      `AWS Cli is not connected. To connect it execute '${CLICommand} config -c AWS'`,
+    );
+  }
+
+  delete config.aws.selectedProfile;
+
+  const shellRunner = new ShellRunner();
+  const awsPostConfig = new AwsPostPlatformConfigHook(shellRunner);
+  await awsPostConfig.executeConnected(config);
+
+  writeConfig(config);
 }
 
 function setupAzureManagementGroup(
@@ -86,53 +158,20 @@ function setupAzureManagementGroup(
   log.info(`Set Azure root management group ID to: ${managementGroupId}`);
 }
 
-function configurePlatforms(options: CmdConfigOpts, program: Command) {
+async function configurePlatformsAction(
+  options: CmdConfigOpts,
+  program: Command,
+) {
   setupLogger(options);
-  log.debug(`configurePlatforms: ${JSON.stringify(options)}`);
+  log.debug(`configurePlatformsAction: ${JSON.stringify(options)}`);
 
   if (Object.keys(options).length === 0) {
     log.info(`Please see "${CLICommand} config -h" for more information.`);
   }
-  exists(configFilePath).then(async (ex) => {
-    if (!ex) {
-      await writeConfig(emptyConfig);
-    }
-    await changeConfig(options, program);
-  });
+
+  await changeConnectedConfig(options, program);
 }
 
-async function changeConfig(options: CmdConfigOpts, program: Command) {
-  if (options.connect || options.disconnect) {
-    const config = loadConfig();
-    if (options.connect) {
-      config.connected[options.connect as keyof ConnectedConfig] = true;
-    } else if (options.disconnect) {
-      config.connected[options.disconnect as keyof ConnectedConfig] = false;
-    }
-
-    // Cache must be invalidated after a connection has happened in order to fetch the latest data.
-    // It could obviously be better if we just fetch the missing tenants but then we probably need
-    // to design a per platform cache which is actually not super hard to do with the design we have
-    // in place.
-    const repository = newMeshTenantRepository();
-    repository.clearAll();
-
-    await writeConfig(config);
-    log.info(`Changed config file in ${configFilePath}`);
-  } else {
-    program.showHelp();
-  }
-}
-
-function showConfig() {
-  const viewGenerator = new ConfigTableViewGenerator(loadConfig(), [
-    "AWS",
-    "GCP",
-    "Azure",
-  ]);
-  // This could be wrapped in a presenter class but because of simplicity reasons
-  // that would be a bit overengineering.
-  const tableFactory = new MeshTableFactory(isatty);
-  const meshTable = tableFactory.buildMeshTable();
-  meshTable.draw(viewGenerator, null);
+function showConfigAction() {
+  console.log(JSON.stringify(loadConfig(), null, 2));
 }

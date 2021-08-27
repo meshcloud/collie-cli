@@ -15,7 +15,7 @@ import {
 } from "../errors.ts";
 import { sleep } from "../promises.ts";
 import { CLICommand, CLIName } from "../config/config.model.ts";
-import { parseJsonStdoutWithLog } from "../json.ts";
+import { parseJsonWithLog } from "../json.ts";
 
 export class AwsCliFacade {
   constructor(
@@ -30,15 +30,13 @@ export class AwsCliFacade {
       if (nextToken != null) {
         command += ` --starting-token ${nextToken}`;
       }
+
       const result = await this.shellRunner.run(command);
       this.checkForErrors(result);
 
       log.debug(`listAccounts: ${JSON.stringify(result)}`);
 
-      const jsonResult = parseJsonStdoutWithLog<AccountResponse>(
-        result,
-        command,
-      );
+      const jsonResult = parseJsonWithLog<AccountResponse>(result.stdout);
       nextToken = jsonResult.NextToken;
       accounts = accounts.concat(jsonResult.Accounts);
     } while (nextToken != null);
@@ -49,9 +47,8 @@ export class AwsCliFacade {
   async listTags(account: Account): Promise<Tag[]> {
     const command =
       `aws organizations list-tags-for-resource --resource-id ${account.Id}`;
-    const result = await this.shellRunner.run(
-      command,
-    );
+
+    const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
 
     log.debug(`listTags: ${JSON.stringify(result)}`);
@@ -63,7 +60,7 @@ export class AwsCliFacade {
       return await this.listTags(account);
     }
 
-    return parseJsonStdoutWithLog<TagResponse>(result, command).Tags;
+    return parseJsonWithLog<TagResponse>(result.stdout).Tags;
   }
 
   /**
@@ -84,15 +81,13 @@ export class AwsCliFacade {
       if (nextToken != null) {
         command += ` --next-page-token=${nextToken}`;
       }
+
       const rawResult = await this.shellRunner.run(command);
       this.checkForErrors(rawResult);
 
       log.debug(`listCosts: ${JSON.stringify(rawResult)}`);
 
-      const costResult = parseJsonStdoutWithLog<CostResponse>(
-        rawResult,
-        command,
-      );
+      const costResult = parseJsonWithLog<CostResponse>(rawResult.stdout);
 
       if (costResult.NextPageToken) {
         nextToken = costResult.NextPageToken;
@@ -112,24 +107,27 @@ export class AwsCliFacade {
   }
 
   private checkForErrors(result: ShellOutput) {
-    if (result.code === 2) {
-      throw new MeshAwsPlatformError(
-        AwsErrorCode.AWS_CLI_GENERAL,
-        result.stderr,
-      );
-    } else if (result.code === 253) {
-      log.info(
-        `You are not correctly logged into AWS CLI. Please verify credentials with "aws config" or disconnect with "${CLICommand} config --disconnect AWS"`,
-      );
-      throw new MeshNotLoggedInError(result.stderr);
-    } else if (result.code === 254) {
-      log.info(
-        `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.`,
-      );
-      throw new MeshAwsPlatformError(
-        AwsErrorCode.AWS_UNAUTHORIZED,
-        result.stderr,
-      );
+    switch (result.code) {
+      case 0:
+        return;
+      case 253:
+        console.error(
+          `You are not correctly logged into AWS CLI. Please verify credentials with "aws config" or disconnect with "${CLICommand} config --disconnect AWS"`,
+        );
+        throw new MeshNotLoggedInError(result.stderr);
+      case 254:
+        console.error(
+          `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.`,
+        );
+        throw new MeshAwsPlatformError(
+          AwsErrorCode.AWS_UNAUTHORIZED,
+          result.stderr,
+        );
+      default:
+        throw new MeshAwsPlatformError(
+          AwsErrorCode.AWS_CLI_GENERAL,
+          result.stderr,
+        );
     }
   }
 }

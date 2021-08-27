@@ -1,11 +1,12 @@
 import { ShellRunner } from "../process/shell-runner.ts";
 import { AwsCliFacade } from "../aws/aws-cli-facade.ts";
 import { AwsMeshAdapter } from "../aws/aws-mesh-adapter.ts";
+import { AwsShellRunner } from "../aws/aws-shell-runner.ts";
 import { AzureMeshAdapter } from "../azure/azure-mesh-adapter.ts";
 import { MultiMeshAdapter } from "./multi-mesh-adapter.ts";
 import { GcpCliFacade } from "../gcp/gcp-cli-facade.ts";
 import { GcpMeshAdapter } from "../gcp/gcp-mesh-adapter.ts";
-import { Config } from "../config/config.model.ts";
+import { CLICommand, Config } from "../config/config.model.ts";
 import { MeshAdapter } from "./mesh-adapter.ts";
 import { TimeWindowCalculator } from "./time-window-calculator.ts";
 import { BasicAzureCliFacade } from "../azure/basic-azure-cli-facade.ts";
@@ -22,6 +23,7 @@ import { StatsMeshAdapterDecorator } from "./stats-mesh-adapter-decorator.ts";
 import { MeshPlatform } from "./mesh-tenant.model.ts";
 import { QueryStatistics } from "./query-statistics.ts";
 import { isWindows } from "../os.ts";
+import { MeshError } from "../errors.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -48,7 +50,17 @@ export class MeshAdapterFactory {
     const adapters: MeshAdapter[] = [];
 
     if (this.config.connected.AWS) {
-      const aws = new AwsCliFacade(shellRunner);
+      const selectedProfile = this.config.aws.selectedProfile;
+      if (!selectedProfile) {
+        throw new MeshError(
+          `No AWS CLI profile selected. Please run '${CLICommand} config aws' to configure it`,
+        );
+      }
+
+      const awsShellRunner = new AwsShellRunner(shellRunner, selectedProfile);
+      const aws = new AwsCliFacade(
+        awsShellRunner,
+      );
       const awsAdapter = new AwsMeshAdapter(aws);
 
       if (queryStats) {

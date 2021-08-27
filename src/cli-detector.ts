@@ -1,7 +1,6 @@
 import {
   CLICommand,
   Config,
-  emptyConfig,
   loadConfig,
   PlatformCommand,
 } from "./config/config.model.ts";
@@ -20,9 +19,7 @@ export enum PlatformCommandInstallationStatus {
 export class CliDetector {
   private shellRunner = new ShellRunner();
 
-  async getInstalledClis(): Promise<Config> {
-    const config: Config = emptyConfig;
-
+  async connectInstalledClis(config: Config): Promise<Config> {
     for (const platform in MeshPlatform) {
       const mp = platform as MeshPlatform;
       const installationStatus = await this.checkCliInstalled(
