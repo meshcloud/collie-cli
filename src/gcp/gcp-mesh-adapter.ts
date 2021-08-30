@@ -1,4 +1,3 @@
-import { log } from "../deps.ts";
 import { MeshAdapter } from "../mesh/mesh-adapter.ts";
 import {
   MeshPlatform,
@@ -47,7 +46,7 @@ export class GcpMeshAdapter implements MeshAdapter {
     _startDate: Date,
     _endDate: Date,
   ): Promise<void> {
-    log.warning(
+    console.error(
       `This CLI does not support GCP cost collection at the moment. We will implement this at a later stage when GCP supports billing exports via CLI.`,
     );
 

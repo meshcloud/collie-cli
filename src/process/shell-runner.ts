@@ -1,4 +1,3 @@
-import { log } from "../deps.ts";
 import { ShellOutput } from "./shell-output.ts";
 import { IShellRunner } from "./shell-runner.interface.ts";
 import { isWindows } from "../os.ts";
@@ -12,7 +11,7 @@ export class ShellRunner implements IShellRunner {
     }
 
     const commands = commandStr.split(" ");
-    log.debug(`ShellRunner running '${commandStr}'`);
+    console.debug(`ShellRunner running '${commandStr}'`);
 
     const p = Deno.run({
       cmd: commands,
@@ -25,7 +24,7 @@ export class ShellRunner implements IShellRunner {
     const rawError = await p.stderrOutput();
     const { code } = await p.status();
 
-    log.debug(`Exit code for running '${commandStr}' is ${code}`);
+    console.debug(`Exit code for running '${commandStr}' is ${code}`);
 
     return {
       code: code,

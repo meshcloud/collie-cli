@@ -7,7 +7,7 @@ import {
 import { isSubscription, Tag } from "./azure.model.ts";
 import { AzureCliFacade } from "./azure-cli-facade.ts";
 import { MeshAdapter } from "../mesh/mesh-adapter.ts";
-import { log, moment } from "../deps.ts";
+import { moment } from "../deps.ts";
 import { CLICommand, CLIName, loadConfig } from "../config/config.model.ts";
 import {
   AzureErrorCode,
@@ -44,7 +44,7 @@ export class AzureMeshAdapter implements MeshAdapter {
 
     const config = loadConfig();
     if (config.azure.parentManagementGroups.length == 0) {
-      log.info(
+      console.log(
         "It seems you have not configured a Azure Management Group for Subscription lookup. " +
           `Because of a bug in the Azure API, ${CLIName} can not detect this automatically. By ` +
           "configuring an Azure management group, cost & usage information lookups are significantly faster. " +
@@ -133,7 +133,7 @@ export class AzureMeshAdapter implements MeshAdapter {
     for (const t of azureTenants) {
       const results = [];
       for (const tw of timeWindows) {
-        log.debug(
+        console.debug(
           `Quering Azure for tenant ${t.platformTenantName}: ${
             JSON.stringify(tw)
           }`,
@@ -147,7 +147,7 @@ export class AzureMeshAdapter implements MeshAdapter {
             e instanceof MeshAzurePlatformError &&
             e.errorCode === AzureErrorCode.AZURE_INVALID_SUBSCRIPTION
           ) {
-            log.warning(
+            console.error(
               `The Subscription ${t.platformTenantId} can not be cost collected as Azure only supports Enterprise Agreement, Web Direct and Customer Agreements offer type Subscriptions to get cost collected via API.`,
             );
           }
@@ -177,7 +177,7 @@ export class AzureMeshAdapter implements MeshAdapter {
       timeWindow.to,
     );
 
-    log.debug(`Fetched ${tenantCostInfo.length} cost infos from Azure`);
+    console.debug(`Fetched ${tenantCostInfo.length} cost infos from Azure`);
 
     const totalUsagePretaxCost = [
       0.0,

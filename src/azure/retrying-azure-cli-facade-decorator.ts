@@ -1,4 +1,3 @@
-import { log } from "../deps.ts";
 import { MeshAzureRetryableError } from "../errors.ts";
 import { sleep } from "../promises.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
@@ -83,7 +82,7 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
           );
         }
 
-        log.debug("Cought retryable error");
+        console.debug("Cought retryable error");
         await sleep(e.retryInSeconds * 1000 + 500);
 
         return await fn();

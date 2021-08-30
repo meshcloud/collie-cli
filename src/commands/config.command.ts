@@ -11,7 +11,7 @@ import {
 } from "../config/config.model.ts";
 import { buildConfigHooks } from "../config/post-config-hooks.ts";
 import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
-import { Command, EnumType, log } from "../deps.ts";
+import { Command, EnumType } from "../deps.ts";
 import { setupLogger } from "../logger.ts";
 import { MeshPlatform } from "../mesh/mesh-tenant.model.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
@@ -109,7 +109,7 @@ export function registerConfigCmd(program: Command) {
     )
     .example(
       "Set a parent management group ID",
-      `${CLICommand} config azure managementgroup set 4a2ef91d-7697-4759-ab36-0f8049d274df`,
+      `${CLICommand} config azure managementgroup 4a2ef91d-7697-4759-ab36-0f8049d274df`,
     )
     .action(setupAzureManagementGroup);
 
@@ -155,7 +155,7 @@ function setupAzureManagementGroup(
   const config = loadConfig();
   config.azure.parentManagementGroups = [managementGroupId];
   writeConfig(config);
-  log.info(`Set Azure root management group ID to: ${managementGroupId}`);
+  console.log(`Set Azure root management group ID to: ${managementGroupId}`);
 }
 
 async function configurePlatformsAction(
@@ -163,10 +163,10 @@ async function configurePlatformsAction(
   program: Command,
 ) {
   setupLogger(options);
-  log.debug(`configurePlatformsAction: ${JSON.stringify(options)}`);
+  console.debug(`configurePlatformsAction: ${JSON.stringify(options)}`);
 
   if (Object.keys(options).length === 0) {
-    log.info(`Please see "${CLICommand} config -h" for more information.`);
+    console.log(`Please see "${CLICommand} config -h" for more information.`);
   }
 
   await changeConnectedConfig(options, program);

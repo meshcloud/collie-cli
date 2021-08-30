@@ -7,7 +7,7 @@ import {
   TagResponse,
 } from "./aws.model.ts";
 import { ShellOutput } from "../process/shell-output.ts";
-import { log, moment } from "../deps.ts";
+import { moment } from "../deps.ts";
 import {
   AwsErrorCode,
   MeshAwsPlatformError,
@@ -34,7 +34,7 @@ export class AwsCliFacade {
       const result = await this.shellRunner.run(command);
       this.checkForErrors(result);
 
-      log.debug(`listAccounts: ${JSON.stringify(result)}`);
+      console.debug(`listAccounts: ${JSON.stringify(result)}`);
 
       const jsonResult = parseJsonWithLog<AccountResponse>(result.stdout);
       nextToken = jsonResult.NextToken;
@@ -51,10 +51,10 @@ export class AwsCliFacade {
     const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
 
-    log.debug(`listTags: ${JSON.stringify(result)}`);
+    console.debug(`listTags: ${JSON.stringify(result)}`);
 
     if (result.code === 254) {
-      log.debug("AWS is overheated. We wait one second and continue.");
+      console.debug("AWS is overheated. We wait one second and continue.");
       await sleep(1000);
 
       return await this.listTags(account);
@@ -85,7 +85,7 @@ export class AwsCliFacade {
       const rawResult = await this.shellRunner.run(command);
       this.checkForErrors(rawResult);
 
-      log.debug(`listCosts: ${JSON.stringify(rawResult)}`);
+      console.debug(`listCosts: ${JSON.stringify(rawResult)}`);
 
       const costResult = parseJsonWithLog<CostResponse>(rawResult.stdout);
 
