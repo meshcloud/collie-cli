@@ -238,7 +238,10 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     }
 
     // Detect login error
-    if (result.stderr.includes("az login")) {
+    if (
+      result.stderr.includes("az login") ||
+      result.stderr.includes("AADSTS700082")
+    ) {
       console.log(
         `You are not logged in into Azure CLI. Please login with "az login" or disconnect with "${CLICommand} config --disconnect Azure".`,
       );
