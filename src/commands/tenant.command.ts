@@ -49,7 +49,9 @@ export function registerTenantCommand(program: Command) {
       "Show tenants that are missing the tag 'Environment' and 'CostCenter'",
       `${CLICommand} tenant analyze-tags --details --tags Environment,CostCenter`,
     )
-    .action(() => tenantMenu(tenantCmd));
+    .action(() => {
+      tenantCmd.showHelp();
+    });
   program.command("tenant", tenantCmd);
 
   const listTenants = new Command()
@@ -146,7 +148,6 @@ async function listIamAction(options: CmdIamOptions) {
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
 
-  const stats = new QueryStatistics();
   const allTenants = await meshAdapter.getMeshTenants();
 
   await meshAdapter.attachTenantRoleAssignments(allTenants);
@@ -158,7 +159,6 @@ async function listIamAction(options: CmdIamOptions) {
       options.output,
       options.includeAncestors,
       allTenants,
-      stats,
     )
     .present();
 }
@@ -268,10 +268,6 @@ function displayAnalyzeTagResults(results: AnalyzeTagResult[]) {
       }
     }
   }
-}
-
-function tenantMenu(tenantMenu: Command) {
-  tenantMenu.showHelp();
 }
 
 export interface AnalyzeTagResult {

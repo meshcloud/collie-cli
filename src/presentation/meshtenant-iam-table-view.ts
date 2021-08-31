@@ -23,11 +23,14 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
   }
 
   getRows(): string[][] {
-    var rows: Array<string>[] = [];
+    const rows: Array<string>[] = [];
+
     this.meshTenants.forEach((meshTenant: MeshTenant) => {
-      var row: string[] = [];
+      const row: string[] = [];
+
       this.columns.forEach((header: string, index: number) => {
-        var tmpRows: Array<string>[] = [];
+        const tmpRows: Array<string>[] = [];
+
         if (header === "roleAssignments") {
           // The IAM inner-table should be formatted as such:
           // <role-name>
@@ -39,7 +42,8 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
           const groupedRoles: {
             [roleName: string]: MeshTenantRoleAssignment[];
           } = {};
-          meshTenant.roleAssignments.forEach((x) => {
+
+           meshTenant.roleAssignments.forEach((x) => {
             // Might need an additional grouping level
             if (groupedRoles[x.roleName]) {
               groupedRoles[x.roleName].push(x);
@@ -47,17 +51,24 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
               groupedRoles[x.roleName] = [x];
             }
           });
+
           for (const roleName in groupedRoles) {
             const roleAssignments = groupedRoles[roleName];
 
             tmpRows.push([`${bold(roleName)}`]);
+
             roleAssignments.forEach((r) => {
               const prefix = this.includeAncestors
                 ? `[${r.assignmentSource}] `
                 : "";
-              const principalString =
-                ` - ${prefix}${r.principalName} (${r.principalType})`;
-              tmpRows.push([principalString]);
+
+                // Sometimes, especially Azure if the principal was deleted there is only the ID left but the name is empty.
+                const cleanedPrincipalName = r.principalName.length === 0 ? `Deleted: ${r.principalId}` : r.principalName;
+
+                const principalString =
+                ` - ${prefix}${cleanedPrincipalName} (${r.principalType})`;
+
+                tmpRows.push([principalString]);
             });
           }
           const tmpTable = new Table();
@@ -71,6 +82,7 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
       });
       rows.push(row);
     });
+
     return rows;
   }
 }
