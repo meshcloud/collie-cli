@@ -240,6 +240,8 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     // Detect login error
     if (
       result.stderr.includes("az login") ||
+      // There is a possibility that a faulty token returns an unknown status code but contains this as part of the error message.
+      // to solve this the user must just perform a new login so we issue this error if we detect this string.
       result.stderr.includes("AADSTS700082")
     ) {
       console.log(

@@ -43,7 +43,7 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
             [roleName: string]: MeshTenantRoleAssignment[];
           } = {};
 
-           meshTenant.roleAssignments.forEach((x) => {
+          meshTenant.roleAssignments.forEach((x) => {
             // Might need an additional grouping level
             if (groupedRoles[x.roleName]) {
               groupedRoles[x.roleName].push(x);
@@ -62,13 +62,16 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
                 ? `[${r.assignmentSource}] `
                 : "";
 
-                // Sometimes, especially Azure if the principal was deleted there is only the ID left but the name is empty.
-                const cleanedPrincipalName = r.principalName.length === 0 ? `Deleted: ${r.principalId}` : r.principalName;
+              // Azure is a bit special and returns an empty principalName, if the principal itself was deleted there is
+              // only the ID left but the name is empty.
+              const cleanedPrincipalName = r.principalName.length === 0
+                ? `<Deleted: ${r.principalId}>`
+                : r.principalName;
 
-                const principalString =
+              const principalString =
                 ` - ${prefix}${cleanedPrincipalName} (${r.principalType})`;
 
-                tmpRows.push([principalString]);
+              tmpRows.push([principalString]);
             });
           }
           const tmpTable = new Table();

@@ -16,7 +16,6 @@ import { QueryStatistics } from "../mesh/query-statistics.ts";
 
 // This buildPresenter & individual methods might be a good argument for building a parent abstract class to DRY.
 export class TenantIamPresenterFactory {
-
   constructor(
     private readonly tableFactory: MeshTableFactory,
   ) {
@@ -25,7 +24,7 @@ export class TenantIamPresenterFactory {
   buildPresenter(
     format: OutputFormat,
     includeAncestors: boolean,
-    meshTenants: MeshTenant[]
+    meshTenants: MeshTenant[],
   ): Presenter {
     // If includeAncestors is not given, we will remove those roleAssignments so they will not be presented to the user.
     if (!includeAncestors) {
