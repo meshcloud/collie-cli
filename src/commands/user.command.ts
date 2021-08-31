@@ -7,6 +7,9 @@ import { MeshAdapterFactory } from "../mesh/mesh-adapter.factory.ts";
 import { MeshTableFactory } from "../presentation/mesh-table-factory.ts";
 import { TenantIamPresenterFactory } from "../presentation/tenant-iam-presenter-factory.ts";
 import { isatty } from "./tty.ts";
+import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshError } from "../errors.ts";
+import { MeshTenantFilterFactory } from "../mesh/filter/mesh-tenant-filter-factory.ts";
 
 export function registerUserCommand(program: Command) {
   const userCmd = new Command()
@@ -26,15 +29,15 @@ export function registerUserCommand(program: Command) {
     )
     .example(
       "List all tenants who have the user john.doe@example.com assigned.",
-      `${CLICommand} user list email=john.doe@example.com`,
+      `${CLICommand} user list principalName=john.doe@example.com`,
     )
-    .action(listTenantAction);
+    .action(listUserTenantAction);
 
   userCmd
     .command("list <filter:string>", listUserTenants);
 }
 
-async function listTenantAction(options: CmdGlobalOptions, filter: string) {
+async function listUserTenantAction(options: CmdGlobalOptions, filterStr: string) {
   await setupLogger(options);
   await verifyCliAvailability();
 
@@ -46,14 +49,17 @@ async function listTenantAction(options: CmdGlobalOptions, filter: string) {
 
   await meshAdapter.attachTenantRoleAssignments(allTenants);
 
+  const filterFactory = new MeshTenantFilterFactory();
+  const tenantFilter = filterFactory.buildFilterFromString(filterStr);
+
+  const filteredTenants = allTenants.filter(t => tenantFilter.filter(t));
+
   const tableFactory = new MeshTableFactory(isatty);
   const iamPresenterFactory = new TenantIamPresenterFactory(tableFactory);
-
-  console.log(filter);
 
   iamPresenterFactory.buildPresenter(
     options.output,
     false, // make this configurable
-    allTenants,
+    filteredTenants,
   ).present();
 }
