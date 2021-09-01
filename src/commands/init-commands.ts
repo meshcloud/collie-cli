@@ -9,6 +9,7 @@ import { CLICommand, CLIName } from "../config/config.model.ts";
 import { registerCreateIssueCommand } from "./create-issue.command.ts";
 import { VERSION } from "../config/version.ts";
 import { isWindows } from "../os.ts";
+import { registerUserCommand } from "./user.command.ts";
 
 export function initCommands(): Command {
   const program = new Command()
@@ -48,6 +49,7 @@ export function initCommands(): Command {
   registerCreateIssueCommand(program);
   registerFeedbackCommand(program);
   registerCacheCommand(program);
+  registerUserCommand(program);
 
   program
     .command("completions", new CompletionsCommand());

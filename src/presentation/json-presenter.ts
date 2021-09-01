@@ -41,7 +41,7 @@ export class JsonPresenter<T> implements Presenter {
   ) {}
 
   present(): void {
-    const output = JSON.stringify(this.view);
+    const output = JSON.stringify(this.view, null, 2);
     console.log(output);
   }
 

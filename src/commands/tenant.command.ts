@@ -34,22 +34,24 @@ export function registerTenantCommand(program: Command) {
       `Work with cloud tenants (AWS Accounts, Azure Subscriptions, GCP Projects) and list all of them, or see tags, costs, and more. Run "${CLICommand} tenant -h" to see what is possible.`,
     )
     .example(
-      "List all tenants across all connected clouds in a table.",
+      "List all tenants across all connected clouds in a table",
       `${CLICommand} tenant list`,
     )
     .example(
-      "List all costs (including tags) in the first month of 2021 as CSV and export it to a file.",
+      "List all costs (including tags) in the first month of 2021 as CSV and export it to a file",
       `${CLICommand} tenant costs --from 2021-01-01 --to 2021-01-31 -o csv > january_2021.csv`,
     )
     .example(
-      "List all costs per month (excluding tags) in the first quarter and show as a table.",
+      "List all costs per month (excluding tags) in the first quarter and show as a table",
       `${CLICommand} tenant costs --from 2021-01-01 --to 2021-03-31`,
     )
     .example(
       "Show tenants that are missing the tag 'Environment' and 'CostCenter'",
       `${CLICommand} tenant analyze-tags --details --tags Environment,CostCenter`,
     )
-    .action(() => tenantMenu(tenantCmd));
+    .action(() => {
+      tenantCmd.showHelp();
+    });
   program.command("tenant", tenantCmd);
 
   const listTenants = new Command()
@@ -146,7 +148,6 @@ async function listIamAction(options: CmdIamOptions) {
   const meshAdapterFactory = new MeshAdapterFactory(config);
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
 
-  const stats = new QueryStatistics();
   const allTenants = await meshAdapter.getMeshTenants();
 
   await meshAdapter.attachTenantRoleAssignments(allTenants);
@@ -158,7 +159,6 @@ async function listIamAction(options: CmdIamOptions) {
       options.output,
       options.includeAncestors,
       allTenants,
-      stats,
     )
     .present();
 }
@@ -268,10 +268,6 @@ function displayAnalyzeTagResults(results: AnalyzeTagResult[]) {
       }
     }
   }
-}
-
-function tenantMenu(tenantMenu: Command) {
-  tenantMenu.showHelp();
 }
 
 export interface AnalyzeTagResult {
