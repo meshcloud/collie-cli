@@ -107,6 +107,7 @@ export class AwsCliFacade {
   }
 
   private checkForErrors(result: ShellOutput) {
+    console.log(result.code);
     switch (result.code) {
       case 0:
         return;
