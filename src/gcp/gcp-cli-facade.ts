@@ -6,7 +6,6 @@ import {
   MeshGcpPlatformError,
   MeshNotLoggedInError,
 } from "../errors.ts";
-import { log } from "../deps.ts";
 import { CLICommand } from "../config/config.model.ts";
 import { parseJsonWithLog } from "../json.ts";
 
@@ -23,7 +22,7 @@ export class GcpCliFacade {
     );
     this.checkForErrors(result);
 
-    log.debug(`listProjects: ${JSON.stringify(result)}`);
+    console.debug(`listProjects: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog<Project[]>(result.stdout);
   }
@@ -42,14 +41,14 @@ export class GcpCliFacade {
         e instanceof MeshGcpPlatformError &&
         e.errorCode == GcpErrorCode.GCP_UNAUTHORIZED
       ) {
-        log.warning(
+        console.error(
           `Could not list IAM policies for Project ${project.projectId}: Access was denied`,
         );
       }
       return Promise.resolve([]);
     }
 
-    log.debug(`listIamPolicy: ${JSON.stringify(result)}`);
+    console.debug(`listIamPolicy: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog<IamResponse[]>(result.stdout);
   }
@@ -67,7 +66,7 @@ export class GcpCliFacade {
           "Request could not be made because the current user is not allowed to access this resource",
         );
       } else {
-        log.info(
+        console.error(
           `You are not logged in into GCP CLI. Please login with "gcloud auth login" or disconnect with "${CLICommand} config --disconnect"`,
         );
         throw new MeshNotLoggedInError(result.stderr);

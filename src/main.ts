@@ -1,4 +1,4 @@
-import { Command, log, red } from "./deps.ts";
+import { Command, red } from "./deps.ts";
 import { init } from "./init.ts";
 import { initCommands } from "./commands/init-commands.ts";
 import { CmdOptionError } from "./commands/cmd-errors.ts";
@@ -10,7 +10,7 @@ try {
   await init();
   program = initCommands();
 } catch (e) {
-  log.error(e);
+  console.error(e);
   Deno.exit(1);
 }
 
