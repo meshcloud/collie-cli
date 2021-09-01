@@ -43,20 +43,28 @@ async function changeConnectedConfig(options: CmdConfigOpts, program: Command) {
     const key = options.connect as ConnectedConfigKey;
     config.connected[key] = true;
 
+    console.debug("Config before hooks:\n" + JSON.stringify(config, null, 2));
+
     const executableHandler = hooks.filter((h) => h.isExecutable(key));
     for (const h of executableHandler) {
       await h.executeConnected(config);
     }
+
+    console.debug("Config after hooks:\n" + JSON.stringify(config, null, 2));
   }
 
   if (options.disconnect) {
     const key = options.disconnect as keyof ConnectedConfig;
-    config.connected[key] = true;
+    config.connected[key] = false;
+
+    console.debug("Config before hooks:\n" + JSON.stringify(config, null, 2));
 
     const executableHandler = hooks.filter((h) => h.isExecutable(key));
     for (const h of executableHandler) {
       await h.executeDisconnected(config);
     }
+
+    console.debug("Config after hooks:\n" + JSON.stringify(config, null, 2));
   }
 
   // Cache must be invalidated after a connection has happened in order to fetch the latest data.
