@@ -24,8 +24,6 @@ export {
   red,
   yellow,
 } from "https://deno.land/std@0.99.0/fmt/colors.ts";
-// 0.98.0 does not work here
-export * as log from "https://deno.land/std@0.97.0/log/mod.ts";
 export { readLines } from "https://deno.land/std@0.76.0/io/bufio.ts";
 export {
   stringify as yamlStringify,

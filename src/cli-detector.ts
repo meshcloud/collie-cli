@@ -4,7 +4,6 @@ import {
   loadConfig,
   PlatformCommand,
 } from "./config/config.model.ts";
-import { log } from "./deps.ts";
 import { MeshError } from "./errors.ts";
 import { MeshPlatform } from "./mesh/mesh-tenant.model.ts";
 import { ShellOutput } from "./process/shell-output.ts";
@@ -74,7 +73,7 @@ export class CliDetector {
           `${platform} cloud cli "${cmd}" is not installed in a supported version. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions or disconnect platform via "${CLICommand} config -d ${platform}".`,
         );
       case PlatformCommandInstallationStatus.Installed:
-        log.debug(`CLI ${cmd} is correctly installed.`);
+        console.debug(`CLI ${cmd} is correctly installed.`);
         break;
     }
   }

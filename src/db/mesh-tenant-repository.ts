@@ -1,5 +1,5 @@
 import { configPath, loadConfig } from "../config/config.model.ts";
-import { emptyDir, ensureDirSync, existsSync, log, moment } from "../deps.ts";
+import { emptyDir, ensureDirSync, existsSync, moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
 import { parseJsonWithLog } from "../json.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
@@ -42,7 +42,7 @@ export class MeshTenantRepository {
   }
 
   private initDirectory() {
-    log.debug(
+    console.debug(
       `Creating database directory ${this.dbDirectory} if it does not exist.`,
     );
     ensureDirSync(this.dbDirectory);
@@ -82,7 +82,7 @@ export class MeshTenantRepository {
       .asHours();
     const config = loadConfig();
 
-    log.debug(
+    console.debug(
       `Hours since last collection: ${hoursSinceLastCollection}, hours until eviction: ${config.cache.evictionDelayHrs}`,
     );
 
@@ -153,7 +153,7 @@ export class MeshTenantRepository {
           const tenant = parseJsonWithLog<MeshTenant>(dataStr);
           tenants.push(tenant);
         } catch (_) {
-          log.debug("Invalid tenant JSON:\n" + dataStr);
+          console.debug("Invalid tenant JSON:\n" + dataStr);
           throw new IoError(
             `Invalid JSON in tenant file ${tenantFile}. Please clear cache to fix this.`,
           );
@@ -171,7 +171,9 @@ export class MeshTenantRepository {
       `/tenant-${tenant.platform}.${tenant.platformTenantName}-${tenant.platformTenantId}.json`;
     const path = this.dbDirectory + filename;
 
-    log.debug(`Writing MeshTenant ${tenant.platformTenantName} to: ${path}`);
+    console.debug(
+      `Writing MeshTenant ${tenant.platformTenantName} to: ${path}`,
+    );
 
     const data = JSON.stringify(tenant, null, 2);
     this.writeFile(path, data);

@@ -6,7 +6,7 @@ import {
 } from "../errors.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
-import { log, moment } from "../deps.ts";
+import { moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   ConsumptionInfo,
@@ -45,7 +45,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     );
     this.checkForErrors(result);
 
-    log.debug(`setDynamicInstallValue: ${JSON.stringify(result)}`);
+    console.debug(`setDynamicInstallValue: ${JSON.stringify(result)}`);
   }
 
   async getDynamicInstallValue(): Promise<DynamicInstallValue | null> {
@@ -55,7 +55,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     );
     this.checkForErrors(result);
 
-    log.debug(`getDynamicInstallValue: ${JSON.stringify(result)}`);
+    console.debug(`getDynamicInstallValue: ${JSON.stringify(result)}`);
 
     if (result.code == 1) {
       return Promise.resolve(null);
@@ -71,7 +71,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
 
-    log.debug(`listAccounts: ${JSON.stringify(result)}`);
+    console.debug(`listAccounts: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog(result.stdout);
   }
@@ -91,7 +91,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
         e instanceof MeshAzurePlatformError &&
         e.errorCode == AzureErrorCode.AZURE_UNAUTHORIZED
       ) {
-        log.warning(
+        console.error(
           `Could not list tags for Subscription ${subscription.id}: Access was denied`,
         );
 
@@ -99,7 +99,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       }
     }
 
-    log.debug(`listTags: ${JSON.stringify(result)}`);
+    console.debug(`listTags: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog(result.stdout);
   }
@@ -124,13 +124,13 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
 
-    log.debug(`getCostManagementInfo: ${JSON.stringify(result)}`);
+    console.debug(`getCostManagementInfo: ${JSON.stringify(result)}`);
 
     const costManagementInfo = parseJsonWithLog<CostManagementInfo>(
       result.stdout,
     );
     if (costManagementInfo.nextLinks != null) {
-      log.warning(
+      console.error(
         `Azure response signals that there is paging information available, but we are unable to fetch it. So the results are possibly incomplete.`,
       );
     }
@@ -161,7 +161,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
 
-    log.debug(`getConsumptionInformation: ${JSON.stringify(result)}`);
+    console.debug(`getConsumptionInformation: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog(result.stdout);
   }
@@ -175,7 +175,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
 
-    log.debug(`getRoleAssignments: ${JSON.stringify(result)}`);
+    console.debug(`getRoleAssignments: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog<RoleAssignment[]>(result.stdout);
   }
@@ -239,7 +239,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     // Detect login error
     if (result.stderr.includes("az login")) {
-      log.info(
+      console.log(
         `You are not logged in into Azure CLI. Please login with "az login" or disconnect with "${CLICommand} config --disconnect Azure".`,
       );
       throw new MeshNotLoggedInError(`"${result.stderr.replace("\n", "")}"`);

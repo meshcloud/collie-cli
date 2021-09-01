@@ -1,6 +1,6 @@
 import { CacheConfigManager } from "../config/cache-config-manager.ts";
 import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
-import { Command, log } from "../deps.ts";
+import { Command } from "../deps.ts";
 import { CmdGlobalOptions } from "./cmd-options.ts";
 
 export function registerCacheCommand(program: Command) {
@@ -40,7 +40,7 @@ function setConfigAction(
 ) {
   const cacheConfigSetter = new CacheConfigManager();
   cacheConfigSetter.setConfigValue("evictionDelayHrs", value);
-  log.info(`Set cache eviction delay: ${value} hrs`);
+  console.log(`Set cache eviction delay: ${value} hrs`);
 }
 
 function getConfigAction(
@@ -48,11 +48,11 @@ function getConfigAction(
 ) {
   const cacheConfigSetter = new CacheConfigManager();
   const value = cacheConfigSetter.getConfigValue("evictionDelayHrs");
-  log.info(`Cache eviction delay: ${value} hrs`);
+  console.log(`Cache eviction delay: ${value} hrs`);
 }
 
 function clearCacheAction() {
   const repository = newMeshTenantRepository();
   repository.clearAll();
-  log.info("Cache was cleared");
+  console.log("Cache was cleared");
 }
