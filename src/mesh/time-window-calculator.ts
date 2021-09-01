@@ -1,4 +1,4 @@
-import { log, moment } from "../deps.ts";
+import { moment } from "../deps.ts";
 
 export interface TimeWindow {
   from: Date;
@@ -26,7 +26,7 @@ export class TimeWindowCalculator {
       start.startOf("month").add(1, "month");
     }
 
-    log.debug(`Calculated time windows: ${JSON.stringify(windows)}`);
+    console.debug(`Calculated time windows: ${JSON.stringify(windows)}`);
 
     return windows;
   }

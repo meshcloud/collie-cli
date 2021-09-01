@@ -1,4 +1,3 @@
-import { log } from "../deps.ts";
 import { MeshPlatform } from "./mesh-tenant.model.ts";
 
 type DurationContainer = { [P in MeshPlatform | "cache"]?: number };
@@ -27,7 +26,7 @@ export class QueryStatistics {
     const end = performance.now();
     const passed = end - start;
 
-    log.debug(`recording query statistics for ${source}: ${passed}ms`);
+    console.debug(`recording query statistics for ${source}: ${passed}ms`);
 
     if (layer == this.lastLayerLogged) {
       this.duration[source] = (this.duration[source] || 0) + passed;

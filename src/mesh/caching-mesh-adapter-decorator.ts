@@ -1,6 +1,6 @@
 import { MeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { Meta } from "../db/meta.ts";
-import { log, moment } from "../deps.ts";
+import { moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
 import { MeshAdapter } from "./mesh-adapter.ts";
 import { MeshTenant } from "./mesh-tenant.model.ts";
@@ -19,11 +19,11 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
   async getMeshTenants(): Promise<MeshTenant[]> {
     // Update meta info
     if (await this.repository.isTenantCollectionValid()) {
-      log.debug("Repository is valid. Fetching tenants from cache.");
+      console.debug("Repository is valid. Fetching tenants from cache.");
 
       return await this.repository.loadTenants();
     } else {
-      log.debug(
+      console.debug(
         "Repository is not valid anymore. Fetching fresh tenants from cloud.",
       );
       const tenants = await this.meshAdapter.getMeshTenants();
@@ -102,7 +102,9 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     );
 
     if (isCached) {
-      log.debug("Tenant costs are cached. Fetching current state from cache.");
+      console.debug(
+        "Tenant costs are cached. Fetching current state from cache.",
+      );
 
       // load from cache. This now has a bit of a strange dynamic, as the requested data should already be attached to the tenant
       // as the cache is in a valid state. Just to make less dependent on external call flow we clear and reset the entries here for
@@ -119,7 +121,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
         t.costs = [...cached.costs];
       }
     } else {
-      log.debug(
+      console.debug(
         "Tenant costs are not cached. Fetching current state from cloud.",
       );
 
@@ -157,7 +159,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
         t.roleAssignments = [...cached.roleAssignments];
       }
     } else {
-      log.debug(
+      console.debug(
         "IAM collection is no longer valid - collecting new role assignments",
       );
       await this.meshAdapter.attachTenantRoleAssignments(tenants);

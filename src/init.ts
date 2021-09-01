@@ -10,7 +10,7 @@ import {
   writeConfig,
 } from "./config/config.model.ts";
 import { buildConfigHooks } from "./config/post-config-hooks.ts";
-import { Confirm, exists, log } from "./deps.ts";
+import { Confirm, exists } from "./deps.ts";
 import { MeshError } from "./errors.ts";
 
 const detector = new CliDetector();
@@ -28,11 +28,11 @@ function objectsHaveSameKeys(
   // check if keys are not the same
   if (!(JSON.stringify(refKeys) === JSON.stringify(configKeys))) {
     if (parent) {
-      log.debug(
+      console.debug(
         `Config with attribute ${parent} does not match the required one.\nRequired: ${refKeys} but got ${configKeys}`,
       );
     } else {
-      log.debug(
+      console.debug(
         `Root attributes in the config does not match the required one.\n" Required ${refKeys} but got ${configKeys}`,
       );
     }

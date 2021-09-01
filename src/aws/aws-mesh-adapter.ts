@@ -6,7 +6,7 @@ import {
   MeshTenantCost,
 } from "../mesh/mesh-tenant.model.ts";
 import { Account, isAccount } from "./aws.model.ts";
-import { log, makeRunWithLimit, moment } from "../deps.ts";
+import { makeRunWithLimit, moment } from "../deps.ts";
 
 export class AwsMeshAdapter implements MeshAdapter {
   constructor(
@@ -90,7 +90,7 @@ export class AwsMeshAdapter implements MeshAdapter {
   }
 
   attachTenantRoleAssignments(_tenants: MeshTenant[]): Promise<void> {
-    log.warning(
+    console.error(
       `This CLI does not support AWS Role Assignment analysis at the moment. Please keep an eye out for further development on this.`,
     );
 
