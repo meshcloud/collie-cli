@@ -2,9 +2,15 @@ import { ShellRunner } from "../process/shell-runner.ts";
 import {
   Account,
   AccountResponse,
+  AssumedRoleResponse,
   CostResponse,
+  Credentials,
+  Group,
+  GroupResponse,
   Tag,
   TagResponse,
+  User,
+  UserResponse,
 } from "./aws.model.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import { moment } from "../deps.ts";
@@ -63,6 +69,97 @@ export class AwsCliFacade {
     return parseJsonWithLog<TagResponse>(result.stdout).Tags;
   }
 
+  async assumeRole(
+    roleArn: string,
+    credentials?: Credentials,
+  ): Promise<Credentials> {
+    const command =
+      `aws sts assume-role --role-arn ${roleArn} --role-session-name Collie-Session`;
+
+    const result = await this.shellRunner.run(command, credentials);
+    this.checkForErrors(result);
+
+    console.debug(`assumeRole: ${JSON.stringify(result)}`);
+
+    return parseJsonWithLog<AssumedRoleResponse>(result.stdout).Credentials;
+  }
+
+  async listUsers(credential: Credentials): Promise<User[]> {
+    const command = `aws iam list-users --max-items 50`;
+
+    const result = await this.shellRunner.run(command, credential);
+    this.checkForErrors(result);
+
+    console.debug(`listUsers: ${JSON.stringify(result)}`);
+
+    let response = parseJsonWithLog<UserResponse>(result.stdout);
+    const users = response.Users;
+
+    while (response.NextToken) {
+      const pagedCommand = `${command} --starting-token ${response.NextToken}`;
+      const result = await this.shellRunner.run(pagedCommand);
+      this.checkForErrors(result);
+
+      response = parseJsonWithLog<UserResponse>(result.stdout);
+
+      users.push(...response.Users);
+    }
+
+    return users;
+  }
+
+  async listGroups(credential: Credentials): Promise<Group[]> {
+    const command = `aws iam list-groups --max-items 50`;
+
+    const result = await this.shellRunner.run(command, credential);
+    this.checkForErrors(result);
+
+    console.debug(`listGroups: ${JSON.stringify(result)}`);
+
+    let response = parseJsonWithLog<GroupResponse>(result.stdout);
+    const groups = response.Groups;
+
+    while (response.NextToken) {
+      const pagedCommand = `${command} --starting-token ${response.NextToken}`;
+      const result = await this.shellRunner.run(pagedCommand);
+      this.checkForErrors(result);
+
+      response = parseJsonWithLog<GroupResponse>(result.stdout);
+
+      groups.push(...response.Groups);
+    }
+
+    return groups;
+  }
+
+  async listUserOfGroup(
+    group: Group,
+    credential: Credentials,
+  ): Promise<User[]> {
+    const command =
+      `aws iam get-group --group-name ${group.GroupName} --max-items 50`;
+
+    const result = await this.shellRunner.run(command, credential);
+    this.checkForErrors(result);
+
+    console.debug(`listUserOfGroup: ${JSON.stringify(result)}`);
+
+    let response = parseJsonWithLog<UserResponse>(result.stdout);
+    const userOfGroup = response.Users;
+
+    while (response.NextToken) {
+      const pagedCommand = `${command} --starting-token ${response.NextToken}`;
+      const result = await this.shellRunner.run(pagedCommand);
+      this.checkForErrors(result);
+
+      response = parseJsonWithLog<UserResponse>(result.stdout);
+
+      userOfGroup.push(...response.Users);
+    }
+
+    return userOfGroup;
+  }
+
   /**
    * https://docs.aws.amazon.com/cli/latest/reference/ce/get-cost-and-usage.html
    *
@@ -107,22 +204,17 @@ export class AwsCliFacade {
   }
 
   private checkForErrors(result: ShellOutput) {
-    console.log(result.code);
     switch (result.code) {
       case 0:
         return;
       case 253:
-        console.error(
-          `You are not correctly logged into AWS CLI. Please verify credentials with "aws config" or disconnect with "${CLICommand} config --disconnect AWS"`,
+        throw new MeshNotLoggedInError(
+          `You are not correctly logged into AWS CLI. Please verify credentials with "aws config" or disconnect with "${CLICommand} config --disconnect AWS"\n${result.stderr}`,
         );
-        throw new MeshNotLoggedInError(result.stderr);
       case 254:
-        console.error(
-          `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.`,
-        );
         throw new MeshAwsPlatformError(
           AwsErrorCode.AWS_UNAUTHORIZED,
-          result.stderr,
+          `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.\n${result.stderr}`,
         );
       default:
         throw new MeshAwsPlatformError(

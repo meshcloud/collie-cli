@@ -64,6 +64,11 @@ export class MeshAwsPlatformError extends MeshError {
   ) {
     super(`MeshAwsPlatformError: ${message}`);
   }
+
+  // deno-lint-ignore no-explicit-any
+  static isInstanceWithErrorCode(e: any, errCode: AwsErrorCode): boolean {
+    return e instanceof MeshAwsPlatformError && e.errorCode === errCode;
+  }
 }
 
 export class MeshNotLoggedInError extends MeshError {

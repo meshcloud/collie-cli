@@ -1,5 +1,6 @@
 import { ShellOutput } from "./shell-output.ts";
 
 export interface IShellRunner {
-  run(commandStr: string): Promise<ShellOutput>;
+  // deno-lint-ignore no-explicit-any
+  run(commandStr: string, env?: any): Promise<ShellOutput>;
 }
