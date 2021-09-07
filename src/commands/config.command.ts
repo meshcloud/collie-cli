@@ -135,7 +135,9 @@ export function registerConfigCmd(program: Command) {
     .command("aws", awsSubCmd);
 }
 
-async function setupAwsConfigAction() {
+async function setupAwsConfigAction(options: CmdConfigOpts) {
+  setupLogger(options);
+
   const config = loadConfig();
 
   // Only allow AWS config if AWS is also connected.
