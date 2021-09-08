@@ -12,10 +12,14 @@ export class AwsShellRunner implements ShellRunner {
     private selectedProfile: string,
   ) {}
 
+  // FIXME this is actually a little broken and only works because of TS/JS weak typing :D Ups. Need to properly fix this and dont modify the
+  //   arguments list.
+
   /**
    * You can optionally input a Credential object that will re-configure the CLI invocation context
    * so this credential is used instead of the selected profile which is used as the default.
    * This is handy if you want to execute commands in the context of another account.
+   *
    * @param commandStr AWS CLI programm to be run
    * @param credentials Possible credentials under which the cmd will be executed
    * @returns CLI output

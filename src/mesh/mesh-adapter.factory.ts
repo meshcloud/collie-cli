@@ -1,7 +1,5 @@
-import { ShellRunner } from "../process/shell-runner.ts";
 import { AwsCliFacade } from "../aws/aws-cli-facade.ts";
 import { AwsMeshAdapter } from "../aws/aws-mesh-adapter.ts";
-import { AwsShellRunner } from "../aws/aws-shell-runner.ts";
 import { AzureMeshAdapter } from "../azure/azure-mesh-adapter.ts";
 import { MultiMeshAdapter } from "./multi-mesh-adapter.ts";
 import { GcpCliFacade } from "../gcp/gcp-cli-facade.ts";
@@ -12,51 +10,41 @@ import { TimeWindowCalculator } from "./time-window-calculator.ts";
 import { BasicAzureCliFacade } from "../azure/basic-azure-cli-facade.ts";
 import { RetryingAzureCliFacadeDecorator } from "../azure/retrying-azure-cli-facade-decorator.ts";
 import { CmdGlobalOptions } from "../commands/cmd-options.ts";
-import { VerboseShellRunner } from "../process/verbose-shell-runner.ts";
-import { LoaderShellRunner } from "../process/loader-shell-runner.ts";
 import { AutoInstallAzureCliModuleDecorator } from "../azure/auto-install-azure-cli-module-decorator.ts";
 import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { CachingMeshAdapterDecorator } from "./caching-mesh-adapter-decorator.ts";
-import { isatty, TTY } from "../commands/tty.ts";
+import { isatty } from "../commands/tty.ts";
 import { AzureCliFacade } from "../azure/azure-cli-facade.ts";
 import { StatsMeshAdapterDecorator } from "./stats-mesh-adapter-decorator.ts";
 import { MeshPlatform } from "./mesh-tenant.model.ts";
 import { QueryStatistics } from "./query-statistics.ts";
-import { isWindows } from "../os.ts";
 import { MeshError } from "../errors.ts";
+import { ShellRunnerFactory } from "../process/shell-runner-factory.ts";
+import { AwsShellRunnerFactory } from "../aws/aws-shell-runner-factory.ts";
 
 /**
  * Should consume the cli configuration in order to build the
  * proper adapter.
  */
 export class MeshAdapterFactory {
+  private readonly shellRunnerFactory = new ShellRunnerFactory();
+  private readonly awsShellRunnerFactory: AwsShellRunnerFactory;
+
   constructor(
     private readonly config: Config,
-  ) {}
+  ) {
+    this.awsShellRunnerFactory = new AwsShellRunnerFactory(config);
+  }
 
   buildMeshAdapter(
     options: CmdGlobalOptions,
     queryStats?: QueryStatistics,
   ): MeshAdapter {
-    let shellRunner = new ShellRunner();
-
-    if (options.verbose) {
-      shellRunner = new VerboseShellRunner(shellRunner);
-    } else if (isatty && !isWindows) {
-      shellRunner = new LoaderShellRunner(shellRunner, new TTY());
-    }
-
+    const shellRunner = this.shellRunnerFactory.buildShellRunner(options);
     const timeWindowCalc = new TimeWindowCalculator();
     const adapters: MeshAdapter[] = [];
 
     if (this.config.connected.AWS) {
-      const selectedProfile = this.config.aws.selectedProfile;
-      if (!selectedProfile) {
-        throw new MeshError(
-          `No AWS CLI profile selected. Please run '${CLICommand} config aws' to configure it`,
-        );
-      }
-
       const accountAccessRole = this.config.aws.accountAccessRole;
       if (!accountAccessRole) {
         throw new MeshError(
@@ -64,7 +52,9 @@ export class MeshAdapterFactory {
         );
       }
 
-      const awsShellRunner = new AwsShellRunner(shellRunner, selectedProfile);
+      const awsShellRunner = this.awsShellRunnerFactory.buildShellRunner(
+        options,
+      );
       const aws = new AwsCliFacade(
         awsShellRunner,
       );

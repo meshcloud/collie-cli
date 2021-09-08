@@ -116,7 +116,7 @@ export function registerTenantCommand(program: Command) {
 }
 
 async function listTenantAction(options: CmdGlobalOptions) {
-  await setupLogger(options);
+  setupLogger(options);
   await verifyCliAvailability();
 
   const config = loadConfig();
@@ -141,7 +141,7 @@ async function listTenantAction(options: CmdGlobalOptions) {
 }
 
 async function listIamAction(options: CmdIamOptions) {
-  await setupLogger(options);
+  setupLogger(options);
   await verifyCliAvailability();
 
   const config = loadConfig();
@@ -164,7 +164,7 @@ async function listIamAction(options: CmdIamOptions) {
 }
 
 export async function listTenantsCostAction(options: CmdListCostsOptions) {
-  await setupLogger(options);
+  setupLogger(options);
   await verifyCliAvailability();
 
   const config = loadConfig();
@@ -207,7 +207,7 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
 }
 
 async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
-  await setupLogger(options);
+  setupLogger(options);
   await verifyCliAvailability();
 
   const config = loadConfig();

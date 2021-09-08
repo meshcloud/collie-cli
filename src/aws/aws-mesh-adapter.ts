@@ -12,8 +12,11 @@ import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
 } from "../mesh/mesh-iam-model.ts";
+import { AwsRoleAssumer } from "./aws-role-assumer.ts";
 
 export class AwsMeshAdapter implements MeshAdapter {
+  private readonly awsRoleAssumer: AwsRoleAssumer;
+
   /**
    *
    * @param awsCli
@@ -22,7 +25,9 @@ export class AwsMeshAdapter implements MeshAdapter {
   constructor(
     private readonly awsCli: AwsCliFacade,
     private readonly roleNameToAssume: string,
-  ) {}
+  ) {
+    this.awsRoleAssumer = new AwsRoleAssumer(this.awsCli);
+  }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
     const accounts = await this.awsCli.listAccounts();
@@ -103,7 +108,10 @@ export class AwsMeshAdapter implements MeshAdapter {
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     // FIXME remove afterwards
-    const awsTenants = tenants.filter((t) => isAccount(t.nativeObj)).slice(0, 5);
+    const awsTenants = tenants.filter((t) => isAccount(t.nativeObj)).slice(
+      0,
+      5,
+    );
 
     for (const tenant of awsTenants) {
       isAccount(tenant.nativeObj);
@@ -112,15 +120,7 @@ export class AwsMeshAdapter implements MeshAdapter {
         throw new MeshError("A non AWS account was encountered");
       }
 
-      // Detect if the user gave us a role arn or only a role name. If its only a role name
-      // we assume the role lives in his current caller account and try to assume it with this
-      // arn.
-      const assumeRoleArn =
-        `arn:aws:iam::${account.Id}:role/${this.roleNameToAssume}`;
-      // Assume the role to execute the following commands from the account context.
-      // This can fail if the role to assume does not exist in the target account.
-
-      const assumedCredentials = await this.tryAssumeRole(assumeRoleArn);
+      const assumedCredentials = await this.awsRoleAssumer.tryAssumeRole(account.Id, this.roleNameToAssume);
       if (assumedCredentials == null) {
         continue;
       }
@@ -146,8 +146,8 @@ export class AwsMeshAdapter implements MeshAdapter {
         );
 
         // We now combine these users with the policies.
-        const roleAssignments = attachedPolicies.flatMap(p => {
-          return usersOfGroup.map(u => {
+        const roleAssignments = attachedPolicies.flatMap((p) => {
+          return usersOfGroup.map((u) => {
             return {
               principalId: group.Arn,
               principalName: u.UserName,

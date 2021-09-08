@@ -39,7 +39,7 @@ async function listUserTenantAction(
   options: CmdGlobalOptions,
   filterStr: string,
 ) {
-  await setupLogger(options);
+  setupLogger(options);
   await verifyCliAvailability();
 
   const config = loadConfig();
