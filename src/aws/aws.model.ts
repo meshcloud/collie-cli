@@ -13,6 +13,70 @@ export interface Account {
   JoinedTimestamp: string;
 }
 
+export interface AccessKey {
+  UserName: string;
+  Status: string;
+  CreateDate: string;
+  AccessKeyId: string;
+}
+
+export interface AccessKeyResponse {
+  AccessKeyMetadata: AccessKey[];
+  Marker?: string;
+}
+
+export interface Certificate {
+  UserName: string;
+  Status: string;
+  CertificateBody: string;
+  CertificateId: string;
+  UploadDate: string;
+}
+
+export interface CertificateResponse {
+  Certificates: Certificate[];
+  Marker?: string;
+}
+
+export interface SSHPublicKey {
+  UserName: string;
+  SSHPublicKeyId: string;
+  Status: string;
+  UploadDate: string;
+}
+
+export interface SSHPublicKeysResponse {
+  SSHPublicKeys: SSHPublicKey[];
+  Marker?: string;
+}
+
+export interface ServiceSpecificCredential {
+  UserName: string;
+  Status: string;
+  ServiceUserName: string;
+  CreateDate: string;
+  ServiceSpecificCredentialId: string;
+  ServiceName: string;
+}
+
+export interface ServiceSpecificCredentialsResponse {
+  ServiceSpecificCredentials: ServiceSpecificCredential[];
+  Marker?: string;
+}
+
+export interface MFADevice {
+  UserName: string;
+  SerialNumber: string;
+  EnableDate: string;
+}
+
+export interface MFADevicesResponse {
+  MFADevices: MFADevice[];
+  Marker?: string;
+}
+
+
+
 export interface TagResponse {
   Tags: Tag[];
 }
@@ -106,13 +170,13 @@ export interface UserGroupsResponse {
   NextToken?: string;
 }
 
-export interface Policy {
+export interface AttachedPolicy {
   PolicyName: string;
   PolicyArn: string;
 }
 
-export interface PolicyResponse {
-  AttachedPolicies: Policy[];
+export interface AttachedPolicyResponse {
+  AttachedPolicies: AttachedPolicy[];
   /**
    * Present if truncated and a paginated query must be done to fetch
    * all.
