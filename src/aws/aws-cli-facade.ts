@@ -7,6 +7,8 @@ import {
   Credentials,
   Group,
   GroupResponse,
+  Policy,
+  PolicyResponse,
   Tag,
   TagResponse,
   User,
@@ -158,6 +160,34 @@ export class AwsCliFacade {
     }
 
     return userOfGroup;
+  }
+
+  async listAttachedGroupPolicies(
+    group: Group,
+    credential: Credentials,
+  ): Promise<Policy[]> {
+    const command =
+      `aws iam list-attached-group-policies --group-name ${group.GroupName}`;
+
+    const result = await this.shellRunner.run(command, credential);
+    this.checkForErrors(result);
+
+    console.debug(`listAttachedGroupPolicies: ${JSON.stringify(result)}`);
+
+    let response = parseJsonWithLog<PolicyResponse>(result.stdout);
+    const policies = response.AttachedPolicies;
+
+    while (response.Marker) {
+      const pagedCommand = `${command} --starting-token ${response.Marker}`;
+      const result = await this.shellRunner.run(pagedCommand);
+      this.checkForErrors(result);
+
+      response = parseJsonWithLog<PolicyResponse>(result.stdout);
+
+      policies.push(...response.AttachedPolicies);
+    }
+
+    return policies;
   }
 
   /**

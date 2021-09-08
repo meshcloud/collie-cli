@@ -106,6 +106,29 @@ export interface UserGroupsResponse {
   NextToken?: string;
 }
 
+export interface Policy {
+  PolicyName: string;
+  PolicyArn: string;
+}
+
+export interface PolicyResponse {
+  AttachedPolicies: Policy[];
+  /**
+   * Present if truncated and a paginated query must be done to fetch
+   * all.
+   */
+  Marker?: string;
+}
+
+export interface InlinePolicyResponse {
+  PolicyNames: string[];
+  /**
+   * Present if truncated and a paginated query must be done to fetch
+   * all.
+   */
+  Marker?: string;
+}
+
 /**
 {
   "Value": "402561870956",
