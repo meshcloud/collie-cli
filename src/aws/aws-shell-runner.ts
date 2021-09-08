@@ -1,6 +1,5 @@
 import { ShellRunner } from "../process/shell-runner.ts";
 import { ShellOutput } from "../process/shell-output.ts";
-import { Credentials } from "./aws.model.ts";
 
 /**
  * This class ensures that each command executed for AWS is suffixed with the `--profile` parameter, as configured
@@ -12,30 +11,24 @@ export class AwsShellRunner implements ShellRunner {
     private selectedProfile: string,
   ) {}
 
-  /**
-   * You can optionally input a Credential object that will re-configure the CLI invocation context
-   * so this credential is used instead of the selected profile which is used as the default.
-   * This is handy if you want to execute commands in the context of another account.
-   * @param commandStr AWS CLI programm to be run
-   * @param credentials Possible credentials under which the cmd will be executed
-   * @returns CLI output
-   */
-  async run(
+  run(
     commandStr: string,
-    credentials?: Credentials,
+    env?: { [key: string]: string },
   ): Promise<ShellOutput> {
-    if (credentials) {
-      // As there are not flags for the CLI we must modify the ENV with the credential data for this to work.
-      return await this.runner.run(
-        `${commandStr}`,
-        {
-          AWS_ACCESS_KEY_ID: credentials.AccessKeyId,
-          AWS_SECRET_ACCESS_KEY: credentials.SecretAccessKey,
-        },
+    // We must not attach the profile selector if the ENV specifies another profile to be used. Because otherwise
+    // the profile would take precedence.
+    const hasAwsCredsInEnv = env &&
+      (env.AWS_ACCESS_KEY_ID || env.AWS_SECRET_ACCESS_KEY ||
+        env.AWS_SESSION_TOKEN);
+    if (hasAwsCredsInEnv) {
+      return this.runner.run(
+        commandStr,
+        env,
       );
     } else {
-      return await this.runner.run(
+      return this.runner.run(
         `${commandStr} --profile ${this.selectedProfile}`,
+        env,
       );
     }
   }

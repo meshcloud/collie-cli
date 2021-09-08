@@ -102,8 +102,7 @@ export class AwsMeshAdapter implements MeshAdapter {
   }
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
-    // FIXME remove afterwards
-    const awsTenants = tenants.filter((t) => isAccount(t.nativeObj)).slice(0, 5);
+    const awsTenants = tenants.filter((t) => isAccount(t.nativeObj));
 
     for (const tenant of awsTenants) {
       isAccount(tenant.nativeObj);
@@ -126,28 +125,53 @@ export class AwsMeshAdapter implements MeshAdapter {
       }
 
       const tenantUsers = await this.awsCli.listUsers(assumedCredentials);
-      const groups = await this.awsCli.listGroups(assumedCredentials);
 
+      // Fetch the user attached policies first.
+      for (const tenantUser of tenantUsers) {
+        const attachedUserPolicies = await this.awsCli.listAttachedUserPolicies(
+          tenantUser,
+          assumedCredentials,
+        );
+
+        // We now combine these users with the policies.
+        const roleAssignments = attachedUserPolicies.flatMap((p) => {
+          return {
+            principalId: tenantUser.Arn,
+            principalName: tenantUser.UserName,
+            principalType: MeshPrincipalType.User,
+            roleId: p.PolicyArn,
+            roleName: p.PolicyName,
+            assignmentSource: MeshRoleAssignmentSource.Tenant,
+            assignmentId: "", // There is no assignment representation in AWS. Users are directly placed in a group.
+          };
+        });
+
+        tenant.roleAssignments.push(...roleAssignments);
+      }
+
+      const groups = await this.awsCli.listGroups(assumedCredentials);
       const userIdsWithGroup: string[] = [];
 
+      // Fetch the group attached policies and correlate them with the user.
       for (const group of groups) {
         const usersOfGroup = await this.awsCli.listUserOfGroup(
           group,
           assumedCredentials,
         );
 
-        // Safe the ids so we can find users without a group later
+        // Save the ids so we can find users without a group later
         userIdsWithGroup.push(...usersOfGroup.map((x) => x.UserId));
 
         // Find the inline and attached policies of a group.
-        const attachedPolicies = await this.awsCli.listAttachedGroupPolicies(
-          group,
-          assumedCredentials,
-        );
+        const attachedGroupPolicies = await this.awsCli
+          .listAttachedGroupPolicies(
+            group,
+            assumedCredentials,
+          );
 
         // We now combine these users with the policies.
-        const roleAssignments = attachedPolicies.flatMap(p => {
-          return usersOfGroup.map(u => {
+        const roleAssignments = attachedGroupPolicies.flatMap((p) => {
+          return usersOfGroup.map((u) => {
             return {
               principalId: group.Arn,
               principalName: u.UserName,

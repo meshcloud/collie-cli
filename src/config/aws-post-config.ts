@@ -94,11 +94,11 @@ Without management account credentials ${CLIName} won't be able to execute the c
     // Prompt the user with the found profiles.
     const selectedRole: string = await Input.prompt({
       message:
-        "Choose an AWS CLI profile with access to the management account",
-      suggestions: ["OrganizationAccountAccessRole"],
+        "Specify a Role that you can access from your management account with the AssumeRole method:",
+      default: "OrganizationAccountAccessRole",
     });
 
-    console.log(`You have selected: ${selectedRole}`);
+    console.log(`You have chosen the Role: ${selectedRole}`);
     config.aws.accountAccessRole = selectedRole;
 
     writeConfig(config);

@@ -148,6 +148,7 @@ async function setupAwsConfigAction(options: CmdConfigOpts) {
   }
 
   delete config.aws.selectedProfile;
+  delete config.aws.accountAccessRole;
 
   const shellRunner = new ShellRunner();
   const awsPostConfig = new AwsPostPlatformConfigHook(shellRunner);

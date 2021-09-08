@@ -78,7 +78,10 @@ export class AwsCliFacade {
     const command =
       `aws sts assume-role --role-arn ${roleArn} --role-session-name Collie-Session`;
 
-    const result = await this.shellRunner.run(command, credentials);
+    const result = await this.shellRunner.run(
+      command,
+      this.credsToEnv(credentials),
+    );
     this.checkForErrors(result);
 
     console.debug(`assumeRole: ${JSON.stringify(result)}`);
@@ -86,10 +89,28 @@ export class AwsCliFacade {
     return parseJsonWithLog<AssumedRoleResponse>(result.stdout).Credentials;
   }
 
-  async listUsers(credential: Credentials): Promise<User[]> {
-    const command = `aws iam list-users --max-items 50`;
+  /**
+   * For debugging: will return the identity AWS thinks you are.
+   * @param credential Assumed credentials.
+   */
+  async printCallerIdentity(credential?: Credentials) {
+    const command = "aws sts get-caller-identity";
+    const result = await this.shellRunner.run(
+      command,
+      this.credsToEnv(credential),
+    );
+    this.checkForErrors(result);
 
-    const result = await this.shellRunner.run(command, credential);
+    console.log(result.stdout);
+  }
+
+  async listUsers(credential: Credentials): Promise<User[]> {
+    const command = "aws iam list-users --max-items 50";
+
+    const result = await this.shellRunner.run(
+      command,
+      this.credsToEnv(credential),
+    );
     this.checkForErrors(result);
 
     console.debug(`listUsers: ${JSON.stringify(result)}`);
@@ -113,7 +134,10 @@ export class AwsCliFacade {
   async listGroups(credential: Credentials): Promise<Group[]> {
     const command = `aws iam list-groups --max-items 50`;
 
-    const result = await this.shellRunner.run(command, credential);
+    const result = await this.shellRunner.run(
+      command,
+      this.credsToEnv(credential),
+    );
     this.checkForErrors(result);
 
     console.debug(`listGroups: ${JSON.stringify(result)}`);
@@ -141,7 +165,10 @@ export class AwsCliFacade {
     const command =
       `aws iam get-group --group-name ${group.GroupName} --max-items 50`;
 
-    const result = await this.shellRunner.run(command, credential);
+    const result = await this.shellRunner.run(
+      command,
+      this.credsToEnv(credential),
+    );
     this.checkForErrors(result);
 
     console.debug(`listUserOfGroup: ${JSON.stringify(result)}`);
@@ -169,10 +196,44 @@ export class AwsCliFacade {
     const command =
       `aws iam list-attached-group-policies --group-name ${group.GroupName}`;
 
-    const result = await this.shellRunner.run(command, credential);
+    const result = await this.shellRunner.run(
+      command,
+      this.credsToEnv(credential),
+    );
     this.checkForErrors(result);
 
     console.debug(`listAttachedGroupPolicies: ${JSON.stringify(result)}`);
+
+    let response = parseJsonWithLog<PolicyResponse>(result.stdout);
+    const policies = response.AttachedPolicies;
+
+    while (response.Marker) {
+      const pagedCommand = `${command} --starting-token ${response.Marker}`;
+      const result = await this.shellRunner.run(pagedCommand);
+      this.checkForErrors(result);
+
+      response = parseJsonWithLog<PolicyResponse>(result.stdout);
+
+      policies.push(...response.AttachedPolicies);
+    }
+
+    return policies;
+  }
+
+  async listAttachedUserPolicies(
+    user: User,
+    credential: Credentials,
+  ): Promise<Policy[]> {
+    const command =
+      `aws iam list-attached-user-policies --user-name ${user.UserName}`;
+
+    const result = await this.shellRunner.run(
+      command,
+      this.credsToEnv(credential),
+    );
+    this.checkForErrors(result);
+
+    console.debug(`listAttachedUserPolicies: ${JSON.stringify(result)}`);
 
     let response = parseJsonWithLog<PolicyResponse>(result.stdout);
     const policies = response.AttachedPolicies;
@@ -252,5 +313,17 @@ export class AwsCliFacade {
           result.stderr,
         );
     }
+  }
+
+  private credsToEnv(credentials?: Credentials): { [key: string]: string } {
+    if (!credentials) {
+      return {};
+    }
+
+    return {
+      AWS_ACCESS_KEY_ID: credentials.AccessKeyId,
+      AWS_SECRET_ACCESS_KEY: credentials.SecretAccessKey,
+      AWS_SESSION_TOKEN: credentials.SessionToken,
+    };
   }
 }

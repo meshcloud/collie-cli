@@ -118,7 +118,7 @@ const mockShellRunner = {
 } as ShellRunner;
 
 const awsCliFacade = new AwsCliFacade(mockShellRunner);
-const sut = new AwsMeshAdapter(awsCliFacade);
+const sut = new AwsMeshAdapter(awsCliFacade, "OrganizationAccountAccessRole");
 
 Deno.test("Requesting the tenant cost info respondes with a proper filled MeshTenant object", async () => {
   const start = moment.utc("2021-01-01").startOf("day").toDate();
