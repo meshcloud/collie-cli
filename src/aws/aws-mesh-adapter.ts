@@ -102,7 +102,8 @@ export class AwsMeshAdapter implements MeshAdapter {
   }
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
-    const awsTenants = tenants.filter((t) => isAccount(t.nativeObj));
+    // FIXME remove afterwards
+    const awsTenants = tenants.filter((t) => isAccount(t.nativeObj)).slice(0, 5);
 
     for (const tenant of awsTenants) {
       isAccount(tenant.nativeObj);
@@ -138,16 +139,25 @@ export class AwsMeshAdapter implements MeshAdapter {
         // Safe the ids so we can find users without a group later
         userIdsWithGroup.push(...usersOfGroup.map((x) => x.UserId));
 
-        const roleAssignments = tenantUsers.map((u) => {
-          return {
-            principalId: u.Arn,
-            principalName: u.UserName,
-            principalType: MeshPrincipalType.User,
-            roleId: group.Arn,
-            roleName: group.GroupName,
-            assignmentSource: MeshRoleAssignmentSource.Tenant,
-            assignmentId: "", // There is no assignment representation in AWS. Users are directly placed in a group.
-          };
+        // Find the inline and attached policies of a group.
+        const attachedPolicies = await this.awsCli.listAttachedGroupPolicies(
+          group,
+          assumedCredentials,
+        );
+
+        // We now combine these users with the policies.
+        const roleAssignments = attachedPolicies.flatMap(p => {
+          return usersOfGroup.map(u => {
+            return {
+              principalId: group.Arn,
+              principalName: u.UserName,
+              principalType: MeshPrincipalType.Group,
+              roleId: p.PolicyArn,
+              roleName: p.PolicyName,
+              assignmentSource: MeshRoleAssignmentSource.Tenant,
+              assignmentId: "", // There is no assignment representation in AWS. Users are directly placed in a group.
+            };
+          });
         });
 
         tenant.roleAssignments.push(...roleAssignments);
