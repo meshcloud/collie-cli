@@ -45,6 +45,7 @@
   across all clouds** - See what you spend per day, month, or week in all cloud
   platforms*, including the right metadata. Includes support for CSV, YML and
   JSON.
+- **[Build a cost dashboard](https://www.meshcloud.io/2021/09/06/open-source-cloud-cost-dashboard-in-under-10-minutes/)** - Leverage our free-to-use Google Data Studio template and quickly build a multi-cloud cost dashboard using Collie cost data.
 - **[Analyze tag inconsistencies](https://github.com/meshcloud/collie-cli/wiki#identifying-inconsistencies-in-the-use-of-tags)** -
   See at a glance what tags are used, by which tenants (and which not), and what
   potential inconsistencies are in place to fix any governance issues.
