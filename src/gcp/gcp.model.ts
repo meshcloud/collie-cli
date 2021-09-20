@@ -30,6 +30,13 @@ export interface IamBinding {
   role: string;
 }
 
+export interface CostBigQueryResult {
+  cost: string;
+  "invoice_month": string;
+  "project_id"?: string;
+  currency: string;
+}
+
 export function isProject(
   // deno-lint-ignore no-explicit-any
   object: any,

@@ -116,7 +116,7 @@ export class MeshAdapterFactory {
 
     if (this.config.connected.GCP) {
       const gcp = new GcpCliFacade(shellRunner);
-      const gcpAdapter = new GcpMeshAdapter(gcp);
+      const gcpAdapter = new GcpMeshAdapter(gcp, timeWindowCalc);
 
       if (queryStats) {
         const statsDecorator = new StatsMeshAdapterDecorator(
