@@ -33,6 +33,15 @@ export interface Config {
     selectedProfile?: string;
     accountAccessRole?: string;
   };
+  gcp: {
+    billingExport?: GcpBillingExportConfig;
+  }
+}
+
+export interface GcpBillingExportConfig {
+  projectId: string;
+  datasetName: string;
+  tableName: string;
 }
 
 export interface CacheConfig {
@@ -66,6 +75,7 @@ export const emptyConfig: Config = {
     parentManagementGroups: [],
   },
   aws: {},
+  gcp: {},
 };
 
 export function loadConfig(): Config {
