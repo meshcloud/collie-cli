@@ -1,6 +1,11 @@
 import { Input, Select } from "../deps.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
-import { Config, ConnectedConfigKey, writeConfig } from "./config.model.ts";
+import {
+  Config,
+  ConnectedConfigKey,
+  GcpCostCollectionViewName,
+  writeConfig,
+} from "./config.model.ts";
 import { PostPlatformConfigHook } from "./post-platform-config-hook.ts";
 import { parseJsonWithLog } from "../json.ts";
 import {
@@ -9,7 +14,6 @@ import {
 } from "./gcp-config.model.ts";
 
 export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
-  private readonly materializedViewName: string = "collie_billing_view";
   constructor(
     private readonly shellRunner: ShellRunner,
   ) {}
@@ -19,7 +23,7 @@ export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
   }
 
   async executeConnected(config: Config) {
-    if (config.gcp.billingExport) {
+    if (config.gcp?.billingExport) {
       console.log(
         `You have already configured GCP cost collection with projectId=${config.gcp.billingExport.projectId} and datasetName=${config.gcp.billingExport.datasetName}.`,
       );
@@ -48,20 +52,29 @@ export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
     });
 
     const allTables = await this.listTables(projectId, datasetName);
-    // TODO: the collie_billing_view also appears here, so we can detect if the user (or another user in the org) has already used Collie before
+    if (allTables.includes(GcpCostCollectionViewName)) {
+      console.log(
+        "It looks like your BigQuery dataset already contains a Collie view! We will go ahead and re-use that one.",
+      );
+    } else {
+      const tableName: string = await Select.prompt({
+        message: "What is the name of the billing export table?",
+        options: allTables,
+      });
 
-    const tableName: string = await Select.prompt({
-      message: "What is the name of the billing export table?",
-      options: allTables,
-    });
+      await this.createMaterializedView(projectId, datasetName, tableName);
+    }
 
-    await this.createMaterializedView(projectId, datasetName, tableName);
-
-    config.gcp.billingExport = {
-      projectId,
-      datasetName,
-      tableName,
+    config.gcp = {
+      billingExport: {
+        projectId,
+        datasetName,
+      },
     };
+
+    console.log(
+      "That's it, GCP Cost Collection for Collie is now correctly configured!",
+    );
 
     await writeConfig(config);
   }
@@ -74,7 +87,6 @@ export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
     const result = await this.shellRunner.run(
       `bq ls --project_id ${projectId} --format json`,
     );
-    console.log(result);
     const datasets = parseJsonWithLog<BigQueryListDatasetResult[]>(
       result.stdout,
     );
@@ -98,7 +110,7 @@ export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
     tableName: string,
   ): Promise<void> {
     const query =
-      `CREATE MATERIALIZED VIEW \`meshstack-root.billing_export.${this.materializedViewName}\` AS
+      `CREATE MATERIALIZED VIEW \`meshstack-root.billing_export.${GcpCostCollectionViewName}\` AS
 SELECT
   invoice.month as \`invoice_month\`,
   project.id as \`project_id\`,

@@ -23,6 +23,9 @@ export const CLIName = "Collie";
 export const CLICommand = CLIName.toLowerCase();
 export const GitHubUrl = "https://github.com/meshcloud/collie-cli";
 
+// This is the name of the materialized view in BigQuery that we use to collect cost data.
+export const GcpCostCollectionViewName = "collie_billing_view";
+
 export interface Config {
   connected: ConnectedConfig;
   cache: CacheConfig;
@@ -33,7 +36,7 @@ export interface Config {
     selectedProfile?: string;
     accountAccessRole?: string;
   };
-  gcp: {
+  gcp?: { // Older versions of Collie might not have this property set up so we need to account for that scenario.
     billingExport?: GcpBillingExportConfig;
   };
 }
@@ -41,7 +44,6 @@ export interface Config {
 export interface GcpBillingExportConfig {
   projectId: string;
   datasetName: string;
-  tableName: string;
 }
 
 export interface CacheConfig {

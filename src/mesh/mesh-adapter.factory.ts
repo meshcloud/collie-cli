@@ -115,7 +115,12 @@ export class MeshAdapterFactory {
     }
 
     if (this.config.connected.GCP) {
-      const gcp = new GcpCliFacade(shellRunner);
+      if (!this.config.gcp || !this.config.gcp.billingExport) {
+        throw new MeshError(
+          `GCP is missing cost collection configuration. Please run "${CLICommand} config gcp" to set it up.`,
+        );
+      }
+      const gcp = new GcpCliFacade(shellRunner, this.config.gcp.billingExport);
       const gcpAdapter = new GcpMeshAdapter(gcp, timeWindowCalc);
 
       if (queryStats) {

@@ -6,13 +6,18 @@ import {
   MeshGcpPlatformError,
   MeshNotLoggedInError,
 } from "../errors.ts";
-import { CLICommand } from "../config/config.model.ts";
+import {
+  CLICommand,
+  GcpBillingExportConfig,
+  GcpCostCollectionViewName,
+} from "../config/config.model.ts";
 import { parseJsonWithLog } from "../json.ts";
 import { moment } from "../deps.ts";
 
 export class GcpCliFacade {
   constructor(
     private readonly shellRunner: ShellRunner,
+    private readonly billingConfig: GcpBillingExportConfig,
   ) {}
   private unauthorizedProject = /User is not permitted/;
 
@@ -58,13 +63,14 @@ export class GcpCliFacade {
     startDate: Date,
     endDate: Date,
   ): Promise<CostBigQueryResult[]> {
-    const billingProject = "meshstack-root"; // TODO get from config
-    const viewName = "meshstack-root.billing_export.collie-billing-view"; // TODO get from config
+    const billingProject = this.billingConfig.projectId;
+    const viewName =
+      `${billingProject}.${this.billingConfig.datasetName}.${GcpCostCollectionViewName}`;
     const format = "YYYYMM";
     const start = moment(startDate).format(format);
     const end = moment(endDate).format(format);
     const query =
-      `SELECT * FROM \`${viewName}\` where invoice_month > "${start}" AND invoice_month <= "${end}"`;
+      `SELECT * FROM \`${viewName}\` where invoice_month >= "${start}" AND invoice_month <= "${end}"`;
     const command =
       `bq --project_id ${billingProject} query --format json --nouse_legacy_sql ${query}`;
     const result = await this.shellRunner.run(

@@ -16,6 +16,7 @@ import { setupLogger } from "../logger.ts";
 import { MeshPlatform } from "../mesh/mesh-tenant.model.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
 import { CmdGlobalOptions } from "./cmd-options.ts";
+import { GcpPostPlatformConfigHook } from "../config/gcp-post-config.ts";
 
 type Platform = MeshPlatform[number];
 const platform = new EnumType(Object.values(MeshPlatform));
@@ -129,10 +130,15 @@ export function registerConfigCmd(program: Command) {
     "Configure AWS related options",
   ).action(setupAwsConfigAction);
 
+  const gcpSubCmd = new Command().description(
+    "Configure GCP related options",
+  ).action(setupGcpConfigAction);
+
   configCmd
     .command("show", showConfigCmd)
     .command("azure", azureSubCmd)
-    .command("aws", awsSubCmd);
+    .command("aws", awsSubCmd)
+    .command("gcp", gcpSubCmd);
 }
 
 async function setupAwsConfigAction(options: CmdConfigOpts) {
@@ -143,7 +149,7 @@ async function setupAwsConfigAction(options: CmdConfigOpts) {
   // Only allow AWS config if AWS is also connected.
   if (!config.connected.AWS) {
     console.log(
-      `AWS Cli is not connected. To connect it execute '${CLICommand} config -c AWS'`,
+      `AWS CLI is not connected. To connect it execute '${CLICommand} config -c AWS'`,
     );
   }
 
@@ -153,6 +159,25 @@ async function setupAwsConfigAction(options: CmdConfigOpts) {
   const shellRunner = new ShellRunner();
   const awsPostConfig = new AwsPostPlatformConfigHook(shellRunner);
   await awsPostConfig.executeConnected(config);
+
+  writeConfig(config);
+}
+
+async function setupGcpConfigAction() {
+  const config = loadConfig();
+
+  // Only allow AWS config if AWS is also connected.
+  if (!config.connected.GCP) {
+    console.log(
+      `GCP CLI is not connected. To connect it execute '${CLICommand} config -c GCP'`,
+    );
+  }
+
+  delete config.gcp?.billingExport;
+
+  const shellRunner = new ShellRunner();
+  const gcpPostConfig = new GcpPostPlatformConfigHook(shellRunner);
+  await gcpPostConfig.executeConnected(config);
 
   writeConfig(config);
 }
