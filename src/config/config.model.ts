@@ -35,7 +35,7 @@ export interface Config {
   };
   gcp: {
     billingExport?: GcpBillingExportConfig;
-  }
+  };
 }
 
 export interface GcpBillingExportConfig {
