@@ -42,15 +42,41 @@ export class LoaderShellRunner implements IShellRunner {
 
     let i = 0;
     const loader = "|/-\\";
-    console.log(brightBlue(loader[i]) + " " + bold(commandStr));
+
+    console.log(
+      brightBlue(loader[i]) + " " + bold(this.trimCommandStr(commandStr)),
+    );
+
     this.tty.goUp(1);
     this.interval = setInterval(() => {
       this.tty.clearLine();
       const pos = i % loader.length;
-      console.log(brightBlue(loader[pos]) + " " + bold(commandStr));
+      console.log(
+        brightBlue(loader[pos]) + " " + bold(this.trimCommandStr(commandStr)),
+      );
       i++;
       this.tty.goUp(1);
     }, 200);
+  }
+
+  private trimCommandStr(commandStr: string): string {
+    // Truncate the command to the max size of the tty to avoid "overflowing" of text
+    // Might throw on windows.
+    let maxLength = 0;
+    try {
+      const { columns } = Deno.consoleSize(Deno.stdout.rid);
+      // we need an extra 2 chars for the loader spacing, 3 for the dots and one for style.
+      maxLength = columns - 6;
+      maxLength = (maxLength < 0) ? 0 : maxLength;
+    } catch (_) {
+      maxLength = 0;
+    }
+
+    if (maxLength > 0 && commandStr.length > maxLength) {
+      return commandStr.substr(0, maxLength).trimEnd() + "...";
+    } else {
+      return commandStr;
+    }
   }
 
   private hideCursor() {
