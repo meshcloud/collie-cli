@@ -43,6 +43,7 @@ export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
     const projectId = await Input.prompt(
       "What is the ID of the Google Cloud project containing the billing export?",
     );
+
     const allDatasets = await this.listDatasets(projectId);
 
     const datasetName: string = await Select.prompt({
@@ -83,14 +84,24 @@ export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
     // no op
   }
 
-  private async listDatasets(projectId: string): Promise<string[]> {
-    const result = await this.shellRunner.run(
-      `bq ls --project_id ${projectId} --format json`,
-    );
-    const datasets = parseJsonWithLog<BigQueryListDatasetResult[]>(
-      result.stdout,
-    );
-    return datasets.map((x) => x.datasetReference.datasetId);
+  private listDatasets(projectId: string): Promise<string[]> {
+    const bqListFn = async () => {
+      const bgCommand = `bq ls --project_id ${projectId} --format json`;
+      const result = await this.shellRunner.run(bgCommand);
+      const datasets = parseJsonWithLog<BigQueryListDatasetResult[]>(
+        result.stdout,
+      );
+
+      return datasets.map((x) => x.datasetReference.datasetId);
+    };
+
+    // This might be the first bq invocation and because of some weird config setup we just capture this problematic output and
+    // retry with the same command. Worked for me.
+    try {
+      return bqListFn();
+    } catch (_) {
+      return bqListFn();
+    }
   }
 
   private async listTables(
@@ -101,6 +112,7 @@ export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
       `bq ls --project_id ${projectId} --dataset_id ${datasetId} --format json`,
     );
     const datasets = parseJsonWithLog<BigQueryListTableResult[]>(result.stdout);
+
     return datasets.map((x) => x.tableReference.tableId);
   }
 

@@ -1,4 +1,4 @@
-import { AwsPostPlatformConfigHook } from "../config/aws-post-config.ts";
+import { AwsPostPlatformConfigHook } from "../config/aws-post-platform-config-hook.ts";
 import {
   CLICommand,
   CLIName,
@@ -9,6 +9,7 @@ import {
   loadConfig,
   writeConfig,
 } from "../config/config.model.ts";
+import { GcpPostPlatformConfigHook } from "../config/gcp-post-platform-config-hook.ts";
 import { buildConfigHooks } from "../config/post-config-hooks.ts";
 import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { Command, EnumType } from "../deps.ts";
@@ -16,7 +17,6 @@ import { setupLogger } from "../logger.ts";
 import { MeshPlatform } from "../mesh/mesh-tenant.model.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
 import { CmdGlobalOptions } from "./cmd-options.ts";
-import { GcpPostPlatformConfigHook } from "../config/gcp-post-config.ts";
 
 type Platform = MeshPlatform[number];
 const platform = new EnumType(Object.values(MeshPlatform));

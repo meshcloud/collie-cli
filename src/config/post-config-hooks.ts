@@ -1,7 +1,7 @@
 import { ShellRunner } from "../process/shell-runner.ts";
-import { AwsPostPlatformConfigHook } from "./aws-post-config.ts";
+import { AwsPostPlatformConfigHook } from "./aws-post-platform-config-hook.ts";
+import { GcpPostPlatformConfigHook } from "./gcp-post-platform-config-hook.ts";
 import { PostPlatformConfigHook } from "./post-platform-config-hook.ts";
-import { GcpPostPlatformConfigHook } from "./gcp-post-config.ts";
 
 export function buildConfigHooks(): PostPlatformConfigHook[] {
   // TODO: we are not using the Verbose/Loader ShellRunner here. might be nicer to use either those ones
