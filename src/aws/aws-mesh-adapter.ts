@@ -5,12 +5,23 @@ import {
   MeshTenant,
   MeshTenantCost,
 } from "../mesh/mesh-tenant.model.ts";
-import { Account, isAccount } from "./aws.model.ts";
+import { Account, Credentials, isAccount, User } from "./aws.model.ts";
 import { makeRunWithLimit, moment } from "../deps.ts";
+import { AwsErrorCode, MeshAwsPlatformError, MeshError } from "../errors.ts";
+import {
+  MeshPrincipalType,
+  MeshRoleAssignmentSource,
+} from "../mesh/mesh-iam-model.ts";
 
 export class AwsMeshAdapter implements MeshAdapter {
+  /**
+   *
+   * @param awsCli
+   * @param roleNameToAssume For certain API calls we need to assume a role in an account. This is the role name. Usually is 'OrganizationAccountAccessRole'
+   */
   constructor(
     private readonly awsCli: AwsCliFacade,
+    private readonly roleNameToAssume: string,
   ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
@@ -86,14 +97,150 @@ export class AwsMeshAdapter implements MeshAdapter {
         tenant.costs.push(costItem);
       }
     }
+
     return Promise.resolve();
   }
 
-  attachTenantRoleAssignments(_tenants: MeshTenant[]): Promise<void> {
-    console.error(
-      `This CLI does not support AWS Role Assignment analysis at the moment. Please keep an eye out for further development on this.`,
-    );
+  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
+    const awsTenants = tenants.filter((t) => isAccount(t.nativeObj));
+
+    for (const tenant of awsTenants) {
+      isAccount(tenant.nativeObj);
+      const account = tenant.nativeObj;
+      if (!isAccount(account)) {
+        throw new MeshError("A non AWS account was encountered");
+      }
+
+      // Detect if the user gave us a role arn or only a role name. If its only a role name
+      // we assume the role lives in his current caller account and try to assume it with this
+      // arn.
+      const assumeRoleArn =
+        `arn:aws:iam::${account.Id}:role/${this.roleNameToAssume}`;
+      // Assume the role to execute the following commands from the account context.
+      // This can fail if the role to assume does not exist in the target account.
+
+      const assumedCredentials = await this.tryAssumeRole(assumeRoleArn);
+      if (assumedCredentials == null) {
+        continue;
+      }
+
+      const tenantUsers = await this.awsCli.listUsers(assumedCredentials);
+
+      // Fetch the user attached policies first.
+      for (const tenantUser of tenantUsers) {
+        const attachedUserPolicies = await this.awsCli.listAttachedUserPolicies(
+          tenantUser,
+          assumedCredentials,
+        );
+
+        // We now combine these users with the policies.
+        const roleAssignments = attachedUserPolicies.flatMap((p) => {
+          return {
+            principalId: tenantUser.Arn,
+            principalName: tenantUser.UserName,
+            principalType: MeshPrincipalType.User,
+            roleId: p.PolicyArn,
+            roleName: p.PolicyName,
+            assignmentSource: MeshRoleAssignmentSource.Tenant,
+            assignmentId: "", // There is no assignment representation in AWS. Users are directly placed in a group.
+          };
+        });
+
+        tenant.roleAssignments.push(...roleAssignments);
+      }
+
+      const groups = await this.awsCli.listGroups(assumedCredentials);
+      const userIdsWithGroup: string[] = [];
+
+      // Fetch the group attached policies and correlate them with the user.
+      for (const group of groups) {
+        const usersOfGroup = await this.awsCli.listUserOfGroup(
+          group,
+          assumedCredentials,
+        );
+
+        // Save the ids so we can find users without a group later
+        userIdsWithGroup.push(...usersOfGroup.map((x) => x.UserId));
+
+        // Find the inline and attached policies of a group.
+        const attachedGroupPolicies = await this.awsCli
+          .listAttachedGroupPolicies(
+            group,
+            assumedCredentials,
+          );
+
+        // We now combine these users with the policies.
+        const roleAssignments = attachedGroupPolicies.flatMap((p) => {
+          return usersOfGroup.map((u) => {
+            return {
+              principalId: group.Arn,
+              principalName: u.UserName,
+              principalType: MeshPrincipalType.Group,
+              roleId: p.PolicyArn,
+              roleName: p.PolicyName,
+              assignmentSource: MeshRoleAssignmentSource.Tenant,
+              assignmentId: "", // There is no assignment representation in AWS. Users are directly placed in a group.
+            };
+          });
+        });
+
+        tenant.roleAssignments.push(...roleAssignments);
+      }
+
+      this.attachUserWithNoRoleAssignment(
+        tenant,
+        userIdsWithGroup,
+        tenantUsers,
+      );
+    }
 
     return Promise.resolve();
+  }
+
+  private attachUserWithNoRoleAssignment(
+    tenant: MeshTenant,
+    userIdsWithGroup: string[],
+    tenantUsers: User[],
+  ) {
+    const usersWithNoGroup = tenantUsers.filter((tu) =>
+      userIdsWithGroup.findIndex((gu) => gu === tu.UserId) === -1
+    );
+
+    const userAssignmentsWithoutGroup = usersWithNoGroup.map((u) => {
+      return {
+        principalId: u.Arn,
+        principalName: u.UserName,
+        principalType: MeshPrincipalType.User,
+        roleId: "",
+        roleName: "Without Group",
+        assignmentSource: MeshRoleAssignmentSource.Tenant,
+        assignmentId: "", // There is no assignment representation in AWS. Users are directly placed in a group.
+      };
+    });
+
+    tenant.roleAssignments.push(...userAssignmentsWithoutGroup);
+  }
+
+  private async tryAssumeRole(
+    assumeRoleArn: string,
+  ): Promise<Credentials | null> {
+    try {
+      return await this.awsCli.assumeRole(assumeRoleArn);
+    } catch (e) {
+      if (
+        MeshAwsPlatformError.isInstanceWithErrorCode(
+          e,
+          AwsErrorCode.AWS_UNAUTHORIZED,
+        )
+      ) {
+        console.error(
+          `Could not assume role ${assumeRoleArn}. It probably does not exist in the target account`,
+        );
+
+        return Promise.resolve(null);
+      }
+
+      throw e;
+    }
   }
 }

@@ -17,6 +17,7 @@ export enum MeshRoleAssignmentSource {
 
 export enum MeshPrincipalType {
   User = "User",
+  Role = "Role",
   Group = "Group",
   TechnicalUser = "TechnicalUser",
   Domain = "Domain",

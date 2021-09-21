@@ -3,7 +3,10 @@ import { IShellRunner } from "./shell-runner.interface.ts";
 import { isWindows } from "../os.ts";
 
 export class ShellRunner implements IShellRunner {
-  public async run(commandStr: string): Promise<ShellOutput> {
+  public async run(
+    commandStr: string,
+    env?: { [key: string]: string },
+  ): Promise<ShellOutput> {
     // For Windows machines, we need to prepend cmd /c as it allows you to call internal and external CMD commands.
     // For more info: https://stackoverflow.com/a/62031448
     if (isWindows) {
@@ -17,6 +20,7 @@ export class ShellRunner implements IShellRunner {
       cmd: commands,
       stdout: "piped",
       stderr: "piped",
+      env: env,
     });
 
     const decoder = new TextDecoder();

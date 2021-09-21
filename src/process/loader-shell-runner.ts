@@ -16,11 +16,14 @@ export class LoaderShellRunner implements IShellRunner {
   ) {
   }
 
-  public async run(commandStr: string): Promise<ShellOutput> {
+  public async run(
+    commandStr: string,
+    env?: { [key: string]: string },
+  ): Promise<ShellOutput> {
     try {
       this.startLoading(commandStr);
 
-      return await this.runner.run(commandStr);
+      return await this.runner.run(commandStr, env);
     } catch (e) {
       this.forceStopLoading();
       throw e;

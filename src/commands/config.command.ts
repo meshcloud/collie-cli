@@ -135,7 +135,9 @@ export function registerConfigCmd(program: Command) {
     .command("aws", awsSubCmd);
 }
 
-async function setupAwsConfigAction() {
+async function setupAwsConfigAction(options: CmdConfigOpts) {
+  setupLogger(options);
+
   const config = loadConfig();
 
   // Only allow AWS config if AWS is also connected.
@@ -146,6 +148,7 @@ async function setupAwsConfigAction() {
   }
 
   delete config.aws.selectedProfile;
+  delete config.aws.accountAccessRole;
 
   const shellRunner = new ShellRunner();
   const awsPostConfig = new AwsPostPlatformConfigHook(shellRunner);

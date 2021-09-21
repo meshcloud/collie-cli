@@ -31,6 +31,7 @@ export interface Config {
   };
   aws: {
     selectedProfile?: string;
+    accountAccessRole?: string;
   };
 }
 
