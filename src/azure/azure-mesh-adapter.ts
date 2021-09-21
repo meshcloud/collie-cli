@@ -255,6 +255,7 @@ export class AzureMeshAdapter implements MeshAdapter {
       const { assignmentSource, assignmentId } = this.getAssignmentFromScope(
         x.scope,
       );
+
       return {
         principalId: x.principalId,
         principalName: x.principalName,
