@@ -62,5 +62,6 @@ async function listUserTenantAction(
     options.output,
     true, // we want to see inherited access as well
     filteredTenants,
+    filterStr,
   ).present();
 }

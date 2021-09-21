@@ -10,6 +10,7 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
     readonly meshTenants: MeshTenant[],
     readonly columns: (keyof MeshTenant)[],
     readonly includeAncestors: boolean,
+    readonly userFilterString?: string,
   ) {
     super();
   }
@@ -68,8 +69,13 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
                 ? `<Deleted: ${r.principalId}>`
                 : r.principalName;
 
-              const principalString =
+              let principalString =
                 ` - ${prefix}${cleanedPrincipalName} (${r.principalType})`;
+
+              // If the IAM table was displayed from a specific user query we will highlight this user.
+              if (this.userFilterString === r.principalName) {
+                principalString = `${bold(principalString)}`;
+              }
 
               tmpRows.push([principalString]);
             });

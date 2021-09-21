@@ -25,6 +25,7 @@ export class TenantIamPresenterFactory {
     format: OutputFormat,
     includeAncestors: boolean,
     meshTenants: MeshTenant[],
+    userFilterString?: string,
   ): Presenter {
     // If includeAncestors is not given, we will remove those roleAssignments so they will not be presented to the user.
     if (!includeAncestors) {
@@ -36,7 +37,11 @@ export class TenantIamPresenterFactory {
       }
     }
     if (format === OutputFormat.TABLE) {
-      return this.buildTablePresenter(meshTenants, includeAncestors);
+      return this.buildTablePresenter(
+        meshTenants,
+        includeAncestors,
+        userFilterString,
+      );
     } else if (format === OutputFormat.JSON) {
       return this.buildJsonPresenter(meshTenants);
     } else if (format === OutputFormat.YAML) {
@@ -51,6 +56,7 @@ export class TenantIamPresenterFactory {
   private buildTablePresenter(
     meshTenants: MeshTenant[],
     includeAncestors: boolean,
+    userFilterString?: string,
   ): Presenter {
     const tableViewGenerator = new MeshTenantIamTableViewGenerator(
       meshTenants,
@@ -61,6 +67,7 @@ export class TenantIamPresenterFactory {
         "roleAssignments",
       ],
       includeAncestors,
+      userFilterString,
     );
 
     const stats = new QueryStatistics();
