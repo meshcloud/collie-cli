@@ -56,6 +56,79 @@ export interface CostMetric {
   Unit: string; // USD
 }
 
+export interface Credentials {
+  AccessKeyId: string;
+  SecretAccessKey: string;
+  SessionToken: string;
+  Expiration: string;
+}
+
+export interface AssumedRoleUser {
+  AssumedRoleId: string;
+  Arn: string;
+}
+
+export interface AssumedRoleResponse {
+  Credentials: Credentials;
+  AssumedRoleUser: AssumedRoleUser;
+}
+
+export interface User {
+  UserName: string;
+  Path: string;
+  CreateDate: string;
+  UserId: string;
+  Arn: string;
+  PasswordLastUsed: string;
+}
+
+export interface UserResponse {
+  Users: User[];
+  Group: Group;
+  NextToken?: string;
+}
+
+export interface Group {
+  Path: string;
+  CreateDate: string;
+  GroupId: string;
+  Arn: string;
+  GroupName: string;
+}
+
+export interface GroupResponse {
+  Groups: Group[];
+  NextToken?: string;
+}
+
+export interface UserGroupsResponse {
+  Groups: Group[];
+  NextToken?: string;
+}
+
+export interface Policy {
+  PolicyName: string;
+  PolicyArn: string;
+}
+
+export interface PolicyResponse {
+  AttachedPolicies: Policy[];
+  /**
+   * Present if truncated and a paginated query must be done to fetch
+   * all.
+   */
+  Marker?: string;
+}
+
+export interface InlinePolicyResponse {
+  PolicyNames: string[];
+  /**
+   * Present if truncated and a paginated query must be done to fetch
+   * all.
+   */
+  Marker?: string;
+}
+
 /**
 {
   "Value": "402561870956",

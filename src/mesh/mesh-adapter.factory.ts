@@ -57,11 +57,18 @@ export class MeshAdapterFactory {
         );
       }
 
+      const accountAccessRole = this.config.aws.accountAccessRole;
+      if (!accountAccessRole) {
+        throw new MeshError(
+          `No AWS CLI access role defined. Please run '${CLICommand} config aws' to configure it`,
+        );
+      }
+
       const awsShellRunner = new AwsShellRunner(shellRunner, selectedProfile);
       const aws = new AwsCliFacade(
         awsShellRunner,
       );
-      const awsAdapter = new AwsMeshAdapter(aws);
+      const awsAdapter = new AwsMeshAdapter(aws, accountAccessRole);
 
       if (queryStats) {
         const statsDecorator = new StatsMeshAdapterDecorator(
