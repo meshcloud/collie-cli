@@ -1,17 +1,23 @@
 import { ShellRunner } from "../process/shell-runner.ts";
-import { IamResponse, Project } from "./gcp.model.ts";
+import { CostBigQueryResult, IamResponse, Project } from "./gcp.model.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import {
   GcpErrorCode,
   MeshGcpPlatformError,
   MeshNotLoggedInError,
 } from "../errors.ts";
-import { CLICommand } from "../config/config.model.ts";
+import {
+  CLICommand,
+  GcpBillingExportConfig,
+  GcpCostCollectionViewName,
+} from "../config/config.model.ts";
 import { parseJsonWithLog } from "../json.ts";
+import { moment } from "../deps.ts";
 
 export class GcpCliFacade {
   constructor(
     private readonly shellRunner: ShellRunner,
+    private readonly billingConfig: GcpBillingExportConfig,
   ) {}
   private unauthorizedProject = /User is not permitted/;
 
@@ -51,6 +57,31 @@ export class GcpCliFacade {
     console.debug(`listIamPolicy: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog<IamResponse[]>(result.stdout);
+  }
+
+  async listCosts(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<CostBigQueryResult[]> {
+    const billingProject = this.billingConfig.projectId;
+    const viewName =
+      `${billingProject}.${this.billingConfig.datasetName}.${GcpCostCollectionViewName}`;
+    const format = "YYYYMM";
+    const start = moment(startDate).format(format);
+    const end = moment(endDate).format(format);
+    const query =
+      `SELECT * FROM \`${viewName}\` where invoice_month >= "${start}" AND invoice_month <= "${end}"`;
+    const command =
+      `bq --project_id ${billingProject} query --format json --nouse_legacy_sql ${query}`;
+    const result = await this.shellRunner.run(
+      command,
+    );
+
+    console.debug(`listCosts: ${JSON.stringify(result)}`);
+
+    this.checkForErrors(result);
+
+    return parseJsonWithLog<CostBigQueryResult[]>(result.stdout);
   }
 
   private checkForErrors(result: ShellOutput) {

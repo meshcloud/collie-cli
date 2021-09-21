@@ -3,6 +3,7 @@ import {
   MeshPlatform,
   MeshTag,
   MeshTenant,
+  MeshTenantCost,
 } from "../mesh/mesh-tenant.model.ts";
 import { GcpCliFacade } from "./gcp-cli-facade.ts";
 import { isProject } from "./gcp.model.ts";
@@ -12,10 +13,13 @@ import {
   MeshTenantRoleAssignment,
 } from "../mesh/mesh-iam-model.ts";
 import { MeshError } from "../errors.ts";
+import { TimeWindowCalculator } from "../mesh/time-window-calculator.ts";
+import { moment } from "../deps.ts";
 
 export class GcpMeshAdapter implements MeshAdapter {
   constructor(
     private readonly gcpCli: GcpCliFacade,
+    private readonly timeWindowCalculator: TimeWindowCalculator,
   ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
@@ -41,16 +45,40 @@ export class GcpMeshAdapter implements MeshAdapter {
     });
   }
 
-  attachTenantCosts(
-    _tenants: MeshTenant[],
-    _startDate: Date,
-    _endDate: Date,
+  async attachTenantCosts(
+    tenants: MeshTenant[],
+    startDate: Date,
+    endDate: Date,
   ): Promise<void> {
-    console.error(
-      `This CLI does not support GCP cost collection at the moment. We will implement this at a later stage when GCP supports billing exports via CLI.`,
-    );
+    const gcpTenants = tenants.filter((t) => isProject(t.nativeObj));
+    const gcpCosts = await this.gcpCli.listCosts(startDate, endDate);
 
-    return Promise.resolve();
+    for (const tenant of gcpTenants) {
+      const timeWindows = this.timeWindowCalculator.calculateTimeWindows(
+        startDate,
+        endDate,
+      );
+      for (const window of timeWindows) {
+        // Get a date string exactly like the invoice_month is structured in GCP, e.g. September 2021 => 202109
+        const invoiceMonthString = moment(window.from).format("YYYYMM");
+        const tenantCostItem: MeshTenantCost = {
+          currency: "",
+          from: window.from,
+          to: window.to,
+          cost: "0",
+          details: [],
+        };
+        const gcpCostItem = gcpCosts.find((c) =>
+          c.project_id === tenant.platformTenantId &&
+          c.invoice_month === invoiceMonthString
+        );
+        if (gcpCostItem) {
+          tenantCostItem.cost = gcpCostItem.cost;
+          tenantCostItem.currency = gcpCostItem.currency;
+        }
+        tenant.costs.push(tenantCostItem);
+      }
+    }
   }
 
   async attachTenantRoleAssignments(
