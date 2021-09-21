@@ -10,7 +10,7 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
     readonly meshTenants: MeshTenant[],
     readonly columns: (keyof MeshTenant)[],
     readonly includeAncestors: boolean,
-    readonly userFilterString?: string,
+    readonly principalNameHighlight?: string,
   ) {
     super();
   }
@@ -73,7 +73,7 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
                 ` - ${prefix}${cleanedPrincipalName} (${r.principalType})`;
 
               // If the IAM table was displayed from a specific user query we will highlight this user.
-              if (this.userFilterString === r.principalName) {
+              if (this.principalNameHighlight === r.principalName) {
                 principalString = `${bold(principalString)}`;
               }
 
