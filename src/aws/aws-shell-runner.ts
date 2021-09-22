@@ -26,10 +26,22 @@ export class AwsShellRunner implements ShellRunner {
         env,
       );
     } else {
-      return this.runner.run(
-        `${commandStr} --profile ${this.selectedProfile}`,
-        env,
-      );
+      // We must detect if there are already env variables set so we dont enforce profile set via the CLI.
+      const envAwsAccessKey = Deno.env.get("AWS_SECRET_ACCESS_KEY");
+      const envAwsAccessKeyId = Deno.env.get("AWS_ACCESS_KEY_ID");
+      const isAuthedViaEnv = envAwsAccessKey && envAwsAccessKeyId;
+
+      if (isAuthedViaEnv) {
+        return this.runner.run(commandStr, env);
+      } else {
+        const envAwsProfile = Deno.env.get("AWS_PROFILE");
+        const usedProfile = envAwsProfile || this.selectedProfile;
+
+        return this.runner.run(
+          `${commandStr} --profile ${usedProfile}`,
+          env,
+        );
+      }
     }
   }
 }
