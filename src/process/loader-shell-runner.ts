@@ -43,11 +43,6 @@ export class LoaderShellRunner implements IShellRunner {
     let i = 0;
     const loader = "|/-\\";
 
-    console.log(
-      brightBlue(loader[i]) + " " + bold(this.trimCommandStr(commandStr)),
-    );
-
-    this.tty.goUp(1);
     this.interval = setInterval(() => {
       this.tty.clearLine();
       const pos = i % loader.length;
@@ -82,9 +77,9 @@ export class LoaderShellRunner implements IShellRunner {
   private hideCursor() {
     // Setup a watch for interrupt signals to display the cursor again in case of SIGINT or SIGTERM
     this.sigInt = Deno.signal(Deno.Signal.SIGINT);
-    this.sigInt!.then(() => this.showCursor());
+    this.sigInt!.then(() => this.forceStopLoading());
     this.sigTerm = Deno.signal(Deno.Signal.SIGTERM);
-    this.sigTerm!.then(() => this.showCursor());
+    this.sigTerm!.then(() => this.forceStopLoading());
 
     this.tty.hideCursor();
   }
