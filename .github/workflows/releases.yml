@@ -10,8 +10,9 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Merge develop -> main
+      - name: checkout
         uses: actions/checkout@v2
+      - name: Merge develop -> main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
