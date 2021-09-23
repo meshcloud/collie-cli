@@ -43,22 +43,15 @@
   Google Cloud Projects with their metadata with only one command.
 - **[View billing information](https://github.com/meshcloud/collie-cli/wiki#listing-costs-per-tenant)
   across all clouds** - See what you spend per day, month, or week in all cloud
-  platforms*, including the right metadata. Includes support for CSV, YML and
+  platforms, including the right metadata. Includes support for CSV, YML and
   JSON.
 - **[Build a cost dashboard](https://www.meshcloud.io/2021/09/06/open-source-cloud-cost-dashboard-in-under-10-minutes/)** - Leverage our free-to-use Google Data Studio template and quickly build a multi-cloud cost dashboard using Collie cost data.
 - **[Analyze tag inconsistencies](https://github.com/meshcloud/collie-cli/wiki#identifying-inconsistencies-in-the-use-of-tags)** -
   See at a glance what tags are used, by which tenants (and which not), and what
   potential inconsistencies are in place to fix any governance issues.
 - **[View IAM assignments](https://github.com/meshcloud/collie-cli/wiki#listing-iam-setup-per-tenant)** -
-  See who (or what) has access in what roles to what cloud tenants**, including
+  See who (or what) has access in what roles to what cloud tenants, including
   inherited roles from ancestors.
-
-<sup><sub>*GCP does not support cost collection. Follow the issue
-[here](https://github.com/meshcloud/collie-cli/issues/17) to get updated on
-progress.</sub></sup><br>
-<sup><sub>**AWS does not support IAM at the moment. Follow the issue
-[here](https://github.com/meshcloud/collie-cli/issues/41) to get updated on
-progress.</sub></sup>
 
 ## ☝️ Prerequisites<a name="prerequisites"></a>
 
