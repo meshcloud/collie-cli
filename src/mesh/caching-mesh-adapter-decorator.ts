@@ -1,9 +1,40 @@
+// deno-lint-ignore-file no-explicit-any
 import { MeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { Meta } from "../db/meta.ts";
 import { moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
 import { MeshAdapter } from "./mesh-adapter.ts";
-import { MeshTenant } from "./mesh-tenant.model.ts";
+import { MeshTenant, MeshTenantDiff } from "./mesh-tenant.model.ts";
+
+/**
+ * Deep copy function for TypeScript.
+ * @param T Generic type of target/copied value.
+ * @param target Target value to be copied.
+ * @see Source project, ts-deepcopy https://github.com/ykdr2017/ts-deepcopy
+ * @see Code pen https://codepen.io/erikvullings/pen/ejyBYg
+ */
+ export const deepCopy = <T>(target: T): T => {
+  if (target === null) {
+    return target;
+  }
+  if (target instanceof Date) {
+    return new Date(target.getTime()) as any;
+  }
+  if (target instanceof Array) {
+
+    const cp = [] as any[];
+    (target as any[]).forEach((v) => { cp.push(v); });
+    return cp.map((n: any) => deepCopy<any>(n)) as any;
+  }
+  if (typeof target === 'object' && target !== {}) {
+    const cp = { ...(target as { [key: string]: any }) } as { [key: string]: any };
+    Object.keys(cp).forEach(k => {
+      cp[k] = deepCopy<any>(cp[k]);
+    });
+    return cp as T;
+  }
+  return target;
+};
 
 /**
  * This adapter will try to fetch tenant data first from the local cache before
@@ -47,6 +78,10 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
 
       return tenants;
     }
+  }
+
+  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff> {
+    return this.meshAdapter.updateMeshTenants(meshTenants);
   }
 
   private async isTenantCostCached(

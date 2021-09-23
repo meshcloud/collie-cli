@@ -1,7 +1,17 @@
-import { MeshTenant } from "./mesh-tenant.model.ts";
+import { MeshTenant, MeshTenantDiff } from "./mesh-tenant.model.ts";
 
 export interface MeshAdapter {
   getMeshTenants(): Promise<MeshTenant[]>;
+
+  /**
+   * This is a high level function that will try as best (feature set depends on the platform implementation)
+   * to sync the data contained in the given MeshTenant objects into their cloud representation. E.g. the tags.
+   *
+   * It will return an overfiew of what was changed.
+   *
+   * @param meshTenants
+   */
+  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff>;
 
   /**
    * Fetches the costs in the given interval and attaches it to the given MeshTenant objects.
