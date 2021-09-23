@@ -36,7 +36,7 @@ jobs:
             exit 0
           fi
           breaking=$(echo ${version/v/''} | cut -d'.' -f1)
-          minor=$(($(echo ${version/v/''} | cut -d'.' -f2) + 1))
+          minor=$(echo ${version/v/''} | cut -d'.' -f2)
           patch=$(echo ${version/v/''} | cut -d'.' -f3)
           echo "::set-output name=version::$(echo "v${breaking}.${minor}.${patch}")"
 
