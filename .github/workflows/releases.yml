@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Merge develop -> main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
