@@ -71,6 +71,26 @@ export class AwsCliFacade {
     return parseJsonWithLog<TagResponse>(result.stdout).Tags;
   }
 
+  async addTags(account: Account, tags: Tag[]): Promise<void> {
+    const tagsStr = tags.map((t) => `Key=${t.Key},Value=${t.Value}`).join(" ");
+    const command =
+      `aws organizations tag-resource --resource-id ${account.Id} --tags "${tagsStr}"`;
+    const result = await this.shellRunner.run(command);
+    this.checkForErrors(result);
+
+    console.debug(`addTags: ${JSON.stringify(result)}`);
+  }
+
+  async removeTags(account: Account, tags: Tag[]): Promise<void> {
+    const tagsKeys = tags.map((t) => t.Key).join(" ");
+    const command =
+      `aws organizations untag-resource --resource-id ${account.Id} --tag-keys "${tagsKeys}"`;
+    const result = await this.shellRunner.run(command);
+    this.checkForErrors(result);
+
+    console.debug(`removeTags: ${JSON.stringify(result)}`);
+  }
+
   async assumeRole(
     roleArn: string,
     credentials?: Credentials,

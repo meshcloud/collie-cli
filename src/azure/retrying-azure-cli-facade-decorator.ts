@@ -49,6 +49,10 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
     });
   }
 
+  putTags(subscription: Subscription, tags: Tag[]): Promise<void> {
+    return this.wrapped.putTags(subscription, tags);
+  }
+
   async getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,

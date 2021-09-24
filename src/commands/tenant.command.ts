@@ -207,7 +207,7 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
 }
 
 async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
-  await setupLogger(options);
+  setupLogger(options);
   await verifyCliAvailability();
 
   const config = loadConfig();

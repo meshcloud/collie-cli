@@ -11,7 +11,7 @@ export interface MeshAdapter {
    *
    * @param meshTenants
    */
-  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff>;
+  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff[]>;
 
   /**
    * Fetches the costs in the given interval and attaches it to the given MeshTenant objects.

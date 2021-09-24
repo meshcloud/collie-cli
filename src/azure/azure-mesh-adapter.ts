@@ -3,6 +3,7 @@ import {
   MeshTag,
   MeshTenant,
   MeshTenantCost,
+  MeshTenantDiff,
 } from "../mesh/mesh-tenant.model.ts";
 import { isSubscription, Tag } from "./azure.model.ts";
 import { AzureCliFacade } from "./azure-cli-facade.ts";
@@ -225,6 +226,11 @@ export class AzureMeshAdapter implements MeshAdapter {
         };
       }),
     );
+  }
+
+  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff[]> {
+
+    throw new Error("Method not implemented.");
   }
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {

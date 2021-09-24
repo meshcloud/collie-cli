@@ -46,6 +46,12 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
     });
   }
 
+  putTags(subscription: Subscription, tags: Tag[]): Promise<void> {
+    return this.wrapCallWithInstallInterception(() => {
+      return this.azureFacade.putTags(subscription, tags);
+    });
+  }
+
   async getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,

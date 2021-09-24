@@ -105,6 +105,24 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   /**
+   * After succesful invocation all these tags are present on the Subscription.
+   * @param tags The list of tags put onto the subscription.
+   */
+  async putTags(subscription: Subscription, tags: Tag[]) {
+    const tagsString = tags.map((x) => `${x.tagName}=${x.values.join(",")}`)
+      .join(" ");
+    const command =
+      `az tag create --resource-id /subscriptions/${subscription.id} --tags "${tagsString}"`;
+
+    const result = await this.shellRunner.run(
+      command,
+    );
+    this.checkForErrors(result);
+
+    console.debug(`putTags: ${JSON.stringify(result)}`);
+  }
+
+  /**
    * Uses cost management info.
    *
    * @param mgmtGroupId

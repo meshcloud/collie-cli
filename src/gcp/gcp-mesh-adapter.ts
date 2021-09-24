@@ -4,6 +4,7 @@ import {
   MeshTag,
   MeshTenant,
   MeshTenantCost,
+  MeshTenantDiff,
 } from "../mesh/mesh-tenant.model.ts";
 import { GcpCliFacade } from "./gcp-cli-facade.ts";
 import { isProject } from "./gcp.model.ts";
@@ -43,6 +44,10 @@ export class GcpMeshAdapter implements MeshAdapter {
         roleAssignments: [],
       };
     });
+  }
+
+  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff[]> {
+    throw new Error("Method not implemented.");
   }
 
   async attachTenantCosts(

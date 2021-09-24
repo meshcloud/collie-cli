@@ -1,5 +1,10 @@
 import { ShellRunner } from "../process/shell-runner.ts";
-import { CostBigQueryResult, IamResponse, Project } from "./gcp.model.ts";
+import {
+  CostBigQueryResult,
+  IamResponse,
+  Labels,
+  Project,
+} from "./gcp.model.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import {
   GcpErrorCode,
@@ -31,6 +36,22 @@ export class GcpCliFacade {
     console.debug(`listProjects: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog<Project[]>(result.stdout);
+  }
+
+  async updateTags(project: Project, labels: Labels): Promise<void> {
+    const labelStr = Object.entries(labels).map(([key, value]) => {
+      `${key}=${value}`;
+    }).join(" ");
+
+    // For more information see https://cloud.google.com/sdk/gcloud/reference/alpha/projects/update
+    const command =
+      `gcloud alpha projects update ${project.projectId} --clear-labels --update-labels "${labelStr}"`;
+    const result = await this.shellRunner.run(
+      command,
+    );
+    this.checkForErrors(result);
+
+    console.debug(`updateTags: ${JSON.stringify(result)}`);
   }
 
   async listIamPolicy(project: Project): Promise<IamResponse[]> {
