@@ -14,12 +14,6 @@ try {
   Deno.exit(1);
 }
 
-// We must detect if a SIGINT or SIGTERM was raised in order to swallow potential
-// error messages.
-let isTerminated = false;
-Deno.signal(Deno.Signal.SIGINT).then(() => isTerminated = true);
-Deno.signal(Deno.Signal.SIGTERM).then(() => isTerminated = true);
-
 // Run the main program with error handling.
 try {
   const hasArgs = Deno.args.length > 0;
@@ -29,10 +23,6 @@ try {
   }
   await program.parse(Deno.args);
 } catch (e) {
-  if (isTerminated) {
-    Deno.exit(1);
-  }
-
   if (e instanceof Error) {
     console.error(red(e.stack || ""));
   }
