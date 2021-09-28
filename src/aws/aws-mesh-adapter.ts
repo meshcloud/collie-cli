@@ -56,7 +56,10 @@ export class AwsMeshAdapter implements MeshAdapter {
     );
   }
 
-  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff[]> {
+  updateMeshTenants(
+    updatedTenants:MeshTenant[],
+    originalTenants:MeshTenant[]
+  ): Promise<MeshTenantDiff[]> {
     throw new Error("Method not implemented.");
   }
 

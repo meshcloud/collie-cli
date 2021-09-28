@@ -14,8 +14,11 @@ export class MultiMeshAdapter implements MeshAdapter {
     return all.flatMap((x) => x);
   }
 
-  async updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff[]> {
-    const promises = this.adapters.map((x) => x.updateMeshTenants(meshTenants));
+  async updateMeshTenants(
+    updatedTenants:MeshTenant[],
+    originalTenants:MeshTenant[],
+  ): Promise<MeshTenantDiff[]> {
+    const promises = this.adapters.map((x) => x.updateMeshTenants(updatedTenants, originalTenants));
 
     const all = await Promise.all(promises);
 

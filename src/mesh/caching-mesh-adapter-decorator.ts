@@ -49,8 +49,8 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     }
   }
 
-  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff[]> {
-    return this.meshAdapter.updateMeshTenants(meshTenants);
+  updateMeshTenants(updatedTenants:MeshTenant[], originalTenants:MeshTenant[]): Promise<MeshTenantDiff[]> {
+    return this.meshAdapter.updateMeshTenants(updatedTenants, originalTenants);
   }
 
   private async isTenantCostCached(

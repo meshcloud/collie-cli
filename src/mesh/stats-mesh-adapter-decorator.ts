@@ -1,5 +1,9 @@
 import { MeshAdapter } from "./mesh-adapter.ts";
-import { MeshPlatform, MeshTenant, MeshTenantDiff } from "./mesh-tenant.model.ts";
+import {
+  MeshPlatform,
+  MeshTenant,
+  MeshTenantDiff,
+} from "./mesh-tenant.model.ts";
 import { QueryStatistics } from "./query-statistics.ts";
 
 /**
@@ -15,13 +19,17 @@ export class StatsMeshAdapterDecorator implements MeshAdapter {
   ) {
   }
 
-  async updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff[]> {
+  async updateMeshTenants(
+    updatedTenants:MeshTenant[],
+    originalTenants:MeshTenant[]
+  ): Promise<MeshTenantDiff[]> {
     return await this.stats.recordQuery(
       this.source,
       this.layer,
       async () =>
         await this.meshAdapter.updateMeshTenants(
-          meshTenants,
+          updatedTenants,
+          originalTenants,
         ),
     );
   }

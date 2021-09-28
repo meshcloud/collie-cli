@@ -228,11 +228,6 @@ export class AzureMeshAdapter implements MeshAdapter {
     );
   }
 
-  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff[]> {
-
-    throw new Error("Method not implemented.");
-  }
-
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     // Only work on Azure tenants
     const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
@@ -319,5 +314,9 @@ export class AzureMeshAdapter implements MeshAdapter {
       AzureErrorCode.AZURE_UNKNOWN_PRINCIPAL_ASSIGNMENT_SOURCE,
       "Could not detect assignment source from scope: " + scope,
     );
+  }
+
+  updateMeshTenants(updatedTenants: MeshTenant[], originalTenants: MeshTenant[]): Promise<MeshTenantDiff[]> {
+    return Promise.resolve([]);
   }
 }

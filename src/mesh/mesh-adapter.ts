@@ -5,13 +5,19 @@ export interface MeshAdapter {
 
   /**
    * This is a high level function that will try as best (feature set depends on the platform implementation)
-   * to sync the data contained in the given MeshTenant objects into their cloud representation. E.g. the tags.
+   * to sync the data contained in the given MeshTenant objects into their cloud representation.
+   * As of now, only writing, updating & removing tags is supported.
    *
-   * It will return an overfiew of what was changed.
+   * It will return an overview of what was changed.
    *
-   * @param meshTenants
+   * @param updatedTenants The tenants with the updated data.
+   * @param originalTenants The tenants how they originally looked like. This is used to build a diff between
+   *                        the old state and the desired new state.
    */
-  updateMeshTenants(meshTenants: MeshTenant[]): Promise<MeshTenantDiff[]>;
+  updateMeshTenants(
+    updatedTenants: MeshTenant[],
+    originalTenants: MeshTenant[],
+  ): Promise<MeshTenantDiff[]>;
 
   /**
    * Fetches the costs in the given interval and attaches it to the given MeshTenant objects.

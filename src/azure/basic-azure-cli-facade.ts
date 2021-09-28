@@ -106,6 +106,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
   /**
    * After succesful invocation all these tags are present on the Subscription.
+   * @param subscription
    * @param tags The list of tags put onto the subscription.
    */
   async putTags(subscription: Subscription, tags: Tag[]) {
