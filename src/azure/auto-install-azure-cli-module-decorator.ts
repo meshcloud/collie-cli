@@ -7,6 +7,7 @@ import {
   SimpleCostManagementInfo,
   Subscription,
   Tag,
+  TagWrite,
 } from "./azure.model.ts";
 
 /**
@@ -46,7 +47,7 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
     });
   }
 
-  putTags(subscription: Subscription, tags: Tag[]): Promise<void> {
+  putTags(subscription: Subscription, tags: TagWrite[]): Promise<void> {
     return this.wrapCallWithInstallInterception(() => {
       return this.azureFacade.putTags(subscription, tags);
     });

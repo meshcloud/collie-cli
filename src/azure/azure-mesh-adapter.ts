@@ -3,7 +3,6 @@ import {
   MeshTag,
   MeshTenant,
   MeshTenantCost,
-  MeshTenantDiff,
 } from "../mesh/mesh-tenant.model.ts";
 import { isSubscription, Tag } from "./azure.model.ts";
 import { AzureCliFacade } from "./azure-cli-facade.ts";
@@ -25,11 +24,13 @@ import {
   MeshTenantRoleAssignment,
 } from "../mesh/mesh-iam-model.ts";
 
-export class AzureMeshAdapter implements MeshAdapter {
+export class AzureMeshAdapter extends MeshAdapter {
   constructor(
     private readonly azureCli: AzureCliFacade,
     private readonly timeWindowCalculator: TimeWindowCalculator,
-  ) {}
+  ) {
+    super();
+  }
 
   async attachTenantCosts(
     tenants: MeshTenant[],
@@ -316,7 +317,22 @@ export class AzureMeshAdapter implements MeshAdapter {
     );
   }
 
-  updateMeshTenants(updatedTenants: MeshTenant[], originalTenants: MeshTenant[]): Promise<MeshTenantDiff[]> {
-    return Promise.resolve([]);
+  async updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void> {
+    if (!isSubscription(updatedTenant.nativeObj)) {
+      return Promise.resolve();
+    }
+
+    const changedTags = this.getChangedTags(
+      updatedTenant.tags,
+      originalTenant.tags,
+    );
+
+    await this.azureCli.putTags(
+      updatedTenant.nativeObj,
+      changedTags.map((x) => ({ tagName: x.tagName, values: x.tagValues })),
+    );
   }
 }

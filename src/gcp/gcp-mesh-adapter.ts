@@ -4,10 +4,9 @@ import {
   MeshTag,
   MeshTenant,
   MeshTenantCost,
-  MeshTenantDiff,
 } from "../mesh/mesh-tenant.model.ts";
 import { GcpCliFacade } from "./gcp-cli-facade.ts";
-import { isProject } from "./gcp.model.ts";
+import { isProject, Labels } from "./gcp.model.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
@@ -17,11 +16,13 @@ import { MeshError } from "../errors.ts";
 import { TimeWindowCalculator } from "../mesh/time-window-calculator.ts";
 import { moment } from "../deps.ts";
 
-export class GcpMeshAdapter implements MeshAdapter {
+export class GcpMeshAdapter extends MeshAdapter {
   constructor(
     private readonly gcpCli: GcpCliFacade,
     private readonly timeWindowCalculator: TimeWindowCalculator,
-  ) {}
+  ) {
+    super();
+  }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
     const projects = await this.gcpCli.listProjects();
@@ -46,11 +47,25 @@ export class GcpMeshAdapter implements MeshAdapter {
     });
   }
 
-  updateMeshTenants(
-    updatedTenants:MeshTenant[],
-    originalTenants:MeshTenant[]
-  ): Promise<MeshTenantDiff[]> {
-    throw new Error("Method not implemented.");
+  async updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void> {
+    if (!isProject(updatedTenant.nativeObj)) {
+      return Promise.resolve();
+    }
+
+    const changedTags = this.getChangedTags(
+      updatedTenant.tags,
+      originalTenant.tags,
+    );
+
+    const labels: Labels = {};
+    changedTags.forEach((x) => {
+      labels[x.tagName] = x.tagValues[0];
+    });
+
+    await this.gcpCli.updateTags(updatedTenant.nativeObj, labels);
   }
 
   async attachTenantCosts(

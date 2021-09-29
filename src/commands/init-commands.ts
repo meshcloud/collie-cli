@@ -10,7 +10,7 @@ import { registerCreateIssueCommand } from "./create-issue.command.ts";
 import { VERSION } from "../config/version.ts";
 import { isWindows } from "../os.ts";
 import { registerUserCommand } from "./user.command.ts";
-import { registerTagCommand } from './tag.command.ts';
+import { registerTagCommand } from "./tag/tag.command.ts";
 
 export function initCommands(): Command {
   const program = new Command()

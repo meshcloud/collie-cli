@@ -9,6 +9,7 @@ import { ShellOutput } from "../process/shell-output.ts";
 import {
   GcpErrorCode,
   MeshGcpPlatformError,
+  MeshInvalidTagValueError,
   MeshNotLoggedInError,
 } from "../errors.ts";
 import {
@@ -25,6 +26,8 @@ export class GcpCliFacade {
     private readonly billingConfig: GcpBillingExportConfig,
   ) {}
   private unauthorizedProject = /User is not permitted/;
+  private invalidTagValue =
+    /ERROR: \(gcloud.alpha.projects.update\) argument --update-labels: Bad value/;
 
   async listProjects(): Promise<Project[]> {
     const command = "gcloud projects list --format json";
@@ -39,13 +42,16 @@ export class GcpCliFacade {
   }
 
   async updateTags(project: Project, labels: Labels): Promise<void> {
-    const labelStr = Object.entries(labels).map(([key, value]) => {
-      `${key}=${value}`;
-    }).join(" ");
+    if (Object.entries(labels).length === 0) {
+      return;
+    }
+    const labelStr = Object.entries(labels).map(([key, value]) =>
+      `${key}=${value}`
+    ).join(",");
 
-    // For more information see https://cloud.google.com/sdk/gcloud/reference/alpha/projects/update
+    // For more information see https://cloud.google.com/sdk/gcloud/reference/alpha/projects/update#--update-labels
     const command =
-      `gcloud alpha projects update ${project.projectId} --clear-labels --update-labels "${labelStr}"`;
+      `gcloud alpha projects update ${project.projectId} --update-labels ${labelStr}`;
     const result = await this.shellRunner.run(
       command,
     );
@@ -107,10 +113,16 @@ export class GcpCliFacade {
 
   private checkForErrors(result: ShellOutput) {
     if (result.code === 2) {
-      throw new MeshGcpPlatformError(
-        GcpErrorCode.GCP_CLI_GENERAL,
-        result.stderr,
-      );
+      if (this.invalidTagValue.exec(result.stderr)) {
+        throw new MeshInvalidTagValueError(
+          "You provided an invalid tag value for GCP. Please try again with a different value.",
+        );
+      } else {
+        throw new MeshGcpPlatformError(
+          GcpErrorCode.GCP_CLI_GENERAL,
+          result.stderr,
+        );
+      }
     } else if (result.code === 1) {
       if (this.unauthorizedProject.exec(result.stderr)) {
         throw new MeshGcpPlatformError(

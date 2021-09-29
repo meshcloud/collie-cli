@@ -1,23 +1,22 @@
-import { MeshTenant, MeshTenantDiff } from "./mesh-tenant.model.ts";
+import { MeshTag, MeshTenant } from "./mesh-tenant.model.ts";
+import { equal } from "../deps.ts";
 
-export interface MeshAdapter {
-  getMeshTenants(): Promise<MeshTenant[]>;
+export abstract class MeshAdapter {
+  abstract getMeshTenants(): Promise<MeshTenant[]>;
 
   /**
    * This is a high level function that will try as best (feature set depends on the platform implementation)
-   * to sync the data contained in the given MeshTenant objects into their cloud representation.
+   * to sync the data contained in the given MeshTenant object into their cloud representation.
    * As of now, only writing, updating & removing tags is supported.
    *
-   * It will return an overview of what was changed.
-   *
-   * @param updatedTenants The tenants with the updated data.
-   * @param originalTenants The tenants how they originally looked like. This is used to build a diff between
+   * @param updatedTenant The tenant with the updated data.
+   * @param originalTenant The tenant how it originally looked like. This is used to build a diff between
    *                        the old state and the desired new state.
    */
-  updateMeshTenants(
-    updatedTenants: MeshTenant[],
-    originalTenants: MeshTenant[],
-  ): Promise<MeshTenantDiff[]>;
+  abstract updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void>;
 
   /**
    * Fetches the costs in the given interval and attaches it to the given MeshTenant objects.
@@ -26,7 +25,7 @@ export interface MeshAdapter {
    * @param startDate
    * @param endDate
    */
-  attachTenantCosts(
+  abstract attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
@@ -37,7 +36,13 @@ export interface MeshAdapter {
    * @param tenants Tenants to which the the IAM roles are fetched and updated.
    * @param stats
    */
-  attachTenantRoleAssignments(
+  abstract attachTenantRoleAssignments(
     tenants: MeshTenant[],
   ): Promise<void>;
+
+  protected getChangedTags(updatedTags: MeshTag[], originalTags: MeshTag[]) {
+    return updatedTags.filter((updatedTag) =>
+      !originalTags.some((originalTag) => equal(updatedTag, originalTag))
+    );
+  }
 }

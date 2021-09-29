@@ -18,16 +18,6 @@ export interface MeshTenant {
   roleAssignments: MeshTenantRoleAssignment[];
 }
 
-export interface Diff<T> {
-  removed: T[];
-  added: T[];
-}
-
-export interface MeshTenantDiff {
-  meshTenant: MeshTenant;
-  tags: Diff<MeshTag>;
-}
-
 export interface MeshTenantCostDetails {
   name: string;
   from: string;

@@ -19,6 +19,7 @@ import { moment } from "../deps.ts";
 import {
   AwsErrorCode,
   MeshAwsPlatformError,
+  MeshInvalidTagValueError,
   MeshNotLoggedInError,
 } from "../errors.ts";
 import { sleep } from "../promises.ts";
@@ -29,6 +30,9 @@ export class AwsCliFacade {
   constructor(
     private readonly shellRunner: ShellRunner,
   ) {}
+
+  private readonly errRegexInvalidTagValue =
+    /An error occurred \(InvalidInputException\) when calling the TagResource operation: You provided a value that does not match the required pattern/;
 
   async listAccounts(): Promise<Account[]> {
     let nextToken = null;
@@ -74,7 +78,7 @@ export class AwsCliFacade {
   async addTags(account: Account, tags: Tag[]): Promise<void> {
     const tagsStr = tags.map((t) => `Key=${t.Key},Value=${t.Value}`).join(" ");
     const command =
-      `aws organizations tag-resource --resource-id ${account.Id} --tags "${tagsStr}"`;
+      `aws organizations tag-resource --resource-id ${account.Id} --tags ${tagsStr}`;
     const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
 
@@ -323,10 +327,16 @@ export class AwsCliFacade {
           `You are not correctly logged into AWS CLI. Please verify credentials with "aws config" or disconnect with "${CLICommand} config --disconnect AWS"\n${result.stderr}`,
         );
       case 254:
-        throw new MeshAwsPlatformError(
-          AwsErrorCode.AWS_UNAUTHORIZED,
-          `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.\n${result.stderr}`,
-        );
+        if (result.stderr.match(this.errRegexInvalidTagValue)) {
+          throw new MeshInvalidTagValueError(
+            "You provided an invalid tag value for AWS. Please try again with a different value.",
+          );
+        } else {
+          throw new MeshAwsPlatformError(
+            AwsErrorCode.AWS_UNAUTHORIZED,
+            `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.\n${result.stderr}`,
+          );
+        }
       default:
         throw new MeshAwsPlatformError(
           AwsErrorCode.AWS_CLI_GENERAL,

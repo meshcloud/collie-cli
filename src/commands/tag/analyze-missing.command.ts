@@ -1,47 +1,24 @@
-import { bold, Command } from '../deps.ts';
-import { CmdGlobalOptions } from './cmd-options.ts';
-import { CLICommand, loadConfig } from '../config/config.model.ts';
-import { setupLogger } from '../logger.ts';
-import { verifyCliAvailability } from '../init.ts';
-import { MeshAdapterFactory } from '../mesh/mesh-adapter.factory.ts';
-import { MeshTenant } from '../mesh/mesh-tenant.model.ts';
+import { bold, Command } from "../../deps.ts";
+import { CmdGlobalOptions } from "../cmd-options.ts";
+import { setupLogger } from "../../logger.ts";
+import { verifyCliAvailability } from "../../init.ts";
+import { loadConfig } from "../../config/config.model.ts";
+import { MeshAdapterFactory } from "../../mesh/mesh-adapter.factory.ts";
+import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
 
-export function registerTagCommand(program: Command) {
-  const tagCmd = new Command()
-    .description(
-      `Work with cloud tenants (AWS Accounts, Azure Subscriptions, GCP Projects) and list all of them, or see tags, costs, and more. Run "${CLICommand} tenant -h" to see what is possible.`,
-    )
-    .example(
-      "List all costs (including tags) in the first month of 2021 as CSV and export it to a file",
-      `${CLICommand} tenant costs --from 2021-01-01 --to 2021-01-31 -o csv > january_2021.csv`,
-    )
-    .example(
-      "Show tenants that are missing the tag 'Environment' and 'CostCenter'",
-      `${CLICommand} tenant analyze-tags --details --tags Environment,CostCenter`,
-    )
-    .action(() => {
-      tagCmd.showHelp();
-    });
-
-  program.command("tag", tagCmd);
-
-  const analyzeTags = new Command()
-    .description(
-      "Analyzes all available tags on tenants and returns the percentage of tenants that make use of this tag.",
-    )
-    .option(
-      "--tags <tags:string[]>",
-      "The list of tags to filter on. If not given, all found tags are considered. Example: --tags Environment,Department",
-    )
-    .option(
-      "--details [details:boolean]",
-      "Shows more details, including which cloud tenants are missing which tag.",
-    )
-    .action(analyzeTagsAction);
-
-  tagCmd
-    .command("analyze", analyzeTags);
-}
+export const analyzeMissingTags = new Command()
+  .description(
+    "Analyzes all available tags on tenants and returns the percentage of tenants that make use of this tag.",
+  )
+  .option(
+    "--tags <tags:string[]>",
+    "The list of tags to filter on. If not given, all found tags are considered. Example: --tags Environment,Department",
+  )
+  .option(
+    "--details [details:boolean]",
+    "Shows more details, including which cloud tenants are missing which tag.",
+  )
+  .action(analyzeTagsAction);
 
 interface CmdAnalyzeTagsOptions extends CmdGlobalOptions {
   tags?: string[];

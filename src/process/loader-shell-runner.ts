@@ -75,11 +75,13 @@ export class LoaderShellRunner implements IShellRunner {
   }
 
   private hideCursor() {
+    // TODO: Disabled this code for now as it resulted in weird behavior when making use of Cliffy prompts.
+
     // Setup a watch for interrupt signals to display the cursor again in case of SIGINT or SIGTERM
-    this.sigInt = Deno.signal(Deno.Signal.SIGINT);
-    this.sigInt!.then(() => this.forceStopLoading());
-    this.sigTerm = Deno.signal(Deno.Signal.SIGTERM);
-    this.sigTerm!.then(() => this.forceStopLoading());
+    // this.sigInt = Deno.signal(Deno.Signal.SIGINT);
+    // this.sigInt!.then(() => this.forceStopLoading());
+    // this.sigTerm = Deno.signal(Deno.Signal.SIGTERM);
+    // this.sigTerm!.then(() => this.forceStopLoading());
 
     this.tty.hideCursor();
   }

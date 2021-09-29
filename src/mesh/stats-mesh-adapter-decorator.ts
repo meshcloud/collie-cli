@@ -1,35 +1,32 @@
 import { MeshAdapter } from "./mesh-adapter.ts";
-import {
-  MeshPlatform,
-  MeshTenant,
-  MeshTenantDiff,
-} from "./mesh-tenant.model.ts";
+import { MeshPlatform, MeshTenant } from "./mesh-tenant.model.ts";
 import { QueryStatistics } from "./query-statistics.ts";
 
 /**
  * This decorator will record the time it takes for the command to be invoked.
  * Can be helpful in order to figure out if there is a bottleneck in call time.
  */
-export class StatsMeshAdapterDecorator implements MeshAdapter {
+export class StatsMeshAdapterDecorator extends MeshAdapter {
   constructor(
     private readonly meshAdapter: MeshAdapter,
     private readonly source: MeshPlatform | "cache",
     private readonly layer: number,
     private readonly stats: QueryStatistics,
   ) {
+    super();
   }
 
-  async updateMeshTenants(
-    updatedTenants:MeshTenant[],
-    originalTenants:MeshTenant[]
-  ): Promise<MeshTenantDiff[]> {
+  async updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void> {
     return await this.stats.recordQuery(
       this.source,
       this.layer,
       async () =>
-        await this.meshAdapter.updateMeshTenants(
-          updatedTenants,
-          originalTenants,
+        await this.meshAdapter.updateMeshTenant(
+          updatedTenant,
+          originalTenant,
         ),
     );
   }

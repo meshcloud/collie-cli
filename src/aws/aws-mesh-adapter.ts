@@ -4,7 +4,6 @@ import {
   MeshPlatform,
   MeshTenant,
   MeshTenantCost,
-  MeshTenantDiff,
 } from "../mesh/mesh-tenant.model.ts";
 import { Account, Credentials, isAccount, User } from "./aws.model.ts";
 import { makeRunWithLimit, moment } from "../deps.ts";
@@ -14,7 +13,7 @@ import {
   MeshRoleAssignmentSource,
 } from "../mesh/mesh-iam-model.ts";
 
-export class AwsMeshAdapter implements MeshAdapter {
+export class AwsMeshAdapter extends MeshAdapter {
   /**
    *
    * @param awsCli
@@ -23,7 +22,9 @@ export class AwsMeshAdapter implements MeshAdapter {
   constructor(
     private readonly awsCli: AwsCliFacade,
     private readonly roleNameToAssume: string,
-  ) {}
+  ) {
+    super();
+  }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
     const accounts = await this.awsCli.listAccounts();
@@ -56,11 +57,23 @@ export class AwsMeshAdapter implements MeshAdapter {
     );
   }
 
-  updateMeshTenants(
-    updatedTenants:MeshTenant[],
-    originalTenants:MeshTenant[]
-  ): Promise<MeshTenantDiff[]> {
-    throw new Error("Method not implemented.");
+  async updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void> {
+    if (!isAccount(updatedTenant.nativeObj)) {
+      return Promise.resolve();
+    }
+
+    const changedTags = this.getChangedTags(
+      updatedTenant.tags,
+      originalTenant.tags,
+    );
+
+    await this.awsCli.addTags(
+      updatedTenant.nativeObj,
+      changedTags.map((x) => ({ Key: x.tagName, Value: x.tagValues[0] })),
+    );
   }
 
   async attachTenantCosts(

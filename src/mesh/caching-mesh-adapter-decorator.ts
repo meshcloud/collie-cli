@@ -3,17 +3,18 @@ import { Meta } from "../db/meta.ts";
 import { moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
 import { MeshAdapter } from "./mesh-adapter.ts";
-import { MeshTenant, MeshTenantDiff } from "./mesh-tenant.model.ts";
+import { MeshTenant } from "./mesh-tenant.model.ts";
 
 /**
  * This adapter will try to fetch tenant data first from the local cache before
  * it hits the real cloud platforms.
  */
-export class CachingMeshAdapterDecorator implements MeshAdapter {
+export class CachingMeshAdapterDecorator extends MeshAdapter {
   constructor(
     private readonly repository: MeshTenantRepository,
     private readonly meshAdapter: MeshAdapter,
   ) {
+    super();
   }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
@@ -49,8 +50,12 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     }
   }
 
-  updateMeshTenants(updatedTenants:MeshTenant[], originalTenants:MeshTenant[]): Promise<MeshTenantDiff[]> {
-    return this.meshAdapter.updateMeshTenants(updatedTenants, originalTenants);
+  async updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void> {
+    await this.meshAdapter.updateMeshTenant(updatedTenant, originalTenant);
+    this.repository.save(updatedTenant);
   }
 
   private async isTenantCostCached(

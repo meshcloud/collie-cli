@@ -15,6 +15,7 @@ import {
   SimpleCostManagementInfo,
   Subscription,
   Tag,
+  TagWrite,
 } from "./azure.model.ts";
 import { CLICommand } from "../config/config.model.ts";
 import { parseJsonWithLog } from "../json.ts";
@@ -109,11 +110,11 @@ export class BasicAzureCliFacade implements AzureCliFacade {
    * @param subscription
    * @param tags The list of tags put onto the subscription.
    */
-  async putTags(subscription: Subscription, tags: Tag[]) {
+  async putTags(subscription: Subscription, tags: TagWrite[]) {
     const tagsString = tags.map((x) => `${x.tagName}=${x.values.join(",")}`)
       .join(" ");
     const command =
-      `az tag create --resource-id /subscriptions/${subscription.id} --tags "${tagsString}"`;
+      `az tag create --resource-id /subscriptions/${subscription.id} --tags ${tagsString}`;
 
     const result = await this.shellRunner.run(
       command,

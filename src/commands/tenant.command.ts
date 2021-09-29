@@ -1,11 +1,10 @@
-import { bold, Command, moment } from "../deps.ts";
+import { Command, moment } from "../deps.ts";
 import { setupLogger } from "../logger.ts";
 import { MeshAdapterFactory } from "../mesh/mesh-adapter.factory.ts";
 import { TenantListPresenterFactory } from "../presentation/tenant-list-presenter-factory.ts";
 import { TenantUsagePresenterFactory } from "../presentation/tenant-usage-presenter-factory.ts";
 import { CmdGlobalOptions, OutputFormatType } from "./cmd-options.ts";
 import { dateType } from "./custom-types.ts";
-import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
 import { TenantIamPresenterFactory } from "../presentation/tenant-iam-presenter-factory.ts";
 import { CLICommand, loadConfig } from "../config/config.model.ts";
 import { isatty } from "./tty.ts";
@@ -72,12 +71,16 @@ export function registerTenantCommand(program: Command) {
     )
     .action(listTenantsCostAction);
 
+  // Remove this command after a few releases
+  // We keep it here for now so we can inform users about the rename.
   const analyzeTags = new Command()
     .description(
-      "Analyzes all available tags on tenants and returns the percentage of tenants that make use of this tag.",
+      `(Renamed) Please use "${CLICommand} tag analyze-missing" instead.`,
     )
     .action(() => {
-      console.log(`This command has been renamed and can now be used via "${CLICommand} tag analyze"`)
+      console.log(
+        `This command has been renamed and can be used via "${CLICommand} tag analyze-missing". Please use this command instead`,
+      );
     });
 
   const listIam = new Command()

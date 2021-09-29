@@ -1,10 +1,12 @@
 import { MeshAdapter } from "./mesh-adapter.ts";
-import { MeshTenant, MeshTenantDiff } from "./mesh-tenant.model.ts";
+import { MeshTenant } from "./mesh-tenant.model.ts";
 
-export class MultiMeshAdapter implements MeshAdapter {
+export class MultiMeshAdapter extends MeshAdapter {
   constructor(
     private readonly adapters: MeshAdapter[],
-  ) {}
+  ) {
+    super();
+  }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
     const promises = this.adapters.map((x) => x.getMeshTenants());
@@ -14,15 +16,15 @@ export class MultiMeshAdapter implements MeshAdapter {
     return all.flatMap((x) => x);
   }
 
-  async updateMeshTenants(
-    updatedTenants:MeshTenant[],
-    originalTenants:MeshTenant[],
-  ): Promise<MeshTenantDiff[]> {
-    const promises = this.adapters.map((x) => x.updateMeshTenants(updatedTenants, originalTenants));
+  async updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void> {
+    const promises = this.adapters.map((x) =>
+      x.updateMeshTenant(updatedTenant, originalTenant)
+    );
 
-    const all = await Promise.all(promises);
-
-    return all.flatMap((x) => x);
+    await Promise.all(promises);
   }
 
   async attachTenantCosts(
