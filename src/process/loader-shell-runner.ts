@@ -76,35 +76,23 @@ export class LoaderShellRunner implements IShellRunner {
 
   private hideCursor() {
     // Setup a watch for interrupt signals to display the cursor again in case of SIGINT or SIGTERM
-    this.sigInt = Deno.signal(Deno.Signal.SIGINT);
-    this.sigInt!.then(() => {
-      if (this.sigInt) {
-        // Strange behavior on macOS: the hook still gets called after .dispose().
-        this.forceStopLoading();
-      }
-    });
+    this.sigInt = Deno.signal("SIGINT");
+    this.sigInt!.then(() => this.forceStopLoading());
 
-    this.sigTerm = Deno.signal(Deno.Signal.SIGTERM);
-    this.sigTerm!.then(() => {
-      if (this.sigTerm) {
-        // Strange behavior on macOS: the hook still gets called after .dispose().
-        this.forceStopLoading();
-      }
-    });
+    this.sigTerm = Deno.signal("SIGTERM");
+    this.sigTerm!.then(() => this.forceStopLoading());
 
     this.tty.hideCursor();
   }
 
   private showCursor() {
     if (this.sigInt) {
-      const sigIntTemp = this.sigInt;
+      this.sigInt.dispose();
       this.sigInt = null;
-      sigIntTemp.dispose();
     }
     if (this.sigTerm) {
-      const sigTermTemp = this.sigTerm;
+      this.sigTerm.dispose();
       this.sigTerm = null;
-      sigTermTemp.dispose();
     }
 
     this.tty.showCursor();

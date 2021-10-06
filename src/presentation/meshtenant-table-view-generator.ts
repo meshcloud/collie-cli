@@ -16,7 +16,7 @@ export class MeshTenantTableViewGenerator extends TableGenerator {
   getRows(): string[][] {
     const rows: Array<string>[] = [];
     this.meshTenants.forEach((meshTenant: MeshTenant) => {
-      var row: string[] = [];
+      const row: string[] = [];
       this.columns.forEach((header: string, index: number) => {
         if (header === "tags") {
           row[index] = this.formatMeshTags(meshTenant.tags);

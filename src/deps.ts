@@ -50,7 +50,6 @@ export { Big } from "https://deno.land/x/math@v1.1.0/mod.ts";
 export { writeCSV } from "https://deno.land/x/csv@v0.5.1/mod.ts";
 export { moment } from "https://deno.land/x/deno_moment@v1.1.2/mod.ts";
 export { open } from "https://deno.land/x/opener@v1.0.1/mod.ts";
-export * as tty from "https://deno.land/x/tty@0.1.2/mod.ts";
 export { makeRunWithLimit } from "https://deno.land/x/run_with_limit@v1.0.1/mod.ts";
 export { clone } from "https://deno.land/x/object_clone@1.1.0/mod.ts";
 export { equal } from "https://deno.land/x/equal@v1.5.0/mod.ts";
