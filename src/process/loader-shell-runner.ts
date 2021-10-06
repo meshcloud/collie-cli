@@ -75,18 +75,21 @@ export class LoaderShellRunner implements IShellRunner {
   }
 
   private hideCursor() {
-    // TODO: Disabled this code for now as it resulted in weird behavior when making use of Cliffy prompts.
-
     // Setup a watch for interrupt signals to display the cursor again in case of SIGINT or SIGTERM
     this.sigInt = Deno.signal(Deno.Signal.SIGINT);
     this.sigInt!.then(() => {
-      console.log("HelloSIGNINT");
-      this.forceStopLoading();
+      if (this.sigInt) {
+        // Strange behavior on macOS: the hook still gets called after .dispose().
+        this.forceStopLoading();
+      }
     });
+
     this.sigTerm = Deno.signal(Deno.Signal.SIGTERM);
     this.sigTerm!.then(() => {
-      console.log("Hello SIGTERM");
-      this.forceStopLoading();
+      if (this.sigTerm) {
+        // Strange behavior on macOS: the hook still gets called after .dispose().
+        this.forceStopLoading();
+      }
     });
 
     this.tty.hideCursor();
@@ -94,12 +97,14 @@ export class LoaderShellRunner implements IShellRunner {
 
   private showCursor() {
     if (this.sigInt) {
-      this.sigInt.dispose();
+      const sigIntTemp = this.sigInt;
       this.sigInt = null;
+      sigIntTemp.dispose();
     }
     if (this.sigTerm) {
-      this.sigTerm.dispose();
+      const sigTermTemp = this.sigTerm;
       this.sigTerm = null;
+      sigTermTemp.dispose();
     }
 
     this.tty.showCursor();
@@ -125,9 +130,10 @@ export class LoaderShellRunner implements IShellRunner {
       return;
     }
 
+    this.showCursor();
+
     clearInterval(this.interval);
     this.interval = undefined;
     this.tty.clearLine();
-    this.showCursor();
   }
 }
