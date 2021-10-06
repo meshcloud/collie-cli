@@ -69,7 +69,13 @@ async function askAndSetTag(
         console.log(
           `You have entered an invalid tag value (${tagValue}) which is not supported by the platform. Please try again with a different value.`,
         );
-        await askAndSetTag(tagKey, tenant, meshAdapter, count, totalCount);
+        await askAndSetTag(
+          tagKey,
+          originalTenant,
+          meshAdapter,
+          count,
+          totalCount,
+        );
       } else {
         throw e;
       }

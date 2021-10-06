@@ -6,15 +6,13 @@ import { QueryStatistics } from "./query-statistics.ts";
  * This decorator will record the time it takes for the command to be invoked.
  * Can be helpful in order to figure out if there is a bottleneck in call time.
  */
-export class StatsMeshAdapterDecorator extends MeshAdapter {
+export class StatsMeshAdapterDecorator implements MeshAdapter {
   constructor(
     private readonly meshAdapter: MeshAdapter,
     private readonly source: MeshPlatform | "cache",
     private readonly layer: number,
     private readonly stats: QueryStatistics,
-  ) {
-    super();
-  }
+  ) {}
 
   async updateMeshTenant(
     updatedTenant: MeshTenant,

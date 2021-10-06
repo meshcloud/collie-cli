@@ -32,7 +32,8 @@ export interface Tag {
   }];
 }
 
-export interface TagWrite {
+// Used to convert from a MeshTag to an Azure Tag that azure cli can understand
+export interface AzureMeshTag {
   tagName: string;
   values: string[];
 }

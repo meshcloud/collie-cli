@@ -2,12 +2,12 @@ import { MeshAzureRetryableError } from "../errors.ts";
 import { sleep } from "../promises.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
+  AzureMeshTag,
   ConsumptionInfo,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
   Tag,
-  TagWrite,
 } from "./azure.model.ts";
 
 /**
@@ -50,7 +50,7 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
     });
   }
 
-  putTags(subscription: Subscription, tags: TagWrite[]): Promise<void> {
+  putTags(subscription: Subscription, tags: AzureMeshTag[]): Promise<void> {
     return this.wrapped.putTags(subscription, tags);
   }
 

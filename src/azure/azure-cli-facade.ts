@@ -1,10 +1,10 @@
 import {
+  AzureMeshTag,
   ConsumptionInfo,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
   Tag,
-  TagWrite,
 } from "./azure.model.ts";
 
 export type DynamicInstallValue = "yes_without_prompt" | "yes_prompt" | "no";
@@ -15,7 +15,7 @@ export interface AzureCliFacade {
   listAccounts(): Promise<Subscription[]>;
 
   listTags(subscription: Subscription): Promise<Tag[]>;
-  putTags(subscription: Subscription, tags: TagWrite[]): Promise<void>;
+  putTags(subscription: Subscription, tags: AzureMeshTag[]): Promise<void>;
 
   getCostManagementInfo(
     mgmtGroupId: string,

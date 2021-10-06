@@ -9,6 +9,7 @@ import {
   MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
 } from "../mesh/mesh-iam-model.ts";
+import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts";
 
 const cli = {
   getRoleAssignments(): Promise<RoleAssignment[]> {
@@ -45,7 +46,11 @@ const cli = {
   },
 } as unknown as AzureCliFacade;
 
-const sut = new AzureMeshAdapter(cli, {} as TimeWindowCalculator);
+const sut = new AzureMeshAdapter(
+  cli,
+  {} as TimeWindowCalculator,
+  {} as MeshTenantChangeDetector,
+);
 
 Deno.test("when inputting a response with all types of assignment sources, they are properly converted from the 'scope' properties", async () => {
   const tenants: MeshTenant[] = [

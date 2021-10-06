@@ -1,8 +1,7 @@
-import { MeshTag, MeshTenant } from "./mesh-tenant.model.ts";
-import { equal } from "../deps.ts";
+import { MeshTenant } from "./mesh-tenant.model.ts";
 
-export abstract class MeshAdapter {
-  abstract getMeshTenants(): Promise<MeshTenant[]>;
+export interface MeshAdapter {
+  getMeshTenants(): Promise<MeshTenant[]>;
 
   /**
    * This is a high level function that will try as best (feature set depends on the platform implementation)
@@ -13,7 +12,7 @@ export abstract class MeshAdapter {
    * @param originalTenant The tenant how it originally looked like. This is used to build a diff between
    *                        the old state and the desired new state.
    */
-  abstract updateMeshTenant(
+  updateMeshTenant(
     updatedTenant: MeshTenant,
     originalTenant: MeshTenant,
   ): Promise<void>;
@@ -25,7 +24,7 @@ export abstract class MeshAdapter {
    * @param startDate
    * @param endDate
    */
-  abstract attachTenantCosts(
+  attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
     endDate: Date,
@@ -36,13 +35,7 @@ export abstract class MeshAdapter {
    * @param tenants Tenants to which the the IAM roles are fetched and updated.
    * @param stats
    */
-  abstract attachTenantRoleAssignments(
+  attachTenantRoleAssignments(
     tenants: MeshTenant[],
   ): Promise<void>;
-
-  protected getChangedTags(updatedTags: MeshTag[], originalTags: MeshTag[]) {
-    return updatedTags.filter((updatedTag) =>
-      !originalTags.some((originalTag) => equal(updatedTag, originalTag))
-    );
-  }
 }

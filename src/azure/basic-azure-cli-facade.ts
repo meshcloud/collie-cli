@@ -9,13 +9,13 @@ import { ShellRunner } from "../process/shell-runner.ts";
 import { moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
+  AzureMeshTag,
   ConsumptionInfo,
   CostManagementInfo,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
   Tag,
-  TagWrite,
 } from "./azure.model.ts";
 import { CLICommand } from "../config/config.model.ts";
 import { parseJsonWithLog } from "../json.ts";
@@ -110,7 +110,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
    * @param subscription
    * @param tags The list of tags put onto the subscription.
    */
-  async putTags(subscription: Subscription, tags: TagWrite[]) {
+  async putTags(subscription: Subscription, tags: AzureMeshTag[]) {
     const tagsString = tags.map((x) => `${x.tagName}=${x.values.join(",")}`)
       .join(" ");
     const command =

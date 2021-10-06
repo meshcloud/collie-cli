@@ -1,12 +1,10 @@
 import { MeshAdapter } from "./mesh-adapter.ts";
 import { MeshTenant } from "./mesh-tenant.model.ts";
 
-export class MultiMeshAdapter extends MeshAdapter {
+export class MultiMeshAdapter implements MeshAdapter {
   constructor(
     private readonly adapters: MeshAdapter[],
-  ) {
-    super();
-  }
+  ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
     const promises = this.adapters.map((x) => x.getMeshTenants());

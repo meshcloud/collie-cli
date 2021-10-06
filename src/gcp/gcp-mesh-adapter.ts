@@ -15,14 +15,14 @@ import {
 import { MeshError } from "../errors.ts";
 import { TimeWindowCalculator } from "../mesh/time-window-calculator.ts";
 import { moment } from "../deps.ts";
+import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts";
 
-export class GcpMeshAdapter extends MeshAdapter {
+export class GcpMeshAdapter implements MeshAdapter {
   constructor(
     private readonly gcpCli: GcpCliFacade,
     private readonly timeWindowCalculator: TimeWindowCalculator,
-  ) {
-    super();
-  }
+    private readonly tenantChangeDetector: MeshTenantChangeDetector,
+  ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
     const projects = await this.gcpCli.listProjects();
@@ -55,7 +55,7 @@ export class GcpMeshAdapter extends MeshAdapter {
       return Promise.resolve();
     }
 
-    const changedTags = this.getChangedTags(
+    const changedTags = this.tenantChangeDetector.getChangedTags(
       updatedTenant.tags,
       originalTenant.tags,
     );

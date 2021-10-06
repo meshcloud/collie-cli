@@ -39,12 +39,7 @@ async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
   if (options.tags) {
     tagList = options.tags;
   } else {
-    // https://stackoverflow.com/a/35092559/5976604
-    tagList = [
-      ...new Set(
-        allTenants.flatMap((tenant) => tenant.tags.map((tag) => tag.tagName)),
-      ),
-    ];
+    tagList = getDistinctTagKeys(allTenants);
   }
 
   // todo: this does not follow the presenter pattern we usually use
@@ -93,4 +88,18 @@ export interface AnalyzeTagResult {
   tagName: string;
   percentage: number;
   missingTenants: MeshTenant[];
+}
+
+/**
+ * Takes an array of tenants and returns a list of distinct tag keys based on all tags that are applied to all tenants.
+ *
+ * @param tenants
+ */
+function getDistinctTagKeys(tenants: MeshTenant[]): string[] {
+  // Inspired by https://stackoverflow.com/a/35092559/5976604
+  return [
+    ...new Set(
+      tenants.flatMap((tenant) => tenant.tags.map((tag) => tag.tagName)),
+    ),
+  ];
 }

@@ -12,19 +12,19 @@ import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
 } from "../mesh/mesh-iam-model.ts";
+import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts";
 
-export class AwsMeshAdapter extends MeshAdapter {
+export class AwsMeshAdapter implements MeshAdapter {
   /**
-   *
    * @param awsCli
    * @param roleNameToAssume For certain API calls we need to assume a role in an account. This is the role name. Usually is 'OrganizationAccountAccessRole'
+   * @param tenantChangeDetector
    */
   constructor(
     private readonly awsCli: AwsCliFacade,
     private readonly roleNameToAssume: string,
-  ) {
-    super();
-  }
+    private readonly tenantChangeDetector: MeshTenantChangeDetector,
+  ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
     const accounts = await this.awsCli.listAccounts();
@@ -65,7 +65,7 @@ export class AwsMeshAdapter extends MeshAdapter {
       return Promise.resolve();
     }
 
-    const changedTags = this.getChangedTags(
+    const changedTags = this.tenantChangeDetector.getChangedTags(
       updatedTenant.tags,
       originalTenant.tags,
     );

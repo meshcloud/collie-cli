@@ -9,13 +9,11 @@ import { MeshTenant } from "./mesh-tenant.model.ts";
  * This adapter will try to fetch tenant data first from the local cache before
  * it hits the real cloud platforms.
  */
-export class CachingMeshAdapterDecorator extends MeshAdapter {
+export class CachingMeshAdapterDecorator implements MeshAdapter {
   constructor(
     private readonly repository: MeshTenantRepository,
     private readonly meshAdapter: MeshAdapter,
-  ) {
-    super();
-  }
+  ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
     // Update meta info

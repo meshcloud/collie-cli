@@ -23,14 +23,14 @@ import {
   MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
 } from "../mesh/mesh-iam-model.ts";
+import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts";
 
-export class AzureMeshAdapter extends MeshAdapter {
+export class AzureMeshAdapter implements MeshAdapter {
   constructor(
     private readonly azureCli: AzureCliFacade,
     private readonly timeWindowCalculator: TimeWindowCalculator,
-  ) {
-    super();
-  }
+    private readonly tenantChangeDetector: MeshTenantChangeDetector,
+  ) {}
 
   async attachTenantCosts(
     tenants: MeshTenant[],
@@ -325,7 +325,7 @@ export class AzureMeshAdapter extends MeshAdapter {
       return Promise.resolve();
     }
 
-    const changedTags = this.getChangedTags(
+    const changedTags = this.tenantChangeDetector.getChangedTags(
       updatedTenant.tags,
       originalTenant.tags,
     );
