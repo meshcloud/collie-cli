@@ -1,6 +1,8 @@
+export type Labels = { [labelKey: string]: string };
+
 export interface Project {
   createTime: string;
-  labels?: { [labelKey: string]: string };
+  labels?: Labels;
   lifeCycleState: string;
   name: string;
   parent: ProjectParent;

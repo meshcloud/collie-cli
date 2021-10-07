@@ -136,9 +136,9 @@ export async function init() {
 }
 
 /**
-   * Checks the availability of the configured CLIs. If they are missing then the collie run is aborted.
-   * Should be checked before a cloud relevant call is initiated.
-   */
+ * Checks the availability of the configured CLIs. If they are missing then the collie run is aborted.
+ * Should be checked before a cloud relevant call is initiated.
+ */
 export async function verifyCliAvailability() {
   await detector.verifyCliAvailability();
 }

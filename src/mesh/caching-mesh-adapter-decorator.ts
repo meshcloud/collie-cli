@@ -13,8 +13,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
   constructor(
     private readonly repository: MeshTenantRepository,
     private readonly meshAdapter: MeshAdapter,
-  ) {
-  }
+  ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
     // Update meta info
@@ -47,6 +46,14 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
 
       return tenants;
     }
+  }
+
+  async updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void> {
+    await this.meshAdapter.updateMeshTenant(updatedTenant, originalTenant);
+    this.repository.save(updatedTenant);
   }
 
   private async isTenantCostCached(

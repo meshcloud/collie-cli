@@ -1,4 +1,5 @@
 import {
+  AzureMeshTag,
   ConsumptionInfo,
   RoleAssignment,
   SimpleCostManagementInfo,
@@ -12,7 +13,10 @@ export interface AzureCliFacade {
   setDynamicInstallValue(value: DynamicInstallValue): void;
   getDynamicInstallValue(): Promise<DynamicInstallValue | null>;
   listAccounts(): Promise<Subscription[]>;
+
   listTags(subscription: Subscription): Promise<Tag[]>;
+  putTags(subscription: Subscription, tags: AzureMeshTag[]): Promise<void>;
+
   getCostManagementInfo(
     mgmtGroupId: string,
     from: string,

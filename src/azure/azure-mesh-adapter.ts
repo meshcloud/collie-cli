@@ -23,11 +23,13 @@ import {
   MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
 } from "../mesh/mesh-iam-model.ts";
+import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts";
 
 export class AzureMeshAdapter implements MeshAdapter {
   constructor(
     private readonly azureCli: AzureCliFacade,
     private readonly timeWindowCalculator: TimeWindowCalculator,
+    private readonly tenantChangeDetector: MeshTenantChangeDetector,
   ) {}
 
   async attachTenantCosts(
@@ -312,6 +314,25 @@ export class AzureMeshAdapter implements MeshAdapter {
     throw new MeshAzurePlatformError(
       AzureErrorCode.AZURE_UNKNOWN_PRINCIPAL_ASSIGNMENT_SOURCE,
       "Could not detect assignment source from scope: " + scope,
+    );
+  }
+
+  async updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void> {
+    if (!isSubscription(updatedTenant.nativeObj)) {
+      return Promise.resolve();
+    }
+
+    const changedTags = this.tenantChangeDetector.getChangedTags(
+      updatedTenant.tags,
+      originalTenant.tags,
+    );
+
+    await this.azureCli.putTags(
+      updatedTenant.nativeObj,
+      changedTags.map((x) => ({ tagName: x.tagName, values: x.tagValues })),
     );
   }
 }

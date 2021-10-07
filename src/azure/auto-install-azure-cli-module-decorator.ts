@@ -2,6 +2,7 @@ import { Confirm } from "../deps.ts";
 import { AzureErrorCode, MeshAzurePlatformError } from "../errors.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
+  AzureMeshTag,
   ConsumptionInfo,
   RoleAssignment,
   SimpleCostManagementInfo,
@@ -43,6 +44,12 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   async listTags(subscription: Subscription): Promise<Tag[]> {
     return await this.wrapCallWithInstallInterception(() => {
       return this.azureFacade.listTags(subscription);
+    });
+  }
+
+  putTags(subscription: Subscription, tags: AzureMeshTag[]): Promise<void> {
+    return this.wrapCallWithInstallInterception(() => {
+      return this.azureFacade.putTags(subscription, tags);
     });
   }
 

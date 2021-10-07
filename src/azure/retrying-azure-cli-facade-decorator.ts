@@ -2,6 +2,7 @@ import { MeshAzureRetryableError } from "../errors.ts";
 import { sleep } from "../promises.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
+  AzureMeshTag,
   ConsumptionInfo,
   RoleAssignment,
   SimpleCostManagementInfo,
@@ -47,6 +48,10 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
     return await this.retryable(async () => {
       return await this.wrapped.listTags(subscription);
     });
+  }
+
+  putTags(subscription: Subscription, tags: AzureMeshTag[]): Promise<void> {
+    return this.wrapped.putTags(subscription, tags);
   }
 
   async getConsumptionInformation(

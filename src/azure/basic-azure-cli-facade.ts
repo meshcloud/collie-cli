@@ -9,6 +9,7 @@ import { ShellRunner } from "../process/shell-runner.ts";
 import { moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
+  AzureMeshTag,
   ConsumptionInfo,
   CostManagementInfo,
   RoleAssignment,
@@ -102,6 +103,25 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     console.debug(`listTags: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog(result.stdout);
+  }
+
+  /**
+   * After succesful invocation all these tags are present on the Subscription.
+   * @param subscription
+   * @param tags The list of tags put onto the subscription.
+   */
+  async putTags(subscription: Subscription, tags: AzureMeshTag[]) {
+    const tagsString = tags.map((x) => `${x.tagName}=${x.values.join(",")}`)
+      .join(" ");
+    const command =
+      `az tag create --resource-id /subscriptions/${subscription.id} --tags ${tagsString}`;
+
+    const result = await this.shellRunner.run(
+      command,
+    );
+    this.checkForErrors(result);
+
+    console.debug(`putTags: ${JSON.stringify(result)}`);
   }
 
   /**

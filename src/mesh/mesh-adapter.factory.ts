@@ -24,6 +24,7 @@ import { MeshPlatform } from "./mesh-tenant.model.ts";
 import { QueryStatistics } from "./query-statistics.ts";
 import { isWindows } from "../os.ts";
 import { MeshError } from "../errors.ts";
+import { MeshTenantChangeDetector } from "./mesh-tenant-change-detector.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -47,6 +48,7 @@ export class MeshAdapterFactory {
     }
 
     const timeWindowCalc = new TimeWindowCalculator();
+    const tenantChangeDetector = new MeshTenantChangeDetector();
     const adapters: MeshAdapter[] = [];
 
     if (this.config.connected.AWS) {
@@ -68,7 +70,11 @@ export class MeshAdapterFactory {
       const aws = new AwsCliFacade(
         awsShellRunner,
       );
-      const awsAdapter = new AwsMeshAdapter(aws, accountAccessRole);
+      const awsAdapter = new AwsMeshAdapter(
+        aws,
+        accountAccessRole,
+        tenantChangeDetector,
+      );
 
       if (queryStats) {
         const statsDecorator = new StatsMeshAdapterDecorator(
@@ -99,6 +105,7 @@ export class MeshAdapterFactory {
       const azureAdapter = new AzureMeshAdapter(
         retryingDecorator,
         timeWindowCalc,
+        tenantChangeDetector,
       );
 
       if (queryStats) {
@@ -121,7 +128,11 @@ export class MeshAdapterFactory {
         );
       }
       const gcp = new GcpCliFacade(shellRunner, this.config.gcp.billingExport);
-      const gcpAdapter = new GcpMeshAdapter(gcp, timeWindowCalc);
+      const gcpAdapter = new GcpMeshAdapter(
+        gcp,
+        timeWindowCalc,
+        tenantChangeDetector,
+      );
 
       if (queryStats) {
         const statsDecorator = new StatsMeshAdapterDecorator(

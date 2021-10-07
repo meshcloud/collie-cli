@@ -32,6 +32,12 @@ export interface Tag {
   }];
 }
 
+// Used to convert from a MeshTag to an Azure Tag that azure cli can understand
+export interface AzureMeshTag {
+  tagName: string;
+  values: string[];
+}
+
 /**
  * This is hardcoded to match the response from the used CLI call.
  * If the call is modified this structure needs to be adapted as well.

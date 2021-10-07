@@ -78,3 +78,11 @@ export class MeshNotLoggedInError extends MeshError {
     super(`MeshNotLoggedInError: ${message}`);
   }
 }
+
+export class MeshInvalidTagValueError extends MeshError {
+  constructor(
+    public readonly message: string,
+  ) {
+    super(`MeshInvalidTagValueError: ${message}`);
+  }
+}

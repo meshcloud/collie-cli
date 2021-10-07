@@ -12,7 +12,21 @@ export class StatsMeshAdapterDecorator implements MeshAdapter {
     private readonly source: MeshPlatform | "cache",
     private readonly layer: number,
     private readonly stats: QueryStatistics,
-  ) {
+  ) {}
+
+  async updateMeshTenant(
+    updatedTenant: MeshTenant,
+    originalTenant: MeshTenant,
+  ): Promise<void> {
+    return await this.stats.recordQuery(
+      this.source,
+      this.layer,
+      async () =>
+        await this.meshAdapter.updateMeshTenant(
+          updatedTenant,
+          originalTenant,
+        ),
+    );
   }
 
   async attachTenantCosts(

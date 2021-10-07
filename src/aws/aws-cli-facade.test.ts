@@ -5,6 +5,7 @@ import { ShellRunner } from "../process/shell-runner.ts";
 import { AwsCliFacade } from "./aws-cli-facade.ts";
 import { AwsMeshAdapter } from "./aws-mesh-adapter.ts";
 import { assertEquals } from "../dev-deps.ts";
+import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts";
 
 const response = {
   GroupDefinitions: [{ Type: "DIMENSION", Key: "LINKED_ACCOUNT" }],
@@ -118,7 +119,11 @@ const mockShellRunner = {
 } as ShellRunner;
 
 const awsCliFacade = new AwsCliFacade(mockShellRunner);
-const sut = new AwsMeshAdapter(awsCliFacade, "OrganizationAccountAccessRole");
+const sut = new AwsMeshAdapter(
+  awsCliFacade,
+  "OrganizationAccountAccessRole",
+  {} as MeshTenantChangeDetector,
+);
 
 Deno.test("Requesting the tenant cost info respondes with a proper filled MeshTenant object", async () => {
   const start = moment.utc("2021-01-01").startOf("day").toDate();
