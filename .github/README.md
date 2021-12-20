@@ -120,7 +120,7 @@ At [meshcloud](https://meshcloud.io/) we have years of experience in building cl
 [meshStack](https://meshcloud.io/).
 
 We launched Collie CLI as a tool for smaller teams to start getting more control over their clouds. 
-Collie its features originate from some of the best practices of our [Cloud Foundation Maturity Model](https://www.meshcloud.io/cloud-assessment-free-poster/), which
+Collie its features originate from some of the best practices of our [Cloud Foundation Maturity Model](https://cloudfoundation.meshcloud.io/), which
 is a tool that you can use to identify gaps in your cloud setup, define a roadmap and understand where you can save cost by improving efficiency.
 
 <img align="center" src="/.github/cfmm.png">
