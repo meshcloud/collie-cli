@@ -79,7 +79,7 @@ async function changeConnectedConfig(options: CmdConfigOpts, program: Command) {
   console.log(`Changed config file in ${configFilePath}`);
 }
 
-export function registerConfigCmd(program: Command) {
+export function registerConfigCommand(program: Command) {
   const configCmd = new Command()
     .type("platform", platform)
     .option(
