@@ -1,11 +1,11 @@
 name: build
 on:
   push:
-    branches: [ develop ]
+    branches: [ main ]
     paths:
       - "src/*"
   pull_request:
-    branches: [ develop ]
+    branches: [ main ]
 
 jobs:
   fmt-check:
