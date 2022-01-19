@@ -12,9 +12,13 @@ pkgs.mkShell {
   buildInputs = [
     unstable.deno
     
+    # used for build scripts
+    pkgs.unzip
+
     # cloud provider clis
     pkgs.aws
     pkgs.azure-cli
     pkgs.google-cloud-sdk
+
   ];
 }
