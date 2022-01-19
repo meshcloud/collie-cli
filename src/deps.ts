@@ -14,7 +14,7 @@ export {
   exists,
   existsSync,
 } from "https://deno.land/std@0.116.0/fs/mod.ts";
-export { dirname, join } from "https://deno.land/std@0.116.0/path/mod.ts";
+export * as path from "https://deno.land/std@0.116.0/path/mod.ts";
 export {
   bold,
   brightBlue,
@@ -33,14 +33,18 @@ export {
   CompletionsCommand,
   EnumType,
   Type,
-} from "https://deno.land/x/cliffy@v0.19.2/command/mod.ts";
-export type { ITypeInfo } from "https://deno.land/x/cliffy@v0.19.2/command/mod.ts";
-export { Table } from "https://deno.land/x/cliffy@v0.19.2/table/mod.ts";
+} from "https://deno.land/x/cliffy@v0.20.1/command/mod.ts";
+export type { ITypeInfo } from "https://deno.land/x/cliffy@v0.20.1/command/mod.ts";
+export { Table } from "https://deno.land/x/cliffy@v0.20.1/table/mod.ts";
 export {
   Confirm,
   Input,
   Select,
-} from "https://deno.land/x/cliffy@v0.19.2/prompt/mod.ts";
+} from "https://deno.land/x/cliffy@v0.20.1/prompt/mod.ts";
+export {
+  UpgradeCommand,
+  GithubProvider,
+} from "https://deno.land/x/cliffy@v0.20.1/command/upgrade/mod.ts";
 
 // other
 export * as Progress from "https://deno.land/x/progress@v1.2.3/mod.ts";
