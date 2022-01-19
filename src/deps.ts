@@ -13,8 +13,8 @@ export {
   ensureDirSync,
   exists,
   existsSync,
-} from "https://deno.land/std@0.99.0/fs/mod.ts";
-export { dirname, join } from "https://deno.land/std@0.99.0/path/mod.ts";
+} from "https://deno.land/std@0.116.0/fs/mod.ts";
+export { dirname, join } from "https://deno.land/std@0.116.0/path/mod.ts";
 export {
   bold,
   brightBlue,
@@ -23,11 +23,9 @@ export {
   italic,
   red,
   yellow,
-} from "https://deno.land/std@0.99.0/fmt/colors.ts";
-export { readLines } from "https://deno.land/std@0.76.0/io/bufio.ts";
-export {
-  stringify as yamlStringify,
-} from "https://deno.land/std@0.82.0/encoding/yaml.ts";
+} from "https://deno.land/std@0.116.0/fmt/colors.ts";
+export { readLines } from "https://deno.land/std@0.116.0/io/bufio.ts";
+export { stringify as yamlStringify } from "https://deno.land/std@0.116.0/encoding/yaml.ts";
 
 // cliffy
 export {
