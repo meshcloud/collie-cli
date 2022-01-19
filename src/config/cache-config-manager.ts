@@ -17,7 +17,7 @@ export class CacheConfigManager {
       );
     }
 
-    return this.cacheConfig[(key as keyof CacheConfig)].toString();
+    return this.cacheConfig[key as keyof CacheConfig].toString();
   }
 
   setConfigValue(key: string, value: string) {

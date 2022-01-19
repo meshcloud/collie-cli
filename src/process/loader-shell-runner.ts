@@ -14,7 +14,7 @@ export class LoaderShellRunner implements IShellRunner {
 
   public async run(
     commandStr: string,
-    env?: { [key: string]: string }
+    env?: { [key: string]: string },
   ): Promise<ShellOutput> {
     try {
       this.startLoading(commandStr);
@@ -43,7 +43,7 @@ export class LoaderShellRunner implements IShellRunner {
       this.tty.clearLine();
       const pos = i % loader.length;
       console.log(
-        brightBlue(loader[pos]) + " " + bold(this.trimCommandStr(commandStr))
+        brightBlue(loader[pos]) + " " + bold(this.trimCommandStr(commandStr)),
       );
       i++;
       this.tty.goUp(1);
