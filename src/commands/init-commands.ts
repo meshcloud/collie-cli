@@ -7,7 +7,7 @@ import { registerFeedbackCommand } from "./feedback.command.ts";
 import { registerTenantCommand } from "./tenant.command.ts";
 import { CLICommand, CLIName } from "../config/config.model.ts";
 import { registerCreateIssueCommand } from "./create-issue.command.ts";
-import { VERSION } from "../config/version.ts";
+import { VERSION } from "../config/info.ts";
 import { isWindows } from "../os.ts";
 import { registerUserCommand } from "./user.command.ts";
 import { registerTagCommand } from "./tag/tag.command.ts";

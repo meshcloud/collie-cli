@@ -4,7 +4,7 @@ set -e
 
 cli_name="collie"
 
-deno_flags="--unstable --allow-read --allow-write --allow-env --allow-run"
+deno_flags=$(deno run flags.ts --quiet)
 
 mkdir -p bin/unix bin/windows
 
@@ -20,8 +20,6 @@ compile_windows(){
   deno compile $deno_flags --target "$target" --output "./bin/windows/$cli_name-$target" src/main.ts
  
 }
-
-deno test $deno_flags
 
 compile_unix "x86_64-unknown-linux-gnu"
 compile_unix "x86_64-apple-darwin"
