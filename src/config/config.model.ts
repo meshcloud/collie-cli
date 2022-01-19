@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "../commands/io.ts";
-import { path, ensureDir, } from "../deps.ts";
+import { ensureDir, path } from "../deps.ts";
 import { parseJsonWithLog } from "../json.ts";
 import { isWindows } from "../os.ts";
 
