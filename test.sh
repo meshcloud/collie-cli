@@ -3,4 +3,5 @@
 set -o errexit
 set -o nounset
 
-deno test --allow-read --allow-run --allow-write --allow-env --unstable "$@"
+deno_flags=$(deno run flags.ts --quiet)
+deno test $deno_flags "$@"
