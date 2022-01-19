@@ -36,10 +36,10 @@ export function initCommands(): Command {
       {
         default: false,
         global: true,
-      }
+      },
     )
     .description(
-      `${CLIName} CLI - Herd your cloud environments with Collie. Built with love by meshcloud.io`
+      `${CLIName} CLI - Herd your cloud environments with Collie. Built with love by meshcloud.io`,
     );
 
   registerConfigCommand(program);
