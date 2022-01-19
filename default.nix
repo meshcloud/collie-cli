@@ -16,7 +16,7 @@ pkgs.mkShell {
     pkgs.unzip
 
     # cloud provider clis
-    pkgs.aws
+    pkgs.awscli2
     pkgs.azure-cli
     pkgs.google-cloud-sdk
 
