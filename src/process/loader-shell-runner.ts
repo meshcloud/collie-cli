@@ -7,14 +7,10 @@ export class LoaderShellRunner implements IShellRunner {
   private interval?: number;
   private runningCommandsCount = 0;
 
-  private sigInt: Deno.SignalStream | null = null;
-  private sigTerm: Deno.SignalStream | null = null;
+  private readonly sigIntHandler = () => this.forceStopLoading();
+  private readonly sigTermHandler = () => this.forceStopLoading();
 
-  constructor(
-    private runner: IShellRunner,
-    private readonly tty: TTY,
-  ) {
-  }
+  constructor(private runner: IShellRunner, private readonly tty: TTY) {}
 
   public async run(
     commandStr: string,
@@ -62,7 +58,7 @@ export class LoaderShellRunner implements IShellRunner {
       const { columns } = Deno.consoleSize(Deno.stdout.rid);
       // we need an extra 2 chars for the loader spacing, 3 for the dots and one for style.
       maxLength = columns - 6;
-      maxLength = (maxLength < 0) ? 0 : maxLength;
+      maxLength = maxLength < 0 ? 0 : maxLength;
     } catch (_) {
       maxLength = 0;
     }
@@ -76,24 +72,15 @@ export class LoaderShellRunner implements IShellRunner {
 
   private hideCursor() {
     // Setup a watch for interrupt signals to display the cursor again in case of SIGINT or SIGTERM
-    this.sigInt = Deno.signal("SIGINT");
-    this.sigInt!.then(() => this.forceStopLoading());
-
-    this.sigTerm = Deno.signal("SIGTERM");
-    this.sigTerm!.then(() => this.forceStopLoading());
+    Deno.addSignalListener("SIGINT", this.sigIntHandler);
+    Deno.addSignalListener("SIGTERM", this.sigTermHandler);
 
     this.tty.hideCursor();
   }
 
   private showCursor() {
-    if (this.sigInt) {
-      this.sigInt.dispose();
-      this.sigInt = null;
-    }
-    if (this.sigTerm) {
-      this.sigTerm.dispose();
-      this.sigTerm = null;
-    }
+    Deno.removeSignalListener("SIGINT", this.sigIntHandler);
+    Deno.removeSignalListener("SIGTERM", this.sigTermHandler);
 
     this.tty.showCursor();
   }
