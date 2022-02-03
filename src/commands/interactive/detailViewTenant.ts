@@ -24,7 +24,7 @@ export async function detailViewTenant(options:CmdGlobalOptions, data:MeshTenant
 
         if(selectedTenant?.tags[0] != undefined &&  selectedTenant?.tags != undefined){
             console.log("\n\nTags:\n");
-            for(let tag of selectedTenant.tags){
+            for(const tag of selectedTenant.tags){
                 console.log(tag.tagName + ": " + tag.tagValues);
             }
         }
@@ -35,7 +35,7 @@ export async function detailViewTenant(options:CmdGlobalOptions, data:MeshTenant
         if(selectedTenant?.costs != undefined && !noCost){
             console.log("Costs: \n");
             
-            for(let cost of selectedTenant.costs){
+            for(const cost of selectedTenant.costs){
                 if(cost.cost == ""){
                     cost.cost = "0";
                 }
@@ -47,7 +47,7 @@ export async function detailViewTenant(options:CmdGlobalOptions, data:MeshTenant
 
         console.log("IAM-Information: \n\n")
 
-        for(let roleAssignment of selectedTenant.roleAssignments){
+        for(const roleAssignment of selectedTenant.roleAssignments){
             console.log('Name: "' + roleAssignment.principalName + '";\nType: "' + roleAssignment.principalType + '";\nRole: "' + roleAssignment.roleName + '"\n');
         }
         console.log

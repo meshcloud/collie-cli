@@ -1,7 +1,7 @@
 import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 
-export function sortTenantData(_options: CmdGlobalOptions, data: MeshTenant[], startDate: string, endDate: string){
+export function sortTenantData(_options: CmdGlobalOptions, data: MeshTenant[]){
     
     
     data.sort(function(a:MeshTenant, b:MeshTenant){
@@ -9,14 +9,14 @@ export function sortTenantData(_options: CmdGlobalOptions, data: MeshTenant[], s
         let costB = 0;
         
         if(a != undefined){
-            for(let cost of a.costs){
+            for(const cost of a.costs){
                 if (cost.cost != undefined && cost.cost != ""){
                     costA += Number(cost.cost);
                 }
             }
         }
         if(b != undefined){
-            for(let cost of b.costs){
+            for(const cost of b.costs){
                 if (cost.cost != undefined && cost.cost != ""){
                     costB += Number(cost.cost);
                 }
