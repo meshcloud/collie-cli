@@ -11,7 +11,7 @@ import { MeshAdapterFactory } from "../../mesh/mesh-adapter.factory.ts";
 export async function detailViewTenant(options:CmdGlobalOptions, data:MeshTenant[], selectedTenantId:string, _selectedTag:string, noCost:boolean){
     const selectedTenant = data.find(e => e.platformTenantId == selectedTenantId);
 
-    console.log("\n \n \n \n--------------------------");
+    console.log("\n\n\n--------------------------");
     console.log("Detailview of Tenant \"" + selectedTenant?.platformTenantName+ "\"");
     console.log("--------------------------\n \n");
     console.log("Name: " + selectedTenant?.platformTenantName);
@@ -62,6 +62,7 @@ export async function detailViewTenant(options:CmdGlobalOptions, data:MeshTenant
         {
 
             case "BACK":{
+                console.clear();
                 break;
             }
             case "QUIT":{
