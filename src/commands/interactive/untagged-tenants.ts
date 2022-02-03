@@ -13,7 +13,7 @@ import { interactiveDate } from "./inputInteractiveDate.ts";
 
 
  export async function exploreInteractive(options: CmdGlobalOptions){
-    const help = "do some help.";
+    const help = '\n\n\nThis is the mode, which allows you to work with tenants with missing tags.\n\n\n"SORT BY HIGHEST COST"\nallows you to sort the tenants without a tag by date. Thos will allow you to find the ""worst offenders"", tenants with high costs and high costs. You\’ll see the effect in the prompt after the next prompt.\n"DO NOT SORT BY HIGHEST COST"\ndoensn\'t sort the tenants by cost.\n\n';
     let running:boolean;
     console.clear();
 
@@ -46,11 +46,13 @@ import { interactiveDate } from "./inputInteractiveDate.ts";
               break;
             }
             case "help": {
+              console.clear();
               console.log(help);
               break;
             }
             case "back": {
               running = false;
+              console.clear();
               break;
             }
             case "quit": {
@@ -174,6 +176,8 @@ function filterForTag(_options:CmdGlobalOptions, tenant:MeshTenant, tagName:stri
 
 async function selectTag(tags:Array<string>, additionalOptions:Array<string>=[]){
   const options:Array<promptoptions> = [];
+  const help = "\n\n\nHere you can select a tag, which should be missing on the tenants shown in the next step.\n\n\n";
+  const running = true;
 
   for(const tag of tags){
     options.push({value: tag, name: tag});
@@ -184,12 +188,19 @@ async function selectTag(tags:Array<string>, additionalOptions:Array<string>=[])
   options.push({value: "HELP", name: "HELP"});
   options.push({value: "BACK", name: "BACK"});
   options.push({value: "QUIT", name: "QUIT"});
-  const selection =  await Select.prompt({
+
+  let selection =  await Select.prompt({
     message: "Select a tag",
     options: options
   });
   if (selection == "QUIT"){
     Deno.exit();
+  } else if (selection == "BACK"){
+    console.clear();
+  } else if (selection == "HELP"){
+    console.clear();
+    console.log(help)
+    selection = await selectTag(tags, additionalOptions);
   }
   return selection;
 } 
@@ -197,6 +208,7 @@ async function selectTag(tags:Array<string>, additionalOptions:Array<string>=[])
 
 async function selectTenant(tenants:Array<MeshTenant>, additionalOptions:Array<string>=[]){
   const options:Array<promptoptions> = [];
+  const help = '\n\n\nThis is the last step. If you selected "SORT BY HIGHEST COST" on one of the previous prompts, this list is now sorted by cost generated it the give n time period (high costs at the top, low at the bottom).\nSelect a tenant to get more information.\n\n\n';
   for(const tenant of tenants){
     options.push({value: tenant.platformTenantId, name: tenant.platformTenantName});
   }
@@ -206,12 +218,19 @@ async function selectTenant(tenants:Array<MeshTenant>, additionalOptions:Array<s
   options.push({value: "HELP", name: "HELP"});
   options.push({value: "BACK", name: "BACK"});
   options.push({value: "QUIT", name: "QUIT"});
-  const selection =  await Select.prompt({
+  let selection =  await Select.prompt({
     message: "Select a tenant",
     options: options
   });
   if (selection == "QUIT"){
     Deno.exit();
+  } else if (selection == "BACK"){
+    console.clear();
+  } else if (selection == "HELP"){
+    console.clear();
+    console.log(help);
+    selection = await selectTenant(tenants, additionalOptions);
+
   }
   return selection;
 }
