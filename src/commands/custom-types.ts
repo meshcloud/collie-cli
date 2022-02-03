@@ -1,7 +1,7 @@
 import { ITypeInfo } from "../deps.ts";
 import { CmdOptionError } from "./cmd-errors.ts";
 
-const dateRegex = /^\d\d\d\d-\d\d-\d\d$/;
+export const dateRegex = /^\d\d\d\d-\d\d-\d\d$/;
 
 export function dateType({ label, name, value }: ITypeInfo): string {
   if (!dateRegex.test(value.toLowerCase())) {
