@@ -19,7 +19,9 @@ export async function exploreInteractive(options: CmdGlobalOptions) {
 
   running = true;
 
-  console.log("Welcome to the interactive mode of collie. Have fun herding your tenants.");
+  console.log(
+    "Welcome to the interactive mode of collie. Have fun herding your tenants.",
+  );
 
   while (running) {
     const action: string = await Select.prompt({
