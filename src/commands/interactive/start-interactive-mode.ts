@@ -8,7 +8,7 @@ import { interactiveDate } from "./inputInteractiveDate.ts";
 export async function startInteractiveMode(options: CmdGlobalOptions) {
   console.clear();
   const interactivehelp =
-    '\n\n\nWelcome to the collie-cli interactive mode. This mode allows you to herd your tenants in a quicker, more userfriendly way.\n\n\n "LIST ALL TENANTS"\nis equivalent to "collie tenant list"\n\n"LIST ALL TENANTS WITH COST"\nis equivalent to "collie tenant costs"\n\n"EXPLORE TENANTS WITH MISSING TAGS"\nis the superpower of the interactive mode.Go check it out!\n\n';
+    '\n\n\nWelcome to the collie-cli interactive mode. This mode allows you to herd your tenants in a quicker, more userfriendly way.\n\n\n "LIST ALL TENANTS"\nis equivalent to "collie tenant list"\n\n"LIST ALL TENANTS WITH COST"\nis equivalent to "collie tenant costs"\n\n"EXPLORE TENANTS WITH MISSING TAGS"\nis the superpower of the interactive mode. Go check it out!\n\n';
 
   let running = true;
   while (running) {
@@ -31,16 +31,24 @@ export async function startInteractiveMode(options: CmdGlobalOptions) {
       }
       case "tenantcost": {
         console.clear();
-        const form = await interactiveDate(options, "Startdate?");
+        const from = await interactiveDate(options, "Startdate?");
+        if(from == "BACK"){
+          break;
+        }
         const to = await interactiveDate(options, "Enddate?");
-        const params = {
-          from: form,
-          to: to,
-          debug: options.debug,
-          verbose: options.verbose,
-          output: OutputFormat.TABLE,
-        };
-        await listTenantsCostAction(params);
+        if(to == "BACK"){
+          break;
+        }
+        if(from != undefined && to != undefined) {
+          const params = {
+            from: from,
+            to: to,
+            debug: options.debug,
+            verbose: options.verbose,
+            output: OutputFormat.TABLE,
+          };
+          await listTenantsCostAction(params);
+        }
         break;
       }
       case "exploremissing": {
