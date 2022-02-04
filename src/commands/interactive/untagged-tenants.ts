@@ -16,7 +16,7 @@ import { interactiveDate } from "./inputInteractiveDate.ts";
 
 export async function exploreInteractive(options: CmdGlobalOptions) {
   const help =
-    '\n\n\nThis is the mode, which allows you to work with tenants with missing tags.\n\n\n"SORT BY HIGHEST COST"\nallows you to sort the tenants without a tag by date. This will allow you to find the "worst offenders", tenants with high costs and missing tags. You\’ll see the effect in the prompt after the next prompt.\n\n"DO NOT SORT BY HIGHEST COST"\ndoensn\'t sort the tenants by cost.\n\n';
+    '\n\n\nThis is the mode, which allows you to work with tenants with missing tags.\n\n\n"SORT BY HIGHEST COST"\nallows you to sort the tenants without a tag by date. This will allow you to find the "worst offenders", tenants with high costs and missing tags. You\’ll see the effect in the prompt after the next prompt.\n\n"SORT BY Name"\nsorts the tenants in the next prompt by name.\n';
   let running: boolean;
   console.clear();
 
