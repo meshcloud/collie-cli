@@ -11,7 +11,7 @@ export async function interactiveDate(
   while (running) {
     date = await Input.prompt(question);
     if (date.toUpperCase() == "QUIT") {
-      Deno.exit;
+      Deno.exit();
       return "QUIT";
     } else if (date.toUpperCase() == "BACK") {
       return "BACK";
