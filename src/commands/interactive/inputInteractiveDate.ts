@@ -13,14 +13,15 @@ export async function interactiveDate(
     if (date.toUpperCase() == "QUIT") {
       Deno.exit;
       return "QUIT";
-    } else if(date.toUpperCase() == "BACK") {
+    } else if (date.toUpperCase() == "BACK") {
       return "BACK";
     } else if (!dateRegex.test(date.toLowerCase())) {
-      console.log('Please enter a valid date in format YYYY-MM-DD. Enter "back" to go back or "quit" to quit.');
+      console.log(
+        'Please enter a valid date in format YYYY-MM-DD. Enter "back" to go back or "quit" to quit.',
+      );
     } else {
       running = false;
       return date;
     }
   }
-  
 }

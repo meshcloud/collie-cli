@@ -32,14 +32,14 @@ export async function startInteractiveMode(options: CmdGlobalOptions) {
       case "tenantcost": {
         console.clear();
         const from = await interactiveDate(options, "Startdate?");
-        if(from == "BACK"){
+        if (from == "BACK") {
           break;
         }
         const to = await interactiveDate(options, "Enddate?");
-        if(to == "BACK"){
+        if (to == "BACK") {
           break;
         }
-        if(from != undefined && to != undefined) {
+        if (from != undefined && to != undefined) {
           const params = {
             from: from,
             to: to,
