@@ -11,72 +11,72 @@ import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
 import { detailViewTenant } from "./detailViewTenant.ts";
 import { interactiveDate } from "./inputInteractiveDate.ts";
 
+export async function exploreInteractive(options: CmdGlobalOptions) {
+  const help =
+    '\n\n\nThis is the mode, which allows you to work with tenants with missing tags.\n\n\n"SORT BY HIGHEST COST"\nallows you to sort the tenants without a tag by date. Thos will allow you to find the ""worst offenders"", tenants with high costs and high costs. You\’ll see the effect in the prompt after the next prompt.\n"DO NOT SORT BY HIGHEST COST"\ndoensn\'t sort the tenants by cost.\n\n';
+  let running: boolean;
+  console.clear();
 
- export async function exploreInteractive(options: CmdGlobalOptions){
-    const help = '\n\n\nThis is the mode, which allows you to work with tenants with missing tags.\n\n\n"SORT BY HIGHEST COST"\nallows you to sort the tenants without a tag by date. Thos will allow you to find the ""worst offenders"", tenants with high costs and high costs. You\’ll see the effect in the prompt after the next prompt.\n"DO NOT SORT BY HIGHEST COST"\ndoensn\'t sort the tenants by cost.\n\n';
-    let running:boolean;
-    console.clear();
+  running = true;
+  while (running) {
+    const action: string = await Select.prompt({
+      message: "Select what you want to do",
+      options: [
+        { name: "SORT BY HIGHEST COST", value: "sortbycost" },
+        { name: "DO NOT SORT BY HIGHEST COST", value: "unsorted" },
+        { name: "HELP", value: "help" },
+        { name: "BACK", value: "back" },
+        { name: "QUIT", value: "quit" },
+      ],
+    });
 
-
-    running = true;
-    while(running) {
-        const action: string = await Select.prompt({
-            message: "Select what you want to do",
-            options: [
-              { name: "SORT BY HIGHEST COST", value: "sortbycost"},
-              { name: "DO NOT SORT BY HIGHEST COST", value: "unsorted" },
-              { name: "HELP", value: "help" },
-              { name: "BACK", value: "back" },
-              { name: "QUIT", value: "quit" },
-            ],
-          });
-      
-          switch(action) {
-            case "sortbycost": {
-
-              const startDate = await interactiveDate(options, "Startdate");
-              const endDate = await interactiveDate(options, "Enddate?")
-              await showUntagged(options, await getData(options, startDate, endDate), startDate, endDate);
-              break;
-      
-            }
-            case "unsorted": {
-              //await showUntagged(await getData(options));
-              await showUntagged(options, await getData(options));
-              break;
-            }
-            case "help": {
-              console.clear();
-              console.log(help);
-              break;
-            }
-            case "back": {
-              running = false;
-              console.clear();
-              break;
-            }
-            case "quit": {
-                Deno.exit();
-                break;
-            }
-            default: {
-              throw new MeshError('Invalid value. Something went horribly wrong.')
-            }
-        }
+    switch (action) {
+      case "sortbycost": {
+        const startDate = await interactiveDate(options, "Startdate");
+        const endDate = await interactiveDate(options, "Enddate?");
+        await showUntagged(
+          options,
+          await getData(options, startDate, endDate),
+          startDate,
+          endDate,
+        );
+        break;
+      }
+      case "unsorted": {
+        //await showUntagged(await getData(options));
+        await showUntagged(options, await getData(options));
+        break;
+      }
+      case "help": {
+        console.clear();
+        console.log(help);
+        break;
+      }
+      case "back": {
+        running = false;
+        console.clear();
+        break;
+      }
+      case "quit": {
+        Deno.exit();
+        break;
+      }
+      default: {
+        throw new MeshError("Invalid value. Something went horribly wrong.");
+      }
     }
-
-    
+  }
 }
 
-
-
-
-async function getData(options: CmdGlobalOptions, from: string|undefined = undefined, to:string|undefined = undefined){
+async function getData(
+  options: CmdGlobalOptions,
+  from: string | undefined = undefined,
+  to: string | undefined = undefined,
+) {
   setupLogger(options);
   await verifyCliAvailability();
 
-  if((from == undefined || "") && (to == undefined || "") ){
-
+  if ((from == undefined || "") && (to == undefined || "")) {
     const config = loadConfig();
     const meshAdapterFactory = new MeshAdapterFactory(config);
     const queryStatistics = new QueryStatistics();
@@ -87,8 +87,7 @@ async function getData(options: CmdGlobalOptions, from: string|undefined = undef
 
     const allTenants = await meshAdapter.getMeshTenants();
     return allTenants;
-    
-  }else if(from != undefined){
+  } else if (from != undefined) {
     const config = loadConfig();
     const meshAdapterFactory = new MeshAdapterFactory(config);
     const queryStatistics = new QueryStatistics();
@@ -117,144 +116,152 @@ async function getData(options: CmdGlobalOptions, from: string|undefined = undef
 
     await meshAdapter.attachTenantCosts(allTenants, start, end);
     return allTenants;
-
   } else {
-    throw new MeshError("Something went horribly wrong."); 
+    throw new MeshError("Something went horribly wrong.");
   }
 }
 
-async function showUntagged(options:CmdGlobalOptions, data: MeshTenant[], from: string|undefined = undefined, to:string|undefined = undefined) {
-  
+async function showUntagged(
+  options: CmdGlobalOptions,
+  data: MeshTenant[],
+  from: string | undefined = undefined,
+  to: string | undefined = undefined,
+) {
   console.clear();
   const tags = getAllTags(data);
   let running = true;
 
-
-  if((from != undefined) && (to != undefined)){
-    
+  if ((from != undefined) && (to != undefined)) {
     data = sortTenantData(options, data);
   }
 
-  while(running){
-      const selectedTag = await selectTag(tags);
-      if(selectedTag == "BACK") {
-        running = false;
-      }else {
-      const untaggedTenant: Array<MeshTenant>|undefined = [];
+  while (running) {
+    const selectedTag = await selectTag(tags);
+    if (selectedTag == "BACK") {
+      running = false;
+    } else {
+      const untaggedTenant: Array<MeshTenant> | undefined = [];
 
-      for(const tenant of data) {
-        if(filterForTag(options, tenant, selectedTag) == false) {
+      for (const tenant of data) {
+        if (filterForTag(options, tenant, selectedTag) == false) {
           untaggedTenant.push(tenant);
         }
       }
       let runningInside = true;
-      while(runningInside) {
+      while (runningInside) {
         const selectedTenant = await selectTenant(untaggedTenant);
-        if(selectedTenant == "BACK") {
+        if (selectedTenant == "BACK") {
           runningInside = false;
-        }else {
-          await detailViewTenant(options, data, selectedTenant, selectedTag, (from == undefined || to == undefined));
+        } else {
+          await detailViewTenant(
+            options,
+            data,
+            selectedTenant,
+            selectedTag,
+            from == undefined || to == undefined,
+          );
         }
       }
     }
   }
 }
 
-
-
-function filterForTag(_options:CmdGlobalOptions, tenant:MeshTenant, tagName:string){
-  let result = false; 
-  for(const tag of tenant.tags){
-    if(tag.tagName == tagName){
+function filterForTag(
+  _options: CmdGlobalOptions,
+  tenant: MeshTenant,
+  tagName: string,
+) {
+  let result = false;
+  for (const tag of tenant.tags) {
+    if (tag.tagName == tagName) {
       result = true;
     }
-    
   }
   return result;
 }
 
+async function selectTag(
+  tags: Array<string>,
+  additionalOptions: Array<string> = [],
+) {
+  const options: Array<promptoptions> = [];
+  const help =
+    "\n\n\nHere you can select a tag, which should be missing on the tenants shown in the next step.\n\n\n";
 
-async function selectTag(tags:Array<string>, additionalOptions:Array<string>=[]){
-  const options:Array<promptoptions> = [];
-  const help = "\n\n\nHere you can select a tag, which should be missing on the tenants shown in the next step.\n\n\n";
-  const running = true;
-
-  for(const tag of tags){
-    options.push({value: tag, name: tag});
+  for (const tag of tags) {
+    options.push({ value: tag, name: tag });
   }
-  for(const additionalOption of additionalOptions){
-    options.push({value: additionalOption, name: additionalOption});
+  for (const additionalOption of additionalOptions) {
+    options.push({ value: additionalOption, name: additionalOption });
   }
-  options.push({value: "HELP", name: "HELP"});
-  options.push({value: "BACK", name: "BACK"});
-  options.push({value: "QUIT", name: "QUIT"});
+  options.push({ value: "HELP", name: "HELP" });
+  options.push({ value: "BACK", name: "BACK" });
+  options.push({ value: "QUIT", name: "QUIT" });
 
-  let selection =  await Select.prompt({
+  let selection = await Select.prompt({
     message: "Select a tag",
-    options: options
+    options: options,
   });
-  if (selection == "QUIT"){
+  if (selection == "QUIT") {
     Deno.exit();
-  } else if (selection == "BACK"){
+  } else if (selection == "BACK") {
     console.clear();
-  } else if (selection == "HELP"){
-    console.clear();
-    console.log(help)
-    selection = await selectTag(tags, additionalOptions);
-  }
-  return selection;
-} 
-
-
-async function selectTenant(tenants:Array<MeshTenant>, additionalOptions:Array<string>=[]){
-  const options:Array<promptoptions> = [];
-  const help = '\n\n\nThis is the last step. If you selected "SORT BY HIGHEST COST" on one of the previous prompts, this list is now sorted by cost generated it the give n time period (high costs at the top, low at the bottom).\nSelect a tenant to get more information.\n\n\n';
-  for(const tenant of tenants){
-    options.push({value: tenant.platformTenantId, name: tenant.platformTenantName});
-  }
-  for(const additionalOption of additionalOptions){
-    options.push({value: additionalOption, name: additionalOption});
-  }
-  options.push({value: "HELP", name: "HELP"});
-  options.push({value: "BACK", name: "BACK"});
-  options.push({value: "QUIT", name: "QUIT"});
-  let selection =  await Select.prompt({
-    message: "Select a tenant",
-    options: options
-  });
-  if (selection == "QUIT"){
-    Deno.exit();
-  } else if (selection == "BACK"){
-    console.clear();
-  } else if (selection == "HELP"){
+  } else if (selection == "HELP") {
     console.clear();
     console.log(help);
-    selection = await selectTenant(tenants, additionalOptions);
-
+    selection = await selectTag(tags, additionalOptions);
   }
   return selection;
 }
 
+async function selectTenant(
+  tenants: Array<MeshTenant>,
+  additionalOptions: Array<string> = [],
+) {
+  const options: Array<promptoptions> = [];
+  const help =
+    '\n\n\nThis is the last step. If you selected "SORT BY HIGHEST COST" on one of the previous prompts, this list is now sorted by cost generated it the give n time period (high costs at the top, low at the bottom).\nSelect a tenant to get more information.\n\n\n';
+  for (const tenant of tenants) {
+    options.push({
+      value: tenant.platformTenantId,
+      name: tenant.platformTenantName,
+    });
+  }
+  for (const additionalOption of additionalOptions) {
+    options.push({ value: additionalOption, name: additionalOption });
+  }
+  options.push({ value: "HELP", name: "HELP" });
+  options.push({ value: "BACK", name: "BACK" });
+  options.push({ value: "QUIT", name: "QUIT" });
+  let selection = await Select.prompt({
+    message: "Select a tenant",
+    options: options,
+  });
+  if (selection == "QUIT") {
+    Deno.exit();
+  } else if (selection == "BACK") {
+    console.clear();
+  } else if (selection == "HELP") {
+    console.clear();
+    console.log(help);
+    selection = await selectTenant(tenants, additionalOptions);
+  }
+  return selection;
+}
 
-
-
-function getAllTags(data: MeshTenant[]){
-  const tagsarray:Array<string> = [];
-  for(const tenant of data){
-    for(const tag of tenant.tags){
-      if(tagsarray.indexOf(tag.tagName) == -1){
+function getAllTags(data: MeshTenant[]) {
+  const tagsarray: Array<string> = [];
+  for (const tenant of data) {
+    for (const tag of tenant.tags) {
+      if (tagsarray.indexOf(tag.tagName) == -1) {
         tagsarray.push(tag.tagName);
       }
-       
     }
   }
   return tagsarray;
 }
 
-
-
-
-interface promptoptions{
+interface promptoptions {
   name: string;
   value: string;
 }
