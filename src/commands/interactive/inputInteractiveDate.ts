@@ -11,7 +11,7 @@ export async function interactiveDate(
   while (running) {
     date = await Input.prompt(question);
     if (!dateRegex.test(date.toLowerCase())) {
-      console.log("Please enter a valid date in format YYYY-MM-DD.");
+      console.log('Please enter a valid date in format YYYY-MM-DD.');
     } else {
       running = false;
     }

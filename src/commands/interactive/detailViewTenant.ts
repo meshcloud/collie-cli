@@ -18,6 +18,7 @@ export async function detailViewTenant(
     e.platformTenantId == selectedTenantId
   );
 
+  console.clear();
   console.log("\n\n\n--------------------------");
   console.log(
     'Detailview of Tenant "' + selectedTenant?.platformTenantName + '"',
