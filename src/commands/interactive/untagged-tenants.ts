@@ -6,7 +6,10 @@ import { MeshAdapterFactory } from "../../mesh/mesh-adapter.factory.ts";
 import { QueryStatistics } from "../../mesh/query-statistics.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 import { MeshError } from "../../errors.ts";
-import { sortTenantDataByCost, sortTenantDataByName } from "./sortTenantData.ts";
+import {
+  sortTenantDataByCost,
+  sortTenantDataByName,
+} from "./sortTenantData.ts";
 import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
 import { detailViewTenant } from "./detailViewTenant.ts";
 import { interactiveDate } from "./inputInteractiveDate.ts";

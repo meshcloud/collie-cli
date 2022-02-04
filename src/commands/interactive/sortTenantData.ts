@@ -1,7 +1,10 @@
 import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 
-export function sortTenantDataByCost(_options: CmdGlobalOptions, data: MeshTenant[]) {
+export function sortTenantDataByCost(
+  _options: CmdGlobalOptions,
+  data: MeshTenant[],
+) {
   data.sort(function (a: MeshTenant, b: MeshTenant) {
     let costA = 0;
     let costB = 0;
@@ -30,9 +33,11 @@ export function sortTenantDataByCost(_options: CmdGlobalOptions, data: MeshTenan
   return data;
 }
 
-export function sortTenantDataByName(_options: CmdGlobalOptions, data: MeshTenant[]){
-
-  data = data.sort(function(a, b) {
+export function sortTenantDataByName(
+  _options: CmdGlobalOptions,
+  data: MeshTenant[],
+) {
+  data = data.sort(function (a, b) {
     const tenantNameA = a.platformTenantName.toLocaleUpperCase();
     const tenantNameB = b.platformTenantName.toLocaleUpperCase();
     if (tenantNameA < tenantNameB) {
