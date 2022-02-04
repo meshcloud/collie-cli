@@ -33,7 +33,13 @@ export async function exploreInteractive(options: CmdGlobalOptions) {
     switch (action) {
       case "sortbycost": {
         const startDate = await interactiveDate(options, "Startdate");
+        if (startDate == "BACK") {
+          break;
+        }
         const endDate = await interactiveDate(options, "Enddate?");
+        if (endDate == "BACK") {
+          break;
+        }
         await showUntagged(
           options,
           await getData(options, startDate, endDate),
