@@ -18,6 +18,9 @@ export async function exploreInteractive(options: CmdGlobalOptions) {
   console.clear();
 
   running = true;
+
+  console.log("Welcome to the interactive mode of collie. Have fun herding your tenants.");
+
   while (running) {
     const action: string = await Select.prompt({
       message: "Select what you want to do",
@@ -198,7 +201,7 @@ async function selectTag(
 ) {
   const options: Array<promptoptions> = [];
   const help =
-    "\n\n\nHere you can select a tag, which should be missing on the tenants shown in the next step.\n\n\n";
+    "\n\n\nHere you can select a tag, which should be missing on the tenants shown in the next step. This allows collie to filter all tenants, which allready have this tag assigned, from the selection in the next prompt. \n\n\n";
 
   for (const tag of tags) {
     options.push({ value: tag, name: tag });
