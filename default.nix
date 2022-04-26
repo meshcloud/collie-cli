@@ -1,8 +1,5 @@
 { pkgs ? import <nixpkgs> { } }:
 
-let
-  unstable = import <nixos-unstable> {}; # deno latest is only available as an unstable package right now
-in
 pkgs.mkShell {
   NIX_SHELL = "collie-cli";
   shellHook = ''
@@ -10,7 +7,7 @@ pkgs.mkShell {
   '';
 
   buildInputs = [
-    unstable.deno
+    pkgs.deno
     
     # used for build scripts
     pkgs.unzip
