@@ -2,8 +2,10 @@ import { Confirm } from "../deps.ts";
 import { AzureErrorCode, MeshAzurePlatformError } from "../errors.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
+Account,
   AzureMeshTag,
   ConsumptionInfo,
+  ManagementGroup,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
@@ -15,14 +17,12 @@ import {
  * a module of the CLI should be installed automatically.
  */
 export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
-  constructor(
-    private readonly azureFacade: AzureCliFacade,
-  ) {}
+  constructor(private readonly azureFacade: AzureCliFacade) {}
 
   async getCostManagementInfo(
     mgmtGroupId: string,
     from: string,
-    to: string,
+    to: string
   ): Promise<SimpleCostManagementInfo[]> {
     return await this.azureFacade.getCostManagementInfo(mgmtGroupId, from, to);
   }
@@ -35,9 +35,21 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
     return await this.azureFacade.getDynamicInstallValue();
   }
 
-  async listAccounts(): Promise<Subscription[]> {
+  async listSubscriptions(): Promise<Subscription[]> {
     return await this.wrapCallWithInstallInterception(() => {
-      return this.azureFacade.listAccounts();
+      return this.azureFacade.listSubscriptions();
+    });
+  }
+
+  async listManagementGroups(): Promise<ManagementGroup[]> {
+    return await this.wrapCallWithInstallInterception(() => {
+      return this.azureFacade.listManagementGroups();
+    });
+  }
+
+  async getAccount(): Promise<Account> {
+    return await this.wrapCallWithInstallInterception(() => {
+      return this.azureFacade.getAccount();
     });
   }
 
@@ -56,19 +68,19 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   async getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<ConsumptionInfo[]> {
     return await this.wrapCallWithInstallInterception(() => {
       return this.azureFacade.getConsumptionInformation(
         subscription,
         startDate,
-        endDate,
+        endDate
       );
     });
   }
 
   async getRoleAssignments(
-    subscription: Subscription,
+    subscription: Subscription
   ): Promise<RoleAssignment[]> {
     return await this.wrapCallWithInstallInterception(() => {
       return this.azureFacade.getRoleAssignments(subscription);
@@ -76,18 +88,18 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   }
 
   private async wrapCallWithInstallInterception<T>(
-    callFn: () => Promise<T>,
+    callFn: () => Promise<T>
   ): Promise<T> {
     try {
       return await callFn();
     } catch (e) {
       if (this.isAzureModuleMissingError(e)) {
         const confirmed: boolean = await Confirm.prompt(
-          "A Azure CLI extention is missing for this call. Should the Azure extension get installed automatically?",
+          "A Azure CLI extention is missing for this call. Should the Azure extension get installed automatically?"
         );
         if (confirmed) {
           const originalValue =
-            await this.azureFacade.getDynamicInstallValue() || "yes_prompt";
+            (await this.azureFacade.getDynamicInstallValue()) || "yes_prompt";
           this.azureFacade.setDynamicInstallValue("yes_without_prompt");
           const result = await callFn();
           this.azureFacade.setDynamicInstallValue(originalValue);
@@ -101,7 +113,9 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   }
 
   private isAzureModuleMissingError(e: Error): boolean {
-    return e instanceof MeshAzurePlatformError &&
-      e.errorCode === AzureErrorCode.AZURE_CLI_MISSING_EXTENSION;
+    return (
+      e instanceof MeshAzurePlatformError &&
+      e.errorCode === AzureErrorCode.AZURE_CLI_MISSING_EXTENSION
+    );
   }
 }

@@ -1,6 +1,8 @@
 import {
+  Account,
   AzureMeshTag,
   ConsumptionInfo,
+  ManagementGroup,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
@@ -12,7 +14,12 @@ export type DynamicInstallValue = "yes_without_prompt" | "yes_prompt" | "no";
 export interface AzureCliFacade {
   setDynamicInstallValue(value: DynamicInstallValue): void;
   getDynamicInstallValue(): Promise<DynamicInstallValue | null>;
-  listAccounts(): Promise<Subscription[]>;
+
+  getAccount(): Promise<Account>;
+
+  listManagementGroups(): Promise<ManagementGroup[]>;
+
+  listSubscriptions(): Promise<Subscription[]>;
 
   listTags(subscription: Subscription): Promise<Tag[]>;
   putTags(subscription: Subscription, tags: AzureMeshTag[]): Promise<void>;
@@ -20,12 +27,12 @@ export interface AzureCliFacade {
   getCostManagementInfo(
     mgmtGroupId: string,
     from: string,
-    to: string,
+    to: string
   ): Promise<SimpleCostManagementInfo[]>;
   getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<ConsumptionInfo[]>;
   getRoleAssignments(subscription: Subscription): Promise<RoleAssignment[]>;
 }

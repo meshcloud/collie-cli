@@ -111,21 +111,6 @@ export function registerConfigCommand(program: Command) {
     )
     .action(showConfigAction);
 
-  const setupAzureManagementGroupCmd = new Command()
-    .arguments("<management_group_id:string>")
-    .description(
-      "Setup a parent Management Group in Azure for all your Subscriptions to query. This will speed up price collection because an optimized query can be used.",
-    )
-    .example(
-      "Set a parent management group ID",
-      `${CLICommand} config azure managementgroup 4a2ef91d-7697-4759-ab36-0f8049d274df`,
-    )
-    .action(setupAzureManagementGroup);
-
-  const azureSubCmd = new Command().description(
-    "Configure Azure related options",
-  ).command("managementgroup", setupAzureManagementGroupCmd);
-
   const awsSubCmd = new Command().description(
     "Configure AWS related options",
   ).action(setupAwsConfigAction);
@@ -136,7 +121,6 @@ export function registerConfigCommand(program: Command) {
 
   configCmd
     .command("show", showConfigCmd)
-    .command("azure", azureSubCmd)
     .command("aws", awsSubCmd)
     .command("gcp", gcpSubCmd);
 }
@@ -180,18 +164,6 @@ async function setupGcpConfigAction() {
   await gcpPostConfig.executeConnected(config);
 
   writeConfig(config);
-}
-
-function setupAzureManagementGroup(
-  options: CmdConfigOpts,
-  managementGroupId: string,
-) {
-  setupLogger(options);
-
-  const config = loadConfig();
-  config.azure.parentManagementGroups = [managementGroupId];
-  writeConfig(config);
-  console.log(`Set Azure root management group ID to: ${managementGroupId}`);
 }
 
 async function configurePlatformsAction(

@@ -2,8 +2,10 @@ import { MeshAzureRetryableError } from "../errors.ts";
 import { sleep } from "../promises.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
+  Account,
   AzureMeshTag,
   ConsumptionInfo,
+  ManagementGroup,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
@@ -16,14 +18,12 @@ import {
  * like the 401 error which tells us about a certificat error.
  */
 export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
-  constructor(
-    private readonly wrapped: AzureCliFacade,
-  ) {}
+  constructor(private readonly wrapped: AzureCliFacade) {}
 
   async getCostManagementInfo(
     mgmtGroupId: string,
     from: string,
-    to: string,
+    to: string
   ): Promise<SimpleCostManagementInfo[]> {
     return await this.retryable(async () => {
       return await this.wrapped.getCostManagementInfo(mgmtGroupId, from, to);
@@ -38,9 +38,21 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
     return this.wrapped.getDynamicInstallValue();
   }
 
-  async listAccounts(): Promise<Subscription[]> {
+  async listSubscriptions(): Promise<Subscription[]> {
     return await this.retryable(async () => {
-      return await this.wrapped.listAccounts();
+      return await this.wrapped.listSubscriptions();
+    });
+  }
+
+  async listManagementGroups(): Promise<ManagementGroup[]> {
+    return await this.retryable(async () => {
+      return await this.wrapped.listManagementGroups();
+    });
+  }
+
+  async getAccount(): Promise<Account> {
+    return await this.retryable(async () => {
+      return await this.wrapped.getAccount();
     });
   }
 
@@ -57,19 +69,19 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
   async getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<ConsumptionInfo[]> {
     return await this.retryable(async () => {
       return await this.wrapped.getConsumptionInformation(
         subscription,
         startDate,
-        endDate,
+        endDate
       );
     });
   }
 
   async getRoleAssignments(
-    subscription: Subscription,
+    subscription: Subscription
   ): Promise<RoleAssignment[]> {
     return await this.retryable(async () => {
       return await this.wrapped.getRoleAssignments(subscription);
@@ -83,7 +95,7 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
       if (e instanceof MeshAzureRetryableError) {
         if (e.errorCode === "AZURE_TOO_MANY_REQUESTS") {
           console.log(
-            `Azure complains about too many requests. Need to wait ${e.retryInSeconds}s`,
+            `Azure complains about too many requests. Need to wait ${e.retryInSeconds}s`
           );
         }
 
