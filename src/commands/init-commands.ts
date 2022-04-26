@@ -1,16 +1,14 @@
 import { Command, CompletionsCommand } from "../deps.ts";
 import { OutputFormat } from "../presentation/output-format.ts";
-import { registerCacheCommand } from "./cache.command.ts";
 import { OutputFormatType } from "./cmd-options.ts";
 import { registerConfigCommand } from "./config.command.ts";
 import { registerFeedbackCommand } from "./feedback.command.ts";
-import { registerTenantCommand } from "./tenant.command.ts";
+import { registerTenantCommand } from "./tenant/tenant.command.ts";
 import { CLICommand, CLIName } from "../config/config.model.ts";
 import { registerCreateIssueCommand } from "./create-issue.command.ts";
 import { VERSION } from "../config/info.ts";
 import { isWindows } from "../os.ts";
-import { registerUserCommand } from "./user.command.ts";
-import { registerTagCommand } from "./tag/tag.command.ts";
+import { registerUserCommand } from "./user/user.command.ts";
 import { registerUpgradeCommand } from "./upgrade.ts";
 
 export function initCommands(): Command {
@@ -44,10 +42,8 @@ export function initCommands(): Command {
 
   registerConfigCommand(program);
   registerTenantCommand(program);
-  registerTagCommand(program);
   registerCreateIssueCommand(program);
   registerFeedbackCommand(program);
-  registerCacheCommand(program);
   registerUserCommand(program);
   registerUpgradeCommand(program);
 

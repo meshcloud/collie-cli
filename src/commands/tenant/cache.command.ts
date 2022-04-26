@@ -1,7 +1,7 @@
-import { CacheConfigManager } from "../config/cache-config-manager.ts";
-import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
-import { Command } from "../deps.ts";
-import { CmdGlobalOptions } from "./cmd-options.ts";
+import { CacheConfigManager } from "../../config/cache-config-manager.ts";
+import { newMeshTenantRepository } from "../../db/mesh-tenant-repository.ts";
+import { Command } from "../../deps.ts";
+import { CmdGlobalOptions } from ".././cmd-options.ts";
 
 export function registerCacheCommand(program: Command) {
   const cacheCmd = new Command()
