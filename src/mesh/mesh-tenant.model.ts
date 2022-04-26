@@ -1,6 +1,6 @@
-import { Account } from "/aws/aws.model.ts";
-import { Subscription } from "/azure/azure.model.ts";
-import { Project } from "/gcp/gcp.model.ts";
+import { Account } from "/api/aws/aws.model.ts";
+import { Subscription } from "/api/az/azure.model.ts";
+import { Project } from "/api/gcloud/gcp.model.ts";
 import { MeshTenantRoleAssignment } from "./mesh-iam-model.ts";
 
 export interface MeshTag {

@@ -1,21 +1,21 @@
-import { MeshAdapter } from "../mesh/mesh-adapter.ts";
+import { MeshAdapter } from "/mesh/mesh-adapter.ts";
 import {
   MeshPlatform,
   MeshTag,
   MeshTenant,
   MeshTenantCost,
-} from "../mesh/mesh-tenant.model.ts";
+} from "/mesh/mesh-tenant.model.ts";
 import { GcpCliFacade } from "./gcp-cli-facade.ts";
 import { isProject, Labels } from "./gcp.model.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
-} from "../mesh/mesh-iam-model.ts";
-import { MeshError } from "../errors.ts";
-import { TimeWindowCalculator } from "../mesh/time-window-calculator.ts";
-import { moment } from "../deps.ts";
-import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts";
+} from "/mesh/mesh-iam-model.ts";
+import { MeshError } from "/errors.ts";
+import { TimeWindowCalculator } from "/mesh/time-window-calculator.ts";
+import { moment } from "/deps.ts";
+import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
 
 export class GcpMeshAdapter implements MeshAdapter {
   constructor(

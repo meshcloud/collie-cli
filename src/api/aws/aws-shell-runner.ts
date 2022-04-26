@@ -1,5 +1,5 @@
-import { ShellRunner } from "../process/shell-runner.ts";
-import { ShellOutput } from "../process/shell-output.ts";
+import { ShellRunner } from "/process/shell-runner.ts";
+import { ShellOutput } from "/process/shell-output.ts";
 
 /**
  * This class ensures that each command executed for AWS is suffixed with the `--profile` parameter, as configured

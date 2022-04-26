@@ -20,18 +20,18 @@ export function registerCostCommand(program: Command) {
     // type must be added on every level that uses this type. Maybe bug in Cliffy? replace with https://cliffy.io/docs@v0.23.0/command/types#global-types
     .type("output", OutputFormatType)
     .description(
-      "Gathers the costs of all tenants in a given time interval on a monthly basis. Includes tags as columns when outputting as CSV."
+      "Gathers the costs of all tenants in a given time interval on a monthly basis. Includes tags as columns when outputting as CSV.",
     )
     .type("date", dateType)
     .option(
       "--from <YYYY-MM-DD:date>",
       "Date from which the price collection should start. Use the format YYYY-MM-DD, e.g. 2021-01-01.",
-      { required: true }
+      { required: true },
     )
     .option(
       "--to <YYYY-MM-DD:date>",
       "Date to which the price date is collected. Use the format YYYY-MM-DD, e.g. 2021-12-31.",
-      { required: true }
+      { required: true },
     )
     .action(listTenantsCostAction);
 
@@ -47,20 +47,20 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
   const queryStatistics = new QueryStatistics();
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(
     options,
-    queryStatistics
+    queryStatistics,
   );
 
   // We create UTC dates because we do not work with time, hence we do not care about timezones.
   const start = moment.utc(options.from).startOf("day").toDate();
   if (isNaN(start.valueOf())) {
     throw new MeshError(
-      `You have entered an invalid date for '--from':  ${options.from}`
+      `You have entered an invalid date for '--from':  ${options.from}`,
     );
   }
   const end = moment.utc(options.to).endOf("day").toDate();
   if (isNaN(start.valueOf())) {
     throw new MeshError(
-      `You have entered an invalid date for '--to': ${options.to}`
+      `You have entered an invalid date for '--to': ${options.to}`,
     );
   }
 
@@ -76,7 +76,7 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
-    queryStatistics
+    queryStatistics,
   );
   presenter.present();
 }

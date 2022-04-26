@@ -1,23 +1,23 @@
-import {
-  MeshPlatform,
-  MeshTag,
-  MeshTenant,
-} from "../mesh/mesh-tenant.model.ts";
-import { isSubscription, Tag } from "./azure.model.ts";
-import { AzureCliFacade } from "./azure-cli-facade.ts";
-import { MeshAdapter } from "../mesh/mesh-adapter.ts";
-import { async, moment } from "../deps.ts";
+import { async, moment } from "../../deps.ts";
 import {
   AzureErrorCode,
   MeshAzurePlatformError,
   MeshError,
-} from "../errors.ts";
+} from "../../errors.ts";
+import { MeshAdapter } from "../../mesh/mesh-adapter.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
-} from "../mesh/mesh-iam-model.ts";
-import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts";
+} from "../../mesh/mesh-iam-model.ts";
+import { MeshTenantChangeDetector } from "../../mesh/mesh-tenant-change-detector.ts";
+import {
+  MeshPlatform,
+  MeshTag,
+  MeshTenant,
+} from "../../mesh/mesh-tenant.model.ts";
+import { AzureCliFacade } from "./azure-cli-facade.ts";
+import { isSubscription, Tag } from "./azure.model.ts";
 
 export class AzureMeshAdapter implements MeshAdapter {
   constructor(

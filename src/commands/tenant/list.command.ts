@@ -14,7 +14,7 @@ export function registerListCommand(program: Command) {
     // type must be added on every level that uses this type. Maybe bug in Cliffy?
     .type("output", OutputFormatType)
     .description(
-      "Returns a list of tenants with their name, id, tags and platform."
+      "Returns a list of tenants with their name, id, tags and platform.",
     )
     .action(listTenantAction);
 
@@ -30,7 +30,7 @@ async function listTenantAction(options: CmdGlobalOptions) {
   const queryStatistics = new QueryStatistics();
   const meshAdapter = meshAdapterFactory.buildMeshAdapter(
     options,
-    queryStatistics
+    queryStatistics,
   );
 
   const allTenants = await meshAdapter.getMeshTenants();
@@ -41,7 +41,7 @@ async function listTenantAction(options: CmdGlobalOptions) {
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
-    queryStatistics
+    queryStatistics,
   );
   presenter.present();
 }

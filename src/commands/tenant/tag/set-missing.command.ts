@@ -10,7 +10,7 @@ import { MeshInvalidTagValueError } from "../../../errors.ts";
 
 export const setMissingTags = new Command()
   .description(
-    "Fix all tenants missing the given tag. Collie will ask you per tenant what the value should be and writes the change to the cloud platform(s)."
+    "Fix all tenants missing the given tag. Collie will ask you per tenant what the value should be and writes the change to the cloud platform(s).",
   )
   .action(setMissingTagsAction);
 
@@ -25,11 +25,11 @@ async function setMissingTagsAction(options: CmdGlobalOptions, tagKey: string) {
   const allTenants = await meshAdapter.getMeshTenants();
 
   const tenantsMissingTag = allTenants.filter(
-    (x) => !x.tags.find((y) => y.tagName === tagKey)
+    (x) => !x.tags.find((y) => y.tagName === tagKey),
   );
 
   console.log(
-    `We have identified ${tenantsMissingTag.length} tenants without the tag "${tagKey}". You'll be able to set the tag values for these tenants now.`
+    `We have identified ${tenantsMissingTag.length} tenants without the tag "${tagKey}". You'll be able to set the tag values for these tenants now.`,
   );
 
   let count = 1;
@@ -39,7 +39,7 @@ async function setMissingTagsAction(options: CmdGlobalOptions, tagKey: string) {
       tenant,
       meshAdapter,
       count,
-      tenantsMissingTag.length
+      tenantsMissingTag.length,
     );
     count++;
   }
@@ -50,11 +50,12 @@ async function askAndSetTag(
   tenant: MeshTenant,
   meshAdapter: MeshAdapter,
   count: number,
-  totalCount: number
+  totalCount: number,
 ) {
   const prefix = `(${count}/${totalCount})`;
   const tagValue: string = await Input.prompt({
-    message: `${prefix} For the tenant ${tenant.platformTenantName} (${tenant.platformTenantId}) on ${tenant.platform}, what tag value do you want to set for "${tagKey}"? (Leave empty to skip)`,
+    message:
+      `${prefix} For the tenant ${tenant.platformTenantName} (${tenant.platformTenantId}) on ${tenant.platform}, what tag value do you want to set for "${tagKey}"? (Leave empty to skip)`,
   });
 
   if (tagValue !== "") {
@@ -66,14 +67,14 @@ async function askAndSetTag(
     } catch (e) {
       if (e instanceof MeshInvalidTagValueError) {
         console.log(
-          `You have entered an invalid tag value (${tagValue}) which is not supported by the platform. Please try again with a different value.`
+          `You have entered an invalid tag value (${tagValue}) which is not supported by the platform. Please try again with a different value.`,
         );
         await askAndSetTag(
           tagKey,
           originalTenant,
           meshAdapter,
           count,
-          totalCount
+          totalCount,
         );
       } else {
         throw e;

@@ -1,4 +1,4 @@
-import { ShellRunner } from "../process/shell-runner.ts";
+import { ShellRunner } from "/process/shell-runner.ts";
 import {
   Account,
   AccountResponse,
@@ -13,23 +13,21 @@ import {
   TagResponse,
   User,
   UserResponse,
-} from "/aws/aws.model.ts";
-import { ShellOutput } from "../process/shell-output.ts";
-import { moment } from "../deps.ts";
+} from "/api/aws/aws.model.ts";
+import { ShellOutput } from "/process/shell-output.ts";
+import { moment } from "/deps.ts";
 import {
   AwsErrorCode,
   MeshAwsPlatformError,
   MeshInvalidTagValueError,
   MeshNotLoggedInError,
-} from "../errors.ts";
-import { sleep } from "../promises.ts";
-import { CLICommand, CLIName } from "../config/config.model.ts";
-import { parseJsonWithLog } from "../json.ts";
+} from "/errors.ts";
+import { sleep } from "/promises.ts";
+import { CLICommand, CLIName } from "/config/config.model.ts";
+import { parseJsonWithLog } from "/json.ts";
 
 export class AwsCliFacade {
-  constructor(
-    private readonly shellRunner: ShellRunner,
-  ) {}
+  constructor(private readonly shellRunner: ShellRunner) {}
 
   private readonly errRegexInvalidTagValue =
     /An error occurred \(InvalidInputException\) when calling the TagResource operation: You provided a value that does not match the required pattern/;

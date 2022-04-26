@@ -1,18 +1,18 @@
-import { MeshAdapter } from "../mesh/mesh-adapter.ts";
+import { MeshAdapter } from "/mesh/mesh-adapter.ts";
 import { AwsCliFacade } from "./aws-cli-facade.ts";
 import {
   MeshPlatform,
   MeshTenant,
   MeshTenantCost,
-} from "../mesh/mesh-tenant.model.ts";
+} from "/mesh/mesh-tenant.model.ts";
 import { Account, Credentials, isAccount, User } from "./aws.model.ts";
-import { makeRunWithLimit, moment } from "../deps.ts";
-import { AwsErrorCode, MeshAwsPlatformError, MeshError } from "../errors.ts";
+import { makeRunWithLimit, moment } from "/deps.ts";
+import { AwsErrorCode, MeshAwsPlatformError, MeshError } from "/errors.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
-} from "../mesh/mesh-iam-model.ts";
-import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts";
+} from "/mesh/mesh-iam-model.ts";
+import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
 
 export class AwsMeshAdapter implements MeshAdapter {
   /**
