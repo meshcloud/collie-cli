@@ -3,9 +3,9 @@ import {
   MeshAzurePlatformError,
   MeshAzureRetryableError,
   MeshNotLoggedInError,
-} from "../errors.ts";
-import { ShellOutput } from "../process/shell-output.ts";
-import { ShellRunner } from "../process/shell-runner.ts";
+} from "/errors.ts";
+import { ShellOutput } from "/process/shell-output.ts";
+import { ShellRunner } from "/process/shell-runner.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   Account,
@@ -17,8 +17,8 @@ import {
   Subscription,
   Tag,
 } from "./azure.model.ts";
-import { CLICommand } from "../config/config.model.ts";
-import { parseJsonWithLog } from "../json.ts";
+import { CLICommand } from "/config/config.model.ts";
+import { parseJsonWithLog } from "/json.ts";
 
 interface ConfigValue {
   name: string;
@@ -43,16 +43,13 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       `az config set extension.use_dynamic_install=${value}`,
     );
     this.checkForErrors(result);
-
-    console.debug(`setDynamicInstallValue: ${JSON.stringify(result)}`);
   }
 
   async getDynamicInstallValue(): Promise<DynamicInstallValue | null> {
     const command = "az config get extension.use_dynamic_install";
     const result = await this.shellRunner.run(command);
-    this.checkForErrors(result);
 
-    console.debug(`getDynamicInstallValue: ${JSON.stringify(result)}`);
+    this.checkForErrors(result);
 
     if (result.code == 1) {
       return Promise.resolve(null);
@@ -66,9 +63,8 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   async listSubscriptions(): Promise<Subscription[]> {
     const command = "az account list";
     const result = await this.shellRunner.run(command);
-    this.checkForErrors(result);
 
-    console.debug(`listAccounts: ${JSON.stringify(result)}`);
+    this.checkForErrors(result);
 
     return parseJsonWithLog(result.stdout);
   }
@@ -79,9 +75,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     this.checkForErrors(result);
 
-    console.debug(`listTags: ${JSON.stringify(result)}`);
-
-    return parseJsonWithLog(result.stdout);
+    return await parseJsonWithLog(result.stdout);
   }
 
   async listManagementGroups(): Promise<ManagementGroup[]> {
@@ -116,8 +110,6 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
-
-    console.debug(`putTags: ${JSON.stringify(result)}`);
   }
 
   /**
@@ -139,8 +131,6 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
-
-    console.debug(`getCostManagementInfo: ${JSON.stringify(result)}`);
 
     const costManagementInfo = parseJsonWithLog<CostManagementInfo>(
       result.stdout,
@@ -169,8 +159,6 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
-
-    console.debug(`getRoleAssignments: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog<RoleAssignment[]>(result.stdout);
   }

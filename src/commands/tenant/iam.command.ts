@@ -17,11 +17,11 @@ export function registerIamCommand(program: Command) {
     .command("iam")
     .type("output", OutputFormatType)
     .description(
-      "View all IAM assets applied per tenant. This includes users, groups and technical users that are directly assigned to the tenant."
+      "View all IAM assets applied per tenant. This includes users, groups and technical users that are directly assigned to the tenant.",
     )
     .option(
       "--include-ancestors [includeAncestors:boolean]",
-      "Shows the IAM Role Assignments inherited from an ancestor level as well (Azure Management Groups & Root, GCP Folders & Organizations)"
+      "Shows the IAM Role Assignments inherited from an ancestor level as well (Azure Management Groups & Root, GCP Folders & Organizations)",
     )
     .action(listIamAction);
 }

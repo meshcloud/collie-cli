@@ -15,18 +15,18 @@ export function registerListCommand(program: Command) {
     // type must be added on every level that uses this type. Maybe bug in Cliffy?
     .type("output", OutputFormatType)
     .description(
-      "Returns a list of tenants with their name, id, tags and platform."
+      "Returns a list of tenants with their name, id, tags and platform.",
     )
     .example(
       "List all tenants who have the user john.doe@example.com assigned",
-      `${CLICommand} user list john.doe@example.com`
+      `${CLICommand} user list john.doe@example.com`,
     )
     .action(listUserTenantAction);
 }
 
 async function listUserTenantAction(
   options: CmdGlobalOptions,
-  filterStr: string
+  filterStr: string,
 ) {
   await setupLogger(options);
   await verifyCliAvailability();
@@ -52,7 +52,7 @@ async function listUserTenantAction(
       options.output,
       true, // we want to see inherited access as well
       filteredTenants,
-      filterStr
+      filterStr,
     )
     .present();
 }

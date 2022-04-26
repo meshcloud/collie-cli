@@ -1,24 +1,24 @@
-import { ShellRunner } from "../process/shell-runner.ts";
+import { ShellRunner } from "/process/shell-runner.ts";
 import {
   CostBigQueryResult,
   IamResponse,
   Labels,
   Project,
 } from "./gcp.model.ts";
-import { ShellOutput } from "../process/shell-output.ts";
+import { ShellOutput } from "/process/shell-output.ts";
 import {
   GcpErrorCode,
   MeshGcpPlatformError,
   MeshInvalidTagValueError,
   MeshNotLoggedInError,
-} from "../errors.ts";
+} from "/errors.ts";
 import {
   CLICommand,
   GcpBillingExportConfig,
   GcpCostCollectionViewName,
-} from "../config/config.model.ts";
-import { parseJsonWithLog } from "../json.ts";
-import { moment } from "../deps.ts";
+} from "/config/config.model.ts";
+import { parseJsonWithLog } from "/json.ts";
+import { moment } from "/deps.ts";
 
 export class GcpCliFacade {
   constructor(

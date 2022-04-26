@@ -1,5 +1,5 @@
-import { Confirm } from "../deps.ts";
-import { AzureErrorCode, MeshAzurePlatformError } from "../errors.ts";
+import { Confirm } from "/deps.ts";
+import { AzureErrorCode, MeshAzurePlatformError } from "/errors.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   Account,

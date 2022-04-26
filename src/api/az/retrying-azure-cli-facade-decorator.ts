@@ -1,5 +1,5 @@
-import { MeshAzureRetryableError } from "../errors.ts";
-import { sleep } from "../promises.ts";
+import { MeshAzureRetryableError } from "/errors.ts";
+import { sleep } from "/promises.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   Account,
