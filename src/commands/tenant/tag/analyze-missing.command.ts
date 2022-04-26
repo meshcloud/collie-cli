@@ -1,10 +1,10 @@
-import { bold, Command } from "../../deps.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
-import { setupLogger } from "../../logger.ts";
-import { verifyCliAvailability } from "../../init.ts";
-import { loadConfig } from "../../config/config.model.ts";
-import { MeshAdapterFactory } from "../../mesh/mesh-adapter.factory.ts";
-import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
+import { bold, Command } from "../../../deps.ts";
+import { CmdGlobalOptions } from "../../cmd-options.ts";
+import { setupLogger } from "../../../logger.ts";
+import { verifyCliAvailability } from "../../../init.ts";
+import { loadConfig } from "../../../config/config.model.ts";
+import { MeshAdapterFactory } from "../../../mesh/mesh-adapter.factory.ts";
+import { MeshTenant } from "../../../mesh/mesh-tenant.model.ts";
 
 export const analyzeMissingTags = new Command()
   .description(
