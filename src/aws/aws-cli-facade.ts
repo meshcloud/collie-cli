@@ -13,7 +13,7 @@ import {
   TagResponse,
   User,
   UserResponse,
-} from "./aws.model.ts";
+} from "/aws/aws.model.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import { moment } from "../deps.ts";
 import {
