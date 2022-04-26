@@ -2,7 +2,6 @@ name: releases
 
 on:
   push:
-    branches: ["develop"]
     tags:
       - "v*"
 
@@ -12,17 +11,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Merge develop -> main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git fetch origin main
-          git fetch origin develop
-          git checkout main
-          git merge develop --ff-only
-          git push origin main
 
       - name: new-version
         id: version
@@ -46,7 +34,7 @@ jobs:
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow: build.yml
           workflow_conclusion: success
-          branch: develop
+          commit: ${{github.event.push.head.sha}} # note: by the time this workflow runs, we expect the tagged commit build has already succeeded
           event: push
           path: bin/
 
