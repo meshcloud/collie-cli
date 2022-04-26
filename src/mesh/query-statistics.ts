@@ -6,8 +6,8 @@ export class QueryStatistics {
   duration: DurationContainer = {};
 
   /**
-   * With the level you control if the statistics are overwritten.
-   * As soon as a higher level comes in the last entries are cleared.
+   * With the layer you control if the statistics are overwritten.
+   * As soon as a higher layer comes in the last entries are cleared.
    * Its helpful to "write through" e.g. if you have a cache which
    * calls through a deeper layer and you want to have the deeper layer
    * take precedence.
@@ -34,6 +34,7 @@ export class QueryStatistics {
 
     if (layer > this.lastLayerLogged) {
       this.lastLayerLogged = layer;
+      // clear current layer
       this.duration = {};
       this.duration[source] = (this.duration[source] || 0) + passed;
     }
