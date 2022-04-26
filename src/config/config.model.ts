@@ -1,4 +1,3 @@
-import { readFile, writeFile } from "../commands/io.ts";
 import { ensureDir, path } from "../deps.ts";
 import { parseJsonWithLog } from "../json.ts";
 import { isWindows } from "../os.ts";
@@ -29,14 +28,13 @@ export const GcpCostCollectionViewName = "collie_billing_view";
 export interface Config {
   connected: ConnectedConfig;
   cache: CacheConfig;
-  azure: {
-    parentManagementGroups: string[];
-  };
+  azure: Record<never, never>;
   aws: {
     selectedProfile?: string;
     accountAccessRole?: string;
   };
-  gcp?: { // Older versions of Collie might not have this property set up so we need to account for that scenario.
+  gcp?: {
+    // Older versions of Collie might not have this property set up so we need to account for that scenario.
     billingExport?: GcpBillingExportConfig;
   };
 }
@@ -73,20 +71,20 @@ export const emptyConfig: Config = {
   cache: {
     evictionDelayHrs: 24,
   },
-  azure: {
-    parentManagementGroups: [],
-  },
+  azure: {},
   aws: {},
   gcp: {},
 };
 
 export function loadConfig(): Config {
-  const config = parseJsonWithLog<Config>(readFile(configFilePath));
+  const config = parseJsonWithLog<Config>(
+    Deno.readTextFileSync(configFilePath)
+  );
 
   return Object.assign(emptyConfig, config);
 }
 
 export async function writeConfig(config: Config) {
   await ensureDir(path.dirname(configFilePath));
-  writeFile(configFilePath, JSON.stringify(config, null, 2));
+  await Deno.writeTextFile(configFilePath, JSON.stringify(config, null, 2));
 }

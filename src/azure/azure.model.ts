@@ -3,6 +3,22 @@ export interface User {
   type: string;
 }
 
+
+/**
+ * Output of az account show
+ */
+export interface Account {
+  tenantId: string;
+}
+
+export interface ManagementGroup {
+  displayName: string;
+  id: string;
+  name: string;
+  tenantId: string;
+  type: string;
+}
+
 export interface Subscription {
   cloudName: string;
   homeTenantId: string;
@@ -22,14 +38,16 @@ export interface Tag {
 
   id: string;
   tagName: string;
-  values: [{
-    count: {
-      type: string;
-      value: number;
-    };
-    id: string;
-    tagValue: string;
-  }];
+  values: [
+    {
+      count: {
+        type: string;
+        value: number;
+      };
+      id: string;
+      tagValue: string;
+    }
+  ];
 }
 
 // Used to convert from a MeshTag to an Azure Tag that azure cli can understand
@@ -84,7 +102,7 @@ export interface SimpleCostManagementInfo {
 
 export function isSubscription(
   // deno-lint-ignore no-explicit-any
-  object: any,
+  object: any
 ): object is Subscription {
   return "tenantId" in object && "id" in object;
 }

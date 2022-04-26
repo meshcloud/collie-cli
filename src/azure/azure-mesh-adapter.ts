@@ -28,14 +28,13 @@ import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts
 export class AzureMeshAdapter implements MeshAdapter {
   constructor(
     private readonly azureCli: AzureCliFacade,
-    private readonly timeWindowCalculator: TimeWindowCalculator,
-    private readonly tenantChangeDetector: MeshTenantChangeDetector,
+    private readonly tenantChangeDetector: MeshTenantChangeDetector
   ) {}
 
   async attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<void> {
     // Only work on Azure tenants
     const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
@@ -44,45 +43,33 @@ export class AzureMeshAdapter implements MeshAdapter {
       throw new MeshError("endDate must be after startDate");
     }
 
-    const config = loadConfig();
-    if (config.azure.parentManagementGroups.length == 0) {
-      console.log(
-        "It seems you have not configured a Azure Management Group for Subscription lookup. " +
-          `Because of a bug in the Azure API, ${CLIName} can not detect this automatically. By ` +
-          "configuring an Azure management group, cost & usage information lookups are significantly faster. " +
-          `Run '${CLICommand} config azure -h' for more information.`,
-      );
-      await this.getTenantCostsWithSingleQueries(
-        azureTenants,
-        startDate,
-        endDate,
-      );
-    } else {
-      await this.getTenantCostsWithManagementGroupQuery(
-        config.azure.parentManagementGroups,
-        azureTenants,
-        startDate,
-        endDate,
-      );
-    }
+    const account = await this.azureCli.getAccount();
+    const managementGroups = [account.tenantId]; // fetch only the root tenant management group as it includes all subscriptions in the entire tenant
+
+    await this.getTenantCostsWithManagementGroupQuery(
+      managementGroups,
+      azureTenants,
+      startDate,
+      endDate
+    );
   }
 
   private async getTenantCostsWithManagementGroupQuery(
-    managementGroupIds: string[],
+    managementGroups: string[],
     azureTenants: MeshTenant[],
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<void> {
     // Only work on Azure tenants
     const from = moment(startDate).format("YYYY-MM-DDT00:00:00");
     const to = moment(endDate).format("YYYY-MM-DDT23:59:59");
 
     const costInformations = [];
-    for (const mgmntGroupId of managementGroupIds) {
+    for (const mgmntGroupId of managementGroups) {
       const costInformation = await this.azureCli.getCostManagementInfo(
         mgmntGroupId,
         from,
-        to,
+        to
       );
       costInformations.push(...costInformation);
     }
@@ -98,7 +85,7 @@ export class AzureMeshAdapter implements MeshAdapter {
         if (currencySymbols.get(ci.subscriptionId) !== ci.currency) {
           throw new MeshAzurePlatformError(
             AzureErrorCode.AZURE_CLI_GENERAL,
-            "Encountered two different currencies within one Subscription during cost collection. This is currently not supported.",
+            "Encountered two different currencies within one Subscription during cost collection. This is currently not supported."
           );
         }
       }
@@ -122,52 +109,14 @@ export class AzureMeshAdapter implements MeshAdapter {
     }
   }
 
-  private async getTenantCostsWithSingleQueries(
-    azureTenants: MeshTenant[],
-    startDate: Date,
-    endDate: Date,
-  ): Promise<void> {
-    const timeWindows = this.timeWindowCalculator.calculateTimeWindows(
-      startDate,
-      endDate,
-    );
-
-    for (const t of azureTenants) {
-      const results = [];
-      for (const tw of timeWindows) {
-        console.debug(
-          `Quering Azure for tenant ${t.platformTenantName}: ${
-            JSON.stringify(tw)
-          }`,
-        );
-
-        try {
-          const result = await this.getTenantCostsForWindow(t, tw);
-          results.push(result);
-        } catch (e) {
-          if (
-            e instanceof MeshAzurePlatformError &&
-            e.errorCode === AzureErrorCode.AZURE_INVALID_SUBSCRIPTION
-          ) {
-            console.error(
-              `The Subscription ${t.platformTenantId} can not be cost collected as Azure only supports Enterprise Agreement, Web Direct and Customer Agreements offer type Subscriptions to get cost collected via API.`,
-            );
-          }
-        }
-      }
-
-      t.costs.push(...results);
-    }
-  }
-
   private async getTenantCostsForWindow(
     tenant: MeshTenant,
-    timeWindow: TimeWindow,
+    timeWindow: TimeWindow
   ): Promise<MeshTenantCost> {
     if (!isSubscription(tenant.nativeObj)) {
       throw new MeshAzurePlatformError(
         AzureErrorCode.AZURE_TENANT_IS_NOT_SUBSCRIPTION,
-        "Given tenant did not contain an Azure Subscription native object",
+        "Given tenant did not contain an Azure Subscription native object"
       );
     }
 
@@ -176,7 +125,7 @@ export class AzureMeshAdapter implements MeshAdapter {
     const tenantCostInfo = await this.azureCli.getConsumptionInformation(
       tenant.nativeObj,
       timeWindow.from,
-      timeWindow.to,
+      timeWindow.to
     );
 
     console.debug(`Fetched ${tenantCostInfo.length} cost infos from Azure`);
@@ -193,7 +142,7 @@ export class AzureMeshAdapter implements MeshAdapter {
         if (tci.currency !== currencySymbol) {
           throw new MeshAzurePlatformError(
             AzureErrorCode.AZURE_CLI_GENERAL,
-            `Encountered two different currency during cost collection for tenant ${tenant.platformTenantId}. This is currently not supported.`,
+            `Encountered two different currency during cost collection for tenant ${tenant.platformTenantId}. This is currently not supported.`
           );
         }
       }
@@ -209,7 +158,7 @@ export class AzureMeshAdapter implements MeshAdapter {
   }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
-    const subscriptions = await this.azureCli.listAccounts();
+    const subscriptions = await this.azureCli.listSubscriptions();
 
     return Promise.all(
       subscriptions.map(async (sub) => {
@@ -225,7 +174,7 @@ export class AzureMeshAdapter implements MeshAdapter {
           costs: [],
           roleAssignments: [],
         };
-      }),
+      })
     );
   }
 
@@ -240,22 +189,22 @@ export class AzureMeshAdapter implements MeshAdapter {
   }
 
   private async loadRoleAssignmentsForTenant(
-    tenant: MeshTenant,
+    tenant: MeshTenant
   ): Promise<MeshTenantRoleAssignment[]> {
     if (!isSubscription(tenant.nativeObj)) {
       throw new MeshAzurePlatformError(
         AzureErrorCode.AZURE_TENANT_IS_NOT_SUBSCRIPTION,
-        "Given tenant did not contain an Azure Subscription native object",
+        "Given tenant did not contain an Azure Subscription native object"
       );
     }
 
     const roleAssignments = await this.azureCli.getRoleAssignments(
-      tenant.nativeObj,
+      tenant.nativeObj
     );
 
     return roleAssignments.map((x) => {
       const { assignmentSource, assignmentId } = this.getAssignmentFromScope(
-        x.scope,
+        x.scope
       );
 
       return {
@@ -281,7 +230,7 @@ export class AzureMeshAdapter implements MeshAdapter {
       default:
         throw new MeshAzurePlatformError(
           AzureErrorCode.AZURE_UNKNOWN_PRINCIPAL_TYPE,
-          "Found unknown principalType for Azure: " + principalType,
+          "Found unknown principalType for Azure: " + principalType
         );
     }
   }
@@ -294,9 +243,10 @@ export class AzureMeshAdapter implements MeshAdapter {
     });
   }
 
-  private getAssignmentFromScope(
-    scope: string,
-  ): { assignmentId: string; assignmentSource: MeshRoleAssignmentSource } {
+  private getAssignmentFromScope(scope: string): {
+    assignmentId: string;
+    assignmentSource: MeshRoleAssignmentSource;
+  } {
     const map: { [key in MeshRoleAssignmentSource]: RegExp } = {
       Organization: /^\/$/, // This means string should equal exactly to "/".
       Ancestor: /\/managementGroups\//,
@@ -313,13 +263,13 @@ export class AzureMeshAdapter implements MeshAdapter {
     }
     throw new MeshAzurePlatformError(
       AzureErrorCode.AZURE_UNKNOWN_PRINCIPAL_ASSIGNMENT_SOURCE,
-      "Could not detect assignment source from scope: " + scope,
+      "Could not detect assignment source from scope: " + scope
     );
   }
 
   async updateMeshTenant(
     updatedTenant: MeshTenant,
-    originalTenant: MeshTenant,
+    originalTenant: MeshTenant
   ): Promise<void> {
     if (!isSubscription(updatedTenant.nativeObj)) {
       return Promise.resolve();
@@ -327,12 +277,12 @@ export class AzureMeshAdapter implements MeshAdapter {
 
     const changedTags = this.tenantChangeDetector.getChangedTags(
       updatedTenant.tags,
-      originalTenant.tags,
+      originalTenant.tags
     );
 
     await this.azureCli.putTags(
       updatedTenant.nativeObj,
-      changedTags.map((x) => ({ tagName: x.tagName, values: x.tagValues })),
+      changedTags.map((x) => ({ tagName: x.tagName, values: x.tagValues }))
     );
   }
 }

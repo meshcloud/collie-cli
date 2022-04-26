@@ -9,9 +9,11 @@ import { ShellRunner } from "../process/shell-runner.ts";
 import { moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
+Account,
   AzureMeshTag,
   ConsumptionInfo,
   CostManagementInfo,
+  ManagementGroup,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
@@ -42,7 +44,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
   async setDynamicInstallValue(value: DynamicInstallValue) {
     const result = await this.shellRunner.run(
-      `az config set extension.use_dynamic_install=${value}`,
+      `az config set extension.use_dynamic_install=${value}`
     );
     this.checkForErrors(result);
 
@@ -67,7 +69,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     return Promise.resolve(cv.value);
   }
 
-  async listAccounts(): Promise<Subscription[]> {
+  async listSubscriptions(): Promise<Subscription[]> {
     const command = "az account list";
     const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
@@ -82,27 +84,31 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     const result = await this.shellRunner.run(
       command,
     );
+    
+    this.checkForErrors(result);
 
-    // we need to catch the case where certain subscriptions might not be accessible for the user.
-    // we will just ignore this in that case and continue.
-    try {
-      this.checkForErrors(result);
-    } catch (e) {
-      if (
-        e instanceof MeshAzurePlatformError &&
-        e.errorCode == AzureErrorCode.AZURE_UNAUTHORIZED
-      ) {
-        console.error(
-          `Could not list tags for Subscription ${subscription.id}: Access was denied`,
-        );
-
-        return Promise.resolve([]);
-      }
-    }
 
     console.debug(`listTags: ${JSON.stringify(result)}`);
 
     return parseJsonWithLog(result.stdout);
+  }
+
+  async listManagementGroups(): Promise<ManagementGroup[]> {
+    const command = `az account management-group list`;
+    const result = await this.shellRunner.run(command);
+
+    this.checkForErrors(result);
+
+    return await parseJsonWithLog(result.stdout);
+  }
+
+  async getAccount(): Promise<Account> {
+    const command = `az account show`;
+    const result = await this.shellRunner.run(command);
+
+    this.checkForErrors(result);
+
+    return await parseJsonWithLog(result.stdout);
   }
 
   /**
@@ -113,8 +119,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   async putTags(subscription: Subscription, tags: AzureMeshTag[]) {
     const tagsString = tags.map((x) => `${x.tagName}=${x.values.join(",")}`)
       .join(" ");
-    const command =
-      `az tag create --resource-id /subscriptions/${subscription.id} --tags ${tagsString}`;
+    const command = `az tag create --resource-id /subscriptions/${subscription.id} --tags ${tagsString}`;
 
     const result = await this.shellRunner.run(
       command,
@@ -135,7 +140,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   async getCostManagementInfo(
     mgmtGroupId: string,
     from: string,
-    to: string,
+    to: string
   ): Promise<SimpleCostManagementInfo[]> {
     const cmd =
       `az costmanagement query --type AmortizedCost --dataset-aggregation {"totalCost":{"name":"PreTaxCost","function":"Sum"}} ` +
@@ -147,11 +152,11 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     console.debug(`getCostManagementInfo: ${JSON.stringify(result)}`);
 
     const costManagementInfo = parseJsonWithLog<CostManagementInfo>(
-      result.stdout,
+      result.stdout
     );
     if (costManagementInfo.nextLinks != null) {
       console.error(
-        `Azure response signals that there is paging information available, but we are unable to fetch it. So the results are possibly incomplete.`,
+        `Azure response signals that there is paging information available, but we are unable to fetch it. So the results are possibly incomplete.`
       );
     }
 
@@ -171,12 +176,11 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   async getConsumptionInformation(
     subscription: Subscription,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<ConsumptionInfo[]> {
     const startDateStr = moment(startDate).format("YYYY-MM-DD");
     const endDateStr = moment(endDate).format("YYYY-MM-DD");
-    const cmd =
-      `az consumption usage list --subscription ${subscription.id} --start-date ${startDateStr} --end-date ${endDateStr}`;
+    const cmd = `az consumption usage list --subscription ${subscription.id} --start-date ${startDateStr} --end-date ${endDateStr}`;
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
@@ -187,10 +191,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   async getRoleAssignments(
-    subscription: Subscription,
+    subscription: Subscription
   ): Promise<RoleAssignment[]> {
-    const cmd =
-      `az role assignment list --subscription ${subscription.id} --include-inherited --all --output json`;
+    const cmd = `az role assignment list --subscription ${subscription.id} --include-inherited --all --output json`;
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
@@ -208,13 +211,13 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
         throw new MeshAzurePlatformError(
           AzureErrorCode.AZURE_CLI_MISSING_EXTENSION,
-          `Missing the Azure cli extention: ${missingExtension}, please install it first.`,
+          `Missing the Azure cli extention: ${missingExtension}, please install it first.`
         );
       }
 
       throw new MeshAzurePlatformError(
         AzureErrorCode.AZURE_CLI_GENERAL,
-        `Error executing Azure CLI: ${result.stdout} - ${result.stderr}`,
+        `Error executing Azure CLI: ${result.stdout} - ${result.stderr}`
       );
     } else if (result.code == 1) {
       // Too many requests error
@@ -224,7 +227,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
         throw new MeshAzureRetryableError(
           AzureErrorCode.AZURE_TOO_MANY_REQUESTS,
-          delayS,
+          delayS
         );
       }
 
@@ -238,7 +241,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       if (errMatch) {
         throw new MeshAzurePlatformError(
           AzureErrorCode.AZURE_INVALID_SUBSCRIPTION,
-          "Subscription cost could not be requested via the Cost Management API",
+          "Subscription cost could not be requested via the Cost Management API"
         );
       }
 
@@ -246,14 +249,14 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       if (errMatch) {
         throw new MeshAzurePlatformError(
           AzureErrorCode.AZURE_UNAUTHORIZED,
-          "Request could not be made because the current user is not allowed to access this resource",
+          "Request could not be made because the current user is not allowed to access this resource"
         );
       }
 
       // We encountered an error so we will just throw here.
       throw new MeshAzurePlatformError(
         AzureErrorCode.AZURE_CLI_GENERAL,
-        result.stderr,
+        result.stderr
       );
     }
 
@@ -265,7 +268,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       result.stderr.includes("AADSTS700082")
     ) {
       console.log(
-        `You are not logged in into Azure CLI. Please login with "az login" or disconnect with "${CLICommand} config --disconnect Azure".`,
+        `You are not logged in into Azure CLI. Please login with "az login" or disconnect with "${CLICommand} config --disconnect Azure".`
       );
       throw new MeshNotLoggedInError(`"${result.stderr.replace("\n", "")}"`);
     }
