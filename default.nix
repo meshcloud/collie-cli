@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs> { } }:
+{ pkgs ? import <nixpkgs-unstable> { } }:
 
 pkgs.mkShell {
   NIX_SHELL = "collie-cli";
