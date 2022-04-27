@@ -1,7 +1,6 @@
 import {
   Account,
   AzureMeshTag,
-  ConsumptionInfo,
   ManagementGroup,
   RoleAssignment,
   SimpleCostManagementInfo,
@@ -25,14 +24,10 @@ export interface AzureCliFacade {
   putTags(subscription: Subscription, tags: AzureMeshTag[]): Promise<void>;
 
   getCostManagementInfo(
-    mgmtGroupId: string,
+    scope: string,
     from: string,
     to: string
   ): Promise<SimpleCostManagementInfo[]>;
-  getConsumptionInformation(
-    subscription: Subscription,
-    startDate: Date,
-    endDate: Date
-  ): Promise<ConsumptionInfo[]>;
+  
   getRoleAssignments(subscription: Subscription): Promise<RoleAssignment[]>;
 }

@@ -4,7 +4,6 @@ import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
 Account,
   AzureMeshTag,
-  ConsumptionInfo,
   ManagementGroup,
   RoleAssignment,
   SimpleCostManagementInfo,
@@ -20,11 +19,11 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   constructor(private readonly azureFacade: AzureCliFacade) {}
 
   async getCostManagementInfo(
-    mgmtGroupId: string,
+    scope: string,
     from: string,
     to: string
   ): Promise<SimpleCostManagementInfo[]> {
-    return await this.azureFacade.getCostManagementInfo(mgmtGroupId, from, to);
+    return await this.azureFacade.getCostManagementInfo(scope, from, to);
   }
 
   setDynamicInstallValue(value: DynamicInstallValue): void {
@@ -62,20 +61,6 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   putTags(subscription: Subscription, tags: AzureMeshTag[]): Promise<void> {
     return this.wrapCallWithInstallInterception(() => {
       return this.azureFacade.putTags(subscription, tags);
-    });
-  }
-
-  async getConsumptionInformation(
-    subscription: Subscription,
-    startDate: Date,
-    endDate: Date
-  ): Promise<ConsumptionInfo[]> {
-    return await this.wrapCallWithInstallInterception(() => {
-      return this.azureFacade.getConsumptionInformation(
-        subscription,
-        startDate,
-        endDate
-      );
     });
   }
 

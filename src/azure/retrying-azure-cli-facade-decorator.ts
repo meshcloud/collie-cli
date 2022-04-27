@@ -4,7 +4,6 @@ import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
   Account,
   AzureMeshTag,
-  ConsumptionInfo,
   ManagementGroup,
   RoleAssignment,
   SimpleCostManagementInfo,
@@ -21,12 +20,12 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
   constructor(private readonly wrapped: AzureCliFacade) {}
 
   async getCostManagementInfo(
-    mgmtGroupId: string,
+    scope: string,
     from: string,
     to: string
   ): Promise<SimpleCostManagementInfo[]> {
     return await this.retryable(async () => {
-      return await this.wrapped.getCostManagementInfo(mgmtGroupId, from, to);
+      return await this.wrapped.getCostManagementInfo(scope, from, to);
     });
   }
 
@@ -66,20 +65,6 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
     return this.wrapped.putTags(subscription, tags);
   }
 
-  async getConsumptionInformation(
-    subscription: Subscription,
-    startDate: Date,
-    endDate: Date
-  ): Promise<ConsumptionInfo[]> {
-    return await this.retryable(async () => {
-      return await this.wrapped.getConsumptionInformation(
-        subscription,
-        startDate,
-        endDate
-      );
-    });
-  }
-
   async getRoleAssignments(
     subscription: Subscription
   ): Promise<RoleAssignment[]> {
@@ -99,7 +84,7 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
           );
         }
 
-        console.debug("Cought retryable error");
+        console.debug("caught retryable error");
         await sleep(e.retryInSeconds * 1000 + 500);
 
         return await fn();

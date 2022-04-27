@@ -15,6 +15,7 @@ export {
   existsSync,
 } from "https://deno.land/std@0.116.0/fs/mod.ts";
 export * as path from "https://deno.land/std@0.116.0/path/mod.ts";
+export * as async from "https://deno.land/std@0.116.0/async/mod.ts";
 export {
   bold,
   brightBlue,
