@@ -3,6 +3,7 @@ import {
   Account,
   AccountResponse,
   AssumedRoleResponse,
+  CallerIdentity,
   CostResponse,
   Credentials,
   Group,
@@ -25,12 +26,43 @@ import {
 import { sleep } from "/promises.ts";
 import { CLICommand, CLIName } from "/config/config.model.ts";
 import { parseJsonWithLog } from "/json.ts";
+import { PlatformCommandInstallationStatus } from "../../cli-detector.ts";
+import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
 
-export class AwsCliFacade {
+export class AwsCliFacade implements CliFacade {
   constructor(private readonly shellRunner: ShellRunner) {}
 
   private readonly errRegexInvalidTagValue =
     /An error occurred \(InvalidInputException\) when calling the TagResource operation: You provided a value that does not match the required pattern/;
+
+  async verifyCliInstalled(): Promise<CliInstallationStatus> {
+    const result = await this.runVersionCommand();
+
+    return {
+      cli: "aws",
+      status: this.determineInstallationStatus(result),
+    };
+  }
+
+  private determineInstallationStatus(result: ShellOutput) {
+    if (result.code !== 0) {
+      return PlatformCommandInstallationStatus.NotInstalled;
+    }
+
+    const regex = /^aws-cli\/2\./;
+
+    return regex.test(result.stdout)
+      ? PlatformCommandInstallationStatus.Installed
+      : PlatformCommandInstallationStatus.UnsupportedVersion;
+  }
+
+  private async runVersionCommand(): Promise<ShellOutput> {
+    try {
+      return await this.shellRunner.run(`aws --version`);
+    } catch {
+      return { code: -1, stderr: "", stdout: "" };
+    }
+  }
 
   async listAccounts(): Promise<Account[]> {
     let nextToken = null;
@@ -115,7 +147,7 @@ export class AwsCliFacade {
    * For debugging: will return the identity AWS thinks you are.
    * @param credential Assumed credentials.
    */
-  async printCallerIdentity(credential?: Credentials) {
+  async getCallerIdentity(credential?: Credentials) {
     const command = "aws sts get-caller-identity";
     const result = await this.shellRunner.run(
       command,
@@ -123,7 +155,7 @@ export class AwsCliFacade {
     );
     this.checkForErrors(result);
 
-    console.log(result.stdout);
+    return parseJsonWithLog<CallerIdentity>(result.stdout);
   }
 
   async listUsers(credential: Credentials): Promise<User[]> {

@@ -63,6 +63,12 @@ export interface Credentials {
   Expiration: string;
 }
 
+export interface CallerIdentity {
+  UserId: string;
+  Account: string;
+  Arn: string;
+}
+
 export interface AssumedRoleUser {
   AssumedRoleId: string;
   Arn: string;
