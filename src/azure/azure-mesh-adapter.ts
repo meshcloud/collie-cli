@@ -46,8 +46,8 @@ export class AzureMeshAdapter implements MeshAdapter {
     endDate: Date
   ): Promise<void> {
     // Only work on Azure tenants
-    const from = moment(startDate).format("YYYY-MM-DDT00:00:00");
-    const to = moment(endDate).format("YYYY-MM-DDT23:59:59");
+    const from = startDate.toISOString();
+    const to = endDate.toISOString();
 
     const costInformations = [];
 
@@ -111,7 +111,7 @@ export class AzureMeshAdapter implements MeshAdapter {
       });
     }
   }
- 
+
   async getMeshTenants(): Promise<MeshTenant[]> {
     const account = await this.azureCli.getAccount();
     const subscriptions = await this.azureCli.listSubscriptions();
