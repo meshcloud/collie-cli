@@ -6,12 +6,10 @@ import {
 } from "../errors.ts";
 import { ShellOutput } from "../process/shell-output.ts";
 import { ShellRunner } from "../process/shell-runner.ts";
-import { moment } from "../deps.ts";
 import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
 import {
-Account,
+  Account,
   AzureMeshTag,
-  ConsumptionInfo,
   CostManagementInfo,
   ManagementGroup,
   RoleAssignment,
@@ -29,9 +27,7 @@ interface ConfigValue {
 }
 
 export class BasicAzureCliFacade implements AzureCliFacade {
-  constructor(
-    private readonly shellRunner: ShellRunner,
-  ) {}
+  constructor(private readonly shellRunner: ShellRunner) {}
 
   private readonly errRegexExtensionMissing =
     /ERROR: The command requires the extension (\w+)/;
@@ -53,9 +49,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
   async getDynamicInstallValue(): Promise<DynamicInstallValue | null> {
     const command = "az config get extension.use_dynamic_install";
-    const result = await this.shellRunner.run(
-      command,
-    );
+    const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
 
     console.debug(`getDynamicInstallValue: ${JSON.stringify(result)}`);
@@ -81,12 +75,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
   async listTags(subscription: Subscription): Promise<Tag[]> {
     const command = `az tag list --subscription ${subscription.id}`;
-    const result = await this.shellRunner.run(
-      command,
-    );
-    
-    this.checkForErrors(result);
+    const result = await this.shellRunner.run(command);
 
+    this.checkForErrors(result);
 
     console.debug(`listTags: ${JSON.stringify(result)}`);
 
@@ -117,13 +108,12 @@ export class BasicAzureCliFacade implements AzureCliFacade {
    * @param tags The list of tags put onto the subscription.
    */
   async putTags(subscription: Subscription, tags: AzureMeshTag[]) {
-    const tagsString = tags.map((x) => `${x.tagName}=${x.values.join(",")}`)
+    const tagsString = tags
+      .map((x) => `${x.tagName}=${x.values.join(",")}`)
       .join(" ");
     const command = `az tag create --resource-id /subscriptions/${subscription.id} --tags ${tagsString}`;
 
-    const result = await this.shellRunner.run(
-      command,
-    );
+    const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
 
     console.debug(`putTags: ${JSON.stringify(result)}`);
@@ -138,13 +128,13 @@ export class BasicAzureCliFacade implements AzureCliFacade {
    * @returns
    */
   async getCostManagementInfo(
-    mgmtGroupId: string,
+    scope: string,
     from: string,
     to: string
   ): Promise<SimpleCostManagementInfo[]> {
     const cmd =
       `az costmanagement query --type AmortizedCost --dataset-aggregation {"totalCost":{"name":"PreTaxCost","function":"Sum"}} ` +
-      `--dataset-grouping name=SubscriptionId type=Dimension --timeframe Custom --time-period from=${from} to=${to} --scope providers/Microsoft.Management/managementGroups/${mgmtGroupId}`;
+      `--dataset-grouping name=SubscriptionId type=Dimension --timeframe Custom --time-period from=${from} to=${to} --scope ${scope}`;
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
@@ -168,26 +158,6 @@ export class BasicAzureCliFacade implements AzureCliFacade {
         currency: r[3],
       };
     });
-  }
-
-  /**
-   * Uses the consumptions API on a per Subscription level. This is quite costly to query for every Subscription.
-   */
-  async getConsumptionInformation(
-    subscription: Subscription,
-    startDate: Date,
-    endDate: Date
-  ): Promise<ConsumptionInfo[]> {
-    const startDateStr = moment(startDate).format("YYYY-MM-DD");
-    const endDateStr = moment(endDate).format("YYYY-MM-DD");
-    const cmd = `az consumption usage list --subscription ${subscription.id} --start-date ${startDateStr} --end-date ${endDateStr}`;
-
-    const result = await this.shellRunner.run(cmd);
-    this.checkForErrors(result);
-
-    console.debug(`getConsumptionInformation: ${JSON.stringify(result)}`);
-
-    return parseJsonWithLog(result.stdout);
   }
 
   async getRoleAssignments(

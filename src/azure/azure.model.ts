@@ -56,34 +56,7 @@ export interface AzureMeshTag {
   values: string[];
 }
 
-/**
- * This is hardcoded to match the response from the used CLI call.
- * If the call is modified this structure needs to be adapted as well.
- */
-export interface ConsumptionInfo {
-  id: string;
-  accountName: string | null;
-  bellingPeriodId: string;
-  consumedService: string;
-  costCenter: string | null;
-  currency: string;
-  instanceId: string;
-  instanceLocation: string;
-  instanceName: string;
-  invoiceId: string | null;
-  meterId: string;
-  isEstimated: boolean;
-  name: string;
-  pretaxCost: string; // sadly a string needs to be converted into a number later on
-  subscriptionGuid: string;
-  subscriptionName: string;
-  tags: { [key: string]: string };
-  type: string;
-  usageEnd: string;
-  usageQuantity: string;
-  usageStart: string;
-}
-
+ 
 export interface CostManagementInfo {
   columns: [{ name: string; type: string }];
   id: string;
