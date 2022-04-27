@@ -22,13 +22,13 @@ import { MeshTenantChangeDetector } from "../mesh/mesh-tenant-change-detector.ts
 export class AzureMeshAdapter implements MeshAdapter {
   constructor(
     private readonly azureCli: AzureCliFacade,
-    private readonly tenantChangeDetector: MeshTenantChangeDetector
+    private readonly tenantChangeDetector: MeshTenantChangeDetector,
   ) {}
 
   async attachTenantCosts(
     tenants: MeshTenant[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<void> {
     // Only work on Azure tenants
     const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
@@ -43,7 +43,7 @@ export class AzureMeshAdapter implements MeshAdapter {
   private async getTenantCosts(
     azureTenants: MeshTenant[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<void> {
     // Only work on Azure tenants
     const from = startDate.toISOString();
@@ -61,7 +61,7 @@ export class AzureMeshAdapter implements MeshAdapter {
      */
 
     const scopes = azureTenants.map(
-      (x) => `/subscriptions/${x.platformTenantId}`
+      (x) => `/subscriptions/${x.platformTenantId}`,
     );
 
     // limit concurrency because we will run into azure rate limites for sure if we set this off all at once
@@ -70,7 +70,7 @@ export class AzureMeshAdapter implements MeshAdapter {
       concurrencyLimit,
       scopes,
       async (scope) =>
-        await this.azureCli.getCostManagementInfo(scope, from, to)
+        await this.azureCli.getCostManagementInfo(scope, from, to),
     );
 
     for await (const c of getCostsIterator) {
@@ -88,7 +88,7 @@ export class AzureMeshAdapter implements MeshAdapter {
         if (currencySymbols.get(ci.subscriptionId) !== ci.currency) {
           throw new MeshAzurePlatformError(
             AzureErrorCode.AZURE_CLI_GENERAL,
-            "Encountered two different currencies within one Subscription during cost collection. This is currently not supported."
+            "Encountered two different currencies within one Subscription during cost collection. This is currently not supported.",
           );
         }
       }
@@ -147,22 +147,22 @@ export class AzureMeshAdapter implements MeshAdapter {
   }
 
   private async loadRoleAssignmentsForTenant(
-    tenant: MeshTenant
+    tenant: MeshTenant,
   ): Promise<MeshTenantRoleAssignment[]> {
     if (!isSubscription(tenant.nativeObj)) {
       throw new MeshAzurePlatformError(
         AzureErrorCode.AZURE_TENANT_IS_NOT_SUBSCRIPTION,
-        "Given tenant did not contain an Azure Subscription native object"
+        "Given tenant did not contain an Azure Subscription native object",
       );
     }
 
     const roleAssignments = await this.azureCli.getRoleAssignments(
-      tenant.nativeObj
+      tenant.nativeObj,
     );
 
     return roleAssignments.map((x) => {
       const { assignmentSource, assignmentId } = this.getAssignmentFromScope(
-        x.scope
+        x.scope,
       );
 
       return {
@@ -188,7 +188,7 @@ export class AzureMeshAdapter implements MeshAdapter {
       default:
         throw new MeshAzurePlatformError(
           AzureErrorCode.AZURE_UNKNOWN_PRINCIPAL_TYPE,
-          "Found unknown principalType for Azure: " + principalType
+          "Found unknown principalType for Azure: " + principalType,
         );
     }
   }
@@ -221,13 +221,13 @@ export class AzureMeshAdapter implements MeshAdapter {
     }
     throw new MeshAzurePlatformError(
       AzureErrorCode.AZURE_UNKNOWN_PRINCIPAL_ASSIGNMENT_SOURCE,
-      "Could not detect assignment source from scope: " + scope
+      "Could not detect assignment source from scope: " + scope,
     );
   }
 
   async updateMeshTenant(
     updatedTenant: MeshTenant,
-    originalTenant: MeshTenant
+    originalTenant: MeshTenant,
   ): Promise<void> {
     if (!isSubscription(updatedTenant.nativeObj)) {
       return Promise.resolve();
@@ -235,12 +235,12 @@ export class AzureMeshAdapter implements MeshAdapter {
 
     const changedTags = this.tenantChangeDetector.getChangedTags(
       updatedTenant.tags,
-      originalTenant.tags
+      originalTenant.tags,
     );
 
     await this.azureCli.putTags(
       updatedTenant.nativeObj,
-      changedTags.map((x) => ({ tagName: x.tagName, values: x.tagValues }))
+      changedTags.map((x) => ({ tagName: x.tagName, values: x.tagValues })),
     );
   }
 }

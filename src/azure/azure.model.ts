@@ -3,7 +3,6 @@ export interface User {
   type: string;
 }
 
-
 /**
  * Output of az account show
  */
@@ -46,7 +45,7 @@ export interface Tag {
       };
       id: string;
       tagValue: string;
-    }
+    },
   ];
 }
 
@@ -56,7 +55,6 @@ export interface AzureMeshTag {
   values: string[];
 }
 
- 
 export interface CostManagementInfo {
   columns: [{ name: string; type: string }];
   id: string;
@@ -75,7 +73,7 @@ export interface SimpleCostManagementInfo {
 
 export function isSubscription(
   // deno-lint-ignore no-explicit-any
-  object: any
+  object: any,
 ): object is Subscription {
   return "tenantId" in object && "id" in object;
 }

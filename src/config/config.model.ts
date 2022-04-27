@@ -78,7 +78,7 @@ export const emptyConfig: Config = {
 
 export function loadConfig(): Config {
   const config = parseJsonWithLog<Config>(
-    Deno.readTextFileSync(configFilePath)
+    Deno.readTextFileSync(configFilePath),
   );
 
   return Object.assign(emptyConfig, config);

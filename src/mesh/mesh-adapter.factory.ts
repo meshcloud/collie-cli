@@ -35,7 +35,7 @@ export class MeshAdapterFactory {
 
   buildMeshAdapter(
     options: CmdGlobalOptions,
-    queryStats?: QueryStatistics
+    queryStats?: QueryStatistics,
   ): MeshAdapter {
     let shellRunner = new ShellRunner();
 
@@ -53,14 +53,14 @@ export class MeshAdapterFactory {
       const selectedProfile = this.config.aws.selectedProfile;
       if (!selectedProfile) {
         throw new MeshError(
-          `No AWS CLI profile selected. Please run '${CLICommand} config aws' to configure it`
+          `No AWS CLI profile selected. Please run '${CLICommand} config aws' to configure it`,
         );
       }
 
       const accountAccessRole = this.config.aws.accountAccessRole;
       if (!accountAccessRole) {
         throw new MeshError(
-          `No AWS CLI access role defined. Please run '${CLICommand} config aws' to configure it`
+          `No AWS CLI access role defined. Please run '${CLICommand} config aws' to configure it`,
         );
       }
 
@@ -69,7 +69,7 @@ export class MeshAdapterFactory {
       const awsAdapter = new AwsMeshAdapter(
         aws,
         accountAccessRole,
-        tenantChangeDetector
+        tenantChangeDetector,
       );
 
       if (queryStats) {
@@ -77,7 +77,7 @@ export class MeshAdapterFactory {
           awsAdapter,
           MeshPlatform.AWS,
           1,
-          queryStats
+          queryStats,
         );
         adapters.push(statsDecorator);
       } else {
@@ -96,7 +96,7 @@ export class MeshAdapterFactory {
       const retryingDecorator = new RetryingAzureCliFacadeDecorator(azure);
       const azureAdapter = new AzureMeshAdapter(
         retryingDecorator,
-        tenantChangeDetector
+        tenantChangeDetector,
       );
 
       if (queryStats) {
@@ -104,7 +104,7 @@ export class MeshAdapterFactory {
           azureAdapter,
           MeshPlatform.Azure,
           1,
-          queryStats
+          queryStats,
         );
         adapters.push(statsDecorator);
       } else {
@@ -115,14 +115,14 @@ export class MeshAdapterFactory {
     if (this.config.connected.GCP) {
       if (!this.config.gcp || !this.config.gcp.billingExport) {
         throw new MeshError(
-          `GCP is missing cost collection configuration. Please run "${CLICommand} config gcp" to set it up.`
+          `GCP is missing cost collection configuration. Please run "${CLICommand} config gcp" to set it up.`,
         );
       }
       const gcp = new GcpCliFacade(shellRunner, this.config.gcp.billingExport);
       const gcpAdapter = new GcpMeshAdapter(
         gcp,
         timeWindowCalc,
-        tenantChangeDetector
+        tenantChangeDetector,
       );
 
       if (queryStats) {
@@ -130,7 +130,7 @@ export class MeshAdapterFactory {
           gcpAdapter,
           MeshPlatform.GCP,
           1,
-          queryStats
+          queryStats,
         );
         adapters.push(statsDecorator);
       } else {
@@ -145,7 +145,7 @@ export class MeshAdapterFactory {
 
     const cachingMeshAdapter = new CachingMeshAdapterDecorator(
       tenantRepository,
-      new MultiMeshAdapter(adapters)
+      new MultiMeshAdapter(adapters),
     );
 
     if (queryStats) {
@@ -153,7 +153,7 @@ export class MeshAdapterFactory {
         cachingMeshAdapter,
         "cache",
         0,
-        queryStats
+        queryStats,
       );
     }
 
