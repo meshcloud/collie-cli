@@ -1,0 +1,13 @@
+#!/bin/sh
+FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
+[ -z "$FILES" ] && exit 0
+
+# Prettify all selected files
+# shellcheck disable=SC2086
+deno fmt $FILES
+
+# Add back the modified/prettified files to staging
+# shellcheck disable=SC2086
+git add "$FILES"
+
+exit 0
