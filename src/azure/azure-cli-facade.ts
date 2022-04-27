@@ -26,8 +26,8 @@ export interface AzureCliFacade {
   getCostManagementInfo(
     scope: string,
     from: string,
-    to: string
+    to: string,
   ): Promise<SimpleCostManagementInfo[]>;
-  
+
   getRoleAssignments(subscription: Subscription): Promise<RoleAssignment[]>;
 }
