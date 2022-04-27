@@ -8,6 +8,7 @@ import { MeshTableFactory } from "../../presentation/mesh-table-factory.ts";
 import { CmdGlobalOptions, OutputFormatType } from "../cmd-options.ts";
 import { isatty } from "../tty.ts";
 import { TenantListPresenterFactory } from "../../presentation/tenant-list-presenter-factory.ts";
+import { CollieRepository } from "/model/CollieRepository.ts";
 
 export function registerListCommand(program: Command) {
   const listTenants = new Command()
@@ -22,6 +23,8 @@ export function registerListCommand(program: Command) {
 }
 
 export async function listTenantAction(options: CmdGlobalOptions) {
+  const repo = await CollieRepository.load("./");
+
   await setupLogger(options);
   await verifyCliAvailability();
 
