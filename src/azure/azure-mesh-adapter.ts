@@ -158,10 +158,12 @@ export class AzureMeshAdapter implements MeshAdapter {
   }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
+    const account = await this.azureCli.getAccount();
     const subscriptions = await this.azureCli.listSubscriptions();
 
-    return Promise.all(
-      subscriptions.map(async (sub) => {
+    const tasks = subscriptions
+      .filter((x) => x.tenantId === account.tenantId)
+      .map(async (sub) => {
         const tags = await this.azureCli.listTags(sub);
         const meshTags = this.convertTags(tags);
 
@@ -174,8 +176,9 @@ export class AzureMeshAdapter implements MeshAdapter {
           costs: [],
           roleAssignments: [],
         };
-      })
-    );
+      });
+
+    return Promise.all(tasks);
   }
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
