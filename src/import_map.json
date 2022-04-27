@@ -3,6 +3,7 @@
     "std/fs": "https://deno.land/std@0.116.0/fs/mod.ts",
     "std/path": "https://deno.land/std@0.116.0/path/mod.ts",
     "std/fmt/colors": "https://deno.land/std@0.116.0/fmt/colors.ts",
+    "std/encoding/yaml": "https://deno.land/std@0.130.0/encoding/yaml.ts",
     "/": "./",
     "./": "./"
   }
