@@ -7,6 +7,13 @@ export interface User {
  * Output of az account show
  */
 export interface Account {
+  /**
+   * Subscription Id
+   */
+  id: string;
+  /**
+   * AAD Tenant Id
+   */
   tenantId: string;
 }
 

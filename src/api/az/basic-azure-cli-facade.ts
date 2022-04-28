@@ -19,6 +19,8 @@ import {
 } from "./azure.model.ts";
 import { CLICommand } from "/config/config.model.ts";
 import { parseJsonWithLog } from "/json.ts";
+import { CliInstallationStatus } from "../CliFacade.ts";
+import { PlatformCommandInstallationStatus } from "../../cli-detector.ts";
 
 interface ConfigValue {
   name: string;
@@ -38,9 +40,38 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     /\(422\) Cost Management supports only Enterprise Agreement/;
   private readonly errNotAuthorized = /\((AuthorizationFailed)\)/;
 
+  async verifyCliInstalled(): Promise<CliInstallationStatus> {
+    const result = await this.runVersionCommand();
+
+    return {
+      cli: "az",
+      status: this.determineInstallationStatus(result),
+    };
+  }
+
+  private determineInstallationStatus(result: ShellOutput) {
+    if (result.code !== 0) {
+      return PlatformCommandInstallationStatus.NotInstalled;
+    }
+
+    const regex = /azure-cli\s+2\./;
+
+    return regex.test(result.stdout)
+      ? PlatformCommandInstallationStatus.Installed
+      : PlatformCommandInstallationStatus.UnsupportedVersion;
+  }
+
+  private async runVersionCommand(): Promise<ShellOutput> {
+    try {
+      return await this.shellRunner.run(`az --version`);
+    } catch {
+      return { code: -1, stderr: "", stdout: "" };
+    }
+  }
+
   async setDynamicInstallValue(value: DynamicInstallValue) {
     const result = await this.shellRunner.run(
-      `az config set extension.use_dynamic_install=${value}`,
+      `az config set extension.use_dynamic_install=${value}`
     );
     this.checkForErrors(result);
   }
@@ -105,8 +136,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     const tagsString = tags
       .map((x) => `${x.tagName}=${x.values.join(",")}`)
       .join(" ");
-    const command =
-      `az tag create --resource-id /subscriptions/${subscription.id} --tags ${tagsString}`;
+    const command = `az tag create --resource-id /subscriptions/${subscription.id} --tags ${tagsString}`;
 
     const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
@@ -123,7 +153,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   async getCostManagementInfo(
     scope: string,
     from: string,
-    to: string,
+    to: string
   ): Promise<SimpleCostManagementInfo[]> {
     const cmd =
       `az costmanagement query --type AmortizedCost --dataset-aggregation {"totalCost":{"name":"PreTaxCost","function":"Sum"}} ` +
@@ -133,11 +163,11 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     this.checkForErrors(result);
 
     const costManagementInfo = parseJsonWithLog<CostManagementInfo>(
-      result.stdout,
+      result.stdout
     );
     if (costManagementInfo.nextLinks != null) {
       console.error(
-        `Azure response signals that there is paging information available, but we are unable to fetch it. So the results are possibly incomplete.`,
+        `Azure response signals that there is paging information available, but we are unable to fetch it. So the results are possibly incomplete.`
       );
     }
 
@@ -152,10 +182,9 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   async getRoleAssignments(
-    subscription: Subscription,
+    subscription: Subscription
   ): Promise<RoleAssignment[]> {
-    const cmd =
-      `az role assignment list --subscription ${subscription.id} --include-inherited --all --output json`;
+    const cmd = `az role assignment list --subscription ${subscription.id} --include-inherited --all --output json`;
 
     const result = await this.shellRunner.run(cmd);
     this.checkForErrors(result);
@@ -171,13 +200,13 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
         throw new MeshAzurePlatformError(
           AzureErrorCode.AZURE_CLI_MISSING_EXTENSION,
-          `Missing the Azure cli extention: ${missingExtension}, please install it first.`,
+          `Missing the Azure cli extention: ${missingExtension}, please install it first.`
         );
       }
 
       throw new MeshAzurePlatformError(
         AzureErrorCode.AZURE_CLI_GENERAL,
-        `Error executing Azure CLI: ${result.stdout} - ${result.stderr}`,
+        `Error executing Azure CLI: ${result.stdout} - ${result.stderr}`
       );
     } else if (result.code == 1) {
       // Too many requests error
@@ -187,7 +216,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
 
         throw new MeshAzureRetryableError(
           AzureErrorCode.AZURE_TOO_MANY_REQUESTS,
-          delayS,
+          delayS
         );
       }
 
@@ -201,7 +230,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       if (errMatch) {
         throw new MeshAzurePlatformError(
           AzureErrorCode.AZURE_INVALID_SUBSCRIPTION,
-          "Subscription cost could not be requested via the Cost Management API",
+          "Subscription cost could not be requested via the Cost Management API"
         );
       }
 
@@ -209,14 +238,14 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       if (errMatch) {
         throw new MeshAzurePlatformError(
           AzureErrorCode.AZURE_UNAUTHORIZED,
-          "Request could not be made because the current user is not allowed to access this resource",
+          "Request could not be made because the current user is not allowed to access this resource"
         );
       }
 
       // We encountered an error so we will just throw here.
       throw new MeshAzurePlatformError(
         AzureErrorCode.AZURE_CLI_GENERAL,
-        result.stderr,
+        result.stderr
       );
     }
 
@@ -228,7 +257,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       result.stderr.includes("AADSTS700082")
     ) {
       console.log(
-        `You are not logged in into Azure CLI. Please login with "az login" or disconnect with "${CLICommand} config --disconnect Azure".`,
+        `You are not logged in into Azure CLI. Please login with "az login" or disconnect with "${CLICommand} config --disconnect Azure".`
       );
       throw new MeshNotLoggedInError(`"${result.stderr.replace("\n", "")}"`);
     }
