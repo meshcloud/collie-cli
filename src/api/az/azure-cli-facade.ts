@@ -1,3 +1,4 @@
+import { CliFacade } from "../CliFacade.ts";
 import {
   Account,
   AzureMeshTag,
@@ -10,7 +11,7 @@ import {
 
 export type DynamicInstallValue = "yes_without_prompt" | "yes_prompt" | "no";
 
-export interface AzureCliFacade {
+export interface AzureCliFacade extends CliFacade {
   setDynamicInstallValue(value: DynamicInstallValue): void;
   getDynamicInstallValue(): Promise<DynamicInstallValue | null>;
 
@@ -26,7 +27,7 @@ export interface AzureCliFacade {
   getCostManagementInfo(
     scope: string,
     from: string,
-    to: string,
+    to: string
   ): Promise<SimpleCostManagementInfo[]>;
 
   getRoleAssignments(subscription: Subscription): Promise<RoleAssignment[]>;

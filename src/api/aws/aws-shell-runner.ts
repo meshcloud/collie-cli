@@ -4,6 +4,8 @@ import { ShellOutput } from "/process/shell-output.ts";
 /**
  * This class ensures that each command executed for AWS is suffixed with the `--profile` parameter, as configured
  * for Collie.
+ * 
+ * TODO: review if we still need this after using CliEnv settings, need to esp. check cross-account setups
  */
 export class AwsShellRunner implements ShellRunner {
   constructor(

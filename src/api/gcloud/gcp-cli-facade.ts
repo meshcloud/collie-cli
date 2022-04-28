@@ -1,5 +1,6 @@
 import { ShellRunner } from "/process/shell-runner.ts";
 import {
+Config,
   CostBigQueryResult,
   IamResponse,
   Labels,
@@ -19,21 +20,61 @@ import {
 } from "/config/config.model.ts";
 import { parseJsonWithLog } from "/json.ts";
 import { moment } from "/deps.ts";
+import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
+import { PlatformCommandInstallationStatus } from "../../cli-detector.ts";
 
-export class GcpCliFacade {
+// todo: rename to GcloudCliFacade
+export class GcpCliFacade implements CliFacade {
   constructor(
     private readonly shellRunner: ShellRunner,
-    private readonly billingConfig: GcpBillingExportConfig,
+    private readonly billingConfig?: GcpBillingExportConfig
   ) {}
+
   private unauthorizedProject = /User is not permitted/;
   private invalidTagValue =
     /ERROR: \(gcloud.alpha.projects.update\) argument --update-labels: Bad value/;
 
+  async verifyCliInstalled(): Promise<CliInstallationStatus> {
+    const result = await this.runVersionCommand();
+
+    return {
+      cli: "gcloud",
+      status: this.determineInstallationStatus(result),
+    };
+  }
+
+  private determineInstallationStatus(result: ShellOutput) {
+    if (result.code !== 0) {
+      return PlatformCommandInstallationStatus.NotInstalled;
+    }
+
+    const regex = /^Google Cloud SDK/;
+
+    return regex.test(result.stdout)
+      ? PlatformCommandInstallationStatus.Installed
+      : PlatformCommandInstallationStatus.UnsupportedVersion;
+  }
+
+  private async runVersionCommand(): Promise<ShellOutput> {
+    try {
+      return await this.shellRunner.run(`gcloud --version`);
+    } catch {
+      return { code: -1, stderr: "", stdout: "" };
+    }
+  }
+
+  async configList(): Promise<Config> {
+    const command = "gcloud config list --format json";
+
+    const result = await this.shellRunner.run(command);
+    this.checkForErrors(result);
+
+    return parseJsonWithLog<Config>(result.stdout);
+  }
+
   async listProjects(): Promise<Project[]> {
     const command = "gcloud projects list --format json";
-    const result = await this.shellRunner.run(
-      command,
-    );
+    const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
 
     console.debug(`listProjects: ${JSON.stringify(result)}`);
@@ -45,27 +86,21 @@ export class GcpCliFacade {
     if (Object.entries(labels).length === 0) {
       return;
     }
-    const labelStr = Object.entries(labels).map(([key, value]) =>
-      `${key}=${value}`
-    ).join(",");
+    const labelStr = Object.entries(labels)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(",");
 
     // For more information see https://cloud.google.com/sdk/gcloud/reference/alpha/projects/update#--update-labels
-    const command =
-      `gcloud alpha projects update ${project.projectId} --update-labels ${labelStr}`;
-    const result = await this.shellRunner.run(
-      command,
-    );
+    const command = `gcloud alpha projects update ${project.projectId} --update-labels ${labelStr}`;
+    const result = await this.shellRunner.run(command);
     this.checkForErrors(result);
 
     console.debug(`updateTags: ${JSON.stringify(result)}`);
   }
 
   async listIamPolicy(project: Project): Promise<IamResponse[]> {
-    const command =
-      `gcloud projects get-ancestors-iam-policy ${project.projectId} --format json`;
-    const result = await this.shellRunner.run(
-      command,
-    );
+    const command = `gcloud projects get-ancestors-iam-policy ${project.projectId} --format json`;
+    const result = await this.shellRunner.run(command);
 
     try {
       this.checkForErrors(result);
@@ -75,7 +110,7 @@ export class GcpCliFacade {
         e.errorCode == GcpErrorCode.GCP_UNAUTHORIZED
       ) {
         console.error(
-          `Could not list IAM policies for Project ${project.projectId}: Access was denied`,
+          `Could not list IAM policies for Project ${project.projectId}: Access was denied`
         );
       }
       return Promise.resolve([]);
@@ -88,21 +123,22 @@ export class GcpCliFacade {
 
   async listCosts(
     startDate: Date,
-    endDate: Date,
+    endDate: Date
   ): Promise<CostBigQueryResult[]> {
+    if (!this.billingConfig) {
+      throw new MeshGcpPlatformError(
+        GcpErrorCode.GCP_CLI_GENERAL,
+        `${CLICommand} is not configured for GCP cost reporting`
+      );
+    }
     const billingProject = this.billingConfig.projectId;
-    const viewName =
-      `${billingProject}.${this.billingConfig.datasetName}.${GcpCostCollectionViewName}`;
+    const viewName = `${billingProject}.${this.billingConfig.datasetName}.${GcpCostCollectionViewName}`;
     const format = "YYYYMM";
     const start = moment(startDate).format(format);
     const end = moment(endDate).format(format);
-    const query =
-      `SELECT * FROM \`${viewName}\` where invoice_month >= "${start}" AND invoice_month <= "${end}"`;
-    const command =
-      `bq --project_id ${billingProject} query --format json --nouse_legacy_sql ${query}`;
-    const result = await this.shellRunner.run(
-      command,
-    );
+    const query = `SELECT * FROM \`${viewName}\` where invoice_month >= "${start}" AND invoice_month <= "${end}"`;
+    const command = `bq --project_id ${billingProject} query --format json --nouse_legacy_sql ${query}`;
+    const result = await this.shellRunner.run(command);
 
     console.debug(`listCosts: ${JSON.stringify(result)}`);
 
@@ -115,23 +151,23 @@ export class GcpCliFacade {
     if (result.code === 2) {
       if (this.invalidTagValue.exec(result.stderr)) {
         throw new MeshInvalidTagValueError(
-          "You provided an invalid tag value for GCP. Please try again with a different value.",
+          "You provided an invalid tag value for GCP. Please try again with a different value."
         );
       } else {
         throw new MeshGcpPlatformError(
           GcpErrorCode.GCP_CLI_GENERAL,
-          result.stderr,
+          result.stderr
         );
       }
     } else if (result.code === 1) {
       if (this.unauthorizedProject.exec(result.stderr)) {
         throw new MeshGcpPlatformError(
           GcpErrorCode.GCP_UNAUTHORIZED,
-          "Request could not be made because the current user is not allowed to access this resource",
+          "Request could not be made because the current user is not allowed to access this resource"
         );
       } else {
         console.error(
-          `You are not logged in into GCP CLI. Please login with "gcloud auth login" or disconnect with "${CLICommand} config --disconnect"`,
+          `You are not logged in into GCP CLI. Please login with "gcloud auth login" or disconnect with "${CLICommand} config --disconnect"`
         );
         throw new MeshNotLoggedInError(result.stderr);
       }

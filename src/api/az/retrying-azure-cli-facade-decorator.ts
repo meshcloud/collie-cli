@@ -19,14 +19,8 @@ import {
 export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
   constructor(private readonly wrapped: AzureCliFacade) {}
 
-  async getCostManagementInfo(
-    scope: string,
-    from: string,
-    to: string,
-  ): Promise<SimpleCostManagementInfo[]> {
-    return await this.retryable(async () => {
-      return await this.wrapped.getCostManagementInfo(scope, from, to);
-    });
+  async verifyCliInstalled() {
+    return await this.wrapped.verifyCliInstalled();
   }
 
   setDynamicInstallValue(value: DynamicInstallValue): void {
@@ -65,8 +59,18 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
     return this.wrapped.putTags(subscription, tags);
   }
 
+  async getCostManagementInfo(
+    scope: string,
+    from: string,
+    to: string
+  ): Promise<SimpleCostManagementInfo[]> {
+    return await this.retryable(async () => {
+      return await this.wrapped.getCostManagementInfo(scope, from, to);
+    });
+  }
+
   async getRoleAssignments(
-    subscription: Subscription,
+    subscription: Subscription
   ): Promise<RoleAssignment[]> {
     return await this.retryable(async () => {
       return await this.wrapped.getRoleAssignments(subscription);
@@ -80,7 +84,7 @@ export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
       if (e instanceof MeshAzureRetryableError) {
         if (e.errorCode === "AZURE_TOO_MANY_REQUESTS") {
           console.log(
-            `Azure complains about too many requests. Need to wait ${e.retryInSeconds}s`,
+            `Azure complains about too many requests. Need to wait ${e.retryInSeconds}s`
           );
         }
 
