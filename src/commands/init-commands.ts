@@ -28,22 +28,17 @@ export function initCommands(): Command {
     .globalOption(
       "--quiet",
       "Don't show progress or error messages, output only result data",
-      {},
     )
     .globalOption(
       "--verbose ",
       "Enable printing verbose info (command execution and results)",
       {
         conflicts: ["quiet"],
-        default: false,
       },
     )
     .globalOption(
       "--debug",
       "Enable printing debug info (command output, intermediate results)",
-      {
-        default: false,
-      },
     )
     .description(
       `${CLIName} CLI - Herd your clouds with collie. Built with love by meshcloud.io`,
