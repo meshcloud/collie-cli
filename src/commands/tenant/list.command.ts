@@ -9,42 +9,56 @@ import { CmdGlobalOptions, OutputFormatType } from "../cmd-options.ts";
 import { isatty } from "../tty.ts";
 import { TenantListPresenterFactory } from "../../presentation/tenant-list-presenter-factory.ts";
 import { CollieRepository } from "/model/CollieRepository.ts";
+import { FoundationRepository } from "../../model/FoundationRepository.ts";
+import { MeshFoundationAdapterFactory } from "../../mesh/MeshFoundationAdapterFactory.ts";
+import { Logger } from "../../cli/Logger.ts";
+import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 
 export function registerListCommand(program: Command) {
-  const listTenants = new Command()
+  program
+    .command("list <foundation>")
     // type must be added on every level that uses this type. Maybe bug in Cliffy?
     .type("output", OutputFormatType)
     .description(
       "Returns a list of tenants with their name, id, tags and platform.",
     )
     .action(listTenantAction);
-
-  program.command("list", listTenants);
 }
 
-export async function listTenantAction(options: CmdGlobalOptions) {
-  const repo = await CollieRepository.load("./");
+export async function listTenantAction(options: CmdGlobalOptions, foundation: string) {
+  const collieRepo = await CollieRepository.load("./");
 
+  const logger = new Logger(collieRepo, options);
   await setupLogger(options);
-  await verifyCliAvailability();
 
-  const config = loadConfig();
-  const meshAdapterFactory = new MeshAdapterFactory(config);
+  // todo: unify logging infra
+
+  const foundationRepo = await FoundationRepository.load(
+    collieRepo,
+    foundation,
+  );
+
+  const facadeFactory = new CliApiFacadeFactory(logger, options);
+  const meshAdapterFactory = new MeshFoundationAdapterFactory(
+    collieRepo,
+    foundationRepo,
+    facadeFactory,
+  );
+
   const queryStatistics = new QueryStatistics();
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(
-    options,
+  const meshAdapter = await meshAdapterFactory.buildMeshAdapter(
     queryStatistics,
   );
 
   const allTenants = await meshAdapter.getMeshTenants();
 
   const tableFactory = new MeshTableFactory(isatty);
-
   const presenterFactory = new TenantListPresenterFactory(tableFactory);
   const presenter = presenterFactory.buildPresenter(
     options.output,
     allTenants,
     queryStatistics,
   );
+
   presenter.present();
 }

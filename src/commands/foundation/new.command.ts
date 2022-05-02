@@ -33,8 +33,6 @@ export function registerNewCmd(program: Command) {
 
       const foundationPath = repo.resolvePath("foundations", foundation);
 
-      // todo: this is stupidly hardcoded for now, would need some more dynamic detection of platforms and also
-      // possibly prompt the user for "do you want to add A? cool, missing a param there, what's your X?" etc.
       const factory = new CliApiFacadeFactory(logger, opts);
 
       const platformEntries = await promptPlatformEntries(logger, factory);
@@ -55,7 +53,7 @@ export function registerNewCmd(program: Command) {
       await dir.write(d, "");
 
       logger.progress(
-        "generated new foundation " + repo.relativePath(foundationPath)
+        "generated new foundation " + repo.relativePath(foundationPath),
       );
     });
 }
@@ -74,11 +72,11 @@ Welcome to your cloud foundation.
 async function detectPlatform(
   logger: Logger,
   platform: string,
-  builder: () => Promise<Dir>
+  builder: () => Promise<Dir>,
 ): Promise<Dir | undefined> {
   try {
     console.log(
-      `searching for a valid ${platform} platform in your current environment...`
+      `searching for a valid ${platform} platform in your current environment...`,
     );
 
     const dir = await builder();
@@ -97,8 +95,11 @@ async function detectPlatform(
 
 async function promptPlatformEntries(
   logger: Logger,
-  factory: CliApiFacadeFactory
+  factory: CliApiFacadeFactory,
 ) {
+  // todo: this is stupidly hardcoded for now, would need some more dynamic detection of platforms and also
+  // possibly prompt the user for "do you want to add A? cool, missing a param there, what's your X?" etc.
+
   const entries: Dir[] = [
     await detectPlatform(logger, "Azure", () => setupAzurePlatform(factory)),
     await detectPlatform(logger, "AWS", () => setupAwsPlatform(factory)),
@@ -126,7 +127,7 @@ function generateAwsReadmeMd(identity: CallerIdentity): string {
     name: "aws",
     aws: {
       accountId: identity.Account,
-      accountAccessRole: "OrganizationAccountAccessRole" // todo: be more smart about this default
+      accountAccessRole: "OrganizationAccountAccessRole", // todo: be more smart about this default
     },
     cli: {
       aws: {
@@ -153,7 +154,7 @@ async function setupGcpPlatform(factory: CliApiFacadeFactory): Promise<Dir> {
 
   if (!project) {
     throw new MeshError(
-      "'gcloud config list' does not have a configured project"
+      "'gcloud config list' does not have a configured project",
     );
   }
 
@@ -198,6 +199,8 @@ async function setupAzurePlatform(factory: CliApiFacadeFactory): Promise<Dir> {
 }
 
 function generateAzureReadmeMd(account: Account): string {
+  const configDir = Deno.env.get("AZURE_CONFIG_DIR");
+
   const frontmatter: PlatformConfigAzure = {
     name: "azure",
     azure: {
@@ -206,7 +209,7 @@ function generateAzureReadmeMd(account: Account): string {
     },
     cli: {
       az: {
-        AZURE_CONFIG_DIR: Deno.env.get("AZURE_CONFIG_DIR") || "",
+        ...(configDir && { AZURE_CONFIG_DIR: configDir }),
       },
     },
   };

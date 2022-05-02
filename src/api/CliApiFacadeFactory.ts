@@ -3,11 +3,12 @@ import { Logger } from "../cli/Logger.ts";
 import { CmdGlobalOptions } from "../commands/cmd-options.ts";
 import { isatty, TTY } from "../commands/tty.ts";
 import { MeshError } from "../errors.ts";
+import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
 import { isWindows } from "../os.ts";
+import { DefaultEnvShellRunner } from "../process/DefaultEnvShellRunner.ts";
 import { LoaderShellRunner } from "../process/loader-shell-runner.ts";
 import { VerboseShellRunner } from "../process/verbose-shell-runner.ts";
 import { AwsCliFacade } from "./aws/aws-cli-facade.ts";
-import { AwsShellRunner } from "./aws/aws-shell-runner.ts";
 import { AutoInstallAzureCliModuleDecorator } from "./az/auto-install-azure-cli-module-decorator.ts";
 import { AzureCliFacade } from "./az/azure-cli-facade.ts";
 import { BasicAzureCliFacade } from "./az/basic-azure-cli-facade.ts";
@@ -21,22 +22,22 @@ export class CliApiFacadeFactory {
 
   constructor(
     private readonly logger: Logger,
-    private readonly options: CmdGlobalOptions
+    private readonly options: CmdGlobalOptions,
   ) {}
 
-  async buildAws() {
-    const shellRunner = this.buildShellRunner(this.options);
-    const awsShellRunner = new AwsShellRunner(shellRunner, "default");
+  async buildAws(env?: AwsCliEnv) {
+    const shellRunner = this.buildShellRunner(this.options, env);
+    // const awsShellRunner = new AwsShellRunner(shellRunner, "default");
 
-    const facade = new AwsCliFacade(awsShellRunner);
+    const facade = new AwsCliFacade(shellRunner);
 
     await this.verifyInstallationStatus(facade);
 
     return facade;
   }
 
-  async buildGcloud() {
-    const shellRunner = this.buildShellRunner(this.options);
+  async buildGcloud(env?: GcloudCliEnv) {
+    const shellRunner = this.buildShellRunner(this.options, env);
 
     const facade = new GcpCliFacade(shellRunner);
 
@@ -45,8 +46,8 @@ export class CliApiFacadeFactory {
     return facade;
   }
 
-  async buildAz() {
-    const shellRunner = this.buildShellRunner(this.options);
+  async buildAz(env?: AzCliEnv) {
+    const shellRunner = this.buildShellRunner(this.options, env);
 
     let azure: AzureCliFacade = new BasicAzureCliFacade(shellRunner);
 
@@ -64,12 +65,13 @@ export class CliApiFacadeFactory {
 
   private async verifyInstallationStatus(facade: CliFacade) {
     // maintain a cache of installation status so we don't run any checks again unnecessarily
-    const key = Object.getPrototypeOf(facade).name;
+    const key = facade.constructor.name;
     const cachedStatus = this.installationStatusCache.get(key);
 
     this.logger.debug(
       () =>
-        `requested ${key} has a cached installation status of ${cachedStatus?.status}`
+        `requested ${key} has a cached installation status of ${cachedStatus
+          ?.status}`,
     );
 
     const status = cachedStatus || (await facade.verifyCliInstalled());
@@ -84,18 +86,21 @@ export class CliApiFacadeFactory {
     switch (status.status) {
       case PlatformCommandInstallationStatus.NotInstalled:
         throw new MeshError(
-          `"${cmd}" cli is not installed. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`
+          `"${cmd}" cli is not installed. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`,
         );
       case PlatformCommandInstallationStatus.UnsupportedVersion:
         throw new MeshError(
-          `"${cmd}" cli is not installed in a supported version. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`
+          `"${cmd}" cli is not installed in a supported version. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`,
         );
       case PlatformCommandInstallationStatus.Installed:
         break;
     }
   }
 
-  private buildShellRunner(options: CmdGlobalOptions) {
+  private buildShellRunner(
+    options: CmdGlobalOptions,
+    env?: Record<string, string>,
+  ) {
     let shellRunner = new ShellRunner();
 
     if (options.verbose) {
@@ -103,6 +108,11 @@ export class CliApiFacadeFactory {
     } else if (isatty && !isWindows) {
       shellRunner = new LoaderShellRunner(shellRunner, new TTY());
     }
+
+    if (env) {
+      shellRunner = new DefaultEnvShellRunner(shellRunner, env);
+    }
+
     return shellRunner;
   }
 }
