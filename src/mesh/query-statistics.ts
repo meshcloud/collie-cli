@@ -2,6 +2,9 @@ import { MeshPlatform } from "./mesh-tenant.model.ts";
 
 type DurationContainer = { [P in MeshPlatform | "cache"]?: number };
 
+export const STATS_LAYER_CACHE = 0;
+export const STATS_LAYER_PLATFORM = 1;
+
 export class QueryStatistics {
   duration: DurationContainer = {};
 

@@ -28,12 +28,18 @@ export class ShellRunner implements IShellRunner {
     const rawError = await p.stderrOutput();
     const { code } = await p.status();
 
-    console.debug(`Exit code for running '${commandStr}' is ${code}`);
-
-    return {
+    const result = {
       code: code,
       stderr: decoder.decode(rawError),
       stdout: decoder.decode(rawOutput),
     };
+
+    console.debug(`Exit code for running '${commandStr}' is ${code}`);
+    if (code != 0) {
+      console.debug(result.stdout);
+      console.debug(result.stderr);
+    }
+
+    return result;
   }
 }
