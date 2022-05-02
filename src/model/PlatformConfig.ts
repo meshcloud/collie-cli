@@ -8,6 +8,7 @@ export interface PlatformConfigBase {
 export interface PlatformConfigAws extends PlatformConfigBase {
   aws: {
     accountId: string;
+    accountAccessRole: string;
   };
 }
 
