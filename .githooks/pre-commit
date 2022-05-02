@@ -8,6 +8,6 @@ deno fmt $FILES
 
 # Add back the modified/prettified files to staging
 # shellcheck disable=SC2086
-git add "$FILES"
+git add $FILES
 
 exit 0
