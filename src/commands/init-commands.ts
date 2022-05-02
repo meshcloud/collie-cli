@@ -22,24 +22,31 @@ export function initCommands(): Command {
     })
     .version(VERSION)
     .type("output", OutputFormatType)
-    .option("-o --output [output:output]", "Defines the output format.", {
+    .globalOption("-o --output [output:output]", "Defines the output format.", {
       default: OutputFormat.TABLE,
-      global: true,
     })
-    .option("--debug [boolean:boolean]", "Display debug logs", {
-      default: false,
-      global: true,
-    })
-    .option(
-      "--verbose [boolean:boolean]",
-      "Display underlying individual cloud CLI commands",
+    .globalOption(
+      "--quiet",
+      "Don't show progress or error messages, output only result data",
+      {},
+    )
+    .globalOption(
+      "--verbose ",
+      "Enable printing verbose info (command execution and results)",
+      {
+        conflicts: ["quiet"],
+        default: false,
+      },
+    )
+    .globalOption(
+      "--debug",
+      "Enable printing debug info (command output, intermediate results)",
       {
         default: false,
-        global: true,
       },
     )
     .description(
-      `${CLIName} CLI - Herd your cloud environments with Collie. Built with love by meshcloud.io`,
+      `${CLIName} CLI - Herd your clouds with collie. Built with love by meshcloud.io`,
     );
 
   registerConfigCommand(program);
