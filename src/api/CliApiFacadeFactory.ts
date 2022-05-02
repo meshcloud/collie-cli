@@ -5,8 +5,16 @@ import { isatty, TTY } from "../commands/tty.ts";
 import { MeshError } from "../errors.ts";
 import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
 import { isWindows } from "../os.ts";
-import { DefaultEnvShellRunner } from "../process/DefaultEnvShellRunner.ts";
+import {
+  DefaultEnvShellRunner,
+  LegacyDefaultEnvShellRunner,
+} from "../process/DefaultEnvShellRunner.ts";
+import { IShellRunner } from "../process/IShellRunner.ts";
 import { LoaderShellRunner } from "../process/loader-shell-runner.ts";
+import { QuietShellRunner } from "../process/QuietShellRunner.ts";
+import { IShellRunner as LegacyIShellRunner } from "../process/shell-runner.interface.ts";
+import { ShellRunnerLoggingDecorator } from "../process/ShellRunnerLoggingDecorator.ts";
+import { ProcessResultWithOutput } from "../process/ShellRunnerResult.ts";
 import { VerboseShellRunner } from "../process/verbose-shell-runner.ts";
 import { AwsCliFacade } from "./aws/aws-cli-facade.ts";
 import { AutoInstallAzureCliModuleDecorator } from "./az/auto-install-azure-cli-module-decorator.ts";
@@ -26,7 +34,7 @@ export class CliApiFacadeFactory {
   ) {}
 
   async buildAws(env?: AwsCliEnv) {
-    const shellRunner = this.buildShellRunner(this.options, env);
+    const shellRunner = this.buildLegacyShellRunner(this.options, env);
     // const awsShellRunner = new AwsShellRunner(shellRunner, "default");
 
     const facade = new AwsCliFacade(shellRunner);
@@ -37,7 +45,7 @@ export class CliApiFacadeFactory {
   }
 
   async buildGcloud(env?: GcloudCliEnv) {
-    const shellRunner = this.buildShellRunner(this.options, env);
+    const shellRunner = this.buildLegacyShellRunner(this.options, env);
 
     const facade = new GcpCliFacade(shellRunner);
 
@@ -47,7 +55,7 @@ export class CliApiFacadeFactory {
   }
 
   async buildAz(env?: AzCliEnv) {
-    const shellRunner = this.buildShellRunner(this.options, env);
+    const shellRunner = this.buildShellRunner(env);
 
     let azure: AzureCliFacade = new BasicAzureCliFacade(shellRunner);
 
@@ -97,10 +105,10 @@ export class CliApiFacadeFactory {
     }
   }
 
-  private buildShellRunner(
+  private buildLegacyShellRunner(
     options: CmdGlobalOptions,
     env?: Record<string, string>,
-  ) {
+  ): LegacyIShellRunner {
     let shellRunner = new ShellRunner();
 
     if (options.verbose) {
@@ -108,6 +116,19 @@ export class CliApiFacadeFactory {
     } else if (isatty && !isWindows) {
       shellRunner = new LoaderShellRunner(shellRunner, new TTY());
     }
+
+    if (env) {
+      shellRunner = new LegacyDefaultEnvShellRunner(shellRunner, env);
+    }
+
+    return shellRunner;
+  }
+
+  private buildShellRunner(env?: Record<string, string>) {
+    let shellRunner: IShellRunner<ProcessResultWithOutput> =
+      new QuietShellRunner();
+
+    shellRunner = new ShellRunnerLoggingDecorator(shellRunner, this.logger);
 
     if (env) {
       shellRunner = new DefaultEnvShellRunner(shellRunner, env);

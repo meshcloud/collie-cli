@@ -1,8 +1,5 @@
-import { loadConfig } from "../../config/config.model.ts";
 import { Command } from "../../deps.ts";
-import { verifyCliAvailability } from "../../init.ts";
 import { setupLogger } from "../../logger.ts";
-import { MeshAdapterFactory } from "../../mesh/mesh-adapter.factory.ts";
 import { QueryStatistics } from "../../mesh/query-statistics.ts";
 import { MeshTableFactory } from "../../presentation/mesh-table-factory.ts";
 import { CmdGlobalOptions, OutputFormatType } from "../cmd-options.ts";
@@ -29,7 +26,6 @@ export async function listTenantAction(options: CmdGlobalOptions, foundation: st
   const collieRepo = await CollieRepository.load("./");
 
   const logger = new Logger(collieRepo, options);
-  await setupLogger(options);
 
   // todo: unify logging infra
 

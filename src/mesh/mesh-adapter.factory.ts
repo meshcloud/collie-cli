@@ -86,30 +86,7 @@ export class MeshAdapterFactory {
     }
 
     if (this.config.connected.Azure) {
-      let azure: AzureCliFacade = new BasicAzureCliFacade(shellRunner);
-
-      // We can only ask the user if we are in a tty terminal.
-      if (isatty) {
-        azure = new AutoInstallAzureCliModuleDecorator(azure);
-      }
-
-      const retryingDecorator = new RetryingAzureCliFacadeDecorator(azure);
-      const azureAdapter = new AzureMeshAdapter(
-        retryingDecorator,
-        tenantChangeDetector,
-      );
-
-      if (queryStats) {
-        const statsDecorator = new StatsMeshAdapterDecorator(
-          azureAdapter,
-          MeshPlatform.Azure,
-          1,
-          queryStats,
-        );
-        adapters.push(statsDecorator);
-      } else {
-        adapters.push(azureAdapter);
-      }
+      throw new Error("Azure no longer supported in legacy MeshAdapterFactory");
     }
 
     if (this.config.connected.GCP) {
