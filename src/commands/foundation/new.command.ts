@@ -126,6 +126,7 @@ function generateAwsReadmeMd(identity: CallerIdentity): string {
     name: "aws",
     aws: {
       accountId: identity.Account,
+      accountAccessRole: "OrganizationAccountAccessRole" // todo: be more smart about this default
     },
     cli: {
       aws: {
