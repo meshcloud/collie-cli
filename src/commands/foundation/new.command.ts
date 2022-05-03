@@ -1,4 +1,3 @@
-import * as colors from "std/fmt/colors";
 import { Command } from "/deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import {
@@ -17,7 +16,6 @@ import {
   PlatformConfigAzure,
   PlatformConfigGcp,
 } from "../../model/PlatformConfig.ts";
-import { setupLogger } from "../../logger.ts";
 import { Account } from "../../api/az/Model.ts";
 
 export function registerNewCmd(program: Command) {
@@ -27,9 +25,6 @@ export function registerNewCmd(program: Command) {
     .action(async (opts: CmdGlobalOptions, foundation: string) => {
       const repo = await CollieRepository.load("./");
       const logger = new Logger(repo, opts);
-
-      // todo: unify logging infra
-      setupLogger(opts);
 
       const foundationPath = repo.resolvePath("foundations", foundation);
 
