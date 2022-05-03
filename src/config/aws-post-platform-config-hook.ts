@@ -1,6 +1,6 @@
+import { AwsCliFacade } from "../api/aws/aws-cli-facade.ts";
 import { Input, Select } from "../deps.ts";
-import { AwsErrorCode, MeshAwsPlatformError, MeshError } from "../errors.ts";
-import { ShellRunner } from "../process/shell-runner.ts";
+import { MeshError } from "../errors.ts";
 import {
   CLICommand,
   CLIName,
@@ -10,10 +10,9 @@ import {
 } from "./config.model.ts";
 import { PostPlatformConfigHook } from "./post-platform-config-hook.ts";
 
+// TODO: integrate this into a better version of "foundation new" command
 export class AwsPostPlatformConfigHook implements PostPlatformConfigHook {
-  constructor(
-    private readonly shellRunner: ShellRunner,
-  ) {}
+  constructor(private readonly aws: AwsCliFacade) {}
 
   isExecutable(platform: ConnectedConfigKey): boolean {
     return platform === "AWS";
@@ -41,19 +40,11 @@ Without management account credentials ${CLIName} won't be able to execute the c
     );
 
     // Get the installed profiles.
-    const command = "aws configure list-profiles";
-    const result = await this.shellRunner.run(command);
-
-    if (result.code != 0) {
-      throw new MeshAwsPlatformError(
-        AwsErrorCode.AWS_CLI_GENERAL,
-        result.stderr,
-      );
-    }
-
-    const availableProfiles = result.stdout.trim().split("\n").map(
-      (profile) => ({ name: profile, value: profile }),
-    );
+    const profiles = await this.aws.listProfiles();
+    const availableProfiles = profiles.map((profile) => ({
+      name: profile,
+      value: profile,
+    }));
 
     // Prompt the user with the found profiles.
     const selectedProfile: string = await Select.prompt({
@@ -68,7 +59,9 @@ Without management account credentials ${CLIName} won't be able to execute the c
     ) {
       throw new MeshError(
         `Your selection '${selectedProfile}' is not present in the available profiles: ${
-          availableProfiles.join(", ")
+          availableProfiles.join(
+            ", ",
+          )
         }`,
       );
     }
@@ -102,9 +95,5 @@ Without management account credentials ${CLIName} won't be able to execute the c
     config.aws.accountAccessRole = selectedRole;
 
     writeConfig(config);
-  }
-
-  async executeDisconnected(_config: Config) {
-    // no op
   }
 }

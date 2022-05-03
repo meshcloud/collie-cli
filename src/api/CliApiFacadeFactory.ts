@@ -1,6 +1,4 @@
-import { PlatformCommandInstallationStatus } from "../cli-detector.ts";
 import { Logger } from "../cli/Logger.ts";
-import { CmdGlobalOptions } from "../commands/cmd-options.ts";
 import { isatty } from "../commands/tty.ts";
 import { MeshError } from "../errors.ts";
 import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
@@ -14,15 +12,17 @@ import { AutoInstallAzureCliModuleDecorator } from "./az/auto-install-azure-cli-
 import { AzureCliFacade } from "./az/azure-cli-facade.ts";
 import { BasicAzureCliFacade } from "./az/basic-azure-cli-facade.ts";
 import { RetryingAzureCliFacadeDecorator } from "./az/retrying-azure-cli-facade-decorator.ts";
-import { CliFacade, CliInstallationStatus } from "./CliFacade.ts";
+import {
+  CliFacade,
+  CliInstallationStatus,
+  InstallationStatus,
+} from "./CliFacade.ts";
 import { GcpCliFacade } from "./gcloud/gcp-cli-facade.ts";
 
 export class CliApiFacadeFactory {
   private installationStatusCache = new Map<string, CliInstallationStatus>();
 
-  constructor(
-    private readonly logger: Logger,
-  ) {}
+  constructor(private readonly logger: Logger) {}
 
   async buildAws(env?: AwsCliEnv) {
     const shellRunner = this.buildShellRunner(env);
@@ -83,15 +83,15 @@ export class CliApiFacadeFactory {
   private checkInstallationStatus(status: CliInstallationStatus) {
     const cmd = status.cli;
     switch (status.status) {
-      case PlatformCommandInstallationStatus.NotInstalled:
+      case InstallationStatus.NotInstalled:
         throw new MeshError(
           `"${cmd}" cli is not installed. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`,
         );
-      case PlatformCommandInstallationStatus.UnsupportedVersion:
+      case InstallationStatus.UnsupportedVersion:
         throw new MeshError(
           `"${cmd}" cli is not installed in a supported version. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`,
         );
-      case PlatformCommandInstallationStatus.Installed:
+      case InstallationStatus.Installed:
         break;
     }
   }

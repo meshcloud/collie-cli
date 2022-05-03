@@ -4,9 +4,7 @@ import { AwsCliFacade } from "./aws-cli-facade.ts";
 import { AwsMeshAdapter } from "./aws-mesh-adapter.ts";
 import { assertEquals } from "/dev-deps.ts";
 import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
-import { ProcessResultWithOutput } from "../../process/ShellRunnerResult.ts";
-import { IShellRunner } from "../../process/IShellRunner.ts";
-import { ShellRunnerOptions } from "../../process/ShellRunnerOptions.ts";
+import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
 
 const response = {
   GroupDefinitions: [{ Type: "DIMENSION", Key: "LINKED_ACCOUNT" }],
@@ -134,32 +132,19 @@ const response = {
   ],
 };
 
-const mockShellRunner = {
-  run: (
-    _commands: string[],
-    _options?: ShellRunnerOptions,
-  ): Promise<ProcessResultWithOutput> => {
-    return Promise.resolve({
-      status: {
-        success: true,
-        code: 0,
-      },
-      stdout: JSON.stringify(response),
-      stderr: "",
-    });
-  },
-} as IShellRunner<ProcessResultWithOutput>;
-
-const awsCliFacade = new AwsCliFacade(mockShellRunner);
-const sut = new AwsMeshAdapter(
-  awsCliFacade,
-  "OrganizationAccountAccessRole",
-  {} as MeshTenantChangeDetector,
-);
-
 Deno.test(
   "Requesting the tenant cost info respondes with a proper filled MeshTenant object",
   async () => {
+    const runner = new StubProcessRunner();
+    const awsCliFacade = new AwsCliFacade(runner);
+    const sut = new AwsMeshAdapter(
+      awsCliFacade,
+      "OrganizationAccountAccessRole",
+      {} as MeshTenantChangeDetector,
+    );
+
+    runner.setupResultObject(response);
+
     const start = moment.utc("2021-01-01").startOf("day").toDate();
     const end = moment.utc("2021-03-31").endOf("day").toDate();
 
