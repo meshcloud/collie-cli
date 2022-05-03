@@ -1,5 +1,5 @@
 import { Account } from "/api/aws/Model.ts";
-import { Subscription } from "/api/az/azure.model.ts";
+import { Subscription } from "/api/az/Model.ts";
 import { Project } from "/api/gcloud/gcp.model.ts";
 import { MeshTenantRoleAssignment } from "./mesh-iam-model.ts";
 

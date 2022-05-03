@@ -1,6 +1,6 @@
 import { Confirm } from "/deps.ts";
 import { AzureErrorCode, MeshAzurePlatformError } from "/errors.ts";
-import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
+import { AzCliFacade, DynamicInstallValue } from "./AzCliFacade.ts";
 import {
   Account,
   AzureMeshTag,
@@ -9,14 +9,14 @@ import {
   SimpleCostManagementInfo,
   Subscription,
   Tag,
-} from "./azure.model.ts";
+} from "./Model.ts";
 
 /**
  * If a AzureCliFacade is wrapped with this one, the user will be asked if
  * a module of the CLI should be installed automatically.
  */
-export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
-  constructor(private readonly azureFacade: AzureCliFacade) {}
+export class AutoInstallAzModuleAzCliDecorator implements AzCliFacade {
+  constructor(private readonly azureFacade: AzCliFacade) {}
 
   async getCostManagementInfo(
     scope: string,

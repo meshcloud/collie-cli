@@ -9,7 +9,7 @@ import { ProcessResultWithOutput } from "/process/ProcessRunnerResult.ts";
 import { ProcessRunnerResultHandler } from "../../process/ProcessRunnerResultHandler.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
 
-export class AzureCliResultHandler implements ProcessRunnerResultHandler {
+export class AzCliResultHandler implements ProcessRunnerResultHandler {
   private readonly errRegexExtensionMissing =
     /ERROR: The command requires the extension (\w+)/;
 

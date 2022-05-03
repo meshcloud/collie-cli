@@ -1,11 +1,11 @@
 import { assertEquals } from "../../dev-deps.ts";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
 import { InstallationStatus } from "../CliFacade.ts";
-import { BasicAzureCliFacade } from "./basic-azure-cli-facade.ts";
+import { AzCli } from "./AzCli.ts";
 
 Deno.test("detects az cli version correct", async () => {
   const runner = new StubProcessRunner();
-  const sut = new BasicAzureCliFacade(runner);
+  const sut = new AzCli(runner);
 
   runner.setupResult({
     stdout: `azure-cli                         2.14.2 *

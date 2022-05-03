@@ -1,4 +1,4 @@
-import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
+import { AzCliFacade, DynamicInstallValue } from "./AzCliFacade.ts";
 import {
   Account,
   AzureMeshTag,
@@ -8,13 +8,13 @@ import {
   SimpleCostManagementInfo,
   Subscription,
   Tag,
-} from "./azure.model.ts";
+} from "./Model.ts";
 import { parseJsonWithLog } from "/json.ts";
 
 import { IProcessRunner } from "/process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "/process/ProcessRunnerResult.ts";
 import { ProcessRunnerResultHandlerDecorator } from "../../process/ProcessRunnerResultHandlerDecorator.ts";
-import { AzureCliResultHandler } from "./AzureCliResultHandler.ts";
+import { AzCliResultHandler } from "./AzCliResultHandler.ts";
 import { CliDetector } from "../CliDetector.ts";
 import { CliInstallationStatus } from "../CliFacade.ts";
 
@@ -24,7 +24,7 @@ interface ConfigValue {
   value: DynamicInstallValue;
 }
 
-export class BasicAzureCliFacade implements AzureCliFacade {
+export class AzCli implements AzCliFacade {
   private readonly processRunner: IProcessRunner<ProcessResultWithOutput>;
   private readonly detector: CliDetector;
 
@@ -35,7 +35,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
     // of the user's global aws cli config
     this.processRunner = new ProcessRunnerResultHandlerDecorator(
       rawRunner,
-      new AzureCliResultHandler(),
+      new AzCliResultHandler(),
     );
   }
 

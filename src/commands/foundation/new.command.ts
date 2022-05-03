@@ -18,7 +18,7 @@ import {
   PlatformConfigGcp,
 } from "../../model/PlatformConfig.ts";
 import { setupLogger } from "../../logger.ts";
-import { Account } from "../../api/az/azure.model.ts";
+import { Account } from "../../api/az/Model.ts";
 
 export function registerNewCmd(program: Command) {
   program
