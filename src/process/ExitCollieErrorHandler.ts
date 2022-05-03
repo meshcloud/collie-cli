@@ -1,25 +1,28 @@
-import { ShellRunnerResult } from "./ShellRunnerResult.ts";
-import { ShellRunnerOptions } from "./ShellRunnerOptions.ts";
-import { ShellRunnerResultHandler } from "./ShellRunnerResultHandler.ts";
+import { ProcessRunnerResult } from "./ProcessRunnerResult.ts";
+import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
+import {
+  formatAsShellCommand,
+  ProcessRunnerResultHandler,
+} from "./ProcessRunnerResultHandler.ts";
 
 /**
  * Treat a failed subcommand as fatal to collie's execution.
  * Print error and exit
  */
-export class ExitCollieErrorHandler implements ShellRunnerResultHandler {
+export class ExitCollieErrorHandler implements ProcessRunnerResultHandler {
   handleResult(
     commands: string[],
-    _options: ShellRunnerOptions | undefined,
-    result: ShellRunnerResult,
+    options: ProcessRunnerOptions | undefined,
+    result: ProcessRunnerResult,
   ) {
     if (result.status.success) {
       return;
     }
 
-    const shellCommand = commands.join(" ");
-
-    console.log(
-      `'${shellCommand}' finished with exit code ${result.status.code}`,
+    console.error(
+      `Error: '${
+        formatAsShellCommand(commands, options)
+      }' exited with code ${result.status.code}`,
     );
 
     Deno.exit(result.status.code);

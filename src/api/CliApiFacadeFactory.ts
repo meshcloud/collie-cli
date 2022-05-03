@@ -2,11 +2,11 @@ import { Logger } from "../cli/Logger.ts";
 import { isatty } from "../commands/tty.ts";
 import { MeshError } from "../errors.ts";
 import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
-import { DefaultEnvShellRunner } from "../process/DefaultEnvShellRunner.ts";
-import { IShellRunner } from "../process/IShellRunner.ts";
-import { QuietShellRunner } from "../process/QuietShellRunner.ts";
-import { ShellRunnerLoggingDecorator } from "../process/ShellRunnerLoggingDecorator.ts";
-import { ProcessResultWithOutput } from "../process/ShellRunnerResult.ts";
+import { DefaultEnvProcessRunner } from "../process/DefaultEnvProcessRunner.ts";
+import { IProcessRunner } from "../process/IProcessRunner.ts";
+import { QuietProcessRunner } from "../process/QuietProcessRunner.ts";
+import { ProcessRunnerLoggingDecorator } from "../process/ProcessRunnerLoggingDecorator.ts";
+import { ProcessResultWithOutput } from "../process/ProcessRunnerResult.ts";
 import { AwsCliFacade } from "./aws/aws-cli-facade.ts";
 import { AutoInstallAzureCliModuleDecorator } from "./az/auto-install-azure-cli-module-decorator.ts";
 import { AzureCliFacade } from "./az/azure-cli-facade.ts";
@@ -25,10 +25,10 @@ export class CliApiFacadeFactory {
   constructor(private readonly logger: Logger) {}
 
   async buildAws(env?: AwsCliEnv) {
-    const shellRunner = this.buildShellRunner(env);
-    // const awsShellRunner = new AwsShellRunner(shellRunner, "default");
+    const processRunner = this.buildProcessRunner(env);
+    // const awsProcessRunner = new AwsProcessRunner(processRunner, "default");
 
-    const facade = new AwsCliFacade(shellRunner);
+    const facade = new AwsCliFacade(processRunner);
 
     await this.verifyInstallationStatus(facade);
 
@@ -36,9 +36,9 @@ export class CliApiFacadeFactory {
   }
 
   async buildGcloud(env?: GcloudCliEnv) {
-    const shellRunner = this.buildShellRunner(env);
+    const processRunner = this.buildProcessRunner(env);
 
-    const facade = new GcpCliFacade(shellRunner);
+    const facade = new GcpCliFacade(processRunner);
 
     await this.verifyInstallationStatus(facade);
 
@@ -46,9 +46,9 @@ export class CliApiFacadeFactory {
   }
 
   async buildAz(env?: AzCliEnv) {
-    const shellRunner = this.buildShellRunner(env);
+    const processRunner = this.buildProcessRunner(env);
 
-    let azure: AzureCliFacade = new BasicAzureCliFacade(shellRunner);
+    let azure: AzureCliFacade = new BasicAzureCliFacade(processRunner);
 
     // We can only ask the user if we are in a tty terminal.
     if (isatty) {
@@ -96,16 +96,19 @@ export class CliApiFacadeFactory {
     }
   }
 
-  private buildShellRunner(env?: Record<string, string>) {
-    let shellRunner: IShellRunner<ProcessResultWithOutput> =
-      new QuietShellRunner();
+  private buildProcessRunner(env?: Record<string, string>) {
+    let processRunner: IProcessRunner<ProcessResultWithOutput> =
+      new QuietProcessRunner();
 
-    shellRunner = new ShellRunnerLoggingDecorator(shellRunner, this.logger);
+    processRunner = new ProcessRunnerLoggingDecorator(
+      processRunner,
+      this.logger,
+    );
 
     if (env) {
-      shellRunner = new DefaultEnvShellRunner(shellRunner, env);
+      processRunner = new DefaultEnvProcessRunner(processRunner, env);
     }
 
-    return shellRunner;
+    return processRunner;
   }
 }

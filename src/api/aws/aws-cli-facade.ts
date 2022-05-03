@@ -20,22 +20,22 @@ import { parseJsonWithLog } from "/json.ts";
 
 import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
 
-import { ProcessResultWithOutput } from "../../process/ShellRunnerResult.ts";
-import { ShellRunnerResultHandlerDecorator } from "../../process/ShellRunnerResultHandlerDecorator.ts";
-import { IShellRunner } from "../../process/IShellRunner.ts";
+import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
+import { ProcessRunnerResultHandlerDecorator } from "../../process/ProcessRunnerResultHandlerDecorator.ts";
+import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { AwsCliResultHandler } from "./AwsCliResultHandler.ts";
 import { CliDetector } from "../CliDetector.ts";
 
 export class AwsCliFacade implements CliFacade {
-  private readonly shellRunner: IShellRunner<ProcessResultWithOutput>;
+  private readonly processRunner: IProcessRunner<ProcessResultWithOutput>;
   private readonly detector: CliDetector;
 
-  constructor(rawRunner: IShellRunner<ProcessResultWithOutput>) {
+  constructor(rawRunner: IProcessRunner<ProcessResultWithOutput>) {
     this.detector = new CliDetector(rawRunner);
 
-    // todo: consider wrapping the shellrunner further, e.g. to always add --output=json so we become more independent
+    // todo: consider wrapping the runner further, e.g. to always add --output=json so we become more independent
     // of the user's global aws cli config
-    this.shellRunner = new ShellRunnerResultHandlerDecorator(
+    this.processRunner = new ProcessRunnerResultHandlerDecorator(
       rawRunner,
       new AwsCliResultHandler(),
     );
@@ -46,7 +46,7 @@ export class AwsCliFacade implements CliFacade {
   }
 
   async listProfiles(): Promise<string[]> {
-    const result = await this.shellRunner.run([
+    const result = await this.processRunner.run([
       "aws",
       "configure",
       "list-profiles",
@@ -83,7 +83,7 @@ export class AwsCliFacade implements CliFacade {
       account.Id,
     ];
 
-    const result = await this.shellRunner.run(command);
+    const result = await this.processRunner.run(command);
 
     // TODO: push this into a retry decorator
     if (result.status.code === 254) {
@@ -107,7 +107,7 @@ export class AwsCliFacade implements CliFacade {
       ...tags.map((t) => `Key=${t.Key},Value=${t.Value}`),
     ];
 
-    await this.shellRunner.run(command);
+    await this.processRunner.run(command);
   }
 
   async removeTags(account: Account, tags: Tag[]): Promise<void> {
@@ -121,7 +121,7 @@ export class AwsCliFacade implements CliFacade {
       ...tags.map((t) => t.Key),
     ];
 
-    await this.shellRunner.run(command);
+    await this.processRunner.run(command);
   }
 
   async assumeRole(
@@ -285,7 +285,7 @@ export class AwsCliFacade implements CliFacade {
   }
 
   private async run<T>(command: string[], credentials?: Credentials) {
-    const result = await this.shellRunner.run(
+    const result = await this.processRunner.run(
       command,
       this.credsToEnv(credentials),
     );

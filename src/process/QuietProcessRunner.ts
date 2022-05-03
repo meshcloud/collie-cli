@@ -1,17 +1,18 @@
-import { ShellRunnerOptions } from "./ShellRunnerOptions.ts";
-import { IShellRunner } from "./IShellRunner.ts";
-import { ProcessResultWithOutput } from "./ShellRunnerResult.ts";
-import { ShellRunnerResultHandler } from "./ShellRunnerResultHandler.ts";
+import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
+import { IProcessRunner } from "./IProcessRunner.ts";
+import { ProcessResultWithOutput } from "./ProcessRunnerResult.ts";
+import { ProcessRunnerResultHandler } from "./ProcessRunnerResultHandler.ts";
 
 /**
  * Runs a subprocess quietly by buffering its stdout and stderr in memory until completion.
  */
-export class QuietShellRunner implements IShellRunner<ProcessResultWithOutput> {
-  constructor(private readonly errorHandler?: ShellRunnerResultHandler) {}
+export class QuietProcessRunner
+  implements IProcessRunner<ProcessResultWithOutput> {
+  constructor(private readonly errorHandler?: ProcessRunnerResultHandler) {}
 
   public async run(
     commands: string[],
-    options?: ShellRunnerOptions,
+    options?: ProcessRunnerOptions,
   ): Promise<ProcessResultWithOutput> {
     const p = Deno.run({
       ...options,

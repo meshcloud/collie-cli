@@ -5,11 +5,11 @@ import {
   MeshNotLoggedInError,
 } from "/errors.ts";
 import { CLICommand } from "/config/config.model.ts";
-import { ProcessResultWithOutput } from "/process/ShellRunnerResult.ts";
-import { ShellRunnerResultHandler } from "../../process/ShellRunnerResultHandler.ts";
-import { ShellRunnerOptions } from "../../process/ShellRunnerOptions.ts";
+import { ProcessResultWithOutput } from "/process/ProcessRunnerResult.ts";
+import { ProcessRunnerResultHandler } from "../../process/ProcessRunnerResultHandler.ts";
+import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
 
-export class AzureCliResultHandler implements ShellRunnerResultHandler {
+export class AzureCliResultHandler implements ProcessRunnerResultHandler {
   private readonly errRegexExtensionMissing =
     /ERROR: The command requires the extension (\w+)/;
 
@@ -21,7 +21,7 @@ export class AzureCliResultHandler implements ShellRunnerResultHandler {
 
   handleResult(
     _command: string[],
-    _options: ShellRunnerOptions,
+    _options: ProcessRunnerOptions,
     result: ProcessResultWithOutput,
   ): void {
     if (result.status.code == 2) {

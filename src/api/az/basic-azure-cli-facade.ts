@@ -11,9 +11,9 @@ import {
 } from "./azure.model.ts";
 import { parseJsonWithLog } from "/json.ts";
 
-import { IShellRunner } from "/process/IShellRunner.ts";
-import { ProcessResultWithOutput } from "/process/ShellRunnerResult.ts";
-import { ShellRunnerResultHandlerDecorator } from "../../process/ShellRunnerResultHandlerDecorator.ts";
+import { IProcessRunner } from "/process/IProcessRunner.ts";
+import { ProcessResultWithOutput } from "/process/ProcessRunnerResult.ts";
+import { ProcessRunnerResultHandlerDecorator } from "../../process/ProcessRunnerResultHandlerDecorator.ts";
 import { AzureCliResultHandler } from "./AzureCliResultHandler.ts";
 import { CliDetector } from "../CliDetector.ts";
 import { CliInstallationStatus } from "../CliFacade.ts";
@@ -25,15 +25,15 @@ interface ConfigValue {
 }
 
 export class BasicAzureCliFacade implements AzureCliFacade {
-  private readonly shellRunner: IShellRunner<ProcessResultWithOutput>;
+  private readonly processRunner: IProcessRunner<ProcessResultWithOutput>;
   private readonly detector: CliDetector;
 
-  constructor(rawRunner: IShellRunner<ProcessResultWithOutput>) {
+  constructor(rawRunner: IProcessRunner<ProcessResultWithOutput>) {
     this.detector = new CliDetector(rawRunner);
 
     // todo: consider wrapping the shellrunner further, e.g. to always add --output=json so we become more independent
     // of the user's global aws cli config
-    this.shellRunner = new ShellRunnerResultHandlerDecorator(
+    this.processRunner = new ProcessRunnerResultHandlerDecorator(
       rawRunner,
       new AzureCliResultHandler(),
     );
@@ -44,7 +44,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   async setDynamicInstallValue(value: DynamicInstallValue) {
-    await this.shellRunner.run([
+    await this.processRunner.run([
       "az",
       "config",
       "set",
@@ -53,7 +53,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   async getDynamicInstallValue(): Promise<DynamicInstallValue | null> {
-    const result = await this.shellRunner.run([
+    const result = await this.processRunner.run([
       "az",
       "config",
       "get",
@@ -70,13 +70,13 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   async listSubscriptions(): Promise<Subscription[]> {
-    const result = await this.shellRunner.run(["az", "account", "list"]);
+    const result = await this.processRunner.run(["az", "account", "list"]);
 
     return parseJsonWithLog(result.stdout);
   }
 
   async listTags(subscription: Subscription): Promise<Tag[]> {
-    const result = await this.shellRunner.run([
+    const result = await this.processRunner.run([
       "az",
       "tag",
       "list",
@@ -88,7 +88,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   async listManagementGroups(): Promise<ManagementGroup[]> {
-    const result = await this.shellRunner.run([
+    const result = await this.processRunner.run([
       "az",
       "account",
       "management-group",
@@ -99,7 +99,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
   }
 
   async getAccount(): Promise<Account> {
-    const result = await this.shellRunner.run(["az", "account", "show"]);
+    const result = await this.processRunner.run(["az", "account", "show"]);
 
     return await parseJsonWithLog(result.stdout);
   }
@@ -120,7 +120,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       ...tags.map((x) => `${x.tagName}=${x.values.join(",")}`),
     ];
 
-    await this.shellRunner.run(command);
+    await this.processRunner.run(command);
   }
 
   /**
@@ -156,7 +156,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       scope,
     ];
 
-    const result = await this.shellRunner.run(cmd);
+    const result = await this.processRunner.run(cmd);
 
     const costManagementInfo = parseJsonWithLog<CostManagementInfo>(
       result.stdout,
@@ -193,7 +193,7 @@ export class BasicAzureCliFacade implements AzureCliFacade {
       "json",
     ];
 
-    const result = await this.shellRunner.run(cmd);
+    const result = await this.processRunner.run(cmd);
 
     return parseJsonWithLog<RoleAssignment[]>(result.stdout);
   }

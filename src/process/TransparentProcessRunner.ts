@@ -1,6 +1,6 @@
-import { ProcessResult } from "./ShellRunnerResult.ts";
-import { ShellRunnerOptions } from "./ShellRunnerOptions.ts";
-import { IShellRunner } from "./IShellRunner.ts";
+import { ProcessResult } from "./ProcessRunnerResult.ts";
+import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
+import { IProcessRunner } from "./IProcessRunner.ts";
 import { ExitCollieErrorHandler } from "./ExitCollieErrorHandler.ts";
 
 /**
@@ -9,12 +9,12 @@ import { ExitCollieErrorHandler } from "./ExitCollieErrorHandler.ts";
  *
  * This runner should not be used when running with --quiet flag.
  */
-export class TransparentShellRunner implements IShellRunner<ProcessResult> {
+export class TransparentProcessRunner implements IProcessRunner<ProcessResult> {
   constructor(private readonly errorHandler = new ExitCollieErrorHandler()) {}
 
   public async run(
     commands: string[],
-    options?: ShellRunnerOptions,
+    options?: ProcessRunnerOptions,
   ): Promise<ProcessResult> {
     const p = Deno.run({
       ...options,

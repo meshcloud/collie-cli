@@ -5,17 +5,17 @@ import {
   MeshNotLoggedInError,
 } from "/errors.ts";
 import { CLICommand, CLIName } from "/config/config.model.ts";
-import { ProcessResultWithOutput } from "../../process/ShellRunnerResult.ts";
-import { ShellRunnerResultHandler } from "../../process/ShellRunnerResultHandler.ts";
-import { ShellRunnerOptions } from "../../process/ShellRunnerOptions.ts";
+import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
+import { ProcessRunnerResultHandler } from "../../process/ProcessRunnerResultHandler.ts";
+import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
 
-export class AwsCliResultHandler implements ShellRunnerResultHandler {
+export class AwsCliResultHandler implements ProcessRunnerResultHandler {
   private readonly errRegexInvalidTagValue =
     /An error occurred \(InvalidInputException\) when calling the TagResource operation: You provided a value that does not match the required pattern/;
 
   handleResult(
     command: string[],
-    options: ShellRunnerOptions,
+    options: ProcessRunnerOptions,
     result: ProcessResultWithOutput,
   ): void {
     switch (result.status.code) {

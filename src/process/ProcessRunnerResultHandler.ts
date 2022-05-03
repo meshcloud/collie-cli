@@ -1,11 +1,11 @@
-import { ShellRunnerResult } from "./ShellRunnerResult.ts";
-import { ShellRunnerOptions } from "./ShellRunnerOptions.ts";
+import { ProcessRunnerResult } from "./ProcessRunnerResult.ts";
+import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 
-export interface ShellRunnerResultHandler {
+export interface ProcessRunnerResultHandler {
   handleResult(
     command: string[],
-    options: ShellRunnerOptions | undefined,
-    result: ShellRunnerResult,
+    options: ProcessRunnerOptions | undefined,
+    result: ProcessRunnerResult,
   ): void;
 }
 
@@ -14,7 +14,7 @@ export interface ShellRunnerResultHandler {
  */
 export function formatAsShellCommand(
   commands: string[],
-  options?: ShellRunnerOptions,
+  options?: ProcessRunnerOptions,
 ) {
   let shellCommand = commands.join(" ");
 
