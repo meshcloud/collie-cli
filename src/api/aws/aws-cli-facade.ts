@@ -1,4 +1,3 @@
-import { ShellRunner } from "/process/shell-runner.ts";
 import {
   Account,
   AccountResponse,
@@ -15,37 +14,50 @@ import {
   User,
   UserResponse,
 } from "/api/aws/aws.model.ts";
-import { ShellOutput } from "/process/shell-output.ts";
 import { moment } from "/deps.ts";
-import {
-  AwsErrorCode,
-  MeshAwsPlatformError,
-  MeshInvalidTagValueError,
-  MeshNotLoggedInError,
-} from "/errors.ts";
 import { sleep } from "/promises.ts";
-import { CLICommand, CLIName } from "/config/config.model.ts";
 import { parseJsonWithLog } from "/json.ts";
 import { PlatformCommandInstallationStatus } from "../../cli-detector.ts";
 import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
 
+import { ProcessResultWithOutput } from "../../process/ShellRunnerResult.ts";
+import { ShellRunnerResultHandlerDecorator } from "../../process/ShellRunnerResultHandlerDecorator.ts";
+import { IShellRunner } from "../../process/IShellRunner.ts";
+import { AwsCliResultHandler } from "./AwsCliResultHandler.ts";
+
 export class AwsCliFacade implements CliFacade {
-  constructor(private readonly shellRunner: ShellRunner) {}
+  private readonly shellRunner: IShellRunner<ProcessResultWithOutput>;
 
-  private readonly errRegexInvalidTagValue =
-    /An error occurred \(InvalidInputException\) when calling the TagResource operation: You provided a value that does not match the required pattern/;
-
-  async verifyCliInstalled(): Promise<CliInstallationStatus> {
-    const result = await this.runVersionCommand();
-
-    return {
-      cli: "aws",
-      status: this.determineInstallationStatus(result),
-    };
+  constructor(
+    private readonly rawRunner: IShellRunner<ProcessResultWithOutput>,
+  ) {
+    // todo: consider wrapping the shellrunner further, e.g. to always add --output=json so we become more independent
+    // of the user's global aws cli config
+    this.shellRunner = new ShellRunnerResultHandlerDecorator(
+      this.rawRunner,
+      new AwsCliResultHandler(),
+    );
   }
 
-  private determineInstallationStatus(result: ShellOutput) {
-    if (result.code !== 0) {
+  // todo: maybe factor detection logic into its own class, not part of the facade?
+  async verifyCliInstalled(): Promise<CliInstallationStatus> {
+    try {
+      const result = await this.rawRunner.run(["aws", "--version"]);
+
+      return {
+        cli: "aws",
+        status: this.determineInstallationStatus(result),
+      };
+    } catch {
+      return {
+        cli: "aws",
+        status: PlatformCommandInstallationStatus.NotInstalled,
+      };
+    }
+  }
+
+  private determineInstallationStatus(result: ProcessResultWithOutput) {
+    if (result.status.code !== 0) {
       return PlatformCommandInstallationStatus.NotInstalled;
     }
 
@@ -56,46 +68,37 @@ export class AwsCliFacade implements CliFacade {
       : PlatformCommandInstallationStatus.UnsupportedVersion;
   }
 
-  private async runVersionCommand(): Promise<ShellOutput> {
-    try {
-      return await this.shellRunner.run(`aws --version`);
-    } catch {
-      return { code: -1, stderr: "", stdout: "" };
-    }
-  }
-
   async listAccounts(): Promise<Account[]> {
-    let nextToken = null;
-    let accounts: Account[] = [];
-    do {
-      let command = "aws organizations list-accounts --output json";
-      if (nextToken != null) {
-        command += ` --starting-token ${nextToken}`;
-      }
+    const command = [
+      "aws",
+      "organizations",
+      "list-accounts",
+      "--output",
+      "json",
+    ];
 
-      const result = await this.shellRunner.run(command);
-      this.checkForErrors(result);
+    const pages = await this.runPaged<AccountResponse>(
+      command,
+      (x) => x.NextToken,
+      (x) => ["--starting-token", x],
+    );
 
-      console.debug(`listAccounts: ${JSON.stringify(result)}`);
-
-      const jsonResult = parseJsonWithLog<AccountResponse>(result.stdout);
-      nextToken = jsonResult.NextToken;
-      accounts = accounts.concat(jsonResult.Accounts);
-    } while (nextToken != null);
-
-    return accounts;
+    return pages.flatMap((x) => x.Accounts);
   }
 
   async listTags(account: Account): Promise<Tag[]> {
-    const command =
-      `aws organizations list-tags-for-resource --resource-id ${account.Id}`;
+    const command = [
+      "aws",
+      "organizations",
+      "list-tags-for-resource",
+      "--resource-id",
+      account.Id,
+    ];
 
     const result = await this.shellRunner.run(command);
-    this.checkForErrors(result);
 
-    console.debug(`listTags: ${JSON.stringify(result)}`);
-
-    if (result.code === 254) {
+    // TODO: push this into a retry decorator
+    if (result.status.code === 254) {
       console.debug("AWS is overheated. We wait one second and continue.");
       await sleep(1000);
 
@@ -106,203 +109,154 @@ export class AwsCliFacade implements CliFacade {
   }
 
   async addTags(account: Account, tags: Tag[]): Promise<void> {
-    const tagsStr = tags.map((t) => `Key=${t.Key},Value=${t.Value}`).join(" ");
-    const command =
-      `aws organizations tag-resource --resource-id ${account.Id} --tags ${tagsStr}`;
-    const result = await this.shellRunner.run(command);
-    this.checkForErrors(result);
+    const command = [
+      "aws",
+      "organizations",
+      "tag-resource",
+      "--resource-id",
+      account.Id,
+      "--tags",
+      ...tags.map((t) => `Key=${t.Key},Value=${t.Value}`),
+    ];
 
-    console.debug(`addTags: ${JSON.stringify(result)}`);
+    await this.shellRunner.run(command);
   }
 
   async removeTags(account: Account, tags: Tag[]): Promise<void> {
-    const tagsKeys = tags.map((t) => t.Key).join(" ");
-    const command =
-      `aws organizations untag-resource --resource-id ${account.Id} --tag-keys "${tagsKeys}"`;
-    const result = await this.shellRunner.run(command);
-    this.checkForErrors(result);
+    const command = [
+      "aws",
+      "organizations",
+      "untag-resource",
+      "--resource-id",
+      account.Id,
+      "--tag-keys",
+      ...tags.map((t) => t.Key),
+    ];
 
-    console.debug(`removeTags: ${JSON.stringify(result)}`);
+    await this.shellRunner.run(command);
   }
 
   async assumeRole(
     roleArn: string,
     credentials?: Credentials,
   ): Promise<Credentials> {
-    const command =
-      `aws sts assume-role --role-arn ${roleArn} --role-session-name Collie-Session`;
+    const command = [
+      "aws",
+      "sts",
+      "assume-role",
+      "--role-arn",
+      roleArn,
+      "--role-session-name",
+      "collie-session",
+    ];
 
-    const result = await this.shellRunner.run(
-      command,
-      this.credsToEnv(credentials),
-    );
-    this.checkForErrors(result);
+    const result = await this.run<AssumedRoleResponse>(command, credentials);
 
-    console.debug(`assumeRole: ${JSON.stringify(result)}`);
-
-    return parseJsonWithLog<AssumedRoleResponse>(result.stdout).Credentials;
+    return result.Credentials;
   }
 
   /**
    * For debugging: will return the identity AWS thinks you are.
    * @param credential Assumed credentials.
    */
-  async getCallerIdentity(credential?: Credentials) {
-    const command = "aws sts get-caller-identity";
-    const result = await this.shellRunner.run(
-      command,
-      this.credsToEnv(credential),
+  async getCallerIdentity(credential?: Credentials): Promise<CallerIdentity> {
+    return await this.run<CallerIdentity>(
+      ["aws", "sts", "get-caller-identity"],
+      credential,
     );
-    this.checkForErrors(result);
-
-    return parseJsonWithLog<CallerIdentity>(result.stdout);
   }
 
   async listUsers(credential: Credentials): Promise<User[]> {
-    const command = "aws iam list-users --max-items 50";
+    const command = ["aws", "iam", "list-users", "--max-items", "50"];
 
-    const result = await this.shellRunner.run(
+    const pages = await this.runPaged<UserResponse>(
       command,
-      this.credsToEnv(credential),
+      (x) => x.NextToken,
+      (x) => ["--starting-token", x],
+      credential,
     );
-    this.checkForErrors(result);
 
-    console.debug(`listUsers: ${JSON.stringify(result)}`);
-
-    let response = parseJsonWithLog<UserResponse>(result.stdout);
-    const users = response.Users;
-
-    while (response.NextToken) {
-      const pagedCommand = `${command} --starting-token ${response.NextToken}`;
-      const result = await this.shellRunner.run(pagedCommand);
-      this.checkForErrors(result);
-
-      response = parseJsonWithLog<UserResponse>(result.stdout);
-
-      users.push(...response.Users);
-    }
-
-    return users;
+    return pages.flatMap((x) => x.Users);
   }
-
   async listGroups(credential: Credentials): Promise<Group[]> {
-    const command = `aws iam list-groups --max-items 50`;
+    const command = ["aws", "iam", "list-groups", "--max-items", "50"];
 
-    const result = await this.shellRunner.run(
+    const pages = await this.runPaged<GroupResponse>(
       command,
-      this.credsToEnv(credential),
+      (x) => x.NextToken,
+      (x) => ["--starting-token", x],
+      credential,
     );
-    this.checkForErrors(result);
 
-    console.debug(`listGroups: ${JSON.stringify(result)}`);
-
-    let response = parseJsonWithLog<GroupResponse>(result.stdout);
-    const groups = response.Groups;
-
-    while (response.NextToken) {
-      const pagedCommand = `${command} --starting-token ${response.NextToken}`;
-      const result = await this.shellRunner.run(pagedCommand);
-      this.checkForErrors(result);
-
-      response = parseJsonWithLog<GroupResponse>(result.stdout);
-
-      groups.push(...response.Groups);
-    }
-
-    return groups;
+    return pages.flatMap((x) => x.Groups);
   }
 
   async listUserOfGroup(
     group: Group,
     credential: Credentials,
   ): Promise<User[]> {
-    const command =
-      `aws iam get-group --group-name ${group.GroupName} --max-items 50`;
+    const command = [
+      "aws",
+      "iam",
+      "get-group",
+      "--group-name",
+      group.GroupName,
+      "--max-items",
+      "50",
+    ];
 
-    const result = await this.shellRunner.run(
+    const pages = await this.runPaged<UserResponse>(
       command,
-      this.credsToEnv(credential),
+      (x) => x.NextToken,
+      (x) => ["--starting-token", x],
+      credential,
     );
-    this.checkForErrors(result);
 
-    console.debug(`listUserOfGroup: ${JSON.stringify(result)}`);
-
-    let response = parseJsonWithLog<UserResponse>(result.stdout);
-    const userOfGroup = response.Users;
-
-    while (response.NextToken) {
-      const pagedCommand = `${command} --starting-token ${response.NextToken}`;
-      const result = await this.shellRunner.run(pagedCommand);
-      this.checkForErrors(result);
-
-      response = parseJsonWithLog<UserResponse>(result.stdout);
-
-      userOfGroup.push(...response.Users);
-    }
-
-    return userOfGroup;
+    return pages.flatMap((x) => x.Users);
   }
 
   async listAttachedGroupPolicies(
     group: Group,
     credential: Credentials,
   ): Promise<Policy[]> {
-    const command =
-      `aws iam list-attached-group-policies --group-name ${group.GroupName}`;
+    const command = [
+      "aws",
+      "iam",
+      "list-attached-group-policies",
+      "--group-name",
+      group.GroupName,
+    ];
 
-    const result = await this.shellRunner.run(
+    const pages = await this.runPaged<PolicyResponse>(
       command,
-      this.credsToEnv(credential),
+      (x) => x.Marker,
+      (x) => ["--starting-token", x],
+      credential,
     );
-    this.checkForErrors(result);
 
-    console.debug(`listAttachedGroupPolicies: ${JSON.stringify(result)}`);
-
-    let response = parseJsonWithLog<PolicyResponse>(result.stdout);
-    const policies = response.AttachedPolicies;
-
-    while (response.Marker) {
-      const pagedCommand = `${command} --starting-token ${response.Marker}`;
-      const result = await this.shellRunner.run(pagedCommand);
-      this.checkForErrors(result);
-
-      response = parseJsonWithLog<PolicyResponse>(result.stdout);
-
-      policies.push(...response.AttachedPolicies);
-    }
-
-    return policies;
+    return pages.flatMap((x) => x.AttachedPolicies);
   }
 
   async listAttachedUserPolicies(
     user: User,
     credential: Credentials,
   ): Promise<Policy[]> {
-    const command =
-      `aws iam list-attached-user-policies --user-name ${user.UserName}`;
+    const command = [
+      "aws",
+      "iam",
+      "list-attached-user-policies",
+      "--user-name",
+      user.UserName,
+    ];
 
-    const result = await this.shellRunner.run(
+    const pages = await this.runPaged<PolicyResponse>(
       command,
-      this.credsToEnv(credential),
+      (x) => x.Marker,
+      (x) => ["--starting-token", x],
+      credential,
     );
-    this.checkForErrors(result);
 
-    console.debug(`listAttachedUserPolicies: ${JSON.stringify(result)}`);
-
-    let response = parseJsonWithLog<PolicyResponse>(result.stdout);
-    const policies = response.AttachedPolicies;
-
-    while (response.Marker) {
-      const pagedCommand = `${command} --starting-token ${response.Marker}`;
-      const result = await this.shellRunner.run(pagedCommand);
-      this.checkForErrors(result);
-
-      response = parseJsonWithLog<PolicyResponse>(result.stdout);
-
-      policies.push(...response.AttachedPolicies);
-    }
-
-    return policies;
+    return pages.flatMap((x) => x.AttachedPolicies);
   }
 
   /**
@@ -311,68 +265,67 @@ export class AwsCliFacade implements CliFacade {
    * Note: the actual paging handling has not been tested but has been built by using [listAccounts]' logic and AWS docs.
    */
   async listCosts(startDate: Date, endDate: Date): Promise<CostResponse> {
-    let result: CostResponse | null = null;
-    let nextToken = null;
     const format = "YYYY-MM-DD";
     const start = moment(startDate).format(format);
     const end = moment(endDate).format(format);
 
-    do {
-      let command =
-        `aws ce get-cost-and-usage --time-period Start=${start},End=${end} --granularity MONTHLY --metrics BLENDED_COST --group-by Type=DIMENSION,Key=LINKED_ACCOUNT`;
-      if (nextToken != null) {
-        command += ` --next-page-token=${nextToken}`;
-      }
+    const command = [
+      "aws",
+      "ce",
+      "get-cost-and-usage",
+      "--time-period",
+      `Start=${start},End=${end}`,
+      "--granularity",
+      "MONTHLY",
+      "--metrics",
+      "BLENDED_COST",
+      "--group-by",
+      "Type=DIMENSION,Key=LINKED_ACCOUNT",
+    ];
 
-      const rawResult = await this.shellRunner.run(command);
-      this.checkForErrors(rawResult);
+    const pages = await this.runPaged<CostResponse>(
+      command,
+      (x) => x.NextPageToken,
+      (x) => [`--next-page-token=${x}`],
+    );
 
-      console.debug(`listCosts: ${JSON.stringify(rawResult)}`);
+    // This is a bit hacky but we extend the original response with new data, rather than overwriting it.
+    // We do not concat the other values since (we assume) they do not change in-between requests.
+    pages[0].ResultsByTime = pages.flatMap((x) => x.ResultsByTime);
 
-      const costResult = parseJsonWithLog<CostResponse>(rawResult.stdout);
-
-      if (costResult.NextPageToken) {
-        nextToken = costResult.NextPageToken;
-      }
-      // This is a bit hacky but we extend the original response with new data, rather than overwriting it.
-      if (!result) {
-        result = costResult;
-      } else {
-        result.ResultsByTime = result.ResultsByTime.concat(
-          costResult.ResultsByTime,
-        );
-        // We do not concat the other values since (we assume) they do not change in-between requests.
-      }
-    } while (nextToken != null);
-
-    return result;
+    return pages[0];
   }
 
-  private checkForErrors(result: ShellOutput) {
-    switch (result.code) {
-      case 0:
-        return;
-      case 253:
-        throw new MeshNotLoggedInError(
-          `You are not correctly logged into AWS CLI. Please verify credentials with "aws config" or disconnect with "${CLICommand} config --disconnect AWS"\n${result.stderr}`,
-        );
-      case 254:
-        if (result.stderr.match(this.errRegexInvalidTagValue)) {
-          throw new MeshInvalidTagValueError(
-            "You provided an invalid tag value for AWS. Please try again with a different value.",
-          );
-        } else {
-          throw new MeshAwsPlatformError(
-            AwsErrorCode.AWS_UNAUTHORIZED,
-            `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.\n${result.stderr}`,
-          );
-        }
-      default:
-        throw new MeshAwsPlatformError(
-          AwsErrorCode.AWS_CLI_GENERAL,
-          result.stderr,
-        );
+  private async run<T>(command: string[], credentials?: Credentials) {
+    const result = await this.shellRunner.run(
+      command,
+      this.credsToEnv(credentials),
+    );
+
+    return parseJsonWithLog<T>(result.stdout);
+  }
+
+  private async runPaged<T>(
+    command: string[],
+    paginationToken: (result: T) => string | undefined,
+    paginationOptions: (token: string) => string[],
+    credentials?: Credentials,
+  ): Promise<T[]> {
+    const results: T[] = [];
+
+    let result: T = await this.run<T>(command, credentials);
+    results.push(result);
+
+    let token: string | undefined;
+    while ((token = paginationToken(result))) {
+      const pagedCommand = command.concat(paginationOptions(token));
+
+      result = await this.run<T>(pagedCommand);
+
+      results.push(result);
     }
+
+    return results;
   }
 
   private credsToEnv(credentials?: Credentials): { [key: string]: string } {

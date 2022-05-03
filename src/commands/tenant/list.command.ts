@@ -11,18 +11,29 @@ import { MeshFoundationAdapterFactory } from "../../mesh/MeshFoundationAdapterFa
 import { Logger } from "../../cli/Logger.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 
+interface TenantListOptions {
+  platform: string;
+}
+
 export function registerListCommand(program: Command) {
   program
     .command("list <foundation>")
     // type must be added on every level that uses this type. Maybe bug in Cliffy?
     .type("output", OutputFormatType)
+    .option(
+      "-p, --platform <platform:string>", // todo: make optional -> deploy all platforms!
+      "list tenants for this platform only",
+    )
     .description(
       "Returns a list of tenants with their name, id, tags and platform.",
     )
     .action(listTenantAction);
 }
 
-export async function listTenantAction(options: CmdGlobalOptions, foundation: string) {
+export async function listTenantAction(
+  options: TenantListOptions & CmdGlobalOptions,
+  foundation: string,
+) {
   const collieRepo = await CollieRepository.load("./");
 
   const logger = new Logger(collieRepo, options);
@@ -41,8 +52,13 @@ export async function listTenantAction(options: CmdGlobalOptions, foundation: st
     facadeFactory,
   );
 
+  const platforms = options.platform
+    ? [foundationRepo.findPlatform(options.platform)]
+    : foundationRepo.platforms;
+
   const queryStatistics = new QueryStatistics();
   const meshAdapter = await meshAdapterFactory.buildMeshAdapter(
+    platforms,
     queryStatistics,
   );
 

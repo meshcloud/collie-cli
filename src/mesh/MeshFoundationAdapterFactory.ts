@@ -34,8 +34,11 @@ export class MeshFoundationAdapterFactory {
     private readonly facadeFactory: CliApiFacadeFactory,
   ) {}
 
-  async buildMeshAdapter(queryStats: QueryStatistics): Promise<MeshAdapter> {
-    const buildAdapterTasks = this.foundation.platforms.map((x) =>
+  async buildMeshAdapter(
+    platforms: PlatformConfig[],
+    queryStats: QueryStatistics,
+  ): Promise<MeshAdapter> {
+    const buildAdapterTasks = platforms.map((x) =>
       this.buildPlatformAdapter(x, queryStats)
     );
 

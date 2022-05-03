@@ -21,7 +21,7 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   async getCostManagementInfo(
     scope: string,
     from: string,
-    to: string
+    to: string,
   ): Promise<SimpleCostManagementInfo[]> {
     return await this.azureFacade.getCostManagementInfo(scope, from, to);
   }
@@ -69,7 +69,7 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   }
 
   async getRoleAssignments(
-    subscription: Subscription
+    subscription: Subscription,
   ): Promise<RoleAssignment[]> {
     return await this.wrapCallWithInstallInterception(() => {
       return this.azureFacade.getRoleAssignments(subscription);
@@ -77,14 +77,14 @@ export class AutoInstallAzureCliModuleDecorator implements AzureCliFacade {
   }
 
   private async wrapCallWithInstallInterception<T>(
-    callFn: () => Promise<T>
+    callFn: () => Promise<T>,
   ): Promise<T> {
     try {
       return await callFn();
     } catch (e) {
       if (this.isAzureModuleMissingError(e)) {
         const confirmed: boolean = await Confirm.prompt(
-          "A Azure CLI extention is missing for this call. Should the Azure extension get installed automatically?"
+          "A Azure CLI extention is missing for this call. Should the Azure extension get installed automatically?",
         );
         if (confirmed) {
           const originalValue =
