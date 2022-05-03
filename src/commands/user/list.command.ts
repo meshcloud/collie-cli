@@ -12,8 +12,6 @@ import { MeshTenantFilterFactory } from "../../mesh/filter/mesh-tenant-filter-fa
 export function registerListCommand(program: Command) {
   program
     .command("list <principalName:string>")
-    // type must be added on every level that uses this type. Maybe bug in Cliffy?
-    .type("output", OutputFormatType)
     .description(
       "Returns a list of tenants with their name, id, tags and platform.",
     )
