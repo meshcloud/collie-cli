@@ -11,6 +11,11 @@ export interface FormatUtils {
 }
 /**
  * Standardizes concerns relating to CLI logging
+ *
+ * All "logs" should go to stderr by default, we hence use console.error to write them.
+ * Collie reserves stdout for primary output.
+ *
+ * See https://julienharbulot.com/python-cli-streams.html for rationale.
  */
 export class Logger {
   private enableVerbose: boolean;
@@ -31,22 +36,22 @@ export class Logger {
   public verbose(f: (fmt: FormatUtils) => string) {
     if (this.enableVerbose) {
       const msg = f(this.fmtUtils);
-      console.log(colors.gray(msg));
+      console.error(colors.gray(msg));
     }
   }
 
   public debug(f: (fmt: FormatUtils) => string) {
     if (this.enableDebug) {
       const msg = f(this.fmtUtils);
-      console.log(colors.gray(msg));
+      console.error(colors.gray(msg));
     }
   }
 
   public progress(msg: string) {
-    console.log(colors.bold(colors.green(msg)));
+    console.error(colors.bold(colors.green(msg)));
   }
 
   public warn(msg: string) {
-    console.warn(colors.yellow(msg));
+    console.error(colors.yellow(msg));
   }
 }
