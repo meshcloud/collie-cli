@@ -4,7 +4,7 @@ import {
   IamResponse,
   Labels,
   Project,
-} from "./gcp.model.ts";
+} from "./Model.ts";
 import { GcpErrorCode, MeshGcpPlatformError } from "/errors.ts";
 import {
   CLICommand,
@@ -21,7 +21,7 @@ import { ProcessRunnerResultHandlerDecorator } from "../../process/ProcessRunner
 import { CliDetector } from "../CliDetector.ts";
 
 // todo: rename to GcloudCliFacade
-export class GcpCliFacade implements CliFacade {
+export class GcloudCliFacade implements CliFacade {
   private readonly processRunner: IProcessRunner<ProcessResultWithOutput>;
   private readonly detector: CliDetector;
 

@@ -15,7 +15,7 @@ import {
   CliInstallationStatus,
   InstallationStatus,
 } from "./CliFacade.ts";
-import { GcpCliFacade } from "./gcloud/gcp-cli-facade.ts";
+import { GcloudCliFacade } from "./gcloud/GcloudCliFacade.ts";
 import { AutoInstallAzModuleAzCliDecorator } from "./az/AutoInstallAzModuleAzCliDecorator.ts";
 import { AzCli } from "./az/AzCli.ts";
 import { RetryingAzCliDecorator } from "./az/RetryingAzCliDecorator.ts";
@@ -39,7 +39,7 @@ export class CliApiFacadeFactory {
   async buildGcloud(env?: GcloudCliEnv) {
     const processRunner = this.buildProcessRunner(env);
 
-    const facade = new GcpCliFacade(processRunner);
+    const facade = new GcloudCliFacade(processRunner);
 
     await this.verifyInstallationStatus(facade);
 

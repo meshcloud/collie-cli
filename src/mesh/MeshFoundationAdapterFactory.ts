@@ -1,6 +1,6 @@
 import { AwsMeshAdapter } from "/api/aws/AwsMeshAdapter.ts";
 import { MultiMeshAdapter } from "./multi-mesh-adapter.ts";
-import { GcpMeshAdapter } from "/api/gcloud/gcp-mesh-adapter.ts";
+import { GcloudMeshAdapter } from "/api/gcloud/GcloudMeshAdapter.ts";
 import { MeshAdapter } from "./mesh-adapter.ts";
 import { TimeWindowCalculator } from "./time-window-calculator.ts";
 import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
@@ -99,7 +99,7 @@ export class MeshFoundationAdapterFactory {
       );
     } else if ("gcp" in config) {
       const gcloud = await this.facadeFactory.buildGcloud(config.cli.gcloud);
-      const gcpAdapter = new GcpMeshAdapter(
+      const gcpAdapter = new GcloudMeshAdapter(
         gcloud,
         this.timeWindowCalc,
         this.tenantChangeDetector,

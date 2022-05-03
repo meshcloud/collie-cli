@@ -6,8 +6,8 @@ import {
   MeshTenant,
   MeshTenantCost,
 } from "/mesh/mesh-tenant.model.ts";
-import { GcpCliFacade } from "./gcp-cli-facade.ts";
-import { isProject, Labels } from "./gcp.model.ts";
+import { GcloudCliFacade } from "./GcloudCliFacade.ts";
+import { isProject, Labels } from "./Model.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
@@ -21,9 +21,9 @@ import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
 // limit concurrency because we will run into azure rate limites for sure if we set this off all at once
 const concurrencyLimit = 8;
 
-export class GcpMeshAdapter implements MeshAdapter {
+export class GcloudMeshAdapter implements MeshAdapter {
   constructor(
-    private readonly gcpCli: GcpCliFacade,
+    private readonly gcpCli: GcloudCliFacade,
     private readonly timeWindowCalculator: TimeWindowCalculator,
     private readonly tenantChangeDetector: MeshTenantChangeDetector,
   ) {}
