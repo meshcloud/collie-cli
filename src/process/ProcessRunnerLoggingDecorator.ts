@@ -1,21 +1,21 @@
 import * as colors from "std/fmt/colors";
 
 import { Logger } from "../cli/Logger.ts";
-import { IShellRunner } from "./IShellRunner.ts";
-import { ShellRunnerOptions } from "./ShellRunnerOptions.ts";
+import { IProcessRunner } from "./IProcessRunner.ts";
+import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 import {
   ProcessResultWithOutput,
-  ShellRunnerResult,
-} from "./ShellRunnerResult.ts";
-import { formatAsShellCommand } from "./ShellRunnerResultHandler.ts";
+  ProcessRunnerResult,
+} from "./ProcessRunnerResult.ts";
+import { formatAsShellCommand } from "./ProcessRunnerResultHandler.ts";
 
-export class ShellRunnerLoggingDecorator<T extends ShellRunnerResult>
-  implements IShellRunner<T> {
-  constructor(private runner: IShellRunner<T>, private logger: Logger) {}
+export class ProcessRunnerLoggingDecorator<T extends ProcessRunnerResult>
+  implements IProcessRunner<T> {
+  constructor(private runner: IProcessRunner<T>, private logger: Logger) {}
 
   public async run(
     commands: string[],
-    options: ShellRunnerOptions,
+    options: ProcessRunnerOptions,
   ): Promise<T> {
     this.logger.verbose((_) =>
       colors.magenta(formatAsShellCommand(commands, options))

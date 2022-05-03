@@ -1,9 +1,9 @@
-import { IShellRunner } from "./IShellRunner.ts";
-import { ShellRunnerOptions } from "./ShellRunnerOptions.ts";
-import { ProcessResultWithOutput } from "./ShellRunnerResult.ts";
+import { IProcessRunner } from "./IProcessRunner.ts";
+import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
+import { ProcessResultWithOutput } from "./ProcessRunnerResult.ts";
 
 export class StubProcessRunner
-  implements IShellRunner<ProcessResultWithOutput> {
+  implements IProcessRunner<ProcessResultWithOutput> {
   private nextResult?: ProcessResultWithOutput;
 
   // deno-lint-ignore no-explicit-any
@@ -29,7 +29,7 @@ export class StubProcessRunner
     // deno-lint-ignore no-unused-vars
     commands: string[],
     // deno-lint-ignore no-unused-vars
-    options?: ShellRunnerOptions,
+    options?: ProcessRunnerOptions,
   ): Promise<ProcessResultWithOutput> {
     if (!this.nextResult) {
       throw new Error("no result stubbed, call setupResult first");

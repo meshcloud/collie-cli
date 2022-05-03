@@ -15,23 +15,23 @@ import { parseJsonWithLog } from "/json.ts";
 import { moment } from "/deps.ts";
 import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
 import { GcloudCliResultHandler } from "./GcloudCliResultHandler.ts";
-import { IShellRunner } from "../../process/IShellRunner.ts";
-import { ProcessResultWithOutput } from "../../process/ShellRunnerResult.ts";
-import { ShellRunnerResultHandlerDecorator } from "../../process/ShellRunnerResultHandlerDecorator.ts";
+import { IProcessRunner } from "../../process/IProcessRunner.ts";
+import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
+import { ProcessRunnerResultHandlerDecorator } from "../../process/ProcessRunnerResultHandlerDecorator.ts";
 import { CliDetector } from "../CliDetector.ts";
 
 // todo: rename to GcloudCliFacade
 export class GcpCliFacade implements CliFacade {
-  private readonly shellRunner: IShellRunner<ProcessResultWithOutput>;
+  private readonly processRunner: IProcessRunner<ProcessResultWithOutput>;
   private readonly detector: CliDetector;
 
   constructor(
-    rawRunner: IShellRunner<ProcessResultWithOutput>,
+    rawRunner: IProcessRunner<ProcessResultWithOutput>,
     private readonly billingConfig?: GcpBillingExportConfig,
   ) {
     this.detector = new CliDetector(rawRunner);
 
-    this.shellRunner = new ShellRunnerResultHandlerDecorator(
+    this.processRunner = new ProcessRunnerResultHandlerDecorator(
       rawRunner,
       new GcloudCliResultHandler(),
     );
@@ -109,13 +109,17 @@ export class GcpCliFacade implements CliFacade {
       query,
     ];
 
-    const result = await this.shellRunner.run(command);
+    const result = await this.processRunner.run(command);
 
     return parseJsonWithLog<CostBigQueryResult[]>(result.stdout);
   }
 
   private async run<T>(command: string[]) {
-    const result = await this.shellRunner.run([...command, "--format", "json"]);
+    const result = await this.processRunner.run([
+      ...command,
+      "--format",
+      "json",
+    ]);
 
     return parseJsonWithLog<T>(result.stdout);
   }

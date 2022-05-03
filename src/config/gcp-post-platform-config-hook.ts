@@ -1,7 +1,7 @@
 // todo: bring this back with a better foundation new command
 
 // import { Input, Select } from "../deps.ts";
-// import { ShellRunner } from "../process/shell-runner.ts";
+// import { ProcessRunner } from "../process/shell-runner.ts";
 // import {
 //   Config,
 //   ConnectedConfigKey,
@@ -17,7 +17,7 @@
 
 // export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
 //   constructor(
-//     private readonly shellRunner: ShellRunner,
+//     private readonly processRunner: ProcessRunner,
 //   ) {}
 
 //   isExecutable(platform: ConnectedConfigKey): boolean {
@@ -85,7 +85,7 @@
 //   private listDatasets(projectId: string): Promise<string[]> {
 //     const bqListFn = async () => {
 //       const bgCommand = `bq ls --project_id ${projectId} --format json`;
-//       const result = await this.shellRunner.run(bgCommand);
+//       const result = await this.processRunner.run(bgCommand);
 //       const datasets = parseJsonWithLog<BigQueryListDatasetResult[]>(
 //         result.stdout,
 //       );
@@ -106,7 +106,7 @@
 //     projectId: string,
 //     datasetId: string,
 //   ): Promise<string[]> {
-//     const result = await this.shellRunner.run(
+//     const result = await this.processRunner.run(
 //       `bq ls --project_id ${projectId} --dataset_id ${datasetId} --format json`,
 //     );
 //     const datasets = parseJsonWithLog<BigQueryListTableResult[]>(result.stdout);
@@ -128,7 +128,7 @@
 //   (SUM(CAST(cost * 1000000 AS int64) / 1000000)) as \`cost\`
 // FROM \`${projectId}.${datasetName}.${tableName}\`
 // GROUP BY 1, 2, 3;`;
-//     await this.shellRunner.run(
+//     await this.processRunner.run(
 //       `bq --project_id ${projectId} query --nouse_legacy_sql ${query}`,
 //     );
 //   }

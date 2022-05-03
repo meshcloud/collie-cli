@@ -1,5 +1,5 @@
-import { IShellRunner } from "../process/IShellRunner.ts";
-import { ProcessResultWithOutput } from "../process/ShellRunnerResult.ts";
+import { IProcessRunner } from "../process/IProcessRunner.ts";
+import { ProcessResultWithOutput } from "../process/ProcessRunnerResult.ts";
 import { CliInstallationStatus, InstallationStatus } from "./CliFacade.ts";
 
 export enum PlatformCommandInstallationStatus {
@@ -9,7 +9,9 @@ export enum PlatformCommandInstallationStatus {
 }
 
 export class CliDetector {
-  constructor(private readonly runner: IShellRunner<ProcessResultWithOutput>) {}
+  constructor(
+    private readonly runner: IProcessRunner<ProcessResultWithOutput>,
+  ) {}
 
   // todo: maybe factor detection logic into its own class, not part of the facade?
   async verifyCliInstalled(

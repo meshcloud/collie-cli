@@ -7,4 +7,4 @@ export interface ProcessResultWithOutput extends ProcessResult {
   stderr: string;
 }
 
-export type ShellRunnerResult = ProcessResult | ProcessResultWithOutput;
+export type ProcessRunnerResult = ProcessResult | ProcessResultWithOutput;
