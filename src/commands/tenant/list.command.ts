@@ -45,7 +45,7 @@ export async function listTenantAction(
     foundation,
   );
 
-  const facadeFactory = new CliApiFacadeFactory(logger, options);
+  const facadeFactory = new CliApiFacadeFactory(logger);
   const meshAdapterFactory = new MeshFoundationAdapterFactory(
     collieRepo,
     foundationRepo,
