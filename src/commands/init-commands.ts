@@ -21,7 +21,7 @@ export function initCommands(): Command {
       colors: !isWindows,
     })
     .version(VERSION)
-    .type("output", OutputFormatType)
+    .globalType("output", OutputFormatType)
     .globalOption("-o --output [output:output]", "Defines the output format.", {
       default: OutputFormat.TABLE,
     })

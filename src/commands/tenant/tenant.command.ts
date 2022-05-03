@@ -9,6 +9,7 @@ import { registerTagCommand } from "./tag/tag.command.ts";
 
 export function registerTenantCommand(program: Command) {
   const tenantCmd = new Command();
+
   registerListCommand(tenantCmd);
   registerCostCommand(tenantCmd);
   registerTagCommand(tenantCmd);
@@ -19,6 +20,10 @@ export function registerTenantCommand(program: Command) {
     .command("tenant", tenantCmd)
     .description(
       `Work with cloud tenants (AWS Accounts, Azure Subscriptions, GCP Projects)`,
+    )
+    .globalOption(
+      "-p, --platform <platform:string>", // todo: make optional -> deploy all platforms!
+      "list tenants for this platform only",
     )
     .example(
       "List all tenants across all connected clouds in a table",

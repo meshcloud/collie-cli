@@ -1,21 +1,16 @@
-import { loadConfig } from "../../config/config.model.ts";
 import { Command } from "../../deps.ts";
-import { verifyCliAvailability } from "../../init.ts";
-import { setupLogger } from "../../logger.ts";
-import { MeshAdapterFactory } from "../../mesh/mesh-adapter.factory.ts";
-import { MeshTableFactory } from "../../presentation/mesh-table-factory.ts";
 import { TenantIamPresenterFactory } from "../../presentation/tenant-iam-presenter-factory.ts";
-import { CmdGlobalOptions, OutputFormatType } from "../cmd-options.ts";
-import { isatty } from "../tty.ts";
+import { CmdGlobalOptions } from "../cmd-options.ts";
+import { prepareTenantCommand } from "./prepareTenantCommand.ts";
+import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 
-interface CmdIamOptions extends CmdGlobalOptions {
+interface IamCommandOptions extends CmdGlobalOptions {
   includeAncestors: boolean;
 }
 
 export function registerIamCommand(program: Command) {
   program
-    .command("iam")
-    .type("output", OutputFormatType)
+    .command("iam <foundation>")
     .description(
       "View all IAM assets applied per tenant. This includes users, groups and technical users that are directly assigned to the tenant.",
     )
@@ -26,20 +21,18 @@ export function registerIamCommand(program: Command) {
     .action(listIamAction);
 }
 
-async function listIamAction(options: CmdIamOptions) {
-  await setupLogger(options);
-  await verifyCliAvailability();
-
-  const config = loadConfig();
-  const meshAdapterFactory = new MeshAdapterFactory(config);
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+async function listIamAction(
+  options: CmdGlobalOptions & TenantCommandOptions & IamCommandOptions,
+  foundation: string,
+) {
+  const { meshAdapter, tableFactory, queryStatistics } =
+    await prepareTenantCommand(options, foundation);
 
   const allTenants = await meshAdapter.getMeshTenants();
 
   await meshAdapter.attachTenantRoleAssignments(allTenants);
 
-  const tableFactory = new MeshTableFactory(isatty);
-
+  // todo: include query statistics in presenter
   new TenantIamPresenterFactory(tableFactory)
     .buildPresenter(options.output, options.includeAncestors, allTenants)
     .present();

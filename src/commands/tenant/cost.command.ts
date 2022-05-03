@@ -1,24 +1,18 @@
-import { loadConfig } from "../../config/config.model.ts";
 import { Command, moment } from "../../deps.ts";
-import { verifyCliAvailability } from "../../init.ts";
-import { setupLogger } from "../../logger.ts";
-import { MeshAdapterFactory } from "../../mesh/mesh-adapter.factory.ts";
-import { QueryStatistics } from "../../mesh/query-statistics.ts";
-import { MeshTableFactory } from "../../presentation/mesh-table-factory.ts";
-import { CmdGlobalOptions, OutputFormatType } from "../cmd-options.ts";
-import { isatty } from "../tty.ts";
+import { CmdGlobalOptions } from "../cmd-options.ts";
 import { dateType } from "../custom-types.ts";
 import { MeshError } from "../../errors.ts";
 import { TenantUsagePresenterFactory } from "../../presentation/tenant-usage-presenter-factory.ts";
-interface CmdListCostsOptions extends CmdGlobalOptions {
+import { TenantCommandOptions } from "./TenantCommandOptions.ts";
+import { prepareTenantCommand } from "./prepareTenantCommand.ts";
+interface ListCostsCommandOptions extends CmdGlobalOptions {
   from: string;
   to: string;
 }
 
 export function registerCostCommand(program: Command) {
-  const listCost = new Command()
-    // type must be added on every level that uses this type. Maybe bug in Cliffy? replace with https://cliffy.io/docs@v0.23.0/command/types#global-types
-    .type("output", OutputFormatType)
+  program
+    .command("cost <foundation>")
     .description(
       "Gathers the costs of all tenants in a given time interval on a monthly basis. Includes tags as columns when outputting as CSV.",
     )
@@ -34,21 +28,14 @@ export function registerCostCommand(program: Command) {
       { required: true },
     )
     .action(listTenantsCostAction);
-
-  program.command("cost", listCost);
 }
 
-export async function listTenantsCostAction(options: CmdListCostsOptions) {
-  await setupLogger(options);
-  await verifyCliAvailability();
-
-  const config = loadConfig();
-  const meshAdapterFactory = new MeshAdapterFactory(config);
-  const queryStatistics = new QueryStatistics();
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(
-    options,
-    queryStatistics,
-  );
+export async function listTenantsCostAction(
+  options: CmdGlobalOptions & TenantCommandOptions & ListCostsCommandOptions,
+  foundation: string,
+) {
+  const { meshAdapter, tableFactory, queryStatistics } =
+    await prepareTenantCommand(options, foundation);
 
   // We create UTC dates because we do not work with time, hence we do not care about timezones.
   const start = moment.utc(options.from).startOf("day").toDate();
@@ -64,13 +51,10 @@ export async function listTenantsCostAction(options: CmdListCostsOptions) {
     );
   }
 
-  // Every of these methods can throw e.g. because a CLI tool was not installed we should think about
-  // how to do error management to improve UX.
   const allTenants = await meshAdapter.getMeshTenants();
 
   await meshAdapter.attachTenantCosts(allTenants, start, end);
 
-  const tableFactory = new MeshTableFactory(isatty);
   const presenterFactory = new TenantUsagePresenterFactory(tableFactory);
   // FIXME this now poses a problem. The presenter must only display the asked time range from the exisiting costs.
   const presenter = presenterFactory.buildPresenter(
