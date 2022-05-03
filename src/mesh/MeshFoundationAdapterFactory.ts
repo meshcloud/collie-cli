@@ -1,9 +1,9 @@
 import { AwsMeshAdapter } from "/api/aws/AwsMeshAdapter.ts";
-import { MultiMeshAdapter } from "./multi-mesh-adapter.ts";
+import { MultiMeshAdapter } from "./MultiMeshAdapter.ts";
 import { GcloudMeshAdapter } from "/api/gcloud/GcloudMeshAdapter.ts";
 import { MeshAdapter } from "./mesh-adapter.ts";
 import { TimeWindowCalculator } from "./time-window-calculator.ts";
-import { newMeshTenantRepository } from "../db/mesh-tenant-repository.ts";
+import { MeshTenantRepository } from "../db/mesh-tenant-repository.ts";
 import { CachingMeshAdapterDecorator } from "./caching-mesh-adapter-decorator.ts";
 import { StatsMeshAdapterDecorator } from "./stats-mesh-adapter-decorator.ts";
 import { MeshPlatform } from "./mesh-tenant.model.ts";
@@ -19,6 +19,7 @@ import { PlatformConfig } from "../model/PlatformConfig.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
 import { CliApiFacadeFactory } from "../api/CliApiFacadeFactory.ts";
 import { AzMeshAdapter } from "../api/az/AzMeshAdapter.ts";
+import { Logger } from "../cli/Logger.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -32,84 +33,69 @@ export class MeshFoundationAdapterFactory {
     private readonly collie: CollieRepository,
     private readonly foundation: FoundationRepository,
     private readonly facadeFactory: CliApiFacadeFactory,
+    private readonly logger: Logger,
   ) {}
 
   async buildMeshAdapter(
     platforms: PlatformConfig[],
     queryStats: QueryStatistics,
   ): Promise<MeshAdapter> {
-    const buildAdapterTasks = platforms.map((x) =>
-      this.buildPlatformAdapter(x, queryStats)
-    );
+    const buildAdapterTasks = platforms.map(async (platform) => {
+      const adapter = await this.buildPlatformAdapter(platform);
+      const adapterWithStats = new StatsMeshAdapterDecorator(
+        adapter,
+        platform.name,
+        STATS_LAYER_PLATFORM,
+        queryStats,
+      );
 
-    const adapters = await Promise.all(buildAdapterTasks);
+      const repo = new MeshTenantRepository(
+        this.foundation.resolvePlatformPath(platform, "tenants"),
+        this.logger,
+      );
 
-    // TODO: change this to cache per platform!
-
-    // There are multiple ways of doing it. Currently we only fetch everything or nothing, which is easier I guess.
-    // we could also split every platform into an individual repository folder and perform fetching and caching on a per-platform
-    // basis. For now we go with the easier part.
-    const tenantRepository = newMeshTenantRepository();
-
-    const cachingMeshAdapter = new CachingMeshAdapterDecorator(
-      tenantRepository,
-      new MultiMeshAdapter(adapters),
-    );
-
-    if (queryStats) {
+      const adapterWithCache = new CachingMeshAdapterDecorator(
+        repo,
+        adapterWithStats,
+      );
       return new StatsMeshAdapterDecorator(
-        cachingMeshAdapter,
-        "cache",
+        adapterWithCache,
+        "cache", // todo: maybe we need to have a platform(cli/cache) stats reporting instead of a global gache
         STATS_LAYER_CACHE,
         queryStats,
       );
-    }
+    });
 
-    return cachingMeshAdapter;
+    const platformAdapters = await Promise.all(buildAdapterTasks);
+
+    const cachingMeshAdapter = new MultiMeshAdapter(platformAdapters);
+
+    return new StatsMeshAdapterDecorator(
+      cachingMeshAdapter,
+      "cache",
+      STATS_LAYER_CACHE,
+      queryStats,
+    );
   }
 
   // TODO: caching per platform, optimize stats decorator building
-  async buildPlatformAdapter(
-    config: PlatformConfig,
-    queryStats: QueryStatistics,
-  ): Promise<MeshAdapter> {
+  async buildPlatformAdapter(config: PlatformConfig): Promise<MeshAdapter> {
     if ("aws" in config) {
       const aws = await this.facadeFactory.buildAws(config.cli.aws);
-      const awsAdapter = new AwsMeshAdapter(
+      return new AwsMeshAdapter(
         aws,
         config.aws.accountAccessRole,
         this.tenantChangeDetector,
       );
-
-      return new StatsMeshAdapterDecorator(
-        awsAdapter,
-        MeshPlatform.AWS, // todo: needs to be per platform instance, not per platform type
-        STATS_LAYER_PLATFORM,
-        queryStats,
-      );
     } else if ("azure" in config) {
       const az = await this.facadeFactory.buildAz(config.cli.az);
-      const azureAdapter = new AzMeshAdapter(az, this.tenantChangeDetector);
-
-      return new StatsMeshAdapterDecorator(
-        azureAdapter,
-        MeshPlatform.Azure,
-        STATS_LAYER_PLATFORM,
-        queryStats,
-      );
+      return new AzMeshAdapter(az, this.tenantChangeDetector);
     } else if ("gcp" in config) {
       const gcloud = await this.facadeFactory.buildGcloud(config.cli.gcloud);
-      const gcpAdapter = new GcloudMeshAdapter(
+      return new GcloudMeshAdapter(
         gcloud,
         this.timeWindowCalc,
         this.tenantChangeDetector,
-      );
-
-      return new StatsMeshAdapterDecorator(
-        gcpAdapter,
-        MeshPlatform.GCP,
-        STATS_LAYER_PLATFORM,
-        queryStats,
       );
     } else {
       throw new MeshError(

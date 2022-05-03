@@ -1,5 +1,4 @@
 import { CacheConfigManager } from "../../config/cache-config-manager.ts";
-import { newMeshTenantRepository } from "../../db/mesh-tenant-repository.ts";
 import { Command } from "../../deps.ts";
 import { CmdGlobalOptions } from ".././cmd-options.ts";
 
@@ -16,16 +15,12 @@ export function registerCacheCommand(program: Command) {
     .action(clearCacheAction);
 
   const setEvictionConfig = new Command()
-    .description(
-      "Sets cache eviction delay in hours.",
-    )
+    .description("Sets cache eviction delay in hours.")
     .arguments("<value:string>")
     .action(setConfigAction);
 
   const getEvictionConfig = new Command()
-    .description(
-      "Gets cache eviction delay.",
-    )
+    .description("Gets cache eviction delay.")
     .action(getConfigAction);
 
   cacheCmd
@@ -34,25 +29,21 @@ export function registerCacheCommand(program: Command) {
     .command("get-eviction-delay", getEvictionConfig);
 }
 
-function setConfigAction(
-  _: CmdGlobalOptions,
-  value: string,
-) {
+function setConfigAction(_: CmdGlobalOptions, value: string) {
   const cacheConfigSetter = new CacheConfigManager();
   cacheConfigSetter.setConfigValue("evictionDelayHrs", value);
   console.log(`Set cache eviction delay: ${value} hrs`);
 }
 
-function getConfigAction(
-  _: CmdGlobalOptions,
-) {
+function getConfigAction(_: CmdGlobalOptions) {
   const cacheConfigSetter = new CacheConfigManager();
   const value = cacheConfigSetter.getConfigValue("evictionDelayHrs");
   console.log(`Cache eviction delay: ${value} hrs`);
 }
 
 function clearCacheAction() {
-  const repository = newMeshTenantRepository();
-  repository.clearAll();
-  console.log("Cache was cleared");
+  throw new Error("not implemented");
+  // const repository = newMeshTenantRepository();
+  // repository.clearAll();
+  // console.log("Cache was cleared");
 }

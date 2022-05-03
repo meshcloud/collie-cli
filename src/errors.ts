@@ -1,3 +1,4 @@
+// todo: move CLI specific errors into their api modules
 export enum GcpErrorCode {
   GCP_CLI_GENERAL = "GCP_CLI_GENERAL",
   GCP_UNAUTHORIZED = "GCP_UNAUTHORIZED",
@@ -72,17 +73,19 @@ export class MeshAwsPlatformError extends MeshError {
 }
 
 export class MeshNotLoggedInError extends MeshError {
-  constructor(
-    public readonly message: string,
-  ) {
+  constructor(public readonly message: string) {
     super(`MeshNotLoggedInError: ${message}`);
   }
 }
 
 export class MeshInvalidTagValueError extends MeshError {
-  constructor(
-    public readonly message: string,
-  ) {
+  constructor(public readonly message: string) {
     super(`MeshInvalidTagValueError: ${message}`);
+  }
+}
+
+export class IoError extends MeshError {
+  constructor(message: string) {
+    super(message);
   }
 }

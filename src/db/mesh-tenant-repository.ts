@@ -1,22 +1,20 @@
-import { configPath, loadConfig } from "../config/config.model.ts";
-import { emptyDir, ensureDirSync, existsSync, moment } from "../deps.ts";
-import { MeshError } from "../errors.ts";
+import * as fs from "std/fs";
+import * as path from "std/path";
+import { Logger } from "../cli/Logger.ts";
+
+import { loadConfig } from "../config/config.model.ts";
+import { moment } from "../deps.ts";
+import { IoError } from "../errors.ts";
 import { parseJsonWithLog } from "../json.ts";
 import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
 import { Meta } from "./meta.ts";
 
-export class IoError extends MeshError {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
 export class MeshTenantRepository {
-  private readonly metaFile = "/.meta.json";
   private readonly metaPath: string;
 
   constructor(
     private readonly dbDirectory: string,
+    private readonly logger: Logger,
   ) {
     if (dbDirectory.endsWith("/")) {
       throw new IoError(
@@ -24,28 +22,7 @@ export class MeshTenantRepository {
       );
     }
 
-    this.metaPath = dbDirectory + this.metaFile;
-    this.initDirectory();
-  }
-
-  private writeFile(path: string, text: string) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
-    Deno.writeFileSync(path, data);
-  }
-
-  private async readFile(path: string): Promise<string> {
-    const decoder = new TextDecoder();
-    const data = await Deno.readFile(path);
-
-    return decoder.decode(data);
-  }
-
-  private initDirectory() {
-    console.debug(
-      `Creating database directory ${this.dbDirectory} if it does not exist.`,
-    );
-    ensureDirSync(this.dbDirectory);
+    this.metaPath = path.join(dbDirectory, ".meta.json");
   }
 
   async clearTenantCosts() {
@@ -59,14 +36,15 @@ export class MeshTenantRepository {
 
   async isTenantCollectionValid(): Promise<boolean> {
     const meta = await this.loadMeta();
-    if (meta === null) {
+
+    if (!meta) {
       return false;
     }
 
     return this.isCacheEvicted(meta.tenantCollection.lastCollection);
   }
 
-  async isIamCollectionValid(): Promise<boolean> {
+  public async isIamCollectionValid(): Promise<boolean> {
     const meta = await this.loadMeta();
     if (meta === null || !meta.iamCollection) {
       return false;
@@ -78,7 +56,8 @@ export class MeshTenantRepository {
   private isCacheEvicted(lastCollectionDate: string) {
     const now = moment();
     const lastCollection = moment(lastCollectionDate);
-    const hoursSinceLastCollection = moment.duration(now.diff(lastCollection))
+    const hoursSinceLastCollection = moment
+      .duration(now.diff(lastCollection))
       .asHours();
     const config = loadConfig();
 
@@ -90,72 +69,53 @@ export class MeshTenantRepository {
   }
 
   clearAll(): void {
-    emptyDir(this.dbDirectory);
+    fs.emptyDir(this.dbDirectory);
   }
 
   async loadOrBuildMeta(): Promise<Meta> {
-    let meta = await this.loadMeta();
-    if (meta === null) {
-      meta = this.newMeta();
-    }
-    return meta;
+    return (
+      (await this.loadMeta()) || {
+        version: 1,
+        tenantCollection: {
+          lastCollection: new Date().toUTCString(),
+        },
+      }
+    );
   }
 
   async loadMeta(): Promise<Meta | null> {
-    if (existsSync(this.metaPath)) {
-      const metaFile = await this.readFile(this.dbDirectory + this.metaFile);
+    try {
+      const metaFile = await Deno.readTextFile(this.metaPath);
 
       return parseJsonWithLog<Meta>(metaFile);
-    } else {
+    } catch (error) {
+      this.logger.debug(
+        (fmt) =>
+          `failed to load meta from ${fmt.kitPath(this.metaPath)}: ${error}`,
+      );
+      // todo should log debug?
       return null;
     }
   }
 
-  newMeta(): Meta {
-    return {
-      version: 1,
-      tenantCollection: {
-        lastCollection: new Date().toUTCString(),
-      },
-    };
-  }
-
-  private async getTenantFilePaths(): Promise<string[]> {
-    const fileNames: string[] = [];
-
-    try {
-      for await (const dirEntry of Deno.readDir(this.dbDirectory)) {
-        if (dirEntry.isFile) {
-          fileNames.push(dirEntry.name);
-        }
-      }
-    } catch (e) {
-      throw new IoError(e);
-    }
-
-    // Filter for all the tenant files and read them.
-    const tenantFilePaths = fileNames
-      .filter((f) => f.startsWith("tenant-"))
-      .map((f) => this.dbDirectory + "/" + f);
-
-    return tenantFilePaths;
-  }
-
   async loadTenants(): Promise<MeshTenant[]> {
-    const tenantFileNames = await this.getTenantFilePaths();
-
     const tenants = [];
     try {
-      for await (const tenantFile of tenantFileNames) {
-        const dataStr = await this.readFile(tenantFile);
+      for await (
+        const file of fs.expandGlob("*.collie.json", {
+          root: this.dbDirectory,
+        })
+      ) {
+        const dataStr = await Deno.readTextFile(file.path);
 
+        // TODO: improve error logging
         try {
           const tenant = parseJsonWithLog<MeshTenant>(dataStr);
           tenants.push(tenant);
         } catch (_) {
           console.debug("Invalid tenant JSON:\n" + dataStr);
           throw new IoError(
-            `Invalid JSON in tenant file ${tenantFile}. Please clear cache to fix this.`,
+            `Invalid JSON in tenant file ${file}. Please clear cache to fix this.`,
           );
         }
       }
@@ -166,28 +126,27 @@ export class MeshTenantRepository {
     return tenants;
   }
 
-  save(tenant: MeshTenant) {
-    const filename =
-      `/tenant-${tenant.platform}.${tenant.platformTenantName}-${tenant.platformTenantId}.json`;
-    const path = this.dbDirectory + filename;
-
-    console.debug(
-      `Writing MeshTenant ${tenant.platformTenantName} to: ${path}`,
+  async save(tenant: MeshTenant) {
+    const tenantPath = path.join(
+      this.dbDirectory,
+      `${tenant.platformTenantId}.collie.json`,
     );
 
+    this.logger.debug((fmt) => `saving meshTenant ${fmt.kitPath(tenantPath)}`);
+
+    await Deno.mkdir(this.dbDirectory, { recursive: true });
+
     const data = JSON.stringify(tenant, null, 2);
-    this.writeFile(path, data);
+
+    await Deno.writeTextFile(tenantPath, data);
   }
 
-  saveMeta(meta: Meta) {
+  async saveMeta(meta: Meta) {
+    this.logger.debug((fmt) => `saving meta ${fmt.kitPath(this.metaPath)}`);
+
+    await Deno.mkdir(this.dbDirectory, { recursive: true });
+
     const data = JSON.stringify(meta, null, 2);
-    this.writeFile(this.metaPath, data);
+    await Deno.writeTextFile(this.metaPath, data);
   }
-}
-
-/**
- * Factory function. No need for full fledged class.
- */
-export function newMeshTenantRepository(): MeshTenantRepository {
-  return new MeshTenantRepository(configPath + "/tenants");
 }

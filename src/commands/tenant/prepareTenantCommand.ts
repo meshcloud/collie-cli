@@ -27,6 +27,7 @@ export async function prepareTenantCommand(
     collieRepo,
     foundationRepo,
     facadeFactory,
+    logger,
   );
 
   const platforms = options.platform
