@@ -13,7 +13,7 @@ import {
   TagResponse,
   User,
   UserResponse,
-} from "/api/aws/aws.model.ts";
+} from "/api/aws/Model.ts";
 import { moment } from "/deps.ts";
 import { sleep } from "/promises.ts";
 import { parseJsonWithLog } from "/json.ts";

@@ -7,7 +7,7 @@ import { IProcessRunner } from "../process/IProcessRunner.ts";
 import { QuietProcessRunner } from "../process/QuietProcessRunner.ts";
 import { ProcessRunnerLoggingDecorator } from "../process/ProcessRunnerLoggingDecorator.ts";
 import { ProcessResultWithOutput } from "../process/ProcessRunnerResult.ts";
-import { AwsCliFacade } from "./aws/aws-cli-facade.ts";
+import { AwsCliFacade } from "./aws/AwsCliFacade.ts";
 import { AutoInstallAzureCliModuleDecorator } from "./az/auto-install-azure-cli-module-decorator.ts";
 import { AzureCliFacade } from "./az/azure-cli-facade.ts";
 import { BasicAzureCliFacade } from "./az/basic-azure-cli-facade.ts";

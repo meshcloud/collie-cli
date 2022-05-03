@@ -1,4 +1,4 @@
-import { AwsMeshAdapter } from "/api/aws/aws-mesh-adapter.ts";
+import { AwsMeshAdapter } from "/api/aws/AwsMeshAdapter.ts";
 import { AzureMeshAdapter } from "/api/az/azure-mesh-adapter.ts";
 import { MultiMeshAdapter } from "./multi-mesh-adapter.ts";
 import { GcpMeshAdapter } from "/api/gcloud/gcp-mesh-adapter.ts";

@@ -1,4 +1,4 @@
-import { AwsCliFacade } from "../api/aws/aws-cli-facade.ts";
+import { AwsCliFacade } from "../api/aws/AwsCliFacade.ts";
 import { Input, Select } from "../deps.ts";
 import { MeshError } from "../errors.ts";
 import {

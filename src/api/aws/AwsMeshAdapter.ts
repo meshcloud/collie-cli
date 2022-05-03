@@ -1,11 +1,11 @@
 import { MeshAdapter } from "/mesh/mesh-adapter.ts";
-import { AwsCliFacade } from "./aws-cli-facade.ts";
+import { AwsCliFacade } from "./AwsCliFacade.ts";
 import {
   MeshPlatform,
   MeshTenant,
   MeshTenantCost,
 } from "/mesh/mesh-tenant.model.ts";
-import { Account, Credentials, isAccount, User } from "./aws.model.ts";
+import { Account, Credentials, isAccount, User } from "./Model.ts";
 import { makeRunWithLimit, moment } from "/deps.ts";
 import { AwsErrorCode, MeshAwsPlatformError, MeshError } from "/errors.ts";
 import {
