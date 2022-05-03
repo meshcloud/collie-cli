@@ -14,55 +14,31 @@ import {
 import { parseJsonWithLog } from "/json.ts";
 import { moment } from "/deps.ts";
 import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
-import { PlatformCommandInstallationStatus } from "../../cli-detector.ts";
 import { GcloudCliResultHandler } from "./GcloudCliResultHandler.ts";
 import { IShellRunner } from "../../process/IShellRunner.ts";
 import { ProcessResultWithOutput } from "../../process/ShellRunnerResult.ts";
 import { ShellRunnerResultHandlerDecorator } from "../../process/ShellRunnerResultHandlerDecorator.ts";
+import { CliDetector } from "../CliDetector.ts";
 
 // todo: rename to GcloudCliFacade
 export class GcpCliFacade implements CliFacade {
   private readonly shellRunner: IShellRunner<ProcessResultWithOutput>;
+  private readonly detector: CliDetector;
 
   constructor(
-    private readonly rawRunner: IShellRunner<ProcessResultWithOutput>,
+    rawRunner: IShellRunner<ProcessResultWithOutput>,
     private readonly billingConfig?: GcpBillingExportConfig,
   ) {
-    // todo: consider wrapping the shellrunner further, e.g. to always add --output=json so we become more independent
-    // of the user's global aws cli config
+    this.detector = new CliDetector(rawRunner);
+
     this.shellRunner = new ShellRunnerResultHandlerDecorator(
-      this.rawRunner,
+      rawRunner,
       new GcloudCliResultHandler(),
     );
   }
 
-  // todo: maybe factor detection logic into its own class, not part of the facade?
-  async verifyCliInstalled(): Promise<CliInstallationStatus> {
-    try {
-      const result = await this.rawRunner.run(["gcloud", "--version"]);
-
-      return {
-        cli: "gcloud",
-        status: this.determineInstallationStatus(result),
-      };
-    } catch {
-      return {
-        cli: "gcloud",
-        status: PlatformCommandInstallationStatus.NotInstalled,
-      };
-    }
-  }
-
-  private determineInstallationStatus(result: ProcessResultWithOutput) {
-    if (result.status.code !== 0) {
-      return PlatformCommandInstallationStatus.NotInstalled;
-    }
-
-    const regex = /^Google Cloud SDK/;
-
-    return regex.test(result.stdout)
-      ? PlatformCommandInstallationStatus.Installed
-      : PlatformCommandInstallationStatus.UnsupportedVersion;
+  verifyCliInstalled(): Promise<CliInstallationStatus> {
+    return this.detector.verifyCliInstalled("gcloud", /^Google Cloud SDK/);
   }
 
   async configList(): Promise<Config> {

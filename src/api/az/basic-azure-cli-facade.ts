@@ -10,13 +10,13 @@ import {
   Tag,
 } from "./azure.model.ts";
 import { parseJsonWithLog } from "/json.ts";
-import { CliInstallationStatus } from "../CliFacade.ts";
-import { PlatformCommandInstallationStatus } from "../../cli-detector.ts";
 
 import { IShellRunner } from "/process/IShellRunner.ts";
 import { ProcessResultWithOutput } from "/process/ShellRunnerResult.ts";
 import { ShellRunnerResultHandlerDecorator } from "../../process/ShellRunnerResultHandlerDecorator.ts";
 import { AzureCliResultHandler } from "./AzureCliResultHandler.ts";
+import { CliDetector } from "../CliDetector.ts";
+import { CliInstallationStatus } from "../CliFacade.ts";
 
 interface ConfigValue {
   name: string;
@@ -26,45 +26,21 @@ interface ConfigValue {
 
 export class BasicAzureCliFacade implements AzureCliFacade {
   private readonly shellRunner: IShellRunner<ProcessResultWithOutput>;
+  private readonly detector: CliDetector;
 
-  constructor(
-    private readonly rawRunner: IShellRunner<ProcessResultWithOutput>,
-  ) {
+  constructor(rawRunner: IShellRunner<ProcessResultWithOutput>) {
+    this.detector = new CliDetector(rawRunner);
+
     // todo: consider wrapping the shellrunner further, e.g. to always add --output=json so we become more independent
-    // of the user's global azure cli config
+    // of the user's global aws cli config
     this.shellRunner = new ShellRunnerResultHandlerDecorator(
-      this.rawRunner,
+      rawRunner,
       new AzureCliResultHandler(),
     );
   }
 
-  // todo: maybe factor detection logic into its own class, not part of the facade?
-  async verifyCliInstalled(): Promise<CliInstallationStatus> {
-    try {
-      const result = await this.rawRunner.run(["az", "--version"]);
-
-      return {
-        cli: "az",
-        status: this.determineInstallationStatus(result),
-      };
-    } catch {
-      return {
-        cli: "az",
-        status: PlatformCommandInstallationStatus.NotInstalled,
-      };
-    }
-  }
-
-  private determineInstallationStatus(result: ProcessResultWithOutput) {
-    if (result.status.code !== 0) {
-      return PlatformCommandInstallationStatus.NotInstalled;
-    }
-
-    const regex = /azure-cli\s+2\./;
-
-    return regex.test(result.stdout)
-      ? PlatformCommandInstallationStatus.Installed
-      : PlatformCommandInstallationStatus.UnsupportedVersion;
+  verifyCliInstalled(): Promise<CliInstallationStatus> {
+    return this.detector.verifyCliInstalled("azure", /azure-cli\s+2\./);
   }
 
   async setDynamicInstallValue(value: DynamicInstallValue) {

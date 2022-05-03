@@ -17,55 +17,43 @@ import {
 import { moment } from "/deps.ts";
 import { sleep } from "/promises.ts";
 import { parseJsonWithLog } from "/json.ts";
-import { PlatformCommandInstallationStatus } from "../../cli-detector.ts";
+
 import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
 
 import { ProcessResultWithOutput } from "../../process/ShellRunnerResult.ts";
 import { ShellRunnerResultHandlerDecorator } from "../../process/ShellRunnerResultHandlerDecorator.ts";
 import { IShellRunner } from "../../process/IShellRunner.ts";
 import { AwsCliResultHandler } from "./AwsCliResultHandler.ts";
+import { CliDetector } from "../CliDetector.ts";
 
 export class AwsCliFacade implements CliFacade {
   private readonly shellRunner: IShellRunner<ProcessResultWithOutput>;
+  private readonly detector: CliDetector;
 
-  constructor(
-    private readonly rawRunner: IShellRunner<ProcessResultWithOutput>,
-  ) {
+  constructor(rawRunner: IShellRunner<ProcessResultWithOutput>) {
+    this.detector = new CliDetector(rawRunner);
+
     // todo: consider wrapping the shellrunner further, e.g. to always add --output=json so we become more independent
     // of the user's global aws cli config
     this.shellRunner = new ShellRunnerResultHandlerDecorator(
-      this.rawRunner,
+      rawRunner,
       new AwsCliResultHandler(),
     );
   }
 
-  // todo: maybe factor detection logic into its own class, not part of the facade?
-  async verifyCliInstalled(): Promise<CliInstallationStatus> {
-    try {
-      const result = await this.rawRunner.run(["aws", "--version"]);
-
-      return {
-        cli: "aws",
-        status: this.determineInstallationStatus(result),
-      };
-    } catch {
-      return {
-        cli: "aws",
-        status: PlatformCommandInstallationStatus.NotInstalled,
-      };
-    }
+  verifyCliInstalled(): Promise<CliInstallationStatus> {
+    return this.detector.verifyCliInstalled("aws", /^aws-cli\/2\./);
   }
 
-  private determineInstallationStatus(result: ProcessResultWithOutput) {
-    if (result.status.code !== 0) {
-      return PlatformCommandInstallationStatus.NotInstalled;
-    }
+  async listProfiles(): Promise<string[]> {
+    const result = await this.shellRunner.run([
+      "aws",
+      "configure",
+      "list-profiles",
+    ]);
 
-    const regex = /^aws-cli\/2\./;
-
-    return regex.test(result.stdout)
-      ? PlatformCommandInstallationStatus.Installed
-      : PlatformCommandInstallationStatus.UnsupportedVersion;
+    // this output is not json
+    return result.stdout.trim().split("\n");
   }
 
   async listAccounts(): Promise<Account[]> {

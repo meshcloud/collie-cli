@@ -1,137 +1,135 @@
-import { Input, Select } from "../deps.ts";
-import { ShellRunner } from "../process/shell-runner.ts";
-import {
-  Config,
-  ConnectedConfigKey,
-  GcpCostCollectionViewName,
-  writeConfig,
-} from "./config.model.ts";
-import { PostPlatformConfigHook } from "./post-platform-config-hook.ts";
-import { parseJsonWithLog } from "../json.ts";
-import {
-  BigQueryListDatasetResult,
-  BigQueryListTableResult,
-} from "./gcp-config.model.ts";
+// todo: bring this back with a better foundation new command
 
-export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
-  constructor(
-    private readonly shellRunner: ShellRunner,
-  ) {}
+// import { Input, Select } from "../deps.ts";
+// import { ShellRunner } from "../process/shell-runner.ts";
+// import {
+//   Config,
+//   ConnectedConfigKey,
+//   GcpCostCollectionViewName,
+//   writeConfig,
+// } from "./config.model.ts";
+// import { PostPlatformConfigHook } from "./post-platform-config-hook.ts";
+// import { parseJsonWithLog } from "../json.ts";
+// import {
+//   BigQueryListDatasetResult,
+//   BigQueryListTableResult,
+// } from "./gcp-config.model.ts";
 
-  isExecutable(platform: ConnectedConfigKey): boolean {
-    return platform === "GCP";
-  }
+// export class GcpPostPlatformConfigHook implements PostPlatformConfigHook {
+//   constructor(
+//     private readonly shellRunner: ShellRunner,
+//   ) {}
 
-  async executeConnected(config: Config) {
-    if (config.gcp?.billingExport) {
-      console.log(
-        `You have already configured GCP cost collection with projectId=${config.gcp.billingExport.projectId} and datasetName=${config.gcp.billingExport.datasetName}.`,
-      );
-      return;
-    }
+//   isExecutable(platform: ConnectedConfigKey): boolean {
+//     return platform === "GCP";
+//   }
 
-    console.log(
-      "To enable cost collection for GCP, a billing export must be enabled.",
-    );
-    console.log(
-      "We will guide you through setting up the integration with Collie and the GCP billing export.",
-    );
-    console.log(
-      "Please read the additional instructions here: https://github.com/meshcloud/collie-cli/wiki/setting-up-gcp-cost-collection",
-    );
+//   async executeConnected(config: Config) {
+//     if (config.gcp?.billingExport) {
+//       console.log(
+//         `You have already configured GCP cost collection with projectId=${config.gcp.billingExport.projectId} and datasetName=${config.gcp.billingExport.datasetName}.`,
+//       );
+//       return;
+//     }
 
-    const projectId = await Input.prompt(
-      "What is the ID of the Google Cloud project containing the billing export?",
-    );
+//     console.log(
+//       "To enable cost collection for GCP, a billing export must be enabled.",
+//     );
+//     console.log(
+//       "We will guide you through setting up the integration with Collie and the GCP billing export.",
+//     );
+//     console.log(
+//       "Please read the additional instructions here: https://github.com/meshcloud/collie-cli/wiki/setting-up-gcp-cost-collection",
+//     );
 
-    const allDatasets = await this.listDatasets(projectId);
+//     const projectId = await Input.prompt(
+//       "What is the ID of the Google Cloud project containing the billing export?",
+//     );
 
-    const datasetName: string = await Select.prompt({
-      message:
-        "What is the dataset ID where the billing export table is located?",
-      options: allDatasets,
-    });
+//     const allDatasets = await this.listDatasets(projectId);
 
-    const allTables = await this.listTables(projectId, datasetName);
-    if (allTables.includes(GcpCostCollectionViewName)) {
-      console.log(
-        "It looks like your BigQuery dataset already contains a Collie view! We will go ahead and re-use that one.",
-      );
-    } else {
-      const tableName: string = await Select.prompt({
-        message: "What is the name of the billing export table?",
-        options: allTables,
-      });
+//     const datasetName: string = await Select.prompt({
+//       message:
+//         "What is the dataset ID where the billing export table is located?",
+//       options: allDatasets,
+//     });
 
-      await this.createMaterializedView(projectId, datasetName, tableName);
-    }
+//     const allTables = await this.listTables(projectId, datasetName);
+//     if (allTables.includes(GcpCostCollectionViewName)) {
+//       console.log(
+//         "It looks like your BigQuery dataset already contains a Collie view! We will go ahead and re-use that one.",
+//       );
+//     } else {
+//       const tableName: string = await Select.prompt({
+//         message: "What is the name of the billing export table?",
+//         options: allTables,
+//       });
 
-    config.gcp = {
-      billingExport: {
-        projectId,
-        datasetName,
-      },
-    };
+//       await this.createMaterializedView(projectId, datasetName, tableName);
+//     }
 
-    console.log(
-      "That's it, GCP Cost Collection for Collie is now correctly configured!",
-    );
+//     config.gcp = {
+//       billingExport: {
+//         projectId,
+//         datasetName,
+//       },
+//     };
 
-    await writeConfig(config);
-  }
+//     console.log(
+//       "That's it, GCP Cost Collection for Collie is now correctly configured!",
+//     );
 
-  async executeDisconnected(_config: Config) {
-    // no op
-  }
+//     await writeConfig(config);
+//   }
 
-  private listDatasets(projectId: string): Promise<string[]> {
-    const bqListFn = async () => {
-      const bgCommand = `bq ls --project_id ${projectId} --format json`;
-      const result = await this.shellRunner.run(bgCommand);
-      const datasets = parseJsonWithLog<BigQueryListDatasetResult[]>(
-        result.stdout,
-      );
+//   private listDatasets(projectId: string): Promise<string[]> {
+//     const bqListFn = async () => {
+//       const bgCommand = `bq ls --project_id ${projectId} --format json`;
+//       const result = await this.shellRunner.run(bgCommand);
+//       const datasets = parseJsonWithLog<BigQueryListDatasetResult[]>(
+//         result.stdout,
+//       );
 
-      return datasets.map((x) => x.datasetReference.datasetId);
-    };
+//       return datasets.map((x) => x.datasetReference.datasetId);
+//     };
 
-    // This might be the first bq invocation and because of some weird config setup we just capture this problematic output and
-    // retry with the same command. Worked for me.
-    try {
-      return bqListFn();
-    } catch (_) {
-      return bqListFn();
-    }
-  }
+//     // This might be the first bq invocation and because of some weird config setup we just capture this problematic output and
+//     // retry with the same command. Worked for me.
+//     try {
+//       return bqListFn();
+//     } catch (_) {
+//       return bqListFn();
+//     }
+//   }
 
-  private async listTables(
-    projectId: string,
-    datasetId: string,
-  ): Promise<string[]> {
-    const result = await this.shellRunner.run(
-      `bq ls --project_id ${projectId} --dataset_id ${datasetId} --format json`,
-    );
-    const datasets = parseJsonWithLog<BigQueryListTableResult[]>(result.stdout);
+//   private async listTables(
+//     projectId: string,
+//     datasetId: string,
+//   ): Promise<string[]> {
+//     const result = await this.shellRunner.run(
+//       `bq ls --project_id ${projectId} --dataset_id ${datasetId} --format json`,
+//     );
+//     const datasets = parseJsonWithLog<BigQueryListTableResult[]>(result.stdout);
 
-    return datasets.map((x) => x.tableReference.tableId);
-  }
+//     return datasets.map((x) => x.tableReference.tableId);
+//   }
 
-  private async createMaterializedView(
-    projectId: string,
-    datasetName: string,
-    tableName: string,
-  ): Promise<void> {
-    const query =
-      `CREATE MATERIALIZED VIEW \`meshstack-root.billing_export.${GcpCostCollectionViewName}\` AS
-SELECT
-  invoice.month as \`invoice_month\`,
-  project.id as \`project_id\`,
-  currency,
-  (SUM(CAST(cost * 1000000 AS int64) / 1000000)) as \`cost\`
-FROM \`${projectId}.${datasetName}.${tableName}\`
-GROUP BY 1, 2, 3;`;
-    await this.shellRunner.run(
-      `bq --project_id ${projectId} query --nouse_legacy_sql ${query}`,
-    );
-  }
-}
+//   private async createMaterializedView(
+//     projectId: string,
+//     datasetName: string,
+//     tableName: string,
+//   ): Promise<void> {
+//     const query =
+//       `CREATE MATERIALIZED VIEW \`meshstack-root.billing_export.${GcpCostCollectionViewName}\` AS
+// SELECT
+//   invoice.month as \`invoice_month\`,
+//   project.id as \`project_id\`,
+//   currency,
+//   (SUM(CAST(cost * 1000000 AS int64) / 1000000)) as \`cost\`
+// FROM \`${projectId}.${datasetName}.${tableName}\`
+// GROUP BY 1, 2, 3;`;
+//     await this.shellRunner.run(
+//       `bq --project_id ${projectId} query --nouse_legacy_sql ${query}`,
+//     );
+//   }
+// }

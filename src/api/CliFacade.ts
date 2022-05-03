@@ -1,8 +1,12 @@
-import { PlatformCommandInstallationStatus } from "../cli-detector.ts";
+export enum InstallationStatus {
+  Installed,
+  UnsupportedVersion,
+  NotInstalled,
+}
 
 export interface CliInstallationStatus {
   cli: string;
-  status: PlatformCommandInstallationStatus;
+  status: InstallationStatus;
 }
 
 export interface CliFacade {

@@ -1,7 +1,6 @@
 import { Command, CompletionsCommand } from "../deps.ts";
 import { OutputFormat } from "../presentation/output-format.ts";
 import { OutputFormatType } from "./cmd-options.ts";
-import { registerConfigCommand } from "./config.command.ts";
 import { registerFeedbackCommand } from "./feedback.command.ts";
 import { registerTenantCommand } from "./tenant/tenant.command.ts";
 import { CLICommand, CLIName } from "../config/config.model.ts";
@@ -44,7 +43,6 @@ export function initCommands(): Command {
       `${CLIName} CLI - Herd your clouds with collie. Built with love by meshcloud.io`,
     );
 
-  registerConfigCommand(program);
   registerFoundationCmd(program);
   registerTenantCommand(program);
   registerInteractiveCommand(program);
