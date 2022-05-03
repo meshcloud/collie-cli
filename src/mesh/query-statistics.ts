@@ -1,6 +1,4 @@
-import { MeshPlatform } from "./mesh-tenant.model.ts";
-
-type DurationContainer = { [P in MeshPlatform | "cache"]?: number };
+type DurationContainer = { [key: string]: number };
 
 export const STATS_LAYER_CACHE = 0;
 export const STATS_LAYER_PLATFORM = 1;
@@ -18,7 +16,7 @@ export class QueryStatistics {
   private lastLayerLogged = 0;
 
   async recordQuery<T>(
-    source: MeshPlatform | "cache",
+    source: string,
     layer = 0,
     fn: () => Promise<T>,
   ): Promise<T> {

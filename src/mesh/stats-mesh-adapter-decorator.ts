@@ -1,5 +1,5 @@
 import { MeshAdapter } from "./mesh-adapter.ts";
-import { MeshPlatform, MeshTenant } from "./mesh-tenant.model.ts";
+import { MeshTenant } from "./mesh-tenant.model.ts";
 import { QueryStatistics } from "./query-statistics.ts";
 
 /**
@@ -9,7 +9,7 @@ import { QueryStatistics } from "./query-statistics.ts";
 export class StatsMeshAdapterDecorator implements MeshAdapter {
   constructor(
     private readonly meshAdapter: MeshAdapter,
-    private readonly source: MeshPlatform | "cache",
+    private readonly source: string,
     private readonly layer: number,
     private readonly stats: QueryStatistics,
   ) {}
@@ -22,10 +22,7 @@ export class StatsMeshAdapterDecorator implements MeshAdapter {
       this.source,
       this.layer,
       async () =>
-        await this.meshAdapter.updateMeshTenant(
-          updatedTenant,
-          originalTenant,
-        ),
+        await this.meshAdapter.updateMeshTenant(updatedTenant, originalTenant),
     );
   }
 
@@ -38,17 +35,11 @@ export class StatsMeshAdapterDecorator implements MeshAdapter {
       this.source,
       this.layer,
       async () =>
-        await this.meshAdapter.attachTenantCosts(
-          tenants,
-          startDate,
-          endDate,
-        ),
+        await this.meshAdapter.attachTenantCosts(tenants, startDate, endDate),
     );
   }
 
-  async attachTenantRoleAssignments(
-    tenants: MeshTenant[],
-  ): Promise<void> {
+  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     return await this.stats.recordQuery(
       this.source,
       this.layer,
