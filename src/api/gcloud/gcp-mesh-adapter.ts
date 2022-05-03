@@ -1,3 +1,4 @@
+import { pooledMap } from "std/async";
 import { MeshAdapter } from "/mesh/mesh-adapter.ts";
 import {
   MeshPlatform,
@@ -16,6 +17,9 @@ import { MeshError } from "/errors.ts";
 import { TimeWindowCalculator } from "/mesh/time-window-calculator.ts";
 import { moment } from "/deps.ts";
 import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
+
+// limit concurrency because we will run into azure rate limites for sure if we set this off all at once
+const concurrencyLimit = 8;
 
 export class GcpMeshAdapter implements MeshAdapter {
   constructor(
@@ -91,9 +95,10 @@ export class GcpMeshAdapter implements MeshAdapter {
           cost: "0",
           details: [],
         };
-        const gcpCostItem = gcpCosts.find((c) =>
-          c.project_id === tenant.platformTenantId &&
-          c.invoice_month === invoiceMonthString
+        const gcpCostItem = gcpCosts.find(
+          (c) =>
+            c.project_id === tenant.platformTenantId &&
+            c.invoice_month === invoiceMonthString,
         );
         if (gcpCostItem) {
           tenantCostItem.cost = gcpCostItem.cost;
@@ -104,14 +109,16 @@ export class GcpMeshAdapter implements MeshAdapter {
     }
   }
 
-  async attachTenantRoleAssignments(
-    tenants: MeshTenant[],
-  ): Promise<void> {
+  async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
     const gcpTenants = tenants.filter((t) => isProject(t.nativeObj));
 
-    for (const tenant of gcpTenants) {
-      const roleAssignments = await this.getRoleAssignmentsForTenant(tenant);
-      tenant.roleAssignments.push(...roleAssignments);
+    const tasks = pooledMap(concurrencyLimit, gcpTenants, async (tenant) => ({
+      tenant,
+      roleAssignments: await this.getRoleAssignmentsForTenant(tenant),
+    }));
+
+    for await (const t of tasks) {
+      t.tenant.roleAssignments.push(...t.roleAssignments);
     }
   }
 
@@ -186,9 +193,7 @@ export class GcpMeshAdapter implements MeshAdapter {
       case "project":
         return MeshRoleAssignmentSource.Tenant;
       default:
-        throw new MeshError(
-          "Found unknown assignment source type: " + type,
-        );
+        throw new MeshError("Found unknown assignment source type: " + type);
     }
   }
 }
