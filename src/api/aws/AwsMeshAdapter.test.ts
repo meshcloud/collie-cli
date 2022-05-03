@@ -1,7 +1,7 @@
 import { moment } from "/deps.ts";
 import { MeshPlatform, MeshTenantCost } from "/mesh/mesh-tenant.model.ts";
-import { AwsCliFacade } from "./aws-cli-facade.ts";
-import { AwsMeshAdapter } from "./aws-mesh-adapter.ts";
+import { AwsCliFacade } from "./AwsCliFacade.ts";
+import { AwsMeshAdapter } from "./AwsMeshAdapter.ts";
 import { assertEquals } from "/dev-deps.ts";
 import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";

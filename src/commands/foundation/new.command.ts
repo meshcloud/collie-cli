@@ -9,7 +9,7 @@ import {
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
-import { CallerIdentity } from "../../api/aws/aws.model.ts";
+import { CallerIdentity } from "../../api/aws/Model.ts";
 import { MarkdownDocument } from "../../model/MarkdownDocument.ts";
 import { MeshError } from "../../errors.ts";
 import {
