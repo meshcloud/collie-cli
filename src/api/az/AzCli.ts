@@ -40,7 +40,7 @@ export class AzCli implements AzCliFacade {
   }
 
   verifyCliInstalled(): Promise<CliInstallationStatus> {
-    return this.detector.verifyCliInstalled("azure", /azure-cli\s+2\./);
+    return this.detector.verifyCliInstalled("az", /azure-cli\s+2\./);
   }
 
   async setDynamicInstallValue(value: DynamicInstallValue) {
