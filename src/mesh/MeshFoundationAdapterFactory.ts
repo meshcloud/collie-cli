@@ -1,5 +1,4 @@
 import { AwsMeshAdapter } from "/api/aws/AwsMeshAdapter.ts";
-import { AzureMeshAdapter } from "/api/az/azure-mesh-adapter.ts";
 import { MultiMeshAdapter } from "./multi-mesh-adapter.ts";
 import { GcpMeshAdapter } from "/api/gcloud/gcp-mesh-adapter.ts";
 import { MeshAdapter } from "./mesh-adapter.ts";
@@ -19,6 +18,7 @@ import { FoundationRepository } from "../model/FoundationRepository.ts";
 import { PlatformConfig } from "../model/PlatformConfig.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
 import { CliApiFacadeFactory } from "../api/CliApiFacadeFactory.ts";
+import { AzMeshAdapter } from "../api/az/AzMeshAdapter.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -89,7 +89,7 @@ export class MeshFoundationAdapterFactory {
       );
     } else if ("azure" in config) {
       const az = await this.facadeFactory.buildAz(config.cli.az);
-      const azureAdapter = new AzureMeshAdapter(az, this.tenantChangeDetector);
+      const azureAdapter = new AzMeshAdapter(az, this.tenantChangeDetector);
 
       return new StatsMeshAdapterDecorator(
         azureAdapter,

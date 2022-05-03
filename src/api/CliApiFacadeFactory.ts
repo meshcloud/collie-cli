@@ -8,16 +8,17 @@ import { QuietProcessRunner } from "../process/QuietProcessRunner.ts";
 import { ProcessRunnerLoggingDecorator } from "../process/ProcessRunnerLoggingDecorator.ts";
 import { ProcessResultWithOutput } from "../process/ProcessRunnerResult.ts";
 import { AwsCliFacade } from "./aws/AwsCliFacade.ts";
-import { AutoInstallAzureCliModuleDecorator } from "./az/auto-install-azure-cli-module-decorator.ts";
-import { AzureCliFacade } from "./az/azure-cli-facade.ts";
-import { BasicAzureCliFacade } from "./az/basic-azure-cli-facade.ts";
-import { RetryingAzureCliFacadeDecorator } from "./az/retrying-azure-cli-facade-decorator.ts";
+
+import { AzCliFacade } from "./az/AzCliFacade.ts";
 import {
   CliFacade,
   CliInstallationStatus,
   InstallationStatus,
 } from "./CliFacade.ts";
 import { GcpCliFacade } from "./gcloud/gcp-cli-facade.ts";
+import { AutoInstallAzModuleAzCliDecorator } from "./az/AutoInstallAzModuleAzCliDecorator.ts";
+import { AzCli } from "./az/AzCli";
+import { RetryingAzCliDecorator } from "./az/RetryingAzCliDecorator";
 
 export class CliApiFacadeFactory {
   private installationStatusCache = new Map<string, CliInstallationStatus>();
@@ -48,14 +49,14 @@ export class CliApiFacadeFactory {
   async buildAz(env?: AzCliEnv) {
     const processRunner = this.buildProcessRunner(env);
 
-    let azure: AzureCliFacade = new BasicAzureCliFacade(processRunner);
+    let azure: AzCliFacade = new AzCli(processRunner);
 
     // We can only ask the user if we are in a tty terminal.
     if (isatty) {
-      azure = new AutoInstallAzureCliModuleDecorator(azure);
+      azure = new AutoInstallAzModuleAzCliDecorator(azure);
     }
 
-    azure = new RetryingAzureCliFacadeDecorator(azure);
+    azure = new RetryingAzCliDecorator(azure);
 
     await this.verifyInstallationStatus(azure);
 

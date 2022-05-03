@@ -7,11 +7,11 @@ import {
   SimpleCostManagementInfo,
   Subscription,
   Tag,
-} from "./azure.model.ts";
+} from "./Model.ts";
 
 export type DynamicInstallValue = "yes_without_prompt" | "yes_prompt" | "no";
 
-export interface AzureCliFacade extends CliFacade {
+export interface AzCliFacade extends CliFacade {
   setDynamicInstallValue(value: DynamicInstallValue): void;
   getDynamicInstallValue(): Promise<DynamicInstallValue | null>;
 

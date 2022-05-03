@@ -1,6 +1,6 @@
-import { AzureCliFacade } from "./azure-cli-facade.ts";
-import { AzureMeshAdapter } from "./azure-mesh-adapter.ts";
-import { RoleAssignment, Subscription } from "./azure.model.ts";
+import { AzCliFacade } from "./AzCliFacade.ts";
+import { AzMeshAdapter } from "./azure-mesh-adapter.ts";
+import { RoleAssignment, Subscription } from "./Model.ts";
 import { MeshPlatform, MeshTenant } from "/mesh/mesh-tenant.model.ts";
 import { assertEquals } from "/dev-deps.ts";
 import {
@@ -43,9 +43,9 @@ const cli = {
       },
     ]);
   },
-} as unknown as AzureCliFacade;
+} as unknown as AzCliFacade;
 
-const sut = new AzureMeshAdapter(cli, {} as MeshTenantChangeDetector);
+const sut = new AzMeshAdapter(cli, {} as MeshTenantChangeDetector);
 
 Deno.test(
   "when inputting a response with all types of assignment sources, they are properly converted from the 'scope' properties",

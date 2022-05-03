@@ -1,6 +1,6 @@
 import { MeshAzureRetryableError } from "/errors.ts";
 import { sleep } from "/promises.ts";
-import { AzureCliFacade, DynamicInstallValue } from "./azure-cli-facade.ts";
+import { AzCliFacade, DynamicInstallValue } from "./AzCliFacade.ts";
 import {
   Account,
   AzureMeshTag,
@@ -9,15 +9,16 @@ import {
   SimpleCostManagementInfo,
   Subscription,
   Tag,
-} from "./azure.model.ts";
+} from "./Model.ts";
 
 /**
  * Retries a call into Azure in case there Azure CLI threw an error which indicated
  * a too many request problem. There are also other typical Azure related problems
  * like the 401 error which tells us about a certificat error.
  */
-export class RetryingAzureCliFacadeDecorator implements AzureCliFacade {
-  constructor(private readonly wrapped: AzureCliFacade) {}
+
+export class RetryingAzCliDecorator implements AzCliFacade {
+  constructor(private readonly wrapped: AzCliFacade) {}
 
   async verifyCliInstalled() {
     return await this.wrapped.verifyCliInstalled();
