@@ -17,8 +17,8 @@ import {
 } from "./CliFacade.ts";
 import { GcpCliFacade } from "./gcloud/gcp-cli-facade.ts";
 import { AutoInstallAzModuleAzCliDecorator } from "./az/AutoInstallAzModuleAzCliDecorator.ts";
-import { AzCli } from "./az/AzCli";
-import { RetryingAzCliDecorator } from "./az/RetryingAzCliDecorator";
+import { AzCli } from "./az/AzCli.ts";
+import { RetryingAzCliDecorator } from "./az/RetryingAzCliDecorator.ts";
 
 export class CliApiFacadeFactory {
   private installationStatusCache = new Map<string, CliInstallationStatus>();
