@@ -48,7 +48,7 @@ export interface CostBigQueryResult {
 
 export function isProject(
   // deno-lint-ignore no-explicit-any
-  object: any
+  object: any,
 ): object is Project {
   return "projectId" in object && "projectNumber" in object;
 }

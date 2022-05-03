@@ -34,7 +34,7 @@ export class CliApiFacadeFactory {
   ) {}
 
   async buildAws(env?: AwsCliEnv) {
-    const shellRunner = this.buildLegacyShellRunner(this.options, env);
+    const shellRunner = this.buildShellRunner(env);
     // const awsShellRunner = new AwsShellRunner(shellRunner, "default");
 
     const facade = new AwsCliFacade(shellRunner);

@@ -1,5 +1,5 @@
 import { path } from "../deps.ts";
-import { assertEquals } from "../dev_deps.ts";
+import { assertEquals } from "../dev-deps.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "./DirectoryGenerator.ts";
 import { Logger } from "./Logger.ts";
 import { withRestoreCwd, withTempDir } from "./test-util.ts";

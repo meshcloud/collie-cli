@@ -50,39 +50,7 @@ export class MeshAdapterFactory {
     const adapters: MeshAdapter[] = [];
 
     if (this.config.connected.AWS) {
-      const selectedProfile = this.config.aws.selectedProfile;
-      if (!selectedProfile) {
-        throw new MeshError(
-          `No AWS CLI profile selected. Please run '${CLICommand} config aws' to configure it`,
-        );
-      }
-
-      const accountAccessRole = this.config.aws.accountAccessRole;
-      if (!accountAccessRole) {
-        throw new MeshError(
-          `No AWS CLI access role defined. Please run '${CLICommand} config aws' to configure it`,
-        );
-      }
-
-      const awsShellRunner = new AwsShellRunner(shellRunner, selectedProfile);
-      const aws = new AwsCliFacade(awsShellRunner);
-      const awsAdapter = new AwsMeshAdapter(
-        aws,
-        accountAccessRole,
-        tenantChangeDetector,
-      );
-
-      if (queryStats) {
-        const statsDecorator = new StatsMeshAdapterDecorator(
-          awsAdapter,
-          MeshPlatform.AWS,
-          1,
-          queryStats,
-        );
-        adapters.push(statsDecorator);
-      } else {
-        adapters.push(awsAdapter);
-      }
+      throw new Error("AWS no longer supported in legacy MeshAdapterFactory");
     }
 
     if (this.config.connected.Azure) {

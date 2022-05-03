@@ -1,11 +1,12 @@
 import { moment } from "/deps.ts";
 import { MeshPlatform, MeshTenantCost } from "/mesh/mesh-tenant.model.ts";
-import { ShellOutput } from "/process/shell-output.ts";
-import { ShellRunner } from "/process/shell-runner.ts";
 import { AwsCliFacade } from "./aws-cli-facade.ts";
 import { AwsMeshAdapter } from "./aws-mesh-adapter.ts";
 import { assertEquals } from "/dev-deps.ts";
 import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
+import { ProcessResultWithOutput } from "../../process/ShellRunnerResult.ts";
+import { IShellRunner } from "../../process/IShellRunner.ts";
+import { ShellRunnerOptions } from "../../process/ShellRunnerOptions.ts";
 
 const response = {
   GroupDefinitions: [{ Type: "DIMENSION", Key: "LINKED_ACCOUNT" }],
@@ -134,14 +135,20 @@ const response = {
 };
 
 const mockShellRunner = {
-  run: (_: string): Promise<ShellOutput> => {
+  run: (
+    _commands: string[],
+    _options?: ShellRunnerOptions,
+  ): Promise<ProcessResultWithOutput> => {
     return Promise.resolve({
-      code: 0,
+      status: {
+        success: true,
+        code: 0,
+      },
       stdout: JSON.stringify(response),
       stderr: "",
     });
   },
-} as ShellRunner;
+} as IShellRunner<ProcessResultWithOutput>;
 
 const awsCliFacade = new AwsCliFacade(mockShellRunner);
 const sut = new AwsMeshAdapter(

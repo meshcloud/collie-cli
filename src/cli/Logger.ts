@@ -21,8 +21,6 @@ export class Logger {
     this.enableVerbose = opts.verbose;
     this.enableDebug = opts.debug;
 
-    console.log("XXXX", this);
-
     this.fmtUtils = {
       kitPath(dest: string) {
         return kit.relativePath(dest);
