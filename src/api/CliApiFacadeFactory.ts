@@ -1,21 +1,14 @@
 import { PlatformCommandInstallationStatus } from "../cli-detector.ts";
 import { Logger } from "../cli/Logger.ts";
 import { CmdGlobalOptions } from "../commands/cmd-options.ts";
-import { isatty, TTY } from "../commands/tty.ts";
+import { isatty } from "../commands/tty.ts";
 import { MeshError } from "../errors.ts";
 import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
-import { isWindows } from "../os.ts";
-import {
-  DefaultEnvShellRunner,
-  LegacyDefaultEnvShellRunner,
-} from "../process/DefaultEnvShellRunner.ts";
+import { DefaultEnvShellRunner } from "../process/DefaultEnvShellRunner.ts";
 import { IShellRunner } from "../process/IShellRunner.ts";
-import { LoaderShellRunner } from "../process/loader-shell-runner.ts";
 import { QuietShellRunner } from "../process/QuietShellRunner.ts";
-import { IShellRunner as LegacyIShellRunner } from "../process/shell-runner.interface.ts";
 import { ShellRunnerLoggingDecorator } from "../process/ShellRunnerLoggingDecorator.ts";
 import { ProcessResultWithOutput } from "../process/ShellRunnerResult.ts";
-import { VerboseShellRunner } from "../process/verbose-shell-runner.ts";
 import { AwsCliFacade } from "./aws/aws-cli-facade.ts";
 import { AutoInstallAzureCliModuleDecorator } from "./az/auto-install-azure-cli-module-decorator.ts";
 import { AzureCliFacade } from "./az/azure-cli-facade.ts";
@@ -23,14 +16,12 @@ import { BasicAzureCliFacade } from "./az/basic-azure-cli-facade.ts";
 import { RetryingAzureCliFacadeDecorator } from "./az/retrying-azure-cli-facade-decorator.ts";
 import { CliFacade, CliInstallationStatus } from "./CliFacade.ts";
 import { GcpCliFacade } from "./gcloud/gcp-cli-facade.ts";
-import { ShellRunner } from "/process/shell-runner.ts";
 
 export class CliApiFacadeFactory {
   private installationStatusCache = new Map<string, CliInstallationStatus>();
 
   constructor(
     private readonly logger: Logger,
-    private readonly options: CmdGlobalOptions,
   ) {}
 
   async buildAws(env?: AwsCliEnv) {
@@ -45,7 +36,7 @@ export class CliApiFacadeFactory {
   }
 
   async buildGcloud(env?: GcloudCliEnv) {
-    const shellRunner = this.buildLegacyShellRunner(this.options, env);
+    const shellRunner = this.buildShellRunner(env);
 
     const facade = new GcpCliFacade(shellRunner);
 
@@ -103,25 +94,6 @@ export class CliApiFacadeFactory {
       case PlatformCommandInstallationStatus.Installed:
         break;
     }
-  }
-
-  private buildLegacyShellRunner(
-    options: CmdGlobalOptions,
-    env?: Record<string, string>,
-  ): LegacyIShellRunner {
-    let shellRunner = new ShellRunner();
-
-    if (options.verbose) {
-      shellRunner = new VerboseShellRunner(shellRunner);
-    } else if (isatty && !isWindows) {
-      shellRunner = new LoaderShellRunner(shellRunner, new TTY());
-    }
-
-    if (env) {
-      shellRunner = new LegacyDefaultEnvShellRunner(shellRunner, env);
-    }
-
-    return shellRunner;
   }
 
   private buildShellRunner(env?: Record<string, string>) {

@@ -1,4 +1,3 @@
-import { ShellRunner } from "/process/shell-runner.ts";
 import {
   Config,
   CostBigQueryResult,
@@ -6,13 +5,7 @@ import {
   Labels,
   Project,
 } from "./gcp.model.ts";
-import { ShellOutput } from "/process/shell-output.ts";
-import {
-  GcpErrorCode,
-  MeshGcpPlatformError,
-  MeshInvalidTagValueError,
-  MeshNotLoggedInError,
-} from "/errors.ts";
+import { GcpErrorCode, MeshGcpPlatformError } from "/errors.ts";
 import {
   CLICommand,
   GcpBillingExportConfig,
@@ -22,29 +15,46 @@ import { parseJsonWithLog } from "/json.ts";
 import { moment } from "/deps.ts";
 import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
 import { PlatformCommandInstallationStatus } from "../../cli-detector.ts";
+import { GcloudCliResultHandler } from "./GcloudCliResultHandler.ts";
+import { IShellRunner } from "../../process/IShellRunner.ts";
+import { ProcessResultWithOutput } from "../../process/ShellRunnerResult.ts";
+import { ShellRunnerResultHandlerDecorator } from "../../process/ShellRunnerResultHandlerDecorator.ts";
 
 // todo: rename to GcloudCliFacade
 export class GcpCliFacade implements CliFacade {
+  private readonly shellRunner: IShellRunner<ProcessResultWithOutput>;
+
   constructor(
-    private readonly shellRunner: ShellRunner,
+    private readonly rawRunner: IShellRunner<ProcessResultWithOutput>,
     private readonly billingConfig?: GcpBillingExportConfig,
-  ) {}
-
-  private unauthorizedProject = /User is not permitted/;
-  private invalidTagValue =
-    /ERROR: \(gcloud.alpha.projects.update\) argument --update-labels: Bad value/;
-
-  async verifyCliInstalled(): Promise<CliInstallationStatus> {
-    const result = await this.runVersionCommand();
-
-    return {
-      cli: "gcloud",
-      status: this.determineInstallationStatus(result),
-    };
+  ) {
+    // todo: consider wrapping the shellrunner further, e.g. to always add --output=json so we become more independent
+    // of the user's global aws cli config
+    this.shellRunner = new ShellRunnerResultHandlerDecorator(
+      this.rawRunner,
+      new GcloudCliResultHandler(),
+    );
   }
 
-  private determineInstallationStatus(result: ShellOutput) {
-    if (result.code !== 0) {
+  // todo: maybe factor detection logic into its own class, not part of the facade?
+  async verifyCliInstalled(): Promise<CliInstallationStatus> {
+    try {
+      const result = await this.rawRunner.run(["gcloud", "--version"]);
+
+      return {
+        cli: "gcloud",
+        status: this.determineInstallationStatus(result),
+      };
+    } catch {
+      return {
+        cli: "gcloud",
+        status: PlatformCommandInstallationStatus.NotInstalled,
+      };
+    }
+  }
+
+  private determineInstallationStatus(result: ProcessResultWithOutput) {
+    if (result.status.code !== 0) {
       return PlatformCommandInstallationStatus.NotInstalled;
     }
 
@@ -55,72 +65,42 @@ export class GcpCliFacade implements CliFacade {
       : PlatformCommandInstallationStatus.UnsupportedVersion;
   }
 
-  private async runVersionCommand(): Promise<ShellOutput> {
-    try {
-      return await this.shellRunner.run(`gcloud --version`);
-    } catch {
-      return { code: -1, stderr: "", stdout: "" };
-    }
-  }
-
   async configList(): Promise<Config> {
-    const command = "gcloud config list --format json";
-
-    const result = await this.shellRunner.run(command);
-    this.checkForErrors(result);
-
-    return parseJsonWithLog<Config>(result.stdout);
+    return await this.run<Config>(["gcloud", "config", "list"]);
   }
 
   async listProjects(): Promise<Project[]> {
-    const command = "gcloud projects list --format json";
-    const result = await this.shellRunner.run(command);
-    this.checkForErrors(result);
-
-    console.debug(`listProjects: ${JSON.stringify(result)}`);
-
-    return parseJsonWithLog<Project[]>(result.stdout);
+    return await this.run<Project[]>(["gcloud", "projects", "list"]);
   }
 
   async updateTags(project: Project, labels: Labels): Promise<void> {
     if (Object.entries(labels).length === 0) {
       return;
     }
+
     const labelStr = Object.entries(labels)
       .map(([key, value]) => `${key}=${value}`)
       .join(",");
 
-    // For more information see https://cloud.google.com/sdk/gcloud/reference/alpha/projects/update#--update-labels
-    const command =
-      `gcloud alpha projects update ${project.projectId} --update-labels ${labelStr}`;
-    const result = await this.shellRunner.run(command);
-    this.checkForErrors(result);
-
-    console.debug(`updateTags: ${JSON.stringify(result)}`);
+    await this.run([
+      "gcloud",
+      "alpha",
+      "projects",
+      "update",
+      project.projectId,
+      "--update-labels",
+      labelStr,
+    ]);
   }
 
   async listIamPolicy(project: Project): Promise<IamResponse[]> {
-    const command =
-      `gcloud projects get-ancestors-iam-policy ${project.projectId} --format json`;
-    const result = await this.shellRunner.run(command);
-
-    try {
-      this.checkForErrors(result);
-    } catch (e) {
-      if (
-        e instanceof MeshGcpPlatformError &&
-        e.errorCode == GcpErrorCode.GCP_UNAUTHORIZED
-      ) {
-        console.error(
-          `Could not list IAM policies for Project ${project.projectId}: Access was denied`,
-        );
-      }
-      return Promise.resolve([]);
-    }
-
-    console.debug(`listIamPolicy: ${JSON.stringify(result)}`);
-
-    return parseJsonWithLog<IamResponse[]>(result.stdout);
+    // todo: handle access denied errors at a higher level, probably in a facade decorator?
+    return await this.run<IamResponse[]>([
+      "gcloud",
+      "projects",
+      "get-ancestors-iam-policy",
+      project.projectId,
+    ]);
   }
 
   async listCosts(
@@ -141,41 +121,26 @@ export class GcpCliFacade implements CliFacade {
     const end = moment(endDate).format(format);
     const query =
       `SELECT * FROM \`${viewName}\` where invoice_month >= "${start}" AND invoice_month <= "${end}"`;
-    const command =
-      `bq --project_id ${billingProject} query --format json --nouse_legacy_sql ${query}`;
+
+    const command = [
+      "bq",
+      "--project_id",
+      billingProject,
+      "query",
+      "--format",
+      "json",
+      "--nouse_legacy_sql",
+      query,
+    ];
+
     const result = await this.shellRunner.run(command);
-
-    console.debug(`listCosts: ${JSON.stringify(result)}`);
-
-    this.checkForErrors(result);
 
     return parseJsonWithLog<CostBigQueryResult[]>(result.stdout);
   }
 
-  private checkForErrors(result: ShellOutput) {
-    if (result.code === 2) {
-      if (this.invalidTagValue.exec(result.stderr)) {
-        throw new MeshInvalidTagValueError(
-          "You provided an invalid tag value for GCP. Please try again with a different value.",
-        );
-      } else {
-        throw new MeshGcpPlatformError(
-          GcpErrorCode.GCP_CLI_GENERAL,
-          result.stderr,
-        );
-      }
-    } else if (result.code === 1) {
-      if (this.unauthorizedProject.exec(result.stderr)) {
-        throw new MeshGcpPlatformError(
-          GcpErrorCode.GCP_UNAUTHORIZED,
-          "Request could not be made because the current user is not allowed to access this resource",
-        );
-      } else {
-        console.error(
-          `You are not logged in into GCP CLI. Please login with "gcloud auth login" or disconnect with "${CLICommand} config --disconnect"`,
-        );
-        throw new MeshNotLoggedInError(result.stderr);
-      }
-    }
+  private async run<T>(command: string[]) {
+    const result = await this.shellRunner.run([...command, "--format", "json"]);
+
+    return parseJsonWithLog<T>(result.stdout);
   }
 }
