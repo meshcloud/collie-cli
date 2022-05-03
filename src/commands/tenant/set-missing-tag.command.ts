@@ -1,26 +1,31 @@
-import { clone, Command, Input } from "../../../deps.ts";
-import { CmdGlobalOptions } from "../../cmd-options.ts";
-import { setupLogger } from "../../../logger.ts";
-import { verifyCliAvailability } from "../../../init.ts";
-import { loadConfig } from "../../../config/config.model.ts";
-import { MeshAdapterFactory } from "../../../mesh/mesh-adapter.factory.ts";
-import { MeshAdapter } from "../../../mesh/mesh-adapter.ts";
-import { MeshTenant } from "../../../mesh/mesh-tenant.model.ts";
-import { MeshInvalidTagValueError } from "../../../errors.ts";
+import { clone, Command, Input } from "../../deps.ts";
+import { CmdGlobalOptions } from "../cmd-options.ts";
+import { CLICommand } from "../../config/config.model.ts";
+import { MeshAdapter } from "../../mesh/mesh-adapter.ts";
+import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
+import { MeshInvalidTagValueError } from "../../errors.ts";
+import { TenantCommandOptions } from "./TenantCommandOptions.ts";
+import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 
-export const setMissingTags = new Command()
-  .description(
-    "Fix all tenants missing the given tag. Collie will ask you per tenant what the value should be and writes the change to the cloud platform(s).",
-  )
-  .action(setMissingTagsAction);
+export function registerSetMissingTagCommand(program: Command) {
+  program
+    .command("set-missing-tag <foundation> <tagKey>")
+    .description(
+      "Fix all tenants missing the given tag interactively",
+    )
+    .example(
+      "Set a tag value for all tenants that are missing the given 'environment' tag",
+      `${CLICommand} tenant set-missing-tag <foundation> environment`,
+    )
+    .action(setMissingTagsAction);
+}
 
-async function setMissingTagsAction(options: CmdGlobalOptions, tagKey: string) {
-  setupLogger(options);
-  await verifyCliAvailability();
-
-  const config = loadConfig();
-  const meshAdapterFactory = new MeshAdapterFactory(config);
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+async function setMissingTagsAction(
+  options: TenantCommandOptions & CmdGlobalOptions,
+  foundation: string,
+  tagKey: string,
+) {
+  const { meshAdapter } = await prepareTenantCommand(options, foundation);
 
   const allTenants = await meshAdapter.getMeshTenants();
 

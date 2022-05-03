@@ -1,37 +1,40 @@
-import { bold, Command } from "../../../deps.ts";
-import { CmdGlobalOptions } from "../../cmd-options.ts";
-import { setupLogger } from "../../../logger.ts";
-import { verifyCliAvailability } from "../../../init.ts";
-import { loadConfig } from "../../../config/config.model.ts";
-import { MeshAdapterFactory } from "../../../mesh/mesh-adapter.factory.ts";
-import { MeshTenant } from "../../../mesh/mesh-tenant.model.ts";
+import { bold, Command } from "../../deps.ts";
+import { CmdGlobalOptions } from "../cmd-options.ts";
+import { CLICommand } from "../../config/config.model.ts";
+import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
+import { TenantCommandOptions } from "./TenantCommandOptions.ts";
+import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 
-export const analyzeMissingTags = new Command()
-  .description(
-    "Analyzes all available tags on tenants and returns the percentage of tenants that make use of this tag.",
-  )
-  .option(
-    "--tags <tags:string[]>",
-    "The list of tags to filter on. If not given, all found tags are considered. Example: --tags Environment,Department",
-  )
-  .option(
-    "--details [details:boolean]",
-    "Shows more details, including which cloud tenants are missing which tag.",
-  )
-  .action(analyzeTagsAction);
-
-interface CmdAnalyzeTagsOptions extends CmdGlobalOptions {
+export function registerAnalyzeTagCommand(program: Command) {
+  program
+    .command("analyze-tags <foundation>")
+    .description(
+      "Analyzes all available tags on tenants and returns the percentage of tenants that make use of this tag.",
+    )
+    .option(
+      "--tags <tags:string[]>",
+      "The list of tags to filter on. If not given, all found tags are considered. Example: --tags Environment,Department",
+    )
+    .option(
+      "--details [details:boolean]",
+      "Shows more details, including which cloud tenants are missing which tag.",
+    )
+    .example(
+      "Show tenants that are missing the tag 'Environment' and 'CostCenter'",
+      `${CLICommand} tenant tag analyze-missing --details --tags Environment,CostCenter`,
+    )
+    .action(analyzeTagsAction);
+}
+interface AnalyzeTagsCommandOptions extends CmdGlobalOptions {
   tags?: string[];
   details?: boolean;
 }
 
-async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
-  setupLogger(options);
-  await verifyCliAvailability();
-
-  const config = loadConfig();
-  const meshAdapterFactory = new MeshAdapterFactory(config);
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+async function analyzeTagsAction(
+  options: CmdGlobalOptions & TenantCommandOptions & AnalyzeTagsCommandOptions,
+  foundation: string,
+) {
+  const { meshAdapter } = await prepareTenantCommand(options, foundation);
 
   const allTenants = await meshAdapter.getMeshTenants();
 
@@ -50,11 +53,11 @@ async function analyzeTagsAction(options: CmdAnalyzeTagsOptions) {
     console.log(`We found these ${tagList.length} tags: ${tagList.join(", ")}`);
   }
   for (const tag of tagList) {
-    let missingTenants = allTenants.filter((x) =>
-      !x.tags.find((t) => t.tagName === tag)
+    let missingTenants = allTenants.filter(
+      (x) => !x.tags.find((t) => t.tagName === tag),
     );
     const count = totalTenantCount - missingTenants.length; // A bit weird but this way we only have to .filter() once.
-    const percentage = count / totalTenantCount * 100;
+    const percentage = (count / totalTenantCount) * 100;
     if (!options.details) {
       missingTenants = [];
     }

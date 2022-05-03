@@ -5,15 +5,17 @@ import { registerListCommand } from "./list.command.ts";
 import { registerCostCommand } from "./cost.command.ts";
 import { registerCacheCommand } from "./cache.command.ts";
 import { registerIamCommand } from "./iam.command.ts";
-import { registerTagCommand } from "./tag/tag.command.ts";
+import { registerAnalyzeTagCommand } from "./analyze-tag.command.ts";
+import { registerSetMissingTagCommand } from "./set-missing-tag.command.ts";
 
 export function registerTenantCommand(program: Command) {
   const tenantCmd = new Command();
 
   registerListCommand(tenantCmd);
   registerCostCommand(tenantCmd);
-  registerTagCommand(tenantCmd);
   registerIamCommand(tenantCmd);
+  registerAnalyzeTagCommand(tenantCmd);
+  registerSetMissingTagCommand(tenantCmd);
   registerCacheCommand(tenantCmd);
 
   program
