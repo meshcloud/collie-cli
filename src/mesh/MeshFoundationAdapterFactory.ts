@@ -3,10 +3,10 @@ import { MultiMeshAdapter } from "./MultiMeshAdapter.ts";
 import { GcloudMeshAdapter } from "/api/gcloud/GcloudMeshAdapter.ts";
 import { MeshAdapter } from "./mesh-adapter.ts";
 import { TimeWindowCalculator } from "./time-window-calculator.ts";
-import { MeshTenantRepository } from "../db/mesh-tenant-repository.ts";
+
 import { CachingMeshAdapterDecorator } from "./caching-mesh-adapter-decorator.ts";
 import { StatsMeshAdapterDecorator } from "./stats-mesh-adapter-decorator.ts";
-import { MeshPlatform } from "./mesh-tenant.model.ts";
+
 import {
   QueryStatistics,
   STATS_LAYER_CACHE,
@@ -20,6 +20,7 @@ import { CollieRepository } from "../model/CollieRepository.ts";
 import { CliApiFacadeFactory } from "../api/CliApiFacadeFactory.ts";
 import { AzMeshAdapter } from "../api/az/AzMeshAdapter.ts";
 import { Logger } from "../cli/Logger.ts";
+import { MeshTenantRepository } from "./MeshTenantRepository.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -57,6 +58,7 @@ export class MeshFoundationAdapterFactory {
       const adapterWithCache = new CachingMeshAdapterDecorator(
         repo,
         adapterWithStats,
+        this.logger,
       );
       return new StatsMeshAdapterDecorator(
         adapterWithCache,

@@ -7,6 +7,7 @@ import { CmdGlobalOptions } from "/commands/cmd-options.ts";
  * operations without consumers having to explicitly pull in other modules/dependencies.
  */
 export interface FormatUtils {
+  // TODO: rename to colliePath?
   kitPath(path: string): string;
 }
 /**
@@ -51,7 +52,8 @@ export class Logger {
     console.error(colors.bold(colors.green(msg)));
   }
 
-  public warn(msg: string) {
-    console.error(colors.yellow(msg));
+  public warn(msg: string | ((fmt: FormatUtils) => string)) {
+    const message = typeof msg === "string" ? msg : msg(this.fmtUtils);
+    console.error(colors.yellow(message));
   }
 }
