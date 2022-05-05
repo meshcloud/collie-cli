@@ -2,12 +2,17 @@ import {
   AzureErrorCode,
   MeshAzurePlatformError,
   MeshAzureRetryableError,
+  MeshError,
   MeshNotLoggedInError,
+  ProcessRunnerError,
 } from "/errors.ts";
-import { CLICommand } from "/config/config.model.ts";
 import { ProcessResultWithOutput } from "/process/ProcessRunnerResult.ts";
-import { ProcessRunnerResultHandler } from "../../process/ProcessRunnerResultHandler.ts";
+import {
+  formatAsShellCommand,
+  ProcessRunnerResultHandler,
+} from "../../process/ProcessRunnerResultHandler.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
+import { CliDetector } from "../CliDetector.ts";
 
 export class AzCliResultHandler implements ProcessRunnerResultHandler {
   private readonly errRegexExtensionMissing =
@@ -19,11 +24,32 @@ export class AzCliResultHandler implements ProcessRunnerResultHandler {
     /\(422\) Cost Management supports only Enterprise Agreement/;
   private readonly errNotAuthorized = /\((AuthorizationFailed)\)/;
 
-  handleResult(
-    _command: string[],
-    _options: ProcessRunnerOptions,
+  private readonly errConfigurationNotSet = /is not set/;
+
+  constructor(private readonly detector: CliDetector) {}
+
+  async handleError(
+    command: string[],
+    options: ProcessRunnerOptions,
+    error: Error,
+  ): Promise<never> {
+    // catch all error handling - try checking if its a cli version issue
+    await this.tryRaiseInstallationStatusError();
+
+    throw new ProcessRunnerError(command, options, error);
+  }
+
+  async handleResult(
+    command: string[],
+    options: ProcessRunnerOptions,
     result: ProcessResultWithOutput,
-  ): void {
+  ): Promise<void> {
+    // only handle unsuccessful results
+    if (result.status.success) {
+      return;
+    }
+
+    // try and match spefific errors
     if (result.status.code == 2) {
       const errMatch = this.errRegexExtensionMissing.exec(result.stderr);
       if (!!errMatch && errMatch.length > 0) {
@@ -34,12 +60,9 @@ export class AzCliResultHandler implements ProcessRunnerResultHandler {
           `Missing the Azure cli extention: ${missingExtension}, please install it first.`,
         );
       }
+    }
 
-      throw new MeshAzurePlatformError(
-        AzureErrorCode.AZURE_CLI_GENERAL,
-        `Error executing Azure CLI: ${result.stdout} - ${result.stderr}`,
-      );
-    } else if (result.status.code == 1) {
+    if (result.status.code == 1) {
       // Too many requests error
       let errMatch = this.errTooManyRequests.exec(result.stderr);
       if (!!errMatch && errMatch.length > 0) {
@@ -73,11 +96,13 @@ export class AzCliResultHandler implements ProcessRunnerResultHandler {
         );
       }
 
-      // We encountered an error so we will just throw here.
-      throw new MeshAzurePlatformError(
-        AzureErrorCode.AZURE_CLI_GENERAL,
-        result.stderr,
-      );
+      errMatch = this.errConfigurationNotSet.exec(result.stderr);
+      if (errMatch && command[1] === "config" && command[2] === "get") {
+        throw new MeshAzurePlatformError(
+          AzureErrorCode.AZURE_CLI_CONFIG_NOT_SET,
+          command[3],
+        );
+      }
     }
 
     // Detect login error
@@ -87,10 +112,22 @@ export class AzCliResultHandler implements ProcessRunnerResultHandler {
       // to solve this the user must just perform a new login so we issue this error if we detect this string.
       result.stderr.includes("AADSTS700082")
     ) {
-      console.log(
-        `You are not logged in into Azure CLI. Please login with "az login" or disconnect with "${CLICommand} config --disconnect Azure".`,
+      console.error(
+        `You are not logged in into Azure CLI. Please login with "az login".`,
       );
       throw new MeshNotLoggedInError(`"${result.stderr.replace("\n", "")}"`);
     }
+
+    // catch all error handling - try checking if its a cli version issue
+    await this.tryRaiseInstallationStatusError();
+
+    throw new ProcessRunnerError(command, options, result);
+  }
+
+  private async tryRaiseInstallationStatusError() {
+    await this.detector.tryRaiseInstallationStatusError(
+      "az",
+      /azure-cli\s+2\./,
+    );
   }
 }

@@ -37,12 +37,12 @@ export class MeshFoundationAdapterFactory {
     private readonly logger: Logger,
   ) {}
 
-  async buildMeshAdapter(
+  buildMeshAdapter(
     platforms: PlatformConfig[],
     queryStats: QueryStatistics,
-  ): Promise<MeshAdapter> {
-    const buildAdapterTasks = platforms.map(async (platform) => {
-      const adapter = await this.buildPlatformAdapter(platform);
+  ): MeshAdapter {
+    const platformAdapters = platforms.map((platform) => {
+      const adapter = this.buildPlatformAdapter(platform);
       const adapterWithStats = new StatsMeshAdapterDecorator(
         adapter,
         platform.name,
@@ -68,8 +68,6 @@ export class MeshFoundationAdapterFactory {
       );
     });
 
-    const platformAdapters = await Promise.all(buildAdapterTasks);
-
     const cachingMeshAdapter = new MultiMeshAdapter(platformAdapters);
 
     return new StatsMeshAdapterDecorator(
@@ -81,19 +79,19 @@ export class MeshFoundationAdapterFactory {
   }
 
   // TODO: caching per platform, optimize stats decorator building
-  async buildPlatformAdapter(config: PlatformConfig): Promise<MeshAdapter> {
+  private buildPlatformAdapter(config: PlatformConfig): MeshAdapter {
     if ("aws" in config) {
-      const aws = await this.facadeFactory.buildAws(config.cli.aws);
+      const aws = this.facadeFactory.buildAws(config.cli.aws);
       return new AwsMeshAdapter(
         aws,
         config.aws.accountAccessRole,
         this.tenantChangeDetector,
       );
     } else if ("azure" in config) {
-      const az = await this.facadeFactory.buildAz(config.cli.az);
+      const az = this.facadeFactory.buildAz(config.cli.az);
       return new AzMeshAdapter(az, this.tenantChangeDetector);
     } else if ("gcp" in config) {
-      const gcloud = await this.facadeFactory.buildGcloud(config.cli.gcloud);
+      const gcloud = this.facadeFactory.buildGcloud(config.cli.gcloud);
       return new GcloudMeshAdapter(
         gcloud,
         this.timeWindowCalc,

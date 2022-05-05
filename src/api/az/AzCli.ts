@@ -17,6 +17,7 @@ import { ProcessRunnerResultHandlerDecorator } from "../../process/ProcessRunner
 import { AzCliResultHandler } from "./AzCliResultHandler.ts";
 import { CliDetector } from "../CliDetector.ts";
 import { CliInstallationStatus } from "../CliFacade.ts";
+import { AzureErrorCode, MeshAzurePlatformError } from "../../errors.ts";
 
 interface ConfigValue {
   name: string;
@@ -35,7 +36,7 @@ export class AzCli implements AzCliFacade {
     // of the user's global aws cli config
     this.processRunner = new ProcessRunnerResultHandlerDecorator(
       rawRunner,
-      new AzCliResultHandler(),
+      new AzCliResultHandler(this.detector),
     );
   }
 
@@ -53,20 +54,26 @@ export class AzCli implements AzCliFacade {
   }
 
   async getDynamicInstallValue(): Promise<DynamicInstallValue | null> {
-    const result = await this.processRunner.run([
-      "az",
-      "config",
-      "get",
-      `extension.use_dynamic_install`,
-    ]);
+    try {
+      const result = await this.processRunner.run([
+        "az",
+        "config",
+        "get",
+        `extension.use_dynamic_install`,
+      ]);
+      const cv = parseJsonWithLog<ConfigValue>(result.stdout);
 
-    if (result.status.code == 1) {
-      return null;
+      return cv.value;
+    } catch (error: unknown) {
+      if (
+        error instanceof MeshAzurePlatformError &&
+        error.errorCode === AzureErrorCode.AZURE_CLI_CONFIG_NOT_SET
+      ) {
+        return null;
+      }
+
+      throw error;
     }
-
-    const cv = parseJsonWithLog<ConfigValue>(result.stdout);
-
-    return cv.value;
   }
 
   async listSubscriptions(): Promise<Subscription[]> {

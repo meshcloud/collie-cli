@@ -1,6 +1,7 @@
 import { Command, red } from "./deps.ts";
 import { initCommands } from "./commands/init-commands.ts";
 import { CmdOptionError } from "./commands/cmd-errors.ts";
+import { MeshError, ProcessRunnerError } from "./errors.ts";
 
 let program: Command;
 
@@ -21,13 +22,16 @@ try {
   }
   await program.parse(Deno.args);
 } catch (e) {
-  if (e instanceof Error) {
-    console.error(red(e.stack || ""));
-  }
-
-  // if the error indicates a user error, e.g. wrong typing then display the message and the help.
   if (e instanceof CmdOptionError) {
+    // if the error indicates a user error, e.g. wrong typing then display the message and the help.
     program.showHelp();
+  } else if (e instanceof MeshError) {
+    // for our own errors, only display message and then exit
+    console.error(red(e.message));
+  } else if (e instanceof Error) {
+    // for unexpected errors, raise the full message and stacktrace
+    // note that .stack includes the exception message
+    console.error(red(e.stack || ""));
   }
 
   Deno.exit(1);

@@ -2,11 +2,25 @@ import { ProcessRunnerResult } from "./ProcessRunnerResult.ts";
 import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 
 export interface ProcessRunnerResultHandler {
+  /**
+   * Handle the result of an execution of the command.
+   * Note that this result can be both successful (exit code 0) and unsuccessful.
+   */
   handleResult(
     command: string[],
     options: ProcessRunnerOptions | undefined,
     result: ProcessRunnerResult,
-  ): void;
+  ): Promise<void>;
+
+  /**
+   * Handle errors that occured while executing the command.
+   * For example, deno raises a NotFound error if the executable can't be found
+   */
+  handleError(
+    command: string[],
+    options: ProcessRunnerOptions | undefined,
+    error: Error,
+  ): Promise<never>;
 }
 
 /**
