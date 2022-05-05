@@ -10,7 +10,6 @@ import { OutputFormatType } from "./commands/cmd-options.ts";
 import { registerFeedbackCommand } from "./commands/feedback.command.ts";
 import { registerTenantCommand } from "./commands/tenant/tenant.command.ts";
 import { registerCreateIssueCommand } from "./commands/create-issue.command.ts";
-import { registerUserCommand } from "./commands/user/user.command.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.ts";
 import { registerFoundationCmd } from "./commands/foundation/foundation.command.ts";
 
@@ -48,7 +47,6 @@ registerFoundationCmd(program);
 registerTenantCommand(program);
 registerCreateIssueCommand(program);
 registerFeedbackCommand(program);
-registerUserCommand(program);
 registerUpgradeCommand(program);
 
 program.command("completions", new CompletionsCommand());
