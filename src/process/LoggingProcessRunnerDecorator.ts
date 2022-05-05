@@ -9,7 +9,7 @@ import {
 } from "./ProcessRunnerResult.ts";
 import { formatAsShellCommand } from "./ProcessRunnerResultHandler.ts";
 
-export class ProcessRunnerLoggingDecorator<T extends ProcessRunnerResult>
+export class LoggingProcessRunnerDecorator<T extends ProcessRunnerResult>
   implements IProcessRunner<T> {
   constructor(private runner: IProcessRunner<T>, private logger: Logger) {}
 

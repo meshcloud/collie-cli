@@ -17,7 +17,7 @@ import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
 import { GcloudCliResultHandler } from "./GcloudCliResultHandler.ts";
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
-import { ProcessRunnerResultHandlerDecorator } from "../../process/ProcessRunnerResultHandlerDecorator.ts";
+import { ResultHandlerProcessRunnerDecorator } from "../../process/ResultHandlerProcessRunnerDecorator.ts";
 import { CliDetector } from "../CliDetector.ts";
 
 // todo: rename to GcloudCliFacade
@@ -31,7 +31,7 @@ export class GcloudCliFacade implements CliFacade {
   ) {
     this.detector = new CliDetector(rawRunner);
 
-    this.processRunner = new ProcessRunnerResultHandlerDecorator(
+    this.processRunner = new ResultHandlerProcessRunnerDecorator(
       rawRunner,
       new GcloudCliResultHandler(this.detector),
     );

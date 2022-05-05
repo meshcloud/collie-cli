@@ -1,7 +1,6 @@
 import { ProcessResult } from "./ProcessRunnerResult.ts";
 import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 import { IProcessRunner } from "./IProcessRunner.ts";
-import { ExitCollieErrorHandler } from "./ExitCollieErrorHandler.ts";
 
 /**
  * Runs a subprocess transaprently by connecting it to collie's stdout/stderr.
@@ -10,8 +9,6 @@ import { ExitCollieErrorHandler } from "./ExitCollieErrorHandler.ts";
  * This runner should not be used when running with --quiet flag.
  */
 export class TransparentProcessRunner implements IProcessRunner<ProcessResult> {
-  constructor(private readonly errorHandler = new ExitCollieErrorHandler()) {}
-
   public async run(
     commands: string[],
     options?: ProcessRunnerOptions,
@@ -30,10 +27,6 @@ export class TransparentProcessRunner implements IProcessRunner<ProcessResult> {
     const result: ProcessResult = {
       status,
     };
-
-    if (!result.status.success) {
-      this.errorHandler.handleUnsuccessfulResult(commands, options, result);
-    }
 
     return result;
   }

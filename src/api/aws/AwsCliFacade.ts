@@ -21,7 +21,7 @@ import { parseJsonWithLog } from "/json.ts";
 import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
 
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
-import { ProcessRunnerResultHandlerDecorator } from "../../process/ProcessRunnerResultHandlerDecorator.ts";
+import { ResultHandlerProcessRunnerDecorator } from "../../process/ResultHandlerProcessRunnerDecorator.ts";
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { AwsCliResultHandler } from "./AwsCliResultHandler.ts";
 import { CliDetector } from "../CliDetector.ts";
@@ -35,7 +35,7 @@ export class AwsCliFacade implements CliFacade {
 
     // todo: consider wrapping the runner further, e.g. to always add --output=json so we become more independent
     // of the user's global aws cli config
-    this.processRunner = new ProcessRunnerResultHandlerDecorator(
+    this.processRunner = new ResultHandlerProcessRunnerDecorator(
       rawRunner,
       new AwsCliResultHandler(this.detector),
     );

@@ -8,7 +8,7 @@ export interface ProcessRunnerResultHandler {
    */
   handleResult(
     command: string[],
-    options: ProcessRunnerOptions | undefined,
+    options: ProcessRunnerOptions,
     result: ProcessRunnerResult,
   ): Promise<void>;
 
@@ -18,7 +18,7 @@ export interface ProcessRunnerResultHandler {
    */
   handleError(
     command: string[],
-    options: ProcessRunnerOptions | undefined,
+    options: ProcessRunnerOptions,
     error: Error,
   ): Promise<never>;
 }

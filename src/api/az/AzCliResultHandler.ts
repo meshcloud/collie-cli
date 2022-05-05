@@ -2,13 +2,11 @@ import {
   AzureErrorCode,
   MeshAzurePlatformError,
   MeshAzureRetryableError,
-  MeshError,
   MeshNotLoggedInError,
   ProcessRunnerError,
 } from "/errors.ts";
 import { ProcessResultWithOutput } from "/process/ProcessRunnerResult.ts";
 import {
-  formatAsShellCommand,
   ProcessRunnerResultHandler,
 } from "../../process/ProcessRunnerResultHandler.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";

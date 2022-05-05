@@ -1,10 +1,10 @@
 import { Logger } from "../cli/Logger.ts";
 import { isatty } from "../commands/tty.ts";
 import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
-import { DefaultEnvProcessRunner } from "../process/DefaultEnvProcessRunner.ts";
+import { DefaultEnvProcessRunnerDecorator } from "../process/DefaultEnvProcessRunnerDecorator.ts";
 import { IProcessRunner } from "../process/IProcessRunner.ts";
 import { QuietProcessRunner } from "../process/QuietProcessRunner.ts";
-import { ProcessRunnerLoggingDecorator } from "../process/ProcessRunnerLoggingDecorator.ts";
+import { LoggingProcessRunnerDecorator } from "../process/LoggingProcessRunnerDecorator.ts";
 import { ProcessResultWithOutput } from "../process/ProcessRunnerResult.ts";
 import { AwsCliFacade } from "./aws/AwsCliFacade.ts";
 import { AzCliFacade } from "./az/AzCliFacade.ts";
@@ -51,13 +51,13 @@ export class CliApiFacadeFactory {
     let processRunner: IProcessRunner<ProcessResultWithOutput> =
       new QuietProcessRunner();
 
-    processRunner = new ProcessRunnerLoggingDecorator(
+    processRunner = new LoggingProcessRunnerDecorator(
       processRunner,
       this.logger,
     );
 
     if (env) {
-      processRunner = new DefaultEnvProcessRunner(processRunner, env);
+      processRunner = new DefaultEnvProcessRunnerDecorator(processRunner, env);
     }
 
     return processRunner;
