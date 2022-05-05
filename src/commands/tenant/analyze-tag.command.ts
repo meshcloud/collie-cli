@@ -1,6 +1,6 @@
 import { bold, Command } from "../../deps.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
-import { CLICommand } from "../../config/config.model.ts";
+import { CLI } from "/info.ts";
 import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
@@ -21,7 +21,7 @@ export function registerAnalyzeTagCommand(program: Command) {
     )
     .example(
       "Show tenants that are missing the tag 'Environment' and 'CostCenter'",
-      `${CLICommand} tenant tag analyze-missing --details --tags Environment,CostCenter`,
+      `${CLI} tenant tag analyze-missing --details --tags Environment,CostCenter`,
     )
     .action(analyzeTagsAction);
 }

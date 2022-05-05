@@ -1,9 +1,8 @@
 import { Command, CompletionsCommand, red } from "./deps.ts";
 import { CmdOptionError } from "./commands/cmd-errors.ts";
 import { MeshError } from "./errors.ts";
-import { CLICommand, CLIName } from "./config/config.model.ts";
 import { printTip } from "./cli/Logger.ts";
-import { VERSION } from "./config/info.ts";
+import { CLI, VERSION } from "./info.ts";
 import { isWindows } from "./os.ts";
 import { OutputFormat } from "/presentation/output-format.ts";
 import { OutputFormatType } from "./commands/cmd-options.ts";
@@ -14,7 +13,7 @@ import { registerUpgradeCommand } from "./commands/upgrade.ts";
 import { registerFoundationCmd } from "./commands/foundation/foundation.command.ts";
 
 const program = new Command()
-  .name(CLICommand)
+  .name(CLI)
   .help({
     // The darkblue of Cliffy doesn't look great on the blue of PowerShell.
     colors: !isWindows,
@@ -40,7 +39,7 @@ const program = new Command()
     "Enable printing debug info (command output, intermediate results)",
   )
   .description(
-    `${CLIName} CLI - Herd your clouds with collie. Built with love by meshcloud.io`,
+    `${CLI} CLI - Herd your clouds with collie. Built with love by meshcloud.io`,
   );
 
 registerFoundationCmd(program);
@@ -67,14 +66,14 @@ try {
     // for our own errors, only display message and then exit
     console.error(red(e.message));
     console.error(
-      `Tip: run ${CLICommand} with --verbose and --debug flags for more details.`,
+      `Tip: run ${CLI} with --verbose and --debug flags for more details.`,
     );
   } else if (e instanceof Error) {
     // for unexpected errors, raise the full message and stacktrace
     // note that .stack includes the exception message
     console.error(red(e.stack || ""));
     printTip(
-      `run ${CLICommand} with --verbose and --debug flags for more details.`,
+      `run ${CLI} with --verbose and --debug flags for more details.`,
     );
   }
 

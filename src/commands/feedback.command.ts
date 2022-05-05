@@ -1,10 +1,10 @@
 import { Command, open } from "../deps.ts";
-import { CLIName, GitHubUrl } from "../config/config.model.ts";
+import { CLI, GitHubUrl } from "../info.ts";
 
 export function registerFeedbackCommand(program: Command) {
   const feedbackCmd = new Command()
     .description(
-      `Open the ${CLIName} CLI feedback board in GitHub Discussions.`,
+      `Open the ${CLI} CLI feedback board in GitHub Discussions.`,
     )
     .action(openFeedback);
   program.command("feedback", feedbackCmd);

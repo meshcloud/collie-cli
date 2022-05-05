@@ -1,2 +1,2 @@
-import { FLAGS } from "./src/config/info.ts";
+import { FLAGS } from "./src/info.ts";
 console.log(FLAGS);

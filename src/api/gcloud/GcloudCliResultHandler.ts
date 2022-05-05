@@ -5,7 +5,6 @@ import {
   MeshNotLoggedInError,
   ProcessRunnerError,
 } from "/errors.ts";
-import { CLICommand } from "/config/config.model.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { ProcessRunnerResultHandler } from "../../process/ProcessRunnerResultHandler.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
@@ -52,7 +51,7 @@ export class GcloudCliResultHandler implements ProcessRunnerResultHandler {
           );
         } else {
           console.error(
-            `You are not logged in into GCP CLI. Please login with "gcloud auth login" or disconnect with "${CLICommand} config --disconnect"`,
+            `You are not logged in into GCP CLI. Please login with "gcloud auth login" or remove the platform from your foundation."`,
           );
           throw new MeshNotLoggedInError(result.stderr);
         }

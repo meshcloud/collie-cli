@@ -2,8 +2,8 @@ import { AwsCliFacade } from "../api/aws/AwsCliFacade.ts";
 import { Input, Select } from "../deps.ts";
 import { MeshError } from "../errors.ts";
 import {
-  CLICommand,
-  CLIName,
+  CLI,
+  CLI,
   Config,
   ConnectedConfigKey,
   writeConfig,
@@ -26,17 +26,17 @@ export class AwsPostPlatformConfigHook implements PostPlatformConfigHook {
   private async configureAwsProfile(config: Config) {
     if (config.aws.selectedProfile) {
       console.log(
-        `There was an AWS profile selected: '${config.aws.selectedProfile}'. To change this profile run '${CLICommand} config aws'`,
+        `There was an AWS profile selected: '${config.aws.selectedProfile}'. To change this profile run '${CLI} config aws'`,
       );
       return;
     }
 
     console.log(
       `There is no default AWS profile selected. You must set a profile with access to a management account which contains your AWS organization.
-Without management account credentials ${CLIName} won't be able to execute the commands it needs in order to log the required account information.`,
+Without management account credentials ${CLI} won't be able to execute the commands it needs in order to log the required account information.`,
     );
     console.log(
-      `${CLIName} will now scan for the usable AWS profiles and give you a selection.`,
+      `${CLI} will now scan for the usable AWS profiles and give you a selection.`,
     );
 
     // Get the installed profiles.
@@ -75,7 +75,7 @@ Without management account credentials ${CLIName} won't be able to execute the c
   private async configureAccountAccessRole(config: Config) {
     if (config.aws.accountAccessRole) {
       console.log(
-        `There was an AWS account access role defined: '${config.aws.accountAccessRole}'. To change this role run '${CLICommand} config aws'`,
+        `There was an AWS account access role defined: '${config.aws.accountAccessRole}'. To change this role run '${CLI} config aws'`,
       );
       return;
     }

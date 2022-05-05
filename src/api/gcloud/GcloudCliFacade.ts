@@ -7,7 +7,6 @@ import {
 } from "./Model.ts";
 import { GcpErrorCode, MeshGcpPlatformError } from "/errors.ts";
 import {
-  CLICommand,
   GcpBillingExportConfig,
   GcpCostCollectionViewName,
 } from "/config/config.model.ts";
@@ -19,6 +18,7 @@ import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { ResultHandlerProcessRunnerDecorator } from "../../process/ResultHandlerProcessRunnerDecorator.ts";
 import { CliDetector } from "../CliDetector.ts";
+import { CLI } from "../../info.ts";
 
 // todo: rename to GcloudCliFacade
 export class GcloudCliFacade implements CliFacade {
@@ -86,7 +86,7 @@ export class GcloudCliFacade implements CliFacade {
     if (!this.billingConfig) {
       throw new MeshGcpPlatformError(
         GcpErrorCode.GCP_CLI_GENERAL,
-        `${CLICommand} is not configured for GCP cost reporting`,
+        `${CLI} is not configured for GCP cost reporting`,
       );
     }
     const billingProject = this.billingConfig.projectId;

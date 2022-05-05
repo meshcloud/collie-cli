@@ -1,9 +1,9 @@
 import { Command, open } from "../deps.ts";
-import { CLIName, GitHubUrl } from "../config/config.model.ts";
+import { CLI, GitHubUrl } from "../info.ts";
 
 export function registerCreateIssueCommand(program: Command) {
   const createIssueCommand = new Command()
-    .description(`Open GitHub to create a new issue for ${CLIName}.`)
+    .description(`Open GitHub to create a new issue for ${CLI}.`)
     .action(openNewIssue);
   program.command("create-issue", createIssueCommand);
 }
