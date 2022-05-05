@@ -27,8 +27,6 @@ export class QueryStatistics {
     const end = performance.now();
     const passed = end - start;
 
-    console.debug(`recording query statistics for ${source}: ${passed}ms`);
-
     if (layer == this.lastLayerLogged) {
       this.duration[source] = (this.duration[source] || 0) + passed;
     }

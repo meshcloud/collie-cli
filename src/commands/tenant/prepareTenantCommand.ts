@@ -35,9 +35,10 @@ export async function prepareTenantCommand(
     : foundationRepo.platforms;
 
   const queryStatistics = new QueryStatistics();
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(
+  const meshAdapter = await meshAdapterFactory.buildMeshAdapter(
     platforms,
     queryStatistics,
+    options.refresh,
   );
 
   const tableFactory = new MeshTableFactory(isatty);
