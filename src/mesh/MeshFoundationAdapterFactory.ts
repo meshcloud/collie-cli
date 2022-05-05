@@ -21,6 +21,7 @@ import { CliApiFacadeFactory } from "../api/CliApiFacadeFactory.ts";
 import { AzMeshAdapter } from "../api/az/AzMeshAdapter.ts";
 import { Logger } from "../cli/Logger.ts";
 import { MeshTenantRepository } from "./MeshTenantRepository.ts";
+import { LoggingMeshAdapterDecorator } from "./LoggingMeshAdapterDecorator.ts";
 
 /**
  * Should consume the cli configuration in order to build the
@@ -60,8 +61,15 @@ export class MeshFoundationAdapterFactory {
         adapterWithStats,
         this.logger,
       );
-      return new StatsMeshAdapterDecorator(
+
+      const adapterWithLogger = new LoggingMeshAdapterDecorator(
+        this.collie.relativePath(this.foundation.resolvePlatformPath(platform)),
         adapterWithCache,
+        this.logger,
+      );
+
+      return new StatsMeshAdapterDecorator(
+        adapterWithLogger,
         "cache", // todo: maybe we need to have a platform(cli/cache) stats reporting instead of a global gache
         STATS_LAYER_CACHE,
         queryStats,
