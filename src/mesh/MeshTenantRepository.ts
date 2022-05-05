@@ -2,8 +2,6 @@ import * as fs from "std/fs";
 import * as path from "std/path";
 import { Logger } from "../cli/Logger.ts";
 
-import { loadConfig } from "../config/config.model.ts";
-import { moment } from "../deps.ts";
 import { IoError } from "../errors.ts";
 import { parseJsonWithLog } from "../json.ts";
 import { MeshTenant } from "../mesh/MeshTenantModel.ts";
