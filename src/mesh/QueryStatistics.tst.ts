@@ -1,6 +1,6 @@
 import { assert, delay } from "../dev-deps.ts";
-import { MeshPlatform } from "./mesh-tenant.model.ts";
-import { QueryStatistics } from "./query-statistics.ts";
+import { MeshPlatform } from "./MeshTenantModel.ts";
+import { QueryStatistics } from "./QueryStatistics.ts";
 
 Deno.test("recording adds up", async () => {
   const sut = new QueryStatistics();

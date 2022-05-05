@@ -1,4 +1,4 @@
-import { MeshTag } from "./mesh-tenant.model.ts";
+import { MeshTag } from "./MeshTenantModel.ts";
 import { equal } from "../deps.ts";
 
 /**

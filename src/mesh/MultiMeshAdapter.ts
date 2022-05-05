@@ -1,5 +1,5 @@
-import { MeshAdapter } from "./mesh-adapter.ts";
-import { MeshTenant } from "./mesh-tenant.model.ts";
+import { MeshAdapter } from "./MeshAdapter.ts";
+import { MeshTenant } from "./MeshTenantModel.ts";
 
 export class MultiMeshAdapter implements MeshAdapter {
   constructor(

@@ -1,4 +1,4 @@
-import { MeshTag } from "../mesh/mesh-tenant.model.ts";
+import { MeshTag } from "../mesh/MeshTenantModel.ts";
 import { dim, Table, yellow } from "../deps.ts";
 
 export abstract class TableGenerator {

@@ -1,5 +1,5 @@
 import { MeshError } from "../errors.ts";
-import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { JsonMeshTenantIamView, JsonPresenter } from "./json-presenter.ts";
 import { OutputFormat } from "./output-format.ts";
 import { Presenter } from "./presenter.ts";
@@ -8,10 +8,10 @@ import {
   CsvTenantIamPresenter,
   PrintedIamKey,
 } from "./csv-tenant-iam-presenter.ts";
-import { MeshRoleAssignmentSource } from "../mesh/mesh-iam-model.ts";
+import { MeshRoleAssignmentSource } from "../mesh/MeshIamModel.ts";
 import { TablePresenter } from "./table-presenter.ts";
 import { MeshTableFactory } from "./mesh-table-factory.ts";
-import { QueryStatistics } from "../mesh/query-statistics.ts";
+import { QueryStatistics } from "../mesh/QueryStatistics.ts";
 import { MeshTenantIamTableViewGenerator } from "./meshtenant-iam-table-view-generator.ts";
 
 // This buildPresenter & individual methods might be a good argument for building a parent abstract class to DRY.

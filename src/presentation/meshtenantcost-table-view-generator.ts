@@ -1,4 +1,4 @@
-import { MeshTenant, MeshTenantCost } from "../mesh/mesh-tenant.model.ts";
+import { MeshTenant, MeshTenantCost } from "../mesh/MeshTenantModel.ts";
 import { TableGenerator } from "./mesh-table.ts";
 import { moment } from "../deps.ts";
 

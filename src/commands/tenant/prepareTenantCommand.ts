@@ -1,4 +1,4 @@
-import { QueryStatistics } from "../../mesh/query-statistics.ts";
+import { QueryStatistics } from "../../mesh/QueryStatistics.ts";
 import { MeshTableFactory } from "../../presentation/mesh-table-factory.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 import { isatty } from "../tty.ts";

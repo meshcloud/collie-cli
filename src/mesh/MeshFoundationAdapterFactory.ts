@@ -1,19 +1,19 @@
 import { AwsMeshAdapter } from "/api/aws/AwsMeshAdapter.ts";
 import { MultiMeshAdapter } from "./MultiMeshAdapter.ts";
 import { GcloudMeshAdapter } from "/api/gcloud/GcloudMeshAdapter.ts";
-import { MeshAdapter } from "./mesh-adapter.ts";
-import { TimeWindowCalculator } from "./time-window-calculator.ts";
+import { MeshAdapter } from "./MeshAdapter.ts";
+import { TimeWindowCalculator } from "./TimeWindowCalculator.ts";
 
-import { CachingMeshAdapterDecorator } from "./caching-mesh-adapter-decorator.ts";
-import { StatsMeshAdapterDecorator } from "./stats-mesh-adapter-decorator.ts";
+import { CachingMeshAdapterDecorator } from "./CachingMeshAdapterDecorator.ts";
+import { StatsMeshAdapterDecorator } from "./StatsMeshAdapterDecorator.ts";
 
 import {
   QueryStatistics,
   STATS_LAYER_CACHE,
   STATS_LAYER_PLATFORM,
-} from "./query-statistics.ts";
+} from "./QueryStatistics.ts";
 import { MeshError } from "../errors.ts";
-import { MeshTenantChangeDetector } from "./mesh-tenant-change-detector.ts";
+import { MeshTenantChangeDetector } from "./MeshTenantChangeDetector.ts";
 import { FoundationRepository } from "../model/FoundationRepository.ts";
 import { PlatformConfig } from "../model/PlatformConfig.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";

@@ -1,8 +1,8 @@
 import { clone, Command, Input } from "../../deps.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 import { CLICommand } from "../../config/config.model.ts";
-import { MeshAdapter } from "../../mesh/mesh-adapter.ts";
-import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
+import { MeshAdapter } from "../../mesh/MeshAdapter.ts";
+import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { MeshInvalidTagValueError } from "../../errors.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";

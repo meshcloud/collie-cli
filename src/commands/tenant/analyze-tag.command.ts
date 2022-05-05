@@ -1,7 +1,7 @@
 import { bold, Command } from "../../deps.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 import { CLICommand } from "../../config/config.model.ts";
-import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
+import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 

@@ -1,6 +1,6 @@
 import { CLICommand } from "../config/config.model.ts";
 import { dim, italic } from "../deps.ts";
-import { QueryStatistics } from "../mesh/query-statistics.ts";
+import { QueryStatistics } from "../mesh/QueryStatistics.ts";
 import { MeshTable, TableGenerator } from "./mesh-table.ts";
 import { Presenter } from "./presenter.ts";
 

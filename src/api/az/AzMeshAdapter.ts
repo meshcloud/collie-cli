@@ -1,17 +1,17 @@
 import * as async from "std/async";
 
-import { MeshPlatform, MeshTag, MeshTenant } from "/mesh/mesh-tenant.model.ts";
+import { MeshPlatform, MeshTag, MeshTenant } from "/mesh/MeshTenantModel.ts";
 import { isSubscription, Tag } from "./Model.ts";
 import { AzCliFacade } from "./AzCliFacade.ts";
-import { MeshAdapter } from "/mesh/mesh-adapter.ts";
+import { MeshAdapter } from "/mesh/MeshAdapter.ts";
 import { moment } from "/deps.ts";
 import { AzureErrorCode, MeshAzurePlatformError, MeshError } from "/errors.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
-} from "/mesh/mesh-iam-model.ts";
-import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
+} from "/mesh/MeshIamModel.ts";
+import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
 
 // limit concurrency because we will run into azure rate limites for sure if we set this off all at once
 const concurrencyLimit = 8;
