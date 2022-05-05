@@ -2,7 +2,7 @@ import { IProcessRunner } from "./IProcessRunner.ts";
 import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 import { ProcessRunnerResult } from "./ProcessRunnerResult.ts";
 
-export class DefaultEnvProcessRunner<T extends ProcessRunnerResult>
+export class DefaultEnvProcessRunnerDecorator<T extends ProcessRunnerResult>
   implements IProcessRunner<T> {
   constructor(
     private readonly runner: IProcessRunner<T>,

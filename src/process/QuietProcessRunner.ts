@@ -1,15 +1,12 @@
 import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 import { IProcessRunner } from "./IProcessRunner.ts";
 import { ProcessResultWithOutput } from "./ProcessRunnerResult.ts";
-import { ProcessRunnerResultHandler } from "./ProcessRunnerResultHandler.ts";
 
 /**
  * Runs a subprocess quietly by buffering its stdout and stderr in memory until completion.
  */
 export class QuietProcessRunner
   implements IProcessRunner<ProcessResultWithOutput> {
-  constructor(private readonly errorHandler?: ProcessRunnerResultHandler) {}
-
   public async run(
     commands: string[],
     options?: ProcessRunnerOptions,
@@ -33,10 +30,6 @@ export class QuietProcessRunner
       stderr: decoder.decode(rawError),
       stdout: decoder.decode(rawOutput),
     };
-
-    if (!result.status.success) {
-      this.errorHandler?.handleResult(commands, options, result);
-    }
 
     return result;
   }

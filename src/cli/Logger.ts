@@ -21,7 +21,7 @@ export interface FormatUtils {
 export class Logger {
   private enableVerbose: boolean;
   private enableDebug: boolean;
-  private fmtUtils: FormatUtils;
+  readonly fmtUtils: FormatUtils;
 
   constructor(kit: CollieRepository, opts: CmdGlobalOptions) {
     this.enableVerbose = opts.verbose;
@@ -56,4 +56,12 @@ export class Logger {
     const message = typeof msg === "string" ? msg : msg(this.fmtUtils);
     console.error(colors.yellow(message));
   }
+
+  public tip(msg: string) {
+    printTip(msg);
+  }
+}
+
+export function printTip(msg: string) {
+  console.error(colors.cyan(colors.italic("Tip: ")) + msg);
 }

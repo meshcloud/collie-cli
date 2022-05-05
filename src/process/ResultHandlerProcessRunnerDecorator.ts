@@ -3,7 +3,7 @@ import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 import { ProcessRunnerResult } from "./ProcessRunnerResult.ts";
 import { ProcessRunnerResultHandler } from "./ProcessRunnerResultHandler.ts";
 
-export class ProcessRunnerResultHandlerDecorator<T extends ProcessRunnerResult>
+export class ResultHandlerProcessRunnerDecorator<T extends ProcessRunnerResult>
   implements IProcessRunner<T> {
   constructor(
     private runner: IProcessRunner<T>,
