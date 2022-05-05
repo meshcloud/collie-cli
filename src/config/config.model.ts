@@ -1,20 +1,3 @@
-import { ensureDir, path } from "../deps.ts";
-import { parseJsonWithLog } from "../json.ts";
-import { isWindows } from "../os.ts";
-
-function getConfigPath(): string {
-  const configPath = path.join(".config", "collie-cli");
-  let home = "";
-  if (isWindows) {
-    home = Deno.env.get("APPDATA") || "";
-  } else {
-    home = Deno.env.get("HOME") || "";
-  }
-  return path.join(home, configPath);
-}
-
-export const configPath = getConfigPath();
-export const configFilePath = path.join(configPath, "config.json");
 // Use the CLI Name when mentioning it somewhere in a sentence, e.g.: Have fun using ${CLIName}!
 export const CLIName = "Collie";
 // Use the CLI Command when mentioning it as a command to run, e.g.: Please run "${CLICommand} -h" to see more.
@@ -27,7 +10,6 @@ export const GcpCostCollectionViewName = "collie_billing_view";
 
 export interface Config {
   connected: ConnectedConfig;
-  cache: CacheConfig;
   azure: Record<never, never>;
   aws: {
     selectedProfile?: string;
@@ -42,10 +24,6 @@ export interface Config {
 export interface GcpBillingExportConfig {
   projectId: string;
   datasetName: string;
-}
-
-export interface CacheConfig {
-  evictionDelayHrs: number;
 }
 
 export interface ConnectedConfig {
@@ -68,23 +46,7 @@ export const emptyConfig: Config = {
     GCP: false,
     Azure: false,
   },
-  cache: {
-    evictionDelayHrs: 24,
-  },
   azure: {},
   aws: {},
   gcp: {},
 };
-
-export function loadConfig(): Config {
-  const config = parseJsonWithLog<Config>(
-    Deno.readTextFileSync(configFilePath),
-  );
-
-  return Object.assign(emptyConfig, config);
-}
-
-export async function writeConfig(config: Config) {
-  await ensureDir(path.dirname(configFilePath));
-  await Deno.writeTextFile(configFilePath, JSON.stringify(config, null, 2));
-}
