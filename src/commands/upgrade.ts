@@ -1,5 +1,5 @@
 import { Command, GithubProvider, path, UpgradeCommand } from "../deps.ts";
-import { FLAGS, GITHUB_REPO, VERSION } from "../config/info.ts";
+import { FLAGS, GITHUB_REPO, VERSION } from "../info.ts";
 
 export function registerUpgradeCommand(program: Command) {
   const denoExecutable = Deno.execPath();

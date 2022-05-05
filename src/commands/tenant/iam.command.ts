@@ -1,4 +1,4 @@
-import { CLICommand } from "../../config/config.model.ts";
+import { CLI } from "/info.ts";
 import { Command } from "../../deps.ts";
 import { MeshTenantFilter } from "/mesh/filter/MeshTenantFilter.ts";
 import { PrincipalNameMeshTenantFilter } from "/mesh/filter/PrincipalNameMeshTenantFilter.ts";
@@ -30,7 +30,7 @@ export function registerIamCommand(program: Command) {
     )
     .example(
       "List all tenants who have the user john.doe@example.com assigned",
-      `${CLICommand} tenant iam <foundation> --filter.principal john.doe@example.com`,
+      `${CLI} tenant iam <foundation> --filter.principal john.doe@example.com`,
     )
     .action(listIamAction);
 }

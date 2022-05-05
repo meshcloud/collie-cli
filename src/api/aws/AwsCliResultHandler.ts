@@ -5,7 +5,7 @@ import {
   MeshNotLoggedInError,
   ProcessRunnerError,
 } from "/errors.ts";
-import { CLICommand, CLIName } from "/config/config.model.ts";
+import { CLI } from "/info.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { ProcessRunnerResultHandler } from "../../process/ProcessRunnerResultHandler.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
@@ -38,7 +38,7 @@ export class AwsCliResultHandler implements ProcessRunnerResultHandler {
         return;
       case 253:
         throw new MeshNotLoggedInError(
-          `You are not correctly logged into AWS CLI. Please verify credentials with "aws config" or disconnect with "${CLICommand} config --disconnect AWS"\n${result.stderr}`,
+          `You are not correctly logged into AWS CLI. Please verify credentials with "aws config" or disconnect with "${CLI} config --disconnect AWS"\n${result.stderr}`,
         );
       case 254:
         if (result.stderr.match(this.errRegexInvalidTagValue)) {
@@ -48,7 +48,7 @@ export class AwsCliResultHandler implements ProcessRunnerResultHandler {
         } else {
           throw new MeshAwsPlatformError(
             AwsErrorCode.AWS_UNAUTHORIZED,
-            `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.\n${result.stderr}`,
+            `Access to required AWS API calls is not permitted. You must use ${CLI} from a AWS management account user.\n${result.stderr}`,
           );
         }
     }

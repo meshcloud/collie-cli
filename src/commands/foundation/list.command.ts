@@ -2,7 +2,7 @@ import { Command } from "/deps.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 import { Logger } from "../../cli/Logger.ts";
-import { CLICommand } from "../../config/config.model.ts";
+import { CLI } from "../../info.ts";
 
 export function registerListCmd(program: Command) {
   program
@@ -20,7 +20,7 @@ export function registerListCmd(program: Command) {
       } else {
         logger.warn("no foundations found");
         logger.tip(
-          `Generate a new foundation using\n\t${CLICommand} foundation new`,
+          `Generate a new foundation using\n\t${CLI} foundation new`,
         );
       }
     });

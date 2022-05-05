@@ -1,6 +1,6 @@
 import { clone, Command, Input } from "../../deps.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
-import { CLICommand } from "../../config/config.model.ts";
+import { CLI } from "/info.ts";
 import { MeshAdapter } from "../../mesh/MeshAdapter.ts";
 import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { MeshInvalidTagValueError } from "../../errors.ts";
@@ -15,7 +15,7 @@ export function registerSetMissingTagCommand(program: Command) {
     )
     .example(
       "Set a tag value for all tenants that are missing the given 'environment' tag",
-      `${CLICommand} tenant set-missing-tag <foundation> environment`,
+      `${CLI} tenant set-missing-tag <foundation> environment`,
     )
     .action(setMissingTagsAction);
 }
