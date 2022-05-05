@@ -39,8 +39,10 @@ async function listIamAction(
   options: CmdGlobalOptions & TenantCommandOptions & IamCommandOptions,
   foundation: string,
 ) {
-  const { meshAdapter, tableFactory, queryStatistics } =
-    await prepareTenantCommand(options, foundation);
+  const { meshAdapter, tableFactory } = await prepareTenantCommand(
+    options,
+    foundation,
+  );
 
   const allTenants = await meshAdapter.getMeshTenants();
 
