@@ -1,6 +1,7 @@
+// see https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
 export const VERSION = "0.9.1";
 export const FLAGS =
-  "--unstable --allow-read --allow-write --allow-env --allow-run --import-map=src/import_map.json";
+  `--unstable --allow-read --allow-write --allow-env --allow-run --allow-net`;
 export const GITHUB_REPO = "meshcloud/collie-cli";
 
 // Use the CLI Command when mentioning it as a command to run, e.g.: Please run "${CLI} -h" to see more.

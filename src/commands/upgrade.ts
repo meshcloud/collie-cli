@@ -1,6 +1,9 @@
 import { Command, GithubProvider, path, UpgradeCommand } from "../deps.ts";
 import { FLAGS, GITHUB_REPO, VERSION } from "../info.ts";
 
+const flagsWithImportMap = FLAGS +
+  ` --import-map=https://raw.githubusercontent.com/${GITHUB_REPO}/v${VERSION}/src/import_map.json`;
+
 export function registerUpgradeCommand(program: Command) {
   const denoExecutable = Deno.execPath();
   const isRuntime = path.basename(denoExecutable) === "deno"; // simple and stupid, but avoids recursively invoking ourselves!
@@ -16,7 +19,7 @@ export function registerUpgradeCommand(program: Command) {
           msg +
             `\nThis version at ${denoExecutable} appears to be a self-contained binary.\n` +
             `\nTry installing via:\n` +
-            `\n\tdeno install ${FLAGS} https://raw.githubusercontent.com/${GITHUB_REPO}/v${VERSION}/cli/unipipe/main.ts`,
+            `\n\tdeno install ${flagsWithImportMap} https://raw.githubusercontent.com/${GITHUB_REPO}/v${VERSION}/src/main.ts`,
         );
         Deno.exit(1);
       });
@@ -24,7 +27,7 @@ export function registerUpgradeCommand(program: Command) {
     program.command(
       "upgrade",
       new UpgradeCommand({
-        args: FLAGS.split(" "),
+        args: flagsWithImportMap.split(" "),
         provider: [
           new GithubProvider({ repository: GITHUB_REPO }),
         ],
