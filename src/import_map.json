@@ -3,8 +3,10 @@
     "std/fs": "https://deno.land/std@0.116.0/fs/mod.ts",
     "std/path": "https://deno.land/std@0.116.0/path/mod.ts",
     "std/async": "https://deno.land/std@0.116.0/async/mod.ts",
+    "std/collections": "https://deno.land/std@0.116.0/collections/mod.ts",
     "std/fmt/colors": "https://deno.land/std@0.116.0/fmt/colors.ts",
     "std/encoding/yaml": "https://deno.land/std@0.130.0/encoding/yaml.ts",
+    "x/json_tree": "https://deno.land/x/json_tree@latest/mod.ts",
     "/": "./",
     "./": "./"
   }

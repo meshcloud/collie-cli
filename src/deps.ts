@@ -27,24 +27,26 @@ export {
 export { readLines } from "https://deno.land/std@0.116.0/io/bufio.ts";
 export { stringify as yamlStringify } from "https://deno.land/std@0.116.0/encoding/yaml.ts";
 
+export { jsonTree } from "https://deno.land/x/json_tree@latest/mod.ts";
+
 // cliffy
 export {
   Command,
   CompletionsCommand,
   EnumType,
   Type,
-} from "https://deno.land/x/cliffy@v0.20.1/command/mod.ts";
-export type { ITypeInfo } from "https://deno.land/x/cliffy@v0.20.1/command/mod.ts";
-export { Cell, Table } from "https://deno.land/x/cliffy@v0.20.1/table/mod.ts";
+} from "https://deno.land/x/cliffy@v0.22.2/command/mod.ts";
+export type { ITypeInfo } from "https://deno.land/x/cliffy@v0.22.2/command/mod.ts";
+export { Table } from "https://deno.land/x/cliffy@v0.22.2/table/mod.ts";
 export {
   Confirm,
   Input,
   Select,
-} from "https://deno.land/x/cliffy@v0.20.1/prompt/mod.ts";
+} from "https://deno.land/x/cliffy@v0.22.2/prompt/mod.ts";
 export {
   GithubProvider,
   UpgradeCommand,
-} from "https://deno.land/x/cliffy@v0.20.1/command/upgrade/mod.ts";
+} from "https://deno.land/x/cliffy@v0.22.2/command/upgrade/mod.ts";
 
 // other
 export * as Progress from "https://deno.land/x/progress@v1.2.3/mod.ts";
