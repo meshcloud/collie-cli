@@ -38,11 +38,12 @@ export class MeshFoundationAdapterFactory {
     private readonly logger: Logger,
   ) {}
 
-  buildMeshAdapter(
+  async buildMeshAdapter(
     platforms: PlatformConfig[],
     queryStats: QueryStatistics,
-  ): MeshAdapter {
-    const platformAdapters = platforms.map((platform) => {
+    refresh: boolean,
+  ): Promise<MeshAdapter> {
+    const buildPlatformAdapters = platforms.map(async (platform) => {
       const adapter = this.buildPlatformAdapter(platform);
       const adapterWithStats = new StatsMeshAdapterDecorator(
         adapter,
@@ -55,6 +56,10 @@ export class MeshFoundationAdapterFactory {
         this.foundation.resolvePlatformPath(platform, "tenants"),
         this.logger,
       );
+
+      if (refresh) {
+        await repo.clearAll();
+      }
 
       const adapterWithCache = new CachingMeshAdapterDecorator(
         repo,
@@ -76,6 +81,7 @@ export class MeshFoundationAdapterFactory {
       );
     });
 
+    const platformAdapters = await Promise.all(buildPlatformAdapters);
     const cachingMeshAdapter = new MultiMeshAdapter(platformAdapters);
 
     return new StatsMeshAdapterDecorator(
