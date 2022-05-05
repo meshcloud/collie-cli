@@ -10,7 +10,8 @@ import { registerFeedbackCommand } from "./commands/feedback.command.ts";
 import { registerTenantCommand } from "./commands/tenant/tenant.command.ts";
 import { registerCreateIssueCommand } from "./commands/create-issue.command.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.ts";
-import { registerFoundationCmd } from "./commands/foundation/foundation.command.ts";
+import { registerKitCommand } from "./commands/kit/kit.command.ts";
+import { registerFoundationCommand } from "./commands/foundation/foundation.command.ts";
 
 const program = new Command()
   .name(CLI)
@@ -42,8 +43,10 @@ const program = new Command()
     `${CLI} CLI - Herd your clouds with collie. Built with love by meshcloud.io`,
   );
 
-registerFoundationCmd(program);
+registerFoundationCommand(program);
 registerTenantCommand(program);
+registerKitCommand(program);
+
 registerCreateIssueCommand(program);
 registerFeedbackCommand(program);
 registerUpgradeCommand(program);
@@ -72,9 +75,7 @@ try {
     // for unexpected errors, raise the full message and stacktrace
     // note that .stack includes the exception message
     console.error(red(e.stack || ""));
-    printTip(
-      `run ${CLI} with --verbose and --debug flags for more details.`,
-    );
+    printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
   }
 
   Deno.exit(1);

@@ -29,6 +29,7 @@ export class AwsMeshAdapter implements MeshAdapter {
   async getMeshTenants(): Promise<MeshTenant[]> {
     const accounts = await this.awsCli.listAccounts();
 
+    // TODO: use pooledMap for this?
     const concurrentTagRequests = 5;
     const { runWithLimit } = makeRunWithLimit<MeshTenant>(
       concurrentTagRequests,
