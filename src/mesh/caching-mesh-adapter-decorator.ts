@@ -246,8 +246,6 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
 
     const result = age <= evictionDelayMs;
 
-    this.logVerbose(() => `cache is up to date: ${result}`);
-
     return result;
   }
 
