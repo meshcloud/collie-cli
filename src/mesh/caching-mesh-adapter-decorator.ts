@@ -209,7 +209,8 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
       }
     } else {
       this.logVerbose(
-        () => "IAM cache has expired  - fetching costs from cache...",
+        () =>
+          "IAM cache has expired  - fetching role assignments from cloud...",
       );
       await this.meshAdapter.attachTenantRoleAssignments(tenants);
 
