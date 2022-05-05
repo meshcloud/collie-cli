@@ -105,7 +105,7 @@ async function promptPlatformEntries(
 }
 
 async function setupAwsPlatform(factory: CliApiFacadeFactory): Promise<Dir> {
-  const aws = await factory.buildAws();
+  const aws = factory.buildAws();
   const id = await aws.getCallerIdentity();
   return {
     name: "aws",
@@ -143,7 +143,7 @@ This AWS Platform is hosted in account ${identity.Account}.
 }
 
 async function setupGcpPlatform(factory: CliApiFacadeFactory): Promise<Dir> {
-  const gcp = await factory.buildGcloud();
+  const gcp = factory.buildGcloud();
   const config = await gcp.configList();
   const project = config?.core?.project;
 
@@ -184,7 +184,7 @@ This GCP Platform is hosted in the organization containing project ${project}.
 }
 
 async function setupAzurePlatform(factory: CliApiFacadeFactory): Promise<Dir> {
-  const az = await factory.buildAz();
+  const az = factory.buildAz();
   const account = await az.getAccount();
 
   return {

@@ -14,10 +14,18 @@ export class ProcessRunnerResultHandlerDecorator<T extends ProcessRunnerResult>
     commands: string[],
     options: ProcessRunnerOptions,
   ): Promise<T> {
-    const result = await this.runner.run(commands, options);
+    try {
+      const result = await this.runner.run(commands, options);
+      await this.handler.handleResult(commands, options, result);
 
-    this.handler.handleResult(commands, options, result);
+      return result;
+    } catch (error) {
+      await this.handler.handleError(commands, options, error);
+    }
 
-    return result;
+    // typescript isn't smart enough to figure out this code should never be reachable, see
+    // https://github.com/microsoft/TypeScript/issues/34955
+
+    throw new Error("Inavlid ProcessRunnerResultHandler");
   }
 }

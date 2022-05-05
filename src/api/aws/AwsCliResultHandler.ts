@@ -3,21 +3,36 @@ import {
   MeshAwsPlatformError,
   MeshInvalidTagValueError,
   MeshNotLoggedInError,
+  ProcessRunnerError,
 } from "/errors.ts";
 import { CLICommand, CLIName } from "/config/config.model.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { ProcessRunnerResultHandler } from "../../process/ProcessRunnerResultHandler.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
+import { CliDetector } from "../CliDetector.ts";
 
 export class AwsCliResultHandler implements ProcessRunnerResultHandler {
   private readonly errRegexInvalidTagValue =
     /An error occurred \(InvalidInputException\) when calling the TagResource operation: You provided a value that does not match the required pattern/;
 
-  handleResult(
+  constructor(private readonly detector: CliDetector) {}
+
+  async handleError(
+    command: string[],
+    options: ProcessRunnerOptions,
+    error: Error,
+  ): Promise<never> {
+    // catch all error handling - try checking if its a cli version issue
+    await this.tryRaiseInstallationStatusError();
+
+    throw new ProcessRunnerError(command, options, error);
+  }
+
+  async handleResult(
     command: string[],
     options: ProcessRunnerOptions,
     result: ProcessResultWithOutput,
-  ): void {
+  ): Promise<void> {
     switch (result.status.code) {
       case 0:
         return;
@@ -36,11 +51,14 @@ export class AwsCliResultHandler implements ProcessRunnerResultHandler {
             `Access to required AWS API calls is not permitted. You must use ${CLIName} from a AWS management account user.\n${result.stderr}`,
           );
         }
-      default:
-        throw new MeshAwsPlatformError(
-          AwsErrorCode.AWS_CLI_GENERAL,
-          result.stderr,
-        );
     }
+    // catch all error handling - try checking if its a cli version issue
+    await this.tryRaiseInstallationStatusError();
+
+    throw new ProcessRunnerError(command, options, result);
+  }
+
+  private async tryRaiseInstallationStatusError() {
+    await this.detector.tryRaiseInstallationStatusError("aws", /^aws-cli\/2\./);
   }
 }

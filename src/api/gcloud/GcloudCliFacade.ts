@@ -33,7 +33,7 @@ export class GcloudCliFacade implements CliFacade {
 
     this.processRunner = new ProcessRunnerResultHandlerDecorator(
       rawRunner,
-      new GcloudCliResultHandler(),
+      new GcloudCliResultHandler(this.detector),
     );
   }
 

@@ -17,29 +17,39 @@ export class ProcessRunnerLoggingDecorator<T extends ProcessRunnerResult>
     commands: string[],
     options: ProcessRunnerOptions,
   ): Promise<T> {
+    this.logVerbose(commands, options, () => "");
+
+    try {
+      const result = await this.runner.run(commands, options);
+
+      this.logVerbose(
+        commands,
+        options,
+        () => ` finished with exit code ` + result.status.code,
+      );
+      const outputs = result as ProcessResultWithOutput;
+
+      outputs.stdout &&
+        this.logger.debug((_) => section("STDOUT", outputs.stdout));
+      outputs.stderr &&
+        this.logger.debug((_) => section("STDERR", outputs.stderr));
+
+      return result;
+    } catch (error) {
+      this.logVerbose(commands, options, () => ` raised error: ${error}`);
+
+      throw error;
+    }
+  }
+
+  private logVerbose(
+    commands: string[],
+    options: ProcessRunnerOptions,
+    f: () => string,
+  ) {
     this.logger.verbose((_) =>
-      colors.magenta(formatAsShellCommand(commands, options))
+      colors.magenta(formatAsShellCommand(commands, options) + f())
     );
-
-    const result = await this.runner.run(commands, options);
-
-    this.logger.verbose(
-      (_) =>
-        `${
-          colors.magenta(
-            formatAsShellCommand(commands, options),
-          )
-        } finished with exit code 0`,
-    );
-
-    const outputs = result as ProcessResultWithOutput;
-
-    outputs.stdout &&
-      this.logger.debug((_) => section("STDOUT", outputs.stdout));
-    outputs.stderr &&
-      this.logger.debug((_) => section("STDERR", outputs.stderr));
-
-    return result;
   }
 }
 

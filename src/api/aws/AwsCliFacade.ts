@@ -37,7 +37,7 @@ export class AwsCliFacade implements CliFacade {
     // of the user's global aws cli config
     this.processRunner = new ProcessRunnerResultHandlerDecorator(
       rawRunner,
-      new AwsCliResultHandler(),
+      new AwsCliResultHandler(this.detector),
     );
   }
 
