@@ -53,7 +53,6 @@ export class ProcessRunnerError extends MeshError {
     const message = [
       `Unexpected error executing "${formatAsShellCommand(command, options)}"`,
       ...details,
-      `Run ${CLICommand} with --verbose and --debug flags for more details.`,
     ].join("\n");
 
     super(message);

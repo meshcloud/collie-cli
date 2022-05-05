@@ -1,7 +1,8 @@
 import { Command, red } from "./deps.ts";
 import { initCommands } from "./commands/init-commands.ts";
 import { CmdOptionError } from "./commands/cmd-errors.ts";
-import { MeshError, ProcessRunnerError } from "./errors.ts";
+import { MeshError } from "./errors.ts";
+import { CLICommand } from "./config/config.model.ts";
 
 let program: Command;
 
@@ -28,10 +29,16 @@ try {
   } else if (e instanceof MeshError) {
     // for our own errors, only display message and then exit
     console.error(red(e.message));
+    console.error(
+      `Tip: run ${CLICommand} with --verbose and --debug flags for more details.`,
+    );
   } else if (e instanceof Error) {
     // for unexpected errors, raise the full message and stacktrace
     // note that .stack includes the exception message
     console.error(red(e.stack || ""));
+    console.error(
+      `Tip: run ${CLICommand} with --verbose and --debug flags for more details.`,
+    );
   }
 
   Deno.exit(1);
