@@ -1,4 +1,4 @@
-import { MeshTag, MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshTag, MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { Presenter } from "./presenter.ts";
 
 export type PrintedTenantKey = keyof MeshTenant;

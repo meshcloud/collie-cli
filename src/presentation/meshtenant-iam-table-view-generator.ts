@@ -1,6 +1,6 @@
 import { bold, Table } from "../deps.ts";
-import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import { MeshTenantRoleAssignment } from "../mesh/mesh-iam-model.ts";
+import { MeshTenant } from "../mesh/MeshTenantModel.ts";
+import { MeshTenantRoleAssignment } from "../mesh/MeshIamModel.ts";
 import { TableGenerator } from "./mesh-table.ts";
 
 export class MeshTenantIamTableViewGenerator extends TableGenerator {

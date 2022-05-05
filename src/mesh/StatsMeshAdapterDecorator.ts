@@ -1,6 +1,6 @@
-import { MeshAdapter } from "./mesh-adapter.ts";
-import { MeshTenant } from "./mesh-tenant.model.ts";
-import { QueryStatistics } from "./query-statistics.ts";
+import { MeshAdapter } from "./MeshAdapter.ts";
+import { MeshTenant } from "./MeshTenantModel.ts";
+import { QueryStatistics } from "./QueryStatistics.ts";
 
 /**
  * This decorator will record the time it takes for the command to be invoked.

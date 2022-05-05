@@ -1,11 +1,12 @@
 import { CLICommand } from "../../config/config.model.ts";
 import { Command } from "../../deps.ts";
-import { MeshTenantFilter } from "../../mesh/filter/mest-tenant-filter.ts";
+import { MeshTenantFilter } from "/mesh/filter/MeshTenantFilter.ts";
+import { PrincipalNameMeshTenantFilter } from "/mesh/filter/PrincipalNameMeshTenantFilter.ts";
 import { TenantIamPresenterFactory } from "../../presentation/tenant-iam-presenter-factory.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
-import { PrincipalNameMeshTenantFilter } from "/mesh/filter/principal-name-mesh-tenant-filter.ts";
+
 interface IamCommandOptions extends CmdGlobalOptions {
   includeAncestors: boolean;
   filter?: {

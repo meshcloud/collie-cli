@@ -1,14 +1,14 @@
 import { AzCliFacade } from "./AzCliFacade.ts";
-import { AzMeshAdapter } from "./azure-mesh-adapter.ts";
+import { AzMeshAdapter } from "./azure-MeshAdapter.ts";
 import { RoleAssignment, Subscription } from "./Model.ts";
-import { MeshPlatform, MeshTenant } from "/mesh/mesh-tenant.model.ts";
+import { MeshPlatform, MeshTenant } from "/mesh/MeshTenantModel.ts";
 import { assertEquals } from "/dev-deps.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
-} from "/mesh/mesh-iam-model.ts";
-import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
+} from "/mesh/MeshIamModel.ts";
+import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
 
 const cli = {
   getRoleAssignments(): Promise<RoleAssignment[]> {

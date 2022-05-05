@@ -1,22 +1,22 @@
 import { pooledMap } from "std/async";
-import { MeshAdapter } from "/mesh/mesh-adapter.ts";
+import { MeshAdapter } from "/mesh/MeshAdapter.ts";
 import {
   MeshPlatform,
   MeshTag,
   MeshTenant,
   MeshTenantCost,
-} from "/mesh/mesh-tenant.model.ts";
+} from "/mesh/MeshTenantModel.ts";
 import { GcloudCliFacade } from "./GcloudCliFacade.ts";
 import { isProject, Labels } from "./Model.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
-} from "/mesh/mesh-iam-model.ts";
+} from "/mesh/MeshIamModel.ts";
 import { MeshError } from "/errors.ts";
-import { TimeWindowCalculator } from "/mesh/time-window-calculator.ts";
+import { TimeWindowCalculator } from "/mesh/TimeWindowCalculator.ts";
 import { moment } from "/deps.ts";
-import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
+import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
 
 // limit concurrency because we will run into azure rate limites for sure if we set this off all at once
 const concurrencyLimit = 8;

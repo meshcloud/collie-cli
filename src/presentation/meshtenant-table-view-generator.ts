@@ -1,4 +1,4 @@
-import { MeshPlatforms, MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshPlatforms, MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { TableGenerator } from "./mesh-table.ts";
 
 export class MeshTenantTableViewGenerator extends TableGenerator {

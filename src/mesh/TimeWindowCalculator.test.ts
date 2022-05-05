@@ -1,4 +1,4 @@
-import { TimeWindowCalculator } from "./time-window-calculator.ts";
+import { TimeWindowCalculator } from "./TimeWindowCalculator.ts";
 import { moment } from "../deps.ts";
 import { assertEquals } from "../dev-deps.ts";
 

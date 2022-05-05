@@ -1,10 +1,10 @@
 import { writeCSV } from "../deps.ts";
-import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import {
   CsvTenantPresenter,
   PrintedTenantKey,
 } from "./csv-tenant-presenter.ts";
-import { MeshTenantRoleAssignment } from "../mesh/mesh-iam-model.ts";
+import { MeshTenantRoleAssignment } from "../mesh/MeshIamModel.ts";
 
 export type PrintedIamKey = keyof MeshTenantRoleAssignment;
 

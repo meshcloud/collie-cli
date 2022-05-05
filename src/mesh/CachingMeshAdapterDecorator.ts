@@ -1,15 +1,10 @@
 import { Logger } from "../cli/Logger.ts";
 import { moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
-import { MeshAdapter } from "./mesh-adapter.ts";
-import { MeshTenant } from "./mesh-tenant.model.ts";
+import { MeshAdapter } from "./MeshAdapter.ts";
+import { MeshTenant } from "./MeshTenantModel.ts";
 import { MeshTenantRepository } from "./MeshTenantRepository.ts";
 import { Meta } from "./meta.ts";
-
-/**
- * TODO: now that we ditched the loader, consider adding a MeshAdapterDecorator to take care of logging
- * for user-visible reporting (e.g. using ProgressReporters) or similar
- */
 
 /**
  * This adapter will try to fetch tenant data first from the local cache before
@@ -21,17 +16,6 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     private readonly meshAdapter: MeshAdapter,
     private readonly logger: Logger,
   ) {}
-
-  // async clearTenantCosts() {
-  //   const cachedTenants = await this.repository.loadTenants();
-
-  //   const tasks = cachedTenants.map((t) => {
-  //     t.costs = [];
-  //     this.repository.save(t);
-  //   });
-
-  //   await Promise.all(tasks);
-  // }
 
   async updateMeshTenant(
     updatedTenant: MeshTenant,
@@ -237,6 +221,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
     const age = now - lastCollection;
 
     // TODO: make this configurable, e.g. via command line parameter
+    // TODO: also add a "--force" mode
     const evictionDelayMs = 60 * 60 * 1000; // 1h
 
     this.logDebug(

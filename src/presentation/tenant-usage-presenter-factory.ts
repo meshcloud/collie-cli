@@ -1,5 +1,5 @@
 import { MeshError } from "../errors.ts";
-import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { CsvTenantUsagePresenter } from "./csv-tenant-usage-presenter.ts";
 import { Presenter } from "./presenter.ts";
 import { OutputFormat } from "./output-format.ts";
@@ -8,7 +8,7 @@ import { JsonMeshTenantCostView, JsonPresenter } from "./json-presenter.ts";
 import { MeshTenantCostTableViewGenerator } from "./meshtenantcost-table-view-generator.ts";
 import { TablePresenter } from "./table-presenter.ts";
 import { MeshTableFactory } from "./mesh-table-factory.ts";
-import { QueryStatistics } from "../mesh/query-statistics.ts";
+import { QueryStatistics } from "../mesh/QueryStatistics.ts";
 
 export class TenantUsagePresenterFactory {
   constructor(

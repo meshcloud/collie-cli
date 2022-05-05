@@ -1,9 +1,9 @@
 import { moment } from "/deps.ts";
-import { MeshPlatform, MeshTenantCost } from "/mesh/mesh-tenant.model.ts";
+import { MeshPlatform, MeshTenantCost } from "/mesh/MeshTenantModel.ts";
 import { AwsCliFacade } from "./AwsCliFacade.ts";
 import { AwsMeshAdapter } from "./AwsMeshAdapter.ts";
 import { assertEquals } from "/dev-deps.ts";
-import { MeshTenantChangeDetector } from "/mesh/mesh-tenant-change-detector.ts";
+import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
 
 const response = {

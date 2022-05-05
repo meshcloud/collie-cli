@@ -1,5 +1,5 @@
-import { MeshTenant } from "../mesh-tenant.model.ts";
-import { MeshTenantFilter } from "./mest-tenant-filter.ts";
+import { MeshTenant } from "../MeshTenantModel.ts";
+import { MeshTenantFilter } from "./MeshTenantFilter.ts";
 
 export class PrincipalNameMeshTenantFilter implements MeshTenantFilter {
   constructor(

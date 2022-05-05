@@ -1,5 +1,5 @@
 import { writeCSV } from "../deps.ts";
-import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import {
   CsvTenantPresenter,
   PrintedTenantKey,

@@ -1,6 +1,6 @@
 import { MeshError } from "../errors.ts";
-import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
-import { QueryStatistics } from "../mesh/query-statistics.ts";
+import { MeshTenant } from "../mesh/MeshTenantModel.ts";
+import { QueryStatistics } from "../mesh/QueryStatistics.ts";
 import { CsvTenantListPresenter } from "./csv-tenant-list-presenter.ts";
 import { JsonMeshTenantView, JsonPresenter } from "./json-presenter.ts";
 import { MeshTableFactory } from "./mesh-table-factory.ts";

@@ -1,6 +1,6 @@
-import { MeshTag } from "./mesh-tenant.model.ts";
+import { MeshTag } from "./MeshTenantModel.ts";
 import { assertEquals } from "../dev-deps.ts";
-import { MeshTenantChangeDetector } from "./mesh-tenant-change-detector.ts";
+import { MeshTenantChangeDetector } from "./MeshTenantChangeDetector.ts";
 
 Deno.test("MeshTenantChangeDetector can see which tags have changed compared to the original", () => {
   const updatedTags: MeshTag[] = [

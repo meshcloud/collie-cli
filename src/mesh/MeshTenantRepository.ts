@@ -6,7 +6,7 @@ import { loadConfig } from "../config/config.model.ts";
 import { moment } from "../deps.ts";
 import { IoError } from "../errors.ts";
 import { parseJsonWithLog } from "../json.ts";
-import { MeshTenant } from "../mesh/mesh-tenant.model.ts";
+import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { Meta } from "./meta.ts";
 
 /**

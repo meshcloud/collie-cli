@@ -1,4 +1,4 @@
-import { MeshTenant } from "./mesh-tenant.model.ts";
+import { MeshTenant } from "./MeshTenantModel.ts";
 
 export interface MeshAdapter {
   getMeshTenants(): Promise<MeshTenant[]>;

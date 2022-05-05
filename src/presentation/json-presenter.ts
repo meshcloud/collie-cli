@@ -1,13 +1,9 @@
-import {
-  MeshPlatform,
-  MeshTag,
-  MeshTenant,
-} from "../mesh/mesh-tenant.model.ts";
+import { MeshPlatform, MeshTag, MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { Presenter } from "./presenter.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
-} from "../mesh/mesh-iam-model.ts";
+} from "../mesh/MeshIamModel.ts";
 
 export interface JsonMeshTenantView {
   platformTenantId: string;
