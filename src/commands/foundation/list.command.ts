@@ -1,6 +1,8 @@
 import { Command } from "/deps.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
+import { Logger } from "../../cli/Logger.ts";
+import { CLICommand } from "../../config/config.model.ts";
 
 export function registerListCmd(program: Command) {
   program
@@ -8,6 +10,7 @@ export function registerListCmd(program: Command) {
     .description("list existing cloud foundations")
     .action(async (opts: CmdGlobalOptions) => {
       const repo = await CollieRepository.load("./");
+      const logger = new Logger(repo, opts);
 
       const foundations = await repo.listFoundations();
 
@@ -15,8 +18,9 @@ export function registerListCmd(program: Command) {
       if (foundations.length) {
         console.log(foundations.join("\n"));
       } else {
-        console.error(
-          `no foundations found. Generate a new foundation using\n\tcollie foundation new`,
+        logger.warn("no foundations found");
+        logger.tip(
+          `Generate a new foundation using\n\t${CLICommand} foundation new`,
         );
       }
     });

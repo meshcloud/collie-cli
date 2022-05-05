@@ -1,5 +1,4 @@
 import { InstallationStatus } from "./api/CliFacade.ts";
-import { CLICommand } from "./config/config.model.ts";
 import { ProcessRunnerOptions } from "./process/ProcessRunnerOptions.ts";
 import {
   ProcessResultWithOutput,
@@ -73,15 +72,15 @@ export class CliInstallationStatusError extends MeshError {
         super(
           `"${cmd}" cli is not installed. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`,
         );
-        break;
+        return;
       case InstallationStatus.UnsupportedVersion:
         super(
           `"${cmd}" cli is not installed in a supported version. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`,
         );
-        break;
-      default:
-        super("Invalid CliInstallationStatusError: " + status);
+        return;
     }
+
+    super("Invalid CliInstallationStatusError: " + status);
   }
 }
 
