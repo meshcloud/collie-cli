@@ -1,8 +1,10 @@
+import { TerraformDocs } from "../../api/terraform-docs/TerraformDocs.ts";
 import { DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
 import { ComplianceControlRepository } from "../../compliance/ComplianceControlRepository.ts";
 import { Command } from "../../deps.ts";
+import { DocumentationGenerator } from "../../docs/DocumentationGenerator.ts";
 import { KitModuleDocumentationGenerator } from "../../docs/KitModuleDocumentationGenerator.ts";
 import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
@@ -45,7 +47,7 @@ export function registerDocsCommand(program: Command) {
         }
 
         if (opts.preview) {
-          await previewDocumentation(foundationRepo, opts);
+          await previewDocumentation(foundationRepo, logger);
         }
       },
     )
@@ -75,7 +77,11 @@ async function updateDocumentation(
 
   const validator = new ModelValidator(logger);
   const modules = await KitModuleRepository.load(repo, validator, logger);
-  const controls = await ComplianceControlRepository.load(repo, logger);
+  const controls = await ComplianceControlRepository.load(
+    repo,
+    validator,
+    logger,
+  );
 
   const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
   const dir = new DirectoryGenerator(WriteMode.overwrite, logger);

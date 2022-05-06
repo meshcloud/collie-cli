@@ -13,6 +13,7 @@ import { registerUpgradeCommand } from "./commands/upgrade.ts";
 import { registerKitCommand } from "./commands/kit/kit.command.ts";
 import { registerFoundationCommand } from "./commands/foundation/foundation.command.ts";
 import { registerComplianceCommand } from "./commands/compliance/compliance.ts";
+import { registerDocsCommand } from "./commands/foundation/docs.command.ts";
 
 const program = new Command()
   .name(CLI)
@@ -48,6 +49,7 @@ registerFoundationCommand(program);
 registerTenantCommand(program);
 registerKitCommand(program);
 registerComplianceCommand(program);
+registerDocsCommand(program);
 
 registerCreateIssueCommand(program);
 registerFeedbackCommand(program);

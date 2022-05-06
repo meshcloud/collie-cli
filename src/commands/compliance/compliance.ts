@@ -9,6 +9,6 @@ export function registerComplianceCommand(program: Command) {
 
   program
     .command("compliance", complianceCommands)
-    .description("Manage your cloud foundation compliance.")
+    .description("Manage your compliance control framework")
     .action(complianceCommands.showHelp);
 }

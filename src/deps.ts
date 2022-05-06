@@ -7,14 +7,7 @@
  */
 
 // std
-export {
-  emptyDir,
-  ensureDir,
-  ensureDirSync,
-  exists,
-  existsSync,
-} from "https://deno.land/std@0.116.0/fs/mod.ts";
-export * as path from "https://deno.land/std@0.116.0/path/mod.ts";
+
 export {
   bold,
   brightBlue,
@@ -23,9 +16,9 @@ export {
   italic,
   red,
   yellow,
-} from "https://deno.land/std@0.116.0/fmt/colors.ts";
-export { readLines } from "https://deno.land/std@0.116.0/io/bufio.ts";
-export { stringify as yamlStringify } from "https://deno.land/std@0.116.0/encoding/yaml.ts";
+} from "https://deno.land/std@0.136.0/fmt/colors.ts";
+export { readLines } from "https://deno.land/std@0.136.0/io/bufio.ts";
+export { stringify as yamlStringify } from "https://deno.land/std@0.136.0/encoding/yaml.ts";
 
 export { jsonTree } from "https://deno.land/x/json_tree@latest/mod.ts";
 

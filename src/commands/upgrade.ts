@@ -1,4 +1,6 @@
-import { Command, GithubProvider, path, UpgradeCommand } from "../deps.ts";
+import * as path from "std/path";
+
+import { Command, GithubProvider, UpgradeCommand } from "../deps.ts";
 import { FLAGS, GITHUB_REPO, VERSION } from "../info.ts";
 
 const flagsWithImportMap = FLAGS +

@@ -1,6 +1,6 @@
 import { kitModuleSorter } from "./DocumentationGenerator.ts";
-import { KitModuleDependency } from "./KitDependencyAnalyzer.ts";
-import { assertEquals } from "../dev_deps.ts";
+import { assertEquals } from "../dev-deps.ts";
+import { KitModuleDependency } from "../kit/KitDependencyAnalyzer.ts";
 
 Deno.test("kitModuleSorter alwas sorts boostrap modules first", () => {
   const modules: KitModuleDependency[] = [
@@ -23,4 +23,11 @@ Deno.test("kitModuleSorter alwas sorts boostrap modules first", () => {
 
   const result = modules.sort(kitModuleSorter).map((x) => x.kitModulePath);
   assertEquals(result, ["kit/bootstrap", "kit/x", "kit/y"]);
+});
+
+import { assertSnapshot } from "https://deno.land/std@0.136.0/testing/snapshot.ts";
+
+Deno.test("The generated output matches the snapshot", async (t) => {
+  const output = "generateComplexStuff();";
+  await assertSnapshot(t, output);
 });
