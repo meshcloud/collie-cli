@@ -10,14 +10,9 @@ import { Command } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
-import { PlatformDeployerFactory } from "../../kit/PlatformDeployerFactory.ts";
-import { TransparentProcessRunner } from "../../process/TransparentProcessRunner.ts";
-import { IProcessRunner } from "../../process/IProcessRunner.ts";
-import { ProcessResult } from "../../process/ProcessRunnerResult.ts";
-import { LoggingProcessRunnerDecorator } from "../../process/LoggingProcessRunnerDecorator.ts";
-import { ResultHandlerProcessRunnerDecorator } from "../../process/ResultHandlerProcessRunnerDecorator.ts";
-import { ProcessRunnerErrorResultHandler } from "../../process/ProcessRunnerErrorResultHandler.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
+import { PlatformDeployerFactory } from "../../foundation/PlatformDeployerFactory.ts";
+import { buildTransparentProcessRunner } from "./buildTransparentProcessRunner.ts";
 
 interface DeployOptions {
   platform: string;
@@ -141,14 +136,7 @@ async function deployFoundation(
 }
 
 function buildTerragrunt(logger: Logger) {
-  let processRunner: IProcessRunner<ProcessResult> =
-    new TransparentProcessRunner();
-
-  processRunner = new LoggingProcessRunnerDecorator(processRunner, logger);
-  processRunner = new ResultHandlerProcessRunnerDecorator(
-    processRunner,
-    new ProcessRunnerErrorResultHandler(),
-  );
+  const processRunner = buildTransparentProcessRunner(logger);
 
   return new Terragrunt(processRunner);
 }
