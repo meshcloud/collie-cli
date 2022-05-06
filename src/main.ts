@@ -15,70 +15,76 @@ import { registerFoundationCommand } from "./commands/foundation/foundation.comm
 import { registerComplianceCommand } from "./commands/compliance/compliance.ts";
 import { registerDocsCommand } from "./commands/foundation/docs.command.ts";
 
-const program = new Command()
-  .name(CLI)
-  .help({
-    // The darkblue of Cliffy doesn't look great on the blue of PowerShell.
-    colors: !isWindows,
-  })
-  .version(VERSION)
-  .globalType("output", OutputFormatType)
-  .globalOption("-o --output [output:output]", "Defines the output format.", {
-    default: OutputFormat.TABLE,
-  })
-  .globalOption(
-    "--quiet",
-    "Don't show progress or error messages, output only result data",
-  )
-  .globalOption(
-    "--verbose ",
-    "Enable printing verbose info (command execution and results)",
-    {
-      conflicts: ["quiet"],
-    },
-  )
-  .globalOption(
-    "--debug",
-    "Enable printing debug info (command output, intermediate results)",
-  )
-  .description(
-    `${CLI} CLI - Herd your clouds with collie. Built with love by meshcloud.io`,
-  );
+async function collie() {
+  const program = new Command()
+    .name(CLI)
+    .help({
+      // The darkblue of Cliffy doesn't look great on the blue of PowerShell.
+      colors: !isWindows,
+    })
+    .version(VERSION)
+    .globalType("output", OutputFormatType)
+    .globalOption("-o --output [output:output]", "Defines the output format.", {
+      default: OutputFormat.TABLE,
+    })
+    .globalOption(
+      "--quiet",
+      "Don't show progress or error messages, output only result data",
+    )
+    .globalOption(
+      "--verbose ",
+      "Enable printing verbose info (command execution and results)",
+      {
+        conflicts: ["quiet"],
+      },
+    )
+    .globalOption(
+      "--debug",
+      "Enable printing debug info (command output, intermediate results)",
+    )
+    .description(
+      `${CLI} CLI - Herd your clouds with collie. Built with love by meshcloud.io`,
+    );
 
-registerFoundationCommand(program);
-registerTenantCommand(program);
-registerKitCommand(program);
-registerComplianceCommand(program);
-registerDocsCommand(program);
+  registerFoundationCommand(program);
+  registerTenantCommand(program);
+  registerKitCommand(program);
+  registerComplianceCommand(program);
+  registerDocsCommand(program);
 
-registerCreateIssueCommand(program);
-registerFeedbackCommand(program);
-registerUpgradeCommand(program);
+  registerCreateIssueCommand(program);
+  registerFeedbackCommand(program);
+  registerUpgradeCommand(program);
 
-program.command("completions", new CompletionsCommand());
+  program.command("completions", new CompletionsCommand());
 
-// Run the main program with error handling.
-try {
-  const hasArgs = Deno.args.length > 0;
-  if (!hasArgs) {
-    program.showHelp();
-    Deno.exit(0);
+  // Run the main program with error handling.
+  try {
+    const hasArgs = Deno.args.length > 0;
+    if (!hasArgs) {
+      program.showHelp();
+      Deno.exit(0);
+    }
+    await program.parse(Deno.args);
+  } catch (e) {
+    if (e instanceof CmdOptionError) {
+      // if the error indicates a user error, e.g. wrong typing then display the message and the help.
+      program.showHelp();
+    } else if (e instanceof MeshError) {
+      // for our own errors, only display message and then exit
+      console.error(red(e.message));
+      printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
+    } else if (e instanceof Error) {
+      // for unexpected errors, raise the full message and stacktrace
+      // note that .stack includes the exception message
+      console.error(red(e.stack || ""));
+      printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
+    }
+
+    Deno.exit(1);
   }
-  await program.parse(Deno.args);
-} catch (e) {
-  if (e instanceof CmdOptionError) {
-    // if the error indicates a user error, e.g. wrong typing then display the message and the help.
-    program.showHelp();
-  } else if (e instanceof MeshError) {
-    // for our own errors, only display message and then exit
-    console.error(red(e.message));
-    printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
-  } else if (e instanceof Error) {
-    // for unexpected errors, raise the full message and stacktrace
-    // note that .stack includes the exception message
-    console.error(red(e.stack || ""));
-    printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
-  }
+}
 
-  Deno.exit(1);
+if (import.meta.main) {
+  collie();
 }

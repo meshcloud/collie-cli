@@ -2,8 +2,10 @@
 
 set -e
 
-cli_name="collie"
+# before we do anything else, ensure we typecheck fine
+deno task check
 
+cli_name="collie"
 deno_flags=$(deno run flags.ts --quiet)
 
 mkdir -p bin/unix bin/windows
