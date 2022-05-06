@@ -2,7 +2,9 @@ import * as fs from "std/fs";
 import * as path from "std/path";
 
 import { Logger } from "../cli/Logger.ts";
+import { TerraformDocs } from "../api/terraform-docs/TerraformDocs.ts";
 import { ProgressReporter } from "../cli/ProgressReporter.ts";
+import { ComplianceControlRepository } from "../compliance/ComplianceControlRepository.ts";
 import { KitModuleRepository } from "../kit/KitModuleRepository.ts";
 import { ParsedKitModule } from "../kit/ParsedKitModule.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";

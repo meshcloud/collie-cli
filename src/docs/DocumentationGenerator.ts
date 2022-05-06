@@ -1,7 +1,7 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
 
-import { Dir, DirectoryGenerator } from "../cli/DirectoryGenerator.ts";
+import { Dir, DirectoryGenerator, File } from "../cli/DirectoryGenerator.ts";
 import { Logger } from "../cli/Logger.ts";
 import { jsonTree } from "../deps.ts";
 import { FoundationTreeBuilder } from "../foundation/FoundationTreeBuilder.ts";
@@ -302,7 +302,9 @@ ${md.codeBlock("text", renderedTree)}
 
 ::: tip
 You can generate this output using the ${
-      md.code("foundation kit tree --view foundation")
+      md.code(
+        "foundation kit tree --view foundation",
+      )
     } command.
 :::
 `;
@@ -312,8 +314,9 @@ You can generate this output using the ${
     const source = "compliance/"; // todo: should resolve this from kit repository?
     const dest = this.foundation.resolvePath("docs", "docs", "compliance/");
 
-    this.logger.verbose((fmt) =>
-      `copying (recursive) ${fmt.kitPath(source)} to ${fmt.kitPath(dest)}`
+    this.logger.verbose(
+      (fmt) =>
+        `copying (recursive) ${fmt.kitPath(source)} to ${fmt.kitPath(dest)}`,
     );
     await Deno.mkdir(path.dirname(dest), { recursive: true });
     await fs.copy(source, dest, { overwrite: true });
