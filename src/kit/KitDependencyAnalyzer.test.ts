@@ -1,4 +1,4 @@
-import { assertEquals } from "../dev_deps.ts";
+import { assertEquals } from "../dev-deps.ts";
 import { KitDependencyAnalyzer } from "./KitDependencyAnalyzer.ts";
 
 Deno.test("can parse source", () => {

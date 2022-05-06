@@ -11,5 +11,10 @@
     "files": {
       "include": ["src/"]
     }
+  },
+  "tasks": {
+    "run": "deno run $(deno run --quiet --no-check ./flags.ts) ./src/main.ts",
+    "check": "deno check --import-map src/import_map.json ./src/main.ts",
+    "test": "deno test $(deno run --quiet --no-check ./flags.ts) src/"
   }
 }

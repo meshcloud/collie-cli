@@ -1,4 +1,4 @@
-import { path } from "../deps.ts";
+import * as path from "std/path";
 import { assertEquals } from "../dev-deps.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "./DirectoryGenerator.ts";
 import { Logger } from "./Logger.ts";
