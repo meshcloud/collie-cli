@@ -11,6 +11,7 @@ import { KitModuleTreeBuilder } from "../../kit/KitModuleTreeBuilder.ts";
 import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
+import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 
 enum TreeView {
   Kit = "kit",
@@ -49,11 +50,13 @@ async function renderTree(logger: Logger, view: TreeView) {
 
 async function analyze(logger: Logger) {
   const kit = new CollieRepository("./");
-  const modules = await KitModuleRepository.load(kit, logger);
+  const validator = new ModelValidator(logger);
+
+  const modules = await KitModuleRepository.load(kit, validator, logger);
   const foundations = await kit.listFoundations();
 
   const tasks = foundations.map(async (f) => {
-    const foundation = await FoundationRepository.load(kit, f);
+    const foundation = await FoundationRepository.load(kit, f, validator);
     const analyzer = new KitDependencyAnalyzer(kit, modules, logger);
 
     return {

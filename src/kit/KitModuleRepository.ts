@@ -1,5 +1,6 @@
 import { Logger } from "../cli/Logger.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
+import { ModelValidator } from "../model/schemas/ModelValidator.ts";
 import { KitModule } from "./KitModule.ts";
 import { KitModuleParser } from "./KitModuleParser.ts";
 import { ParsedKitModule } from "./ParsedKitModule.ts";
@@ -19,8 +20,12 @@ export class KitModuleRepository {
     return this.modules;
   }
 
-  public static async load(repo: CollieRepository, logger: Logger) {
-    const parser = new KitModuleParser(repo, logger);
+  public static async load(
+    repo: CollieRepository,
+    validator: ModelValidator,
+    logger: Logger,
+  ) {
+    const parser = new KitModuleParser(repo, validator, logger);
     const modules = await parser.load();
 
     const parsedModules = modules.filter((x): x is ParsedKitModule => !!x);

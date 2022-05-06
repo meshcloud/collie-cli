@@ -10,3 +10,8 @@ export interface MeshStackConfig {
   apiUrl: string;
   credentialsFile: string;
 }
+
+export interface FoundationFrontmatter {
+  name: string;
+  meshStack?: MeshStackConfig;
+}

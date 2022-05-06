@@ -68,9 +68,7 @@ try {
   } else if (e instanceof MeshError) {
     // for our own errors, only display message and then exit
     console.error(red(e.message));
-    console.error(
-      `Tip: run ${CLI} with --verbose and --debug flags for more details.`,
-    );
+    printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
   } else if (e instanceof Error) {
     // for unexpected errors, raise the full message and stacktrace
     // note that .stack includes the exception message

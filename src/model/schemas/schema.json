@@ -1,0 +1,241 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/FoundationConfig",
+  "definitions": {
+    "FoundationConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "meshStack": {
+          "$ref": "#/definitions/MeshStackConfig"
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PlatformConfig"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "platforms"
+      ]
+    },
+    "FoundationFrontmatter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "meshStack": {
+          "$ref": "#/definitions/MeshStackConfig"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "MeshStackConfig": {
+      "type": "object",
+      "properties": {
+        "apiUrl": {
+          "type": "string"
+        },
+        "credentialsFile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "apiUrl",
+        "credentialsFile"
+      ]
+    },
+    "PlatformConfig": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PlatformConfigAws"
+        },
+        {
+          "$ref": "#/definitions/PlatformConfigGcp"
+        },
+        {
+          "$ref": "#/definitions/PlatformConfigAzure"
+        }
+      ]
+    },
+    "PlatformConfigAws": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cli": {
+          "$ref": "#/definitions/CliToolEnv"
+        },
+        "aws": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string"
+            },
+            "accountAccessRole": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "accountId",
+            "accountAccessRole"
+          ]
+        }
+      },
+      "required": [
+        "aws",
+        "cli",
+        "name"
+      ]
+    },
+    "CliToolEnv": {
+      "type": "object",
+      "properties": {
+        "az": {
+          "$ref": "#/definitions/AzCliEnv"
+        },
+        "aws": {
+          "$ref": "#/definitions/AwsCliEnv"
+        },
+        "gcloud": {
+          "$ref": "#/definitions/GcloudCliEnv"
+        }
+      }
+    },
+    "AzCliEnv": {
+      "type": "object",
+      "properties": {
+        "AZURE_CONFIG_DIR": {
+          "type": "string"
+        }
+      }
+    },
+    "AwsCliEnv": {
+      "type": "object",
+      "properties": {
+        "AWS_CONFIG_FILE": {
+          "type": "string"
+        },
+        "AWS_PROFILE": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "AWS_PROFILE"
+      ]
+    },
+    "GcloudCliEnv": {
+      "type": "object",
+      "properties": {
+        "CLOUDSDK_ACTIVE_CONFIG_NAME": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "CLOUDSDK_ACTIVE_CONFIG_NAME"
+      ]
+    },
+    "PlatformConfigGcp": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cli": {
+          "$ref": "#/definitions/CliToolEnv"
+        },
+        "gcp": {
+          "type": "object",
+          "properties": {
+            "project": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "project"
+          ]
+        }
+      },
+      "required": [
+        "cli",
+        "gcp",
+        "name"
+      ]
+    },
+    "PlatformConfigAzure": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cli": {
+          "$ref": "#/definitions/CliToolEnv"
+        },
+        "azure": {
+          "type": "object",
+          "properties": {
+            "aadTenantId": {
+              "type": "string"
+            },
+            "subscriptionId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "aadTenantId",
+            "subscriptionId"
+          ]
+        }
+      },
+      "required": [
+        "azure",
+        "cli",
+        "name"
+      ]
+    },
+    "KitModule": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "compliance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/KitModuleComplianceStatement"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "summary"
+      ]
+    },
+    "KitModuleComplianceStatement": {
+      "type": "object",
+      "properties": {
+        "control": {
+          "type": "string"
+        },
+        "statement": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "control",
+        "statement"
+      ]
+    }
+  }
+}

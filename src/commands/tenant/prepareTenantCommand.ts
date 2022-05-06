@@ -8,6 +8,7 @@ import { MeshFoundationAdapterFactory } from "../../mesh/MeshFoundationAdapterFa
 import { Logger } from "../../cli/Logger.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
+import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 
 export async function prepareTenantCommand(
   options: CmdGlobalOptions & TenantCommandOptions,
@@ -17,9 +18,12 @@ export async function prepareTenantCommand(
 
   const logger = new Logger(collieRepo, options);
 
+  const validator = new ModelValidator(logger);
+
   const foundationRepo = await FoundationRepository.load(
     collieRepo,
     foundation,
+    validator,
   );
 
   const facadeFactory = new CliApiFacadeFactory(logger);

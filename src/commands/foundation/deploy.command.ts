@@ -17,6 +17,7 @@ import { ProcessResult } from "../../process/ProcessRunnerResult.ts";
 import { LoggingProcessRunnerDecorator } from "../../process/LoggingProcessRunnerDecorator.ts";
 import { ResultHandlerProcessRunnerDecorator } from "../../process/ResultHandlerProcessRunnerDecorator.ts";
 import { ProcessRunnerErrorResultHandler } from "../../process/ProcessRunnerErrorResultHandler.ts";
+import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 
 interface DeployOptions {
   platform: string;
@@ -49,6 +50,7 @@ export function registerDeployCmd(program: Command) {
       async (opts: DeployOptions & CmdGlobalOptions, foundation: string) => {
         const collieRepo = new CollieRepository("./");
         const logger = new Logger(collieRepo, opts);
+        const validator = new ModelValidator(logger);
 
         const modes = terragruntModes(opts);
 
@@ -64,6 +66,7 @@ export function registerDeployCmd(program: Command) {
           const foundationRepo = await FoundationRepository.load(
             collieRepo,
             foundation,
+            validator,
           );
           await deployFoundation(
             collieRepo,
