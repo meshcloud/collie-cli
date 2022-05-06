@@ -1,10 +1,11 @@
-import { assertEquals, assertThrows } from "/dev-deps.ts";
+import { assertEquals, assertRejects, assertThrows } from "std/testing/assert";
+
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { AzCliResultHandler } from "./AzCliResultHandler.ts";
 import { MeshAzurePlatformError } from "../../errors.ts";
 import { AzureErrorCode } from "../../errors.ts";
 
-Deno.test("handles configuration not set", () => {
+Deno.test("handles configuration not set", async () => {
   const result: ProcessResultWithOutput = {
     status: {
       success: false,
@@ -16,11 +17,12 @@ Deno.test("handles configuration not set", () => {
     stdout: "",
   };
 
-  const sut = new AzCliResultHandler();
+  // deno-lint-ignore no-explicit-any
+  const sut = new AzCliResultHandler({} as any);
 
-  assertThrows(
-    () => {
-      sut.handleResult(
+  await assertRejects(
+    async () => {
+      await sut.handleResult(
         ["az", "config", "get", "extension.use_dynamic_install"],
         {},
         result,

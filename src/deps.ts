@@ -17,7 +17,6 @@ export {
   red,
   yellow,
 } from "https://deno.land/std@0.136.0/fmt/colors.ts";
-export { readLines } from "https://deno.land/std@0.136.0/io/bufio.ts";
 export { stringify as yamlStringify } from "https://deno.land/std@0.136.0/encoding/yaml.ts";
 
 export { jsonTree } from "https://deno.land/x/json_tree@latest/mod.ts";

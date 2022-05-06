@@ -1,5 +1,5 @@
 import { AzCliFacade } from "./AzCliFacade.ts";
-import { AzMeshAdapter } from "./azure-MeshAdapter.ts";
+import { AzMeshAdapter } from "./AzMeshAdapter.ts";
 import { RoleAssignment, Subscription } from "./Model.ts";
 import { MeshPlatform, MeshTenant } from "/mesh/MeshTenantModel.ts";
 import { assertEquals } from "/dev-deps.ts";
