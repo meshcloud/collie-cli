@@ -3,7 +3,6 @@ import * as path from "std/path";
 import {
   FoundationConfig,
   FoundationFrontmatter,
-  MeshStackConfig,
 } from "../model/FoundationConfig.ts";
 import { CollieRepository } from "./CollieRepository.ts";
 import { MarkdownDocument } from "./MarkdownDocument.ts";
@@ -95,7 +94,7 @@ export class FoundationRepository {
       );
     }
 
-    const { data, errors } = validator.validateFoundationFrontmatter(
+    const { errors } = validator.validateFoundationFrontmatter(
       md.frontmatter,
     );
 

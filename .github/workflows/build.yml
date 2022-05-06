@@ -16,7 +16,7 @@ jobs:
         with:
           deno-version: "~1.21"
       - run: |
-          deno fmt src --check
+          deno fmt --check
 
       - name: comment-pr
         if: ${{  failure() }}
@@ -37,7 +37,7 @@ jobs:
         with:
           deno-version: "~1.21"
       - run: |
-          deno lint src
+          deno lint
 
       - name: comment-pr
         if: ${{  failure() }}
