@@ -4,7 +4,7 @@ import * as collections from "std/collections";
 
 import { FoundationDependencies } from "./KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "./KitModuleRepository.ts";
-import { insert, Tree } from "./tree.ts";
+import { insert, Tree } from "/model/tree.ts";
 
 export interface KitModuleInfo {
   name: string;

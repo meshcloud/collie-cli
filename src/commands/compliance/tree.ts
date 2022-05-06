@@ -1,20 +1,21 @@
-import { jsonTree } from "x/json_tree";
-import { Command, EnumType } from "../../deps.ts";
+import { Command, EnumType, jsonTree } from "../../deps.ts";
+
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
-import { KitModuleTreeBuilder } from "../../kit/KitModuleTreeBuilder.ts";
-import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
-import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
-import { FoundationRepository } from "../../model/FoundationRepository.ts";
-import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
+import { ComplianceControlRepository } from "../../compliance/ComplianceControlRepository.ts";
 import {
   FoundationsTree,
   FoundationTreeBuilder,
 } from "../../foundation/FoundationTreeBuilder.ts";
+import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
+import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
+import { FoundationRepository } from "../../model/FoundationRepository.ts";
+import { CmdGlobalOptions } from "../cmd-options.ts";
+import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
+import { ComplianceControlTreeBuilder } from "../../compliance/ComplianceControlTreeBuilder.ts";
 
 enum TreeView {
-  Kit = "kit",
+  Control = "control",
   Foundation = "foundation",
 }
 
@@ -26,9 +27,9 @@ export function registerTreeCmd(program: Command) {
   program
     .command("tree")
     .type("view", new EnumType(TreeView))
-    .description("show the kit module tree")
+    .description("show the compliance control tree")
     .option("--view [view:view]", "select the primary dimension of the tree", {
-      default: "kit",
+      default: "control",
     })
     .action(async (opts: CmdGlobalOptions & TreeOptions) => {
       const kit = new CollieRepository("./");
@@ -43,21 +44,21 @@ async function renderTree(logger: Logger, view: TreeView) {
     case TreeView.Foundation:
       await renderFoundationTree(logger);
       break;
-    case TreeView.Kit:
-      await renderKitTree(logger);
+    case TreeView.Control:
+      await renderControlTree(logger);
   }
 }
 
 async function analyze(logger: Logger) {
-  const kit = new CollieRepository("./");
+  const repo = new CollieRepository("./");
   const validator = new ModelValidator(logger);
 
-  const modules = await KitModuleRepository.load(kit, validator, logger);
-  const foundations = await kit.listFoundations();
+  const modules = await KitModuleRepository.load(repo, validator, logger);
+  const foundations = await repo.listFoundations();
 
   const tasks = foundations.map(async (f) => {
-    const foundation = await FoundationRepository.load(kit, f, validator);
-    const analyzer = new KitDependencyAnalyzer(kit, modules, logger);
+    const foundation = await FoundationRepository.load(repo, f, validator);
+    const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
 
     return {
       foundation,
@@ -66,11 +67,17 @@ async function analyze(logger: Logger) {
   });
 
   const dependencies = await Promise.all(tasks);
+  const controls = await ComplianceControlRepository.load(
+    repo,
+    validator,
+    logger,
+  );
 
-  return { modules, dependencies };
+  return { controls, dependencies };
 }
 
 async function renderFoundationTree(logger: Logger) {
+  // note: this is currently the same as "kit tree --view foundation"
   const { dependencies } = await analyze(logger);
 
   const foundations: FoundationsTree = {};
@@ -84,10 +91,10 @@ async function renderFoundationTree(logger: Logger) {
   console.log(renderedTree);
 }
 
-async function renderKitTree(logger: Logger) {
-  const { modules, dependencies } = await analyze(logger);
+async function renderControlTree(logger: Logger) {
+  const { controls, dependencies } = await analyze(logger);
 
-  const builder = new KitModuleTreeBuilder(modules);
+  const builder = new ComplianceControlTreeBuilder(controls);
 
   const tree = builder.build(dependencies.map((x) => x.results));
 

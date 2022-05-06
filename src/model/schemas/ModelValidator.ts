@@ -10,6 +10,7 @@ import { PlatformConfig } from "../PlatformConfig.ts";
 import { MeshError } from "../../errors.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { KitModule } from "../../kit/KitModule.ts";
+import { ComplianceControl } from "../../compliance/ComplianceControl.ts";
 
 export class ModelValidator {
   private readonly ajv: Ajv;
@@ -20,6 +21,9 @@ export class ModelValidator {
 
     this.ajv.addSchema(schema);
   }
+
+  // Design: maybe we should have frontmatter definitions all live inside the model package?
+  //
 
   public validateFoundationConfig(data: Partial<FoundationConfig>) {
     return this.validate("FoundationConfig", data);
@@ -35,6 +39,10 @@ export class ModelValidator {
 
   public validateKitModule(data: Partial<KitModule>) {
     return this.validate("KitModule", data);
+  }
+
+  public validateComplianceControl(data: Partial<ComplianceControl>) {
+    return this.validate("ComplianceControl", data);
   }
 
   private validate<T>(type: string, data: Partial<T>) {

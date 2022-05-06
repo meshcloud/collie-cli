@@ -5,8 +5,8 @@ import { FoundationRepository } from "../model/FoundationRepository.ts";
 import {
   FoundationDependencies,
   PlatformDependencies,
-} from "./KitDependencyAnalyzer.ts";
-import { insert } from "./tree.ts";
+} from "../kit/KitDependencyAnalyzer.ts";
+import { insert } from "../model/tree.ts";
 
 export interface FoundationsTree {
   [foundation: string]: FoundationTree;
