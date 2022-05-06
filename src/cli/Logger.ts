@@ -63,5 +63,5 @@ export class Logger {
 }
 
 export function printTip(msg: string) {
-  console.error(colors.cyan(colors.italic("Tip: ")) + msg);
+  console.error(colors.cyan(colors.italic("Tip: " + msg)));
 }

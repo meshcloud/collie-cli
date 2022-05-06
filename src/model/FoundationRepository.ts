@@ -2,11 +2,16 @@ import * as fs from "std/fs";
 import * as path from "std/path";
 import {
   FoundationConfig,
+  FoundationFrontmatter,
   MeshStackConfig,
 } from "../model/FoundationConfig.ts";
 import { CollieRepository } from "./CollieRepository.ts";
 import { MarkdownDocument } from "./MarkdownDocument.ts";
 import { PlatformConfig } from "./PlatformConfig.ts";
+import {
+  CollieModelValidationError,
+  ModelValidator,
+} from "./schemas/ModelValidator.ts";
 
 export class FoundationRepository {
   constructor(
@@ -50,17 +55,20 @@ export class FoundationRepository {
   static async load(
     kit: CollieRepository,
     foundation: string,
+    validator: ModelValidator,
   ): Promise<FoundationRepository> {
     const foundationDir = kit.resolvePath("foundations", foundation);
 
     const foundationReadme = await FoundationRepository.parseFoundationReadme(
       kit,
       foundationDir,
+      validator,
     );
 
     const platforms = await FoundationRepository.parsePlatformReadmes(
       kit,
       foundationDir,
+      validator,
     );
 
     const config: FoundationConfig = {
@@ -75,6 +83,7 @@ export class FoundationRepository {
   private static async parseFoundationReadme(
     kit: CollieRepository,
     foundationDir: string,
+    validator: ModelValidator,
   ) {
     const readmePath = path.join(foundationDir, "README.md");
     const text = await Deno.readTextFile(readmePath);
@@ -86,12 +95,25 @@ export class FoundationRepository {
       );
     }
 
+    const { data, errors } = validator.validateFoundationFrontmatter(
+      md.frontmatter,
+    );
+
+    // todo: this is not a proper error handling strategy - throw exceptions instead?
+    if (errors) {
+      throw new CollieModelValidationError(
+        "Invalid foundation configuration at " + kit.relativePath(readmePath),
+        errors,
+      );
+    }
+
     return md;
   }
 
   private static async parsePlatformReadmes(
     kit: CollieRepository,
     foundationDir: string,
+    validator: ModelValidator,
   ): Promise<PlatformConfig[]> {
     const platforms: PlatformConfig[] = [];
 
@@ -103,22 +125,25 @@ export class FoundationRepository {
       const text = await Deno.readTextFile(file.path);
       const md = await MarkdownDocument.parse<PlatformConfig>(text);
 
-      // todo: validate config is valid?
       const config = md?.frontmatter;
       if (!config) {
         throw new Error(
-          "Failed to parse foundation README at " + kit.relativePath(file.path),
+          "Failed to parse foundation at " + kit.relativePath(file.path),
         );
       }
 
-      platforms.push(config as PlatformConfig);
+      const { data, errors } = validator.validatePlatformConfig(config);
+
+      if (errors) {
+        throw new CollieModelValidationError(
+          "Invalid foundation at " + kit.relativePath(file.path),
+          errors,
+        );
+      }
+
+      platforms.push(data);
     }
 
     return platforms;
   }
-}
-
-interface FoundationFrontmatter {
-  name: string;
-  meshStack: MeshStackConfig;
 }

@@ -8,6 +8,7 @@ import { CollieRepository } from "../../model/CollieRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { CmdGlobalOptions } from "../cmd-options.ts";
 import { Logger } from "../../cli/Logger.ts";
+import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 
 interface ApplyOptions {
   foundation?: string;
@@ -26,10 +27,11 @@ export function registerApplyCmd(program: Command) {
 
       const kit = new CollieRepository("./");
       const logger = new Logger(kit, opts);
+      const validator = new ModelValidator(logger);
 
       const foundation = opts.foundation || (await selectFoundation(kit));
 
-      const repo = await FoundationRepository.load(kit, foundation);
+      const repo = await FoundationRepository.load(kit, foundation, validator);
 
       const platform = opts.platform || (await selectPlatform(repo));
 
