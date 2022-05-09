@@ -7,8 +7,6 @@
  */
 
 // std
-export { stringify as yamlStringify } from "https://deno.land/std@0.136.0/encoding/yaml.ts";
-
 export { jsonTree } from "https://deno.land/x/json_tree@latest/mod.ts";
 
 // cliffy

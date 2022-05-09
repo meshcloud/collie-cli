@@ -1,4 +1,4 @@
-import { yamlStringify } from "../deps.ts";
+import { stringify } from "std/encoding/yaml";
 import { Presenter } from "./presenter.ts";
 
 export class YamlPresenter<T> implements Presenter {
@@ -8,7 +8,7 @@ export class YamlPresenter<T> implements Presenter {
 
   present(): void {
     // TODO maybe better to embed this directly as requirement in T but did not know how.
-    const yaml = yamlStringify(this.view as Record<string, unknown>);
+    const yaml = stringify(this.view as Record<string, unknown>);
     console.log(yaml);
   }
 }
