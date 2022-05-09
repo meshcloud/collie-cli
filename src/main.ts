@@ -30,9 +30,6 @@ async function collie() {
     .globalOption(
       "--verbose ",
       "Enable printing verbose info (command execution and results)",
-      {
-        conflicts: ["quiet"],
-      },
     )
     .globalOption(
       "--debug",
