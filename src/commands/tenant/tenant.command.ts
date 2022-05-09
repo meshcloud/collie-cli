@@ -19,7 +19,7 @@ export function registerTenantCommand(program: Command) {
   program
     .command("tenant", tenantCmd)
     .description(
-      `Work with cloud tenants (AWS Accounts, Azure Subscriptions, GCP Projects)`,
+      `List tenants in your cloud foundations and manage tags, cost and IAM`,
     )
     .globalOption(
       "-p, --platform <platform:string>", // todo: make optional -> deploy all platforms!

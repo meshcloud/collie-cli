@@ -11,6 +11,8 @@ export function registerFoundationCommand(program: Command) {
 
   program
     .command("foundation", foundationCommands)
-    .description("Manage your cloud foundations.")
+    .description(
+      "Create, list and deploy cloud foundations covering all your cloud platforms",
+    )
     .action(foundationCommands.showHelp);
 }

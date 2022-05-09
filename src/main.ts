@@ -24,13 +24,9 @@ async function collie() {
     })
     .version(VERSION)
     .globalType("output", OutputFormatType)
-    .globalOption("-o --output [output:output]", "Defines the output format.", {
+    .globalOption("-o --output [output:output]", "Defines the output format", {
       default: OutputFormat.TABLE,
     })
-    .globalOption(
-      "--quiet",
-      "Don't show progress or error messages, output only result data",
-    )
     .globalOption(
       "--verbose ",
       "Enable printing verbose info (command execution and results)",
@@ -43,7 +39,7 @@ async function collie() {
       "Enable printing debug info (command output, intermediate results)",
     )
     .description(
-      `${CLI} CLI - Herd your clouds with collie. Built with love by meshcloud.io`,
+      `${CLI} CLI - herd your cloud 🐑 environments.Built with love by meshcloud.io`,
     );
 
   registerFoundationCommand(program);
