@@ -72,7 +72,7 @@ export class FoundationRepository {
 
     const config: FoundationConfig = {
       name: foundation,
-      meshStack: foundationReadme.frontmatter.meshStack,
+      meshStack: foundationReadme.meshStack,
       platforms,
     };
 
@@ -88,15 +88,18 @@ export class FoundationRepository {
     const text = await Deno.readTextFile(readmePath);
     const md = await MarkdownDocument.parse<FoundationFrontmatter>(text);
 
-    if (!md) {
+    if (!md?.frontmatter) {
       throw new Error(
         "Failed to parse foundation README at " + kit.relativePath(readmePath),
       );
     }
 
-    const { errors } = validator.validateFoundationFrontmatter(
-      md.frontmatter,
-    );
+    const config = {
+      name: path.basename(foundationDir), // default the name to the directory name
+      ...md.frontmatter,
+    };
+
+    const { data, errors } = validator.validateFoundationFrontmatter(config);
 
     // todo: this is not a proper error handling strategy - throw exceptions instead?
     if (errors) {
@@ -106,7 +109,7 @@ export class FoundationRepository {
       );
     }
 
-    return md;
+    return data;
   }
 
   private static async parsePlatformReadmes(
@@ -124,12 +127,16 @@ export class FoundationRepository {
       const text = await Deno.readTextFile(file.path);
       const md = await MarkdownDocument.parse<PlatformConfig>(text);
 
-      const config = md?.frontmatter;
-      if (!config) {
+      if (!md?.frontmatter) {
         throw new Error(
           "Failed to parse foundation at " + kit.relativePath(file.path),
         );
       }
+
+      const config = {
+        name: path.basename(path.dirname(file.path)), // default the name to the directory name
+        ...md.frontmatter,
+      };
 
       const { data, errors } = validator.validatePlatformConfig(config);
 

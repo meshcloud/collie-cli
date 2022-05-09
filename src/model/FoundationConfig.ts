@@ -12,6 +12,6 @@ export interface MeshStackConfig {
 }
 
 export interface FoundationFrontmatter {
-  name: string;
+  name?: string;
   meshStack?: MeshStackConfig;
 }
