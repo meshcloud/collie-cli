@@ -8,7 +8,6 @@ import { assertEquals } from "/dev-deps.ts";
 Deno.test("can validate FoundationConfig", () => {
   const collie = new CollieRepository("./");
   const logger = new Logger(collie, {
-    quiet: false,
     debug: false,
     verbose: false,
     output: OutputFormat.JSON,
