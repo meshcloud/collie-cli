@@ -9,7 +9,7 @@ import { GcpErrorCode, MeshGcpPlatformError } from "/errors.ts";
 import {
   GcpBillingExportConfig,
   GcpCostCollectionViewName,
-} from "/config/config.model.ts";
+} from "./GcpBillingExportConfig.ts";
 import { parseJsonWithLog } from "/json.ts";
 import { moment } from "/deps.ts";
 import { CliFacade, CliInstallationStatus } from "../CliFacade.ts";
