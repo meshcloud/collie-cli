@@ -236,6 +236,24 @@
         "control",
         "statement"
       ]
+    },
+    "ComplianceControl": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "summary"
+      ]
     }
   }
 }
