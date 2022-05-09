@@ -6,9 +6,6 @@
  * 3rd party deps
  */
 
-// std
-export { jsonTree } from "https://deno.land/x/json_tree@latest/mod.ts";
-
 // cliffy
 export {
   Command,

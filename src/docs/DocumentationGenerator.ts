@@ -1,9 +1,9 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
+import { jsonTree } from "x/json_tree";
 
 import { Dir, DirectoryGenerator, File } from "../cli/DirectoryGenerator.ts";
 import { Logger } from "../cli/Logger.ts";
-import { jsonTree } from "../deps.ts";
 import { FoundationTreeBuilder } from "../foundation/FoundationTreeBuilder.ts";
 import {
   KitDependencyAnalyzer,
