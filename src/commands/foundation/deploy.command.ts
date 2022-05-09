@@ -4,7 +4,7 @@ import {
   toVerb,
 } from "/api/terragrunt/Terragrunt.ts";
 
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { Command } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
@@ -42,7 +42,10 @@ export function registerDeployCmd(program: Command) {
     )
     .description("Deploys your cloud foundation.")
     .action(
-      async (opts: DeployOptions & CmdGlobalOptions, foundation: string) => {
+      async (
+        opts: DeployOptions & GlobalCommandOptions,
+        foundation: string,
+      ) => {
         const collieRepo = new CollieRepository("./");
         const logger = new Logger(collieRepo, opts);
         const validator = new ModelValidator(logger);
@@ -81,7 +84,7 @@ export function registerDeployCmd(program: Command) {
     );
 }
 
-function terragruntModes(opts: DeployOptions & CmdGlobalOptions) {
+function terragruntModes(opts: DeployOptions & GlobalCommandOptions) {
   const modes: TerragruntRunMode[] = [];
 
   if (opts.upgrade) {
@@ -97,7 +100,7 @@ async function deployFoundation(
   repo: CollieRepository,
   foundation: FoundationRepository,
   mode: TerragruntRunMode,
-  opts: CmdGlobalOptions & DeployOptions,
+  opts: GlobalCommandOptions & DeployOptions,
   logger: Logger,
 ) {
   const terragrunt = buildTerragrunt(logger);

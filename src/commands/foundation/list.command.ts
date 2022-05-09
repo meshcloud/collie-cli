@@ -1,6 +1,6 @@
 import { Command } from "/deps.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CLI } from "../../info.ts";
 
@@ -8,7 +8,7 @@ export function registerListCmd(program: Command) {
   program
     .command("list")
     .description("list existing cloud foundations")
-    .action(async (opts: CmdGlobalOptions) => {
+    .action(async (opts: GlobalCommandOptions) => {
       const repo = await CollieRepository.load("./");
       const logger = new Logger(repo, opts);
 

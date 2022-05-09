@@ -1,11 +1,11 @@
 import { Command, moment } from "../../deps.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { dateType } from "../custom-types.ts";
 import { MeshError } from "../../errors.ts";
 import { TenantUsagePresenterFactory } from "../../presentation/tenant-usage-presenter-factory.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
-interface ListCostsCommandOptions extends CmdGlobalOptions {
+interface ListCostsCommandOptions extends GlobalCommandOptions {
   from: string;
   to: string;
 }
@@ -31,7 +31,10 @@ export function registerCostCommand(program: Command) {
 }
 
 export async function listTenantsCostAction(
-  options: CmdGlobalOptions & TenantCommandOptions & ListCostsCommandOptions,
+  options:
+    & GlobalCommandOptions
+    & TenantCommandOptions
+    & ListCostsCommandOptions,
   foundation: string,
 ) {
   const { meshAdapter, tableFactory, queryStatistics } =

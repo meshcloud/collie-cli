@@ -1,5 +1,5 @@
 import { bold, Command } from "../../deps.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CLI } from "/info.ts";
 import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
@@ -25,13 +25,16 @@ export function registerAnalyzeTagCommand(program: Command) {
     )
     .action(analyzeTagsAction);
 }
-interface AnalyzeTagsCommandOptions extends CmdGlobalOptions {
+interface AnalyzeTagsCommandOptions extends GlobalCommandOptions {
   tags?: string[];
   details?: boolean;
 }
 
 async function analyzeTagsAction(
-  options: CmdGlobalOptions & TenantCommandOptions & AnalyzeTagsCommandOptions,
+  options:
+    & GlobalCommandOptions
+    & TenantCommandOptions
+    & AnalyzeTagsCommandOptions,
   foundation: string,
 ) {
   const { meshAdapter } = await prepareTenantCommand(options, foundation);

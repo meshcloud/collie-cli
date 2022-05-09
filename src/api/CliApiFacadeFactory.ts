@@ -1,5 +1,4 @@
 import { Logger } from "../cli/Logger.ts";
-import { isatty } from "../commands/tty.ts";
 import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
 import { DefaultEnvProcessRunnerDecorator } from "../process/DefaultEnvProcessRunnerDecorator.ts";
 import { IProcessRunner } from "../process/IProcessRunner.ts";
@@ -38,7 +37,7 @@ export class CliApiFacadeFactory {
     let azure: AzCliFacade = new AzCli(processRunner);
 
     // We can only ask the user if we are in a tty terminal.
-    if (isatty) {
+    if (Deno.isatty(Deno.stdout.rid)) {
       azure = new AutoInstallAzModuleAzCliDecorator(azure);
     }
 
