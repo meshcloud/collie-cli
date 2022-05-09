@@ -7,16 +7,6 @@
  */
 
 // std
-
-export {
-  bold,
-  brightBlue,
-  dim,
-  green,
-  italic,
-  red,
-  yellow,
-} from "https://deno.land/std@0.136.0/fmt/colors.ts";
 export { stringify as yamlStringify } from "https://deno.land/std@0.136.0/encoding/yaml.ts";
 
 export { jsonTree } from "https://deno.land/x/json_tree@latest/mod.ts";

@@ -1,5 +1,6 @@
+import * as colors from "std/fmt/colors";
+
 import { CLI } from "/info.ts";
-import { dim, italic } from "../deps.ts";
 import { QueryStatistics } from "../mesh/QueryStatistics.ts";
 import { MeshTable, TableGenerator } from "./mesh-table.ts";
 import { Presenter } from "./presenter.ts";
@@ -15,7 +16,7 @@ export class TablePresenter implements Presenter {
     this.meshTable.draw(this.generator);
 
     console.log(
-      dim(italic(this.formatStats(this.stats))),
+      colors.dim(colors.italic(this.formatStats(this.stats))),
     );
   }
 

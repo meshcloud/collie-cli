@@ -1,4 +1,6 @@
-import { bold, Command } from "../../deps.ts";
+import * as colors from "std/fmt/colors";
+
+import { Command } from "../../deps.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CLI } from "/info.ts";
 import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
@@ -80,7 +82,9 @@ async function analyzeTagsAction(
 
 function displayAnalyzeTagResults(results: AnalyzeTagResult[]) {
   for (const result of results) {
-    console.log(`${bold(result.tagName)}: ${result.percentage.toFixed(1)}%`);
+    console.log(
+      `${colors.bold(result.tagName)}: ${result.percentage.toFixed(1)}%`,
+    );
     if (result.missingTenants.length > 0) {
       console.log("The following tenants are missing this tag:");
       for (const tenant of result.missingTenants) {

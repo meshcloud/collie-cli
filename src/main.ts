@@ -1,4 +1,6 @@
-import { Command, CompletionsCommand, red } from "./deps.ts";
+import * as colors from "std/fmt/colors";
+
+import { Command, CompletionsCommand } from "./deps.ts";
 import { CommandOptionError } from "./commands/CommandOptionError.ts";
 import { MeshError } from "./errors.ts";
 import { printTip } from "./cli/Logger.ts";
@@ -65,12 +67,12 @@ async function collie() {
       program.showHelp();
     } else if (e instanceof MeshError) {
       // for our own errors, only display message and then exit
-      console.error(red(e.message));
+      console.error(colors.red(e.message));
       printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
     } else if (e instanceof Error) {
       // for unexpected errors, raise the full message and stacktrace
       // note that .stack includes the exception message
-      console.error(red(e.stack || ""));
+      console.error(colors.red(e.stack || ""));
       printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
     }
 

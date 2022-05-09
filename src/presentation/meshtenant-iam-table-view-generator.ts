@@ -1,4 +1,5 @@
-import { bold, Table } from "../deps.ts";
+import * as colors from "std/fmt/colors";
+import { Table } from "../deps.ts";
 import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { MeshTenantRoleAssignment } from "../mesh/MeshIamModel.ts";
 import { TableGenerator } from "./mesh-table.ts";
@@ -56,7 +57,7 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
           for (const roleName in groupedRoles) {
             const roleAssignments = groupedRoles[roleName];
 
-            tmpRows.push([`${bold(roleName)}`]);
+            tmpRows.push([`${colors.bold(roleName)}`]);
 
             roleAssignments.forEach((r) => {
               const prefix = this.includeAncestors
@@ -74,7 +75,7 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
 
               // If the IAM table was displayed from a specific user query we will highlight this user.
               if (this.principalNameHighlight === r.principalName) {
-                principalString = `${bold(principalString)}`;
+                principalString = `${colors.bold(principalString)}`;
               }
 
               tmpRows.push([principalString]);
@@ -85,8 +86,7 @@ export class MeshTenantIamTableViewGenerator extends TableGenerator {
           row[index] = tmpTable.toString();
         } else {
           const x = header as keyof typeof meshTenant;
-          row[index] = meshTenant[x]
-            .toString();
+          row[index] = meshTenant[x].toString();
         }
       });
       rows.push(row);
