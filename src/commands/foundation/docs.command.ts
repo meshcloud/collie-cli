@@ -24,7 +24,9 @@ interface DocsCommandOptions {
 export function registerDocsCommand(program: Command) {
   program
     .command("docs <foundation>")
-    .description("Manage your cloud foundation docs.")
+    .description(
+      "Generate end-user friendly documentation for your cloud foundation",
+    )
     .action(
       async (
         opts: CmdGlobalOptions & DocsCommandOptions,

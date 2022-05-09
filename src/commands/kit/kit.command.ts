@@ -11,6 +11,8 @@ export function registerKitCommand(program: Command) {
 
   program
     .command("kit", kitCommands)
-    .description("Manage your cloud foundation kit.")
+    .description(
+      "Manage a kit of reusable modules to build landing zones in your cloud foundation",
+    )
     .action(kitCommands.showHelp);
 }
