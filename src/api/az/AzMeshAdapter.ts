@@ -1,4 +1,4 @@
-import * as async from "std/async";
+import { pooledMap } from "std/async";
 
 import { MeshPlatform, MeshTag, MeshTenant } from "/mesh/MeshTenantModel.ts";
 import { isSubscription, Tag } from "./Model.ts";
@@ -61,7 +61,7 @@ export class AzMeshAdapter implements MeshAdapter {
       (x) => `/subscriptions/${x.platformTenantId}`,
     );
 
-    const getCostsIterator = async.pooledMap(
+    const getCostsIterator = pooledMap(
       concurrencyLimit,
       scopes,
       async (scope) =>
