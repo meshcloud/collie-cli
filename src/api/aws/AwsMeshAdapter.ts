@@ -1,3 +1,5 @@
+import { pooledMap } from "std/async";
+
 import { MeshAdapter } from "/mesh/MeshAdapter.ts";
 import { AwsCliFacade } from "./AwsCliFacade.ts";
 import {
@@ -6,13 +8,16 @@ import {
   MeshTenantCost,
 } from "/mesh/MeshTenantModel.ts";
 import { Account, Credentials, isAccount, User } from "./Model.ts";
-import { makeRunWithLimit, moment } from "/deps.ts";
+import { moment } from "/deps.ts";
 import { AwsErrorCode, MeshAwsPlatformError, MeshError } from "/errors.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
 } from "/mesh/MeshIamModel.ts";
 import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
+
+// limit concurrency because we will run into aws rate limites for sure if we set this off all at once
+const concurrencyLimit = 5;
 
 export class AwsMeshAdapter implements MeshAdapter {
   /**
@@ -29,33 +34,35 @@ export class AwsMeshAdapter implements MeshAdapter {
   async getMeshTenants(): Promise<MeshTenant[]> {
     const accounts = await this.awsCli.listAccounts();
 
-    // TODO: use pooledMap for this?
-    const concurrentTagRequests = 5;
-    const { runWithLimit } = makeRunWithLimit<MeshTenant>(
-      concurrentTagRequests,
+    const getTagsIterator = pooledMap(
+      concurrencyLimit,
+      accounts,
+      async (account) => {
+        const tags = await this.awsCli.listTags(account);
+
+        const meshTags = tags.map((t) => {
+          return { tagName: t.Key, tagValues: [t.Value] };
+        });
+
+        return {
+          platformTenantId: account.Id,
+          platformTenantName: account.Name,
+          platform: MeshPlatform.AWS,
+          nativeObj: account,
+          tags: meshTags,
+          costs: [],
+          roleAssignments: [],
+        };
+      },
     );
 
-    return Promise.all(
-      accounts.map((account) =>
-        runWithLimit(async () => {
-          const tags = await this.awsCli.listTags(account);
+    const tenants = [];
 
-          const meshTags = tags.map((t) => {
-            return { tagName: t.Key, tagValues: [t.Value] };
-          });
+    for await (const t of getTagsIterator) {
+      tenants.push(t);
+    }
 
-          return {
-            platformTenantId: account.Id,
-            platformTenantName: account.Name,
-            platform: MeshPlatform.AWS,
-            nativeObj: account,
-            tags: meshTags,
-            costs: [],
-            roleAssignments: [],
-          };
-        })
-      ),
-    );
+    return tenants;
   }
 
   async updateMeshTenant(
@@ -95,7 +102,8 @@ export class AwsMeshAdapter implements MeshAdapter {
       for (const result of costInfo.ResultsByTime) {
         const from = moment.utc(result.TimePeriod.Start); // Comes in the format of '2021-01-01'.
         let to = moment(from).endOf("month");
-        if (to.isAfter(endDate)) { // If [endDate] is in the middle of the month, we need to prevent 'to' from referring to the end.
+        if (to.isAfter(endDate)) {
+          // If [endDate] is in the middle of the month, we need to prevent 'to' from referring to the end.
           to = moment(endDate);
         }
 
@@ -107,8 +115,8 @@ export class AwsMeshAdapter implements MeshAdapter {
           details: [],
         };
 
-        const costForTenant = result.Groups.find((g) =>
-          g.Keys[0] === account.Id
+        const costForTenant = result.Groups.find(
+          (g) => g.Keys[0] === account.Id,
         );
         if (costForTenant) {
           const blendedCost = costForTenant.Metrics["BlendedCost"];
@@ -224,8 +232,8 @@ export class AwsMeshAdapter implements MeshAdapter {
     userIdsWithGroup: string[],
     tenantUsers: User[],
   ) {
-    const usersWithNoGroup = tenantUsers.filter((tu) =>
-      userIdsWithGroup.findIndex((gu) => gu === tu.UserId) === -1
+    const usersWithNoGroup = tenantUsers.filter(
+      (tu) => userIdsWithGroup.findIndex((gu) => gu === tu.UserId) === -1,
     );
 
     const userAssignmentsWithoutGroup = usersWithNoGroup.map((u) => {
