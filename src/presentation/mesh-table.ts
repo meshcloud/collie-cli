@@ -1,5 +1,7 @@
+import { dim, yellow } from "std/fmt/colors";
+
+import { Table } from "../deps.ts";
 import { MeshTag } from "../mesh/MeshTenantModel.ts";
-import { dim, Table, yellow } from "../deps.ts";
 
 export abstract class TableGenerator {
   abstract getColumns(): string[];
@@ -26,9 +28,7 @@ export interface MeshTable {
 }
 
 export class MeshTableTag implements MeshTag {
-  constructor(
-    private readonly tag: MeshTag,
-  ) {}
+  constructor(private readonly tag: MeshTag) {}
 
   get tagName(): string {
     return this.tag.tagName;

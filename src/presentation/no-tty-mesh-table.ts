@@ -1,5 +1,6 @@
+import * as colors from "std/fmt/colors";
+
 import { Table } from "../deps.ts";
-import { bold } from "../deps.ts";
 import { MeshTable, TableGenerator } from "./mesh-table.ts";
 
 export class NoTtyMeshTable implements MeshTable {
@@ -13,7 +14,7 @@ export class NoTtyMeshTable implements MeshTable {
 
     const table = new Table();
     table
-      .header(generator.getColumns().map((value) => bold(value)))
+      .header(generator.getColumns().map((value) => colors.bold(value)))
       .body(rows)
       .render();
   }
