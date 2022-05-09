@@ -1,7 +1,7 @@
 import { CliToolEnv } from "./CliToolEnv.ts";
 
 export interface PlatformConfigBase {
-  name: string;
+  name: string; // todo: we need better separation between config and frontmatter here
   cli: CliToolEnv;
 }
 
