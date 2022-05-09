@@ -1,7 +1,11 @@
+// NOTE: as usage of dependencies in collie grows, we found import_map.json to be a better fit for managing our
+// dependencies and cleanly importing them where they are used. When modifying a dependency here, consider moving it
+// over to import_map.json instead
+
 // this file is a central collection of our dependencies
 // this is a deno best practice https://deno.land/manual@v1.7.4/examples/manage_dependencies
+//
 // for  discussion of the performance implications (and why this doesn't matter much for this _app_) see https://github.com/denoland/deno/issues/6194
-
 /**
  * 3rd party deps
  */
