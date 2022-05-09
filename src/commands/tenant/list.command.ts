@@ -1,5 +1,5 @@
 import { Command } from "../../deps.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TenantListPresenterFactory } from "../../presentation/tenant-list-presenter-factory.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
@@ -14,7 +14,7 @@ export function registerListCommand(program: Command) {
 }
 
 export async function listTenantAction(
-  options: TenantCommandOptions & CmdGlobalOptions,
+  options: TenantCommandOptions & GlobalCommandOptions,
   foundation: string,
 ) {
   const { meshAdapter, tableFactory, queryStatistics } =

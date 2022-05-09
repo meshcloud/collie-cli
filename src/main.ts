@@ -1,19 +1,19 @@
 import { Command, CompletionsCommand, red } from "./deps.ts";
-import { CmdOptionError } from "./commands/cmd-errors.ts";
+import { CommandOptionError } from "./commands/CommandOptionError.ts";
 import { MeshError } from "./errors.ts";
 import { printTip } from "./cli/Logger.ts";
 import { CLI, VERSION } from "./info.ts";
 import { isWindows } from "./os.ts";
 import { OutputFormat } from "/presentation/output-format.ts";
-import { OutputFormatType } from "./commands/cmd-options.ts";
 import { registerFeedbackCommand } from "./commands/feedback.command.ts";
 import { registerTenantCommand } from "./commands/tenant/tenant.command.ts";
 import { registerCreateIssueCommand } from "./commands/create-issue.command.ts";
-import { registerUpgradeCommand } from "./commands/upgrade.ts";
+import { registerUpgradeCommand } from "./commands/upgrade.command.ts";
 import { registerKitCommand } from "./commands/kit/kit.command.ts";
 import { registerFoundationCommand } from "./commands/foundation/foundation.command.ts";
 import { registerComplianceCommand } from "./commands/compliance/compliance.ts";
 import { registerDocsCommand } from "./commands/foundation/docs.command.ts";
+import { OutputFormatType } from "./commands/GlobalCommandOptions.ts";
 
 async function collie() {
   const program = new Command()
@@ -60,7 +60,7 @@ async function collie() {
     }
     await program.parse(Deno.args);
   } catch (e) {
-    if (e instanceof CmdOptionError) {
+    if (e instanceof CommandOptionError) {
       // if the error indicates a user error, e.g. wrong typing then display the message and the help.
       program.showHelp();
     } else if (e instanceof MeshError) {

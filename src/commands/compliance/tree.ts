@@ -10,7 +10,7 @@ import {
 import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { ComplianceControlTreeBuilder } from "../../compliance/ComplianceControlTreeBuilder.ts";
 
@@ -31,7 +31,7 @@ export function registerTreeCmd(program: Command) {
     .option("--view [view:view]", "select the primary dimension of the tree", {
       default: "control",
     })
-    .action(async (opts: CmdGlobalOptions & TreeOptions) => {
+    .action(async (opts: GlobalCommandOptions & TreeOptions) => {
       const kit = new CollieRepository("./");
       const logger = new Logger(kit, opts);
 

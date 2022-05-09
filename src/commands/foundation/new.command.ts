@@ -6,7 +6,7 @@ import {
   WriteMode,
 } from "../../cli/DirectoryGenerator.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { CallerIdentity } from "../../api/aws/Model.ts";
 import { MarkdownDocument } from "../../model/MarkdownDocument.ts";
@@ -22,7 +22,7 @@ export function registerNewCmd(program: Command) {
   program
     .command("new <foundation>")
     .description("generate a new cloud foundation")
-    .action(async (opts: CmdGlobalOptions, foundation: string) => {
+    .action(async (opts: GlobalCommandOptions, foundation: string) => {
       const repo = await CollieRepository.load("./");
       const logger = new Logger(repo, opts);
 

@@ -1,6 +1,6 @@
 import * as colors from "std/fmt/colors";
 import { CollieRepository } from "/model/CollieRepository.ts";
-import { CmdGlobalOptions } from "/commands/cmd-options.ts";
+import { GlobalCommandOptions } from "/commands/GlobalCommandOptions.ts";
 
 /**
  * Convenienve format utils we supply to logging methods callbacks. Using these methods simplifies common formatting
@@ -23,7 +23,7 @@ export class Logger {
   private enableDebug: boolean;
   readonly fmtUtils: FormatUtils;
 
-  constructor(kit: CollieRepository, opts: CmdGlobalOptions) {
+  constructor(kit: CollieRepository, opts: GlobalCommandOptions) {
     this.enableVerbose = opts.verbose;
     this.enableDebug = opts.debug;
 

@@ -1,7 +1,6 @@
 import { QueryStatistics } from "../../mesh/QueryStatistics.ts";
 import { MeshTableFactory } from "../../presentation/mesh-table-factory.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
-import { isatty } from "../tty.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CollieRepository } from "/model/CollieRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { MeshFoundationAdapterFactory } from "../../mesh/MeshFoundationAdapterFactory.ts";
@@ -11,7 +10,7 @@ import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 
 export async function prepareTenantCommand(
-  options: CmdGlobalOptions & TenantCommandOptions,
+  options: GlobalCommandOptions & TenantCommandOptions,
   foundation: string,
 ) {
   const collieRepo = await CollieRepository.load("./");
@@ -45,6 +44,7 @@ export async function prepareTenantCommand(
     options.refresh,
   );
 
+  const isatty = Deno.isatty(Deno.stdout.rid);
   const tableFactory = new MeshTableFactory(isatty);
 
   return { meshAdapter, tableFactory, queryStatistics };

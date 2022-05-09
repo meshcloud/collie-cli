@@ -3,11 +3,11 @@ import { Command } from "../../deps.ts";
 import { MeshTenantFilter } from "/mesh/filter/MeshTenantFilter.ts";
 import { PrincipalNameMeshTenantFilter } from "/mesh/filter/PrincipalNameMeshTenantFilter.ts";
 import { TenantIamPresenterFactory } from "../../presentation/tenant-iam-presenter-factory.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 
-interface IamCommandOptions extends CmdGlobalOptions {
+interface IamCommandOptions extends GlobalCommandOptions {
   includeAncestors: boolean;
   filter?: {
     principal?: string;
@@ -36,7 +36,7 @@ export function registerIamCommand(program: Command) {
 }
 
 async function listIamAction(
-  options: CmdGlobalOptions & TenantCommandOptions & IamCommandOptions,
+  options: GlobalCommandOptions & TenantCommandOptions & IamCommandOptions,
   foundation: string,
 ) {
   const { meshAdapter, tableFactory } = await prepareTenantCommand(

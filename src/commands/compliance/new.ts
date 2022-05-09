@@ -2,35 +2,37 @@ import { Command, Input } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { MarkdownDocument } from "../../model/MarkdownDocument.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { ComplianceControl } from "../../compliance/ComplianceControl.ts";
 
 export function registerNewCmd(program: Command) {
   program
     .command("new <control> [name]")
     .description("generate a new compliance control")
-    .action(async (opts: CmdGlobalOptions, module: string, name?: string) => {
-      const kit = new CollieRepository("./");
-      const logger = new Logger(kit, opts);
+    .action(
+      async (opts: GlobalCommandOptions, module: string, name?: string) => {
+        const kit = new CollieRepository("./");
+        const logger = new Logger(kit, opts);
 
-      const controlPath = kit.resolvePath("compliance", module + ".md");
-      if (!name) {
-        name = await Input.prompt({
-          message: `Choose a human-friendly name for this control`,
-          minLength: 1,
-        });
-      }
+        const controlPath = kit.resolvePath("compliance", module + ".md");
+        if (!name) {
+          name = await Input.prompt({
+            message: `Choose a human-friendly name for this control`,
+            minLength: 1,
+          });
+        }
 
-      if (!name) {
-        throw new Error("input prompt was not successful");
-      }
+        if (!name) {
+          throw new Error("input prompt was not successful");
+        }
 
-      await generateControl(controlPath, name);
+        await generateControl(controlPath, name);
 
-      logger.progress(
-        "generated new control at " + kit.relativePath(controlPath),
-      );
-    });
+        logger.progress(
+          "generated new control at " + kit.relativePath(controlPath),
+        );
+      },
+    );
 }
 
 async function generateControl(controlPath: string, name: string) {

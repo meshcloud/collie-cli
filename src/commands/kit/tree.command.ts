@@ -2,7 +2,7 @@ import { jsonTree } from "x/json_tree";
 import { Command, EnumType } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { KitModuleTreeBuilder } from "../../kit/KitModuleTreeBuilder.ts";
 import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
@@ -30,7 +30,7 @@ export function registerTreeCmd(program: Command) {
     .option("--view [view:view]", "select the primary dimension of the tree", {
       default: "kit",
     })
-    .action(async (opts: CmdGlobalOptions & TreeOptions) => {
+    .action(async (opts: GlobalCommandOptions & TreeOptions) => {
       const kit = new CollieRepository("./");
       const logger = new Logger(kit, opts);
 

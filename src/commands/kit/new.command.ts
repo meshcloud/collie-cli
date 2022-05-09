@@ -6,42 +6,44 @@ import {
   WriteMode,
 } from "../../cli/DirectoryGenerator.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 
 export function registerNewCmd(program: Command) {
   program
     .command("new <module> [name]")
     .description("generate a new kit module")
-    .action(async (opts: CmdGlobalOptions, module: string, name?: string) => {
-      const kit = new CollieRepository("./");
-      const logger = new Logger(kit, opts);
+    .action(
+      async (opts: GlobalCommandOptions, module: string, name?: string) => {
+        const kit = new CollieRepository("./");
+        const logger = new Logger(kit, opts);
 
-      const modulePath = kit.resolvePath("kit", module);
-      if (!name) {
-        name = await Input.prompt({
-          message: `Choose a human-friendly name for this module`,
-          minLength: 1,
-        });
-      }
+        const modulePath = kit.resolvePath("kit", module);
+        if (!name) {
+          name = await Input.prompt({
+            message: `Choose a human-friendly name for this module`,
+            minLength: 1,
+          });
+        }
 
-      if (!name) {
-        throw new Error("input prompt was not successful");
-      }
+        if (!name) {
+          throw new Error("input prompt was not successful");
+        }
 
-      const dir = new DirectoryGenerator(WriteMode.skip, logger);
-      const d: Dir = {
-        name: modulePath,
-        entries: [
-          { name: "main.tf", content: mainTf },
-          { name: "documentation.tf", content: documentationTf },
-          { name: "README.md", content: generateReadmeMd(name) },
-        ],
-      };
+        const dir = new DirectoryGenerator(WriteMode.skip, logger);
+        const d: Dir = {
+          name: modulePath,
+          entries: [
+            { name: "main.tf", content: mainTf },
+            { name: "documentation.tf", content: documentationTf },
+            { name: "README.md", content: generateReadmeMd(name) },
+          ],
+        };
 
-      await dir.write(d, "./");
+        await dir.write(d, "./");
 
-      logger.progress("generated new module " + kit.relativePath(modulePath));
-    });
+        logger.progress("generated new module " + kit.relativePath(modulePath));
+      },
+    );
 }
 
 const mainTf =

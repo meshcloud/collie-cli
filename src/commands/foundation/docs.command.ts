@@ -13,7 +13,7 @@ import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { ProcessResult } from "../../process/ProcessRunnerResult.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { buildTransparentProcessRunner } from "./buildTransparentProcessRunner.ts";
 
 interface DocsCommandOptions {
@@ -29,7 +29,7 @@ export function registerDocsCommand(program: Command) {
     )
     .action(
       async (
-        opts: CmdGlobalOptions & DocsCommandOptions,
+        opts: GlobalCommandOptions & DocsCommandOptions,
         foundation: string,
       ) => {
         const repo = new CollieRepository("./");

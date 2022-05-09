@@ -1,5 +1,5 @@
 import { clone, Command, Input } from "../../deps.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CLI } from "/info.ts";
 import { MeshAdapter } from "../../mesh/MeshAdapter.ts";
 import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
@@ -21,7 +21,7 @@ export function registerSetMissingTagCommand(program: Command) {
 }
 
 async function setMissingTagsAction(
-  options: TenantCommandOptions & CmdGlobalOptions,
+  options: TenantCommandOptions & GlobalCommandOptions,
   foundation: string,
   tagKey: string,
 ) {

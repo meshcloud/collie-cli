@@ -1,6 +1,6 @@
 import { MeshError } from "../errors.ts";
 
-export class CmdOptionError extends MeshError {
+export class CommandOptionError extends MeshError {
   constructor(msg: string) {
     super(msg);
   }
