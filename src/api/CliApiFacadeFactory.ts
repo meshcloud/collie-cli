@@ -19,6 +19,9 @@ import { AzCliDetector } from "./az/AzCliDetector.ts";
 import { ProcessRunnerResultHandler } from "../process/ProcessRunnerResultHandler.ts";
 import { AwsCliResultHandler } from "./aws/AwsCliResultHandler.ts";
 import { AwsCliDetector } from "./aws/AwsCliDetector.ts";
+import { TerraformDocsCliDetector } from "./terraform-docs/TerraformDocsCliDetector.ts";
+import { TerraformCliDetector } from "./terragrunt/TerraformCliDetector.ts";
+import { TerragruntCliDetector } from "./terragrunt/TerragruntCliDetector.ts";
 
 export class CliApiFacadeFactory {
   constructor(private readonly logger: Logger) {}
@@ -29,6 +32,9 @@ export class CliApiFacadeFactory {
       new AwsCliDetector(processRunner),
       new AzCliDetector(processRunner),
       new GcloudCliDetector(processRunner),
+      new TerraformCliDetector(processRunner),
+      new TerragruntCliDetector(processRunner),
+      new TerraformDocsCliDetector(processRunner),
     ];
   }
 
