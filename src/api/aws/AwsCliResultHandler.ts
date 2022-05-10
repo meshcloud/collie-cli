@@ -23,7 +23,7 @@ export class AwsCliResultHandler implements ProcessRunnerResultHandler {
     error: Error,
   ): Promise<never> {
     // catch all error handling - try checking if its a cli version issue
-    await this.tryRaiseInstallationStatusError();
+    await this.detector.tryRaiseInstallationStatusError();
 
     throw new ProcessRunnerError(command, options, error);
   }
@@ -53,12 +53,8 @@ export class AwsCliResultHandler implements ProcessRunnerResultHandler {
         }
     }
     // catch all error handling - try checking if its a cli version issue
-    await this.tryRaiseInstallationStatusError();
+    await this.detector.tryRaiseInstallationStatusError();
 
     throw new ProcessRunnerError(command, options, result);
-  }
-
-  private async tryRaiseInstallationStatusError() {
-    await this.detector.tryRaiseInstallationStatusError("aws", /^aws-cli\/2\./);
   }
 }

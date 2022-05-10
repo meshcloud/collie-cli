@@ -70,12 +70,12 @@ export class CliInstallationStatusError extends MeshError {
     switch (status) {
       case InstallationStatus.NotInstalled:
         super(
-          `"${cmd}" cli is not installed. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`,
+          `"${cmd}" cli is not installed. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions.`,
         );
         return;
       case InstallationStatus.UnsupportedVersion:
         super(
-          `"${cmd}" cli is not installed in a supported version. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions".`,
+          `"${cmd}" cli is not installed in a supported version. Please review https://github.com/meshcloud/collie-cli/#prerequisites for installation instructions.`,
         );
         return;
     }
