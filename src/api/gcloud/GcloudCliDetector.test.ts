@@ -20,5 +20,7 @@ gsutil 4.53`,
   const result = await sut.detect();
 
   assertEquals(result.status, InstallationStatus.Installed);
-  assertEquals(result.version, "315.0.0");
+  if (result.status == InstallationStatus.Installed) {
+    assertEquals(result.version, "315.0.0");
+  }
 });
