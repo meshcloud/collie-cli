@@ -36,10 +36,12 @@ export function registerNewCmd(program: Command) {
             { name: "main.tf", content: mainTf },
             { name: "documentation.tf", content: documentationTf },
             { name: "README.md", content: generateReadmeMd(name) },
+            { name: "variables.tf", content: "" },
+            { name: "outputs.tf", content: "" },
           ],
         };
 
-        await dir.write(d, "./");
+        await dir.write(d, "");
 
         logger.progress("generated new module " + kit.relativePath(modulePath));
       },
