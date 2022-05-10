@@ -11,30 +11,62 @@ import { GcloudCliFacade } from "./gcloud/GcloudCliFacade.ts";
 import { AutoInstallAzModuleAzCliDecorator } from "./az/AutoInstallAzModuleAzCliDecorator.ts";
 import { AzCli } from "./az/AzCli.ts";
 import { RetryingAzCliDecorator } from "./az/RetryingAzCliDecorator.ts";
+import { GcloudCliDetector } from "./gcloud/GcloudCliDetector.ts";
+import { GcloudCliResultHandler } from "./gcloud/GcloudCliResultHandler.ts";
+import { ResultHandlerProcessRunnerDecorator } from "../process/ResultHandlerProcessRunnerDecorator.ts";
+import { AzCliResultHandler } from "./az/AzCliResultHandler.ts";
+import { AzCliDetector } from "./az/AzCliDetector.ts";
+import { ProcessRunnerResultHandler } from "../process/ProcessRunnerResultHandler.ts";
+import { AwsCliResultHandler } from "./aws/AwsCliResultHandler.ts";
+import { AwsCliDetector } from "./aws/AwsCliDetector.ts";
 
 export class CliApiFacadeFactory {
   constructor(private readonly logger: Logger) {}
 
   buildAws(env?: AwsCliEnv) {
-    const processRunner = this.buildProcessRunner(env);
+    const processRunner = this.buildProcessRunner();
+    const detector = new AwsCliDetector(processRunner);
 
-    const facade = new AwsCliFacade(processRunner);
+    const resultHandler = new AwsCliResultHandler(detector);
+    const facadeProcessRunner = this.buildFacadeProcessRunner(
+      processRunner,
+      resultHandler,
+      env,
+    );
+
+    const facade = new AwsCliFacade(facadeProcessRunner);
 
     return facade;
   }
 
   buildGcloud(env?: GcloudCliEnv) {
-    const processRunner = this.buildProcessRunner(env);
+    const processRunner = this.buildProcessRunner();
+    const detector = new GcloudCliDetector(processRunner);
 
-    const facade = new GcloudCliFacade(processRunner);
+    const resultHandler = new GcloudCliResultHandler(detector);
+    const facadeProcessRunner = this.buildFacadeProcessRunner(
+      processRunner,
+      resultHandler,
+      env,
+    );
+
+    const facade = new GcloudCliFacade(facadeProcessRunner);
 
     return facade;
   }
 
   buildAz(env?: AzCliEnv) {
-    const processRunner = this.buildProcessRunner(env);
+    const processRunner = this.buildProcessRunner();
+    const detector = new AzCliDetector(processRunner);
 
-    let azure: AzCliFacade = new AzCli(processRunner);
+    const resultHandler = new AzCliResultHandler(detector);
+    const facadeProcessRunner = this.buildFacadeProcessRunner(
+      processRunner,
+      resultHandler,
+      env,
+    );
+
+    let azure: AzCliFacade = new AzCli(facadeProcessRunner);
 
     // We can only ask the user if we are in a tty terminal.
     if (Deno.isatty(Deno.stdout.rid)) {
@@ -46,13 +78,15 @@ export class CliApiFacadeFactory {
     return azure;
   }
 
-  private buildProcessRunner(env?: Record<string, string>) {
-    // todo: we need ot build up the ProcessRunner behavior in the following order (from outer to inner) - this does not work right now!
-    //   - DefaultEnvProcessRunnerDecorator -> customise the command that gets run
-    //   - ResultHandlerProcessRunnerDecorator -> retry/print error on what actually ran
-    //   - LoggingProcessRunnerDecorator -> log what actually ran
-    //   - actual runner
+  // DESIGN: we need ot build up the ProcessRunner behavior in the following order (from outer to inner)
+  //   - DefaultEnvProcessRunnerDecorator -> customise the command that gets run
+  //   - ResultHandlerProcessRunnerDecorator -> retry/print error on what actually ran
+  //   - LoggingProcessRunnerDecorator -> log what actually ran
+  //   - actual runner
+  //
+  // to achieve this we split up buildProcessRunner and buildFacadeProcessRunner methods
 
+  private buildProcessRunner() {
     let processRunner: IProcessRunner<ProcessResultWithOutput> =
       new QuietProcessRunner();
 
@@ -61,10 +95,25 @@ export class CliApiFacadeFactory {
       this.logger,
     );
 
-    if (env) {
-      processRunner = new DefaultEnvProcessRunnerDecorator(processRunner, env);
-    }
-
     return processRunner;
+  }
+
+  private buildFacadeProcessRunner(
+    facadeProcessRunner: IProcessRunner<ProcessResultWithOutput>,
+    resultHandler: ProcessRunnerResultHandler,
+    env?: Record<string, string>,
+  ) {
+    facadeProcessRunner = new ResultHandlerProcessRunnerDecorator(
+      facadeProcessRunner,
+      resultHandler,
+    );
+
+    if (env) {
+      facadeProcessRunner = new DefaultEnvProcessRunnerDecorator(
+        facadeProcessRunner,
+        env,
+      );
+    }
+    return facadeProcessRunner;
   }
 }

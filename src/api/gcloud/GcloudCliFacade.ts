@@ -12,27 +12,16 @@ import {
 } from "./GcpBillingExportConfig.ts";
 import { parseJsonWithLog } from "/json.ts";
 import { moment } from "/deps.ts";
-import { GcloudCliResultHandler } from "./GcloudCliResultHandler.ts";
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
-import { ResultHandlerProcessRunnerDecorator } from "../../process/ResultHandlerProcessRunnerDecorator.ts";
-import { CliDetector } from "../CliDetector.ts";
 import { CLI } from "../../info.ts";
 
 export class GcloudCliFacade {
-  private readonly processRunner: IProcessRunner<ProcessResultWithOutput>;
-
   constructor(
-    rawRunner: IProcessRunner<ProcessResultWithOutput>,
+    private readonly processRunner: IProcessRunner<ProcessResultWithOutput>,
     private readonly billingConfig?: GcpBillingExportConfig,
-  ) {
-    const detector = new CliDetector(rawRunner);
+  ) {}
 
-    this.processRunner = new ResultHandlerProcessRunnerDecorator(
-      rawRunner,
-      new GcloudCliResultHandler(detector),
-    );
-  }
   async configList(): Promise<Config> {
     return await this.run<Config>(["gcloud", "config", "list"]);
   }

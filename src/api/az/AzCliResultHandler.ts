@@ -7,10 +7,11 @@ import {
 } from "/errors.ts";
 import { ProcessResultWithOutput } from "/process/ProcessRunnerResult.ts";
 import {
+  formatAsShellCommand,
   ProcessRunnerResultHandler,
 } from "../../process/ProcessRunnerResultHandler.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
-import { CliDetector } from "../CliDetector.ts";
+import { AzCliDetector } from "./AzCliDetector.ts";
 
 export class AzCliResultHandler implements ProcessRunnerResultHandler {
   private readonly errRegexExtensionMissing =
@@ -24,7 +25,7 @@ export class AzCliResultHandler implements ProcessRunnerResultHandler {
 
   private readonly errConfigurationNotSet = /is not set/;
 
-  constructor(private readonly detector: CliDetector) {}
+  constructor(private readonly detector: AzCliDetector) {}
 
   async handleError(
     command: string[],
@@ -32,7 +33,7 @@ export class AzCliResultHandler implements ProcessRunnerResultHandler {
     error: Error,
   ): Promise<never> {
     // catch all error handling - try checking if its a cli version issue
-    await this.tryRaiseInstallationStatusError();
+    await this.detector.tryRaiseInstallationStatusError();
 
     throw new ProcessRunnerError(command, options, error);
   }
@@ -110,22 +111,19 @@ export class AzCliResultHandler implements ProcessRunnerResultHandler {
       // to solve this the user must just perform a new login so we issue this error if we detect this string.
       result.stderr.includes("AADSTS700082")
     ) {
-      console.error(
-        `You are not logged in into Azure CLI. Please login with "az login".`,
+      throw new MeshNotLoggedInError(
+        `You are not logged in into Azure CLI. Please login with "${
+          formatAsShellCommand(
+            ["az", "login"],
+            options,
+          )
+        }".`,
       );
-      throw new MeshNotLoggedInError(`"${result.stderr.replace("\n", "")}"`);
     }
 
     // catch all error handling - try checking if its a cli version issue
-    await this.tryRaiseInstallationStatusError();
+    await this.detector.tryRaiseInstallationStatusError();
 
     throw new ProcessRunnerError(command, options, result);
-  }
-
-  private async tryRaiseInstallationStatusError() {
-    await this.detector.tryRaiseInstallationStatusError(
-      "az",
-      /azure-cli\s+2\./,
-    );
   }
 }

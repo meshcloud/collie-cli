@@ -8,14 +8,14 @@ import {
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { ProcessRunnerResultHandler } from "../../process/ProcessRunnerResultHandler.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
-import { CliDetector } from "../CliDetector.ts";
+import { GcloudCliDetector } from "./GcloudCliDetector.ts";
 
 export class GcloudCliResultHandler implements ProcessRunnerResultHandler {
   private unauthorizedProject = /User is not permitted/;
   private invalidTagValue =
     /ERROR: \(gcloud.alpha.projects.update\) argument --update-labels: Bad value/;
 
-  constructor(private readonly detector: CliDetector) {}
+  constructor(private readonly detector: GcloudCliDetector) {}
 
   async handleError(
     command: string[],
@@ -23,7 +23,7 @@ export class GcloudCliResultHandler implements ProcessRunnerResultHandler {
     error: Error,
   ): Promise<never> {
     // catch all error handling - try checking if its a cli version issue
-    await this.tryRaiseInstallationStatusError();
+    await this.detector.tryRaiseInstallationStatusError();
 
     throw new ProcessRunnerError(command, options, error);
   }
@@ -58,15 +58,8 @@ export class GcloudCliResultHandler implements ProcessRunnerResultHandler {
     }
 
     // catch all error handling - try checking if its a cli version issue
-    await this.tryRaiseInstallationStatusError();
+    await this.detector.tryRaiseInstallationStatusError();
 
     throw new ProcessRunnerError(command, options, result);
-  }
-
-  private async tryRaiseInstallationStatusError() {
-    await this.detector.tryRaiseInstallationStatusError(
-      "gcloud",
-      /^Google Cloud SDK/,
-    );
   }
 }
