@@ -47,6 +47,12 @@ export class CliApiFacadeFactory {
   }
 
   private buildProcessRunner(env?: Record<string, string>) {
+    // todo: we need ot build up the ProcessRunner behavior in the following order (from outer to inner) - this does not work right now!
+    //   - DefaultEnvProcessRunnerDecorator -> customise the command that gets run
+    //   - ResultHandlerProcessRunnerDecorator -> retry/print error on what actually ran
+    //   - LoggingProcessRunnerDecorator -> log what actually ran
+    //   - actual runner
+
     let processRunner: IProcessRunner<ProcessResultWithOutput> =
       new QuietProcessRunner();
 

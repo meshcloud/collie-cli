@@ -26,10 +26,6 @@ export class AutoInstallAzModuleAzCliDecorator implements AzCliFacade {
     return await this.azureFacade.getCostManagementInfo(scope, from, to);
   }
 
-  async verifyCliInstalled() {
-    return await this.azureFacade.verifyCliInstalled();
-  }
-
   setDynamicInstallValue(value: DynamicInstallValue): void {
     this.azureFacade.setDynamicInstallValue(value);
   }

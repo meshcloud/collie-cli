@@ -16,7 +16,7 @@ import { ProcessResultWithOutput } from "/process/ProcessRunnerResult.ts";
 import { ResultHandlerProcessRunnerDecorator } from "../../process/ResultHandlerProcessRunnerDecorator.ts";
 import { AzCliResultHandler } from "./AzCliResultHandler.ts";
 import { CliDetector } from "../CliDetector.ts";
-import { CliInstallationStatus } from "../CliFacade.ts";
+import { CliInstallationStatus } from "../CliInstallationStatus.ts";
 import { AzureErrorCode, MeshAzurePlatformError } from "../../errors.ts";
 
 interface ConfigValue {
@@ -27,21 +27,16 @@ interface ConfigValue {
 
 export class AzCli implements AzCliFacade {
   private readonly processRunner: IProcessRunner<ProcessResultWithOutput>;
-  private readonly detector: CliDetector;
 
   constructor(rawRunner: IProcessRunner<ProcessResultWithOutput>) {
-    this.detector = new CliDetector(rawRunner);
+    const detector = new CliDetector(rawRunner);
 
     // todo: consider wrapping the shellrunner further, e.g. to always add --output=json so we become more independent
     // of the user's global aws cli config
     this.processRunner = new ResultHandlerProcessRunnerDecorator(
       rawRunner,
-      new AzCliResultHandler(this.detector),
+      new AzCliResultHandler(detector),
     );
-  }
-
-  verifyCliInstalled(): Promise<CliInstallationStatus> {
-    return this.detector.verifyCliInstalled("az", /azure-cli\s+2\./);
   }
 
   async setDynamicInstallValue(value: DynamicInstallValue) {

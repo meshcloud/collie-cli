@@ -1,6 +1,6 @@
 import { assertEquals } from "../../dev-deps.ts";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
-import { InstallationStatus } from "../CliFacade.ts";
+import { InstallationStatus } from "../CliInstallationStatus.ts";
 import { AzCli } from "./AzCli.ts";
 
 Deno.test("detects az cli version correct", async () => {

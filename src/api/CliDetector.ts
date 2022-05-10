@@ -1,7 +1,10 @@
 import { CliInstallationStatusError } from "../errors.ts";
 import { IProcessRunner } from "../process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "../process/ProcessRunnerResult.ts";
-import { CliInstallationStatus, InstallationStatus } from "./CliFacade.ts";
+import {
+  CliInstallationStatus,
+  InstallationStatus,
+} from "./CliInstallationStatus.ts";
 
 export enum PlatformCommandInstallationStatus {
   Installed,

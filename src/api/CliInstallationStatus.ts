@@ -8,7 +8,3 @@ export interface CliInstallationStatus {
   cli: string;
   status: InstallationStatus;
 }
-
-export interface CliFacade {
-  verifyCliInstalled(): Promise<CliInstallationStatus>;
-}
