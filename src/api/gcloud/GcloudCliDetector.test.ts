@@ -1,11 +1,11 @@
 import { assertEquals } from "../../dev-deps.ts";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
 import { InstallationStatus } from "../CliInstallationStatus.ts";
-import { GcloudCliFacade } from "./GcloudCliFacade.ts";
+import { GcloudCliDetector } from "./GcloudCliDetector.ts";
 
 Deno.test("detects gcloud cli version correct", async () => {
   const runner = new StubProcessRunner();
-  const sut = new GcloudCliFacade(runner);
+  const sut = new GcloudCliDetector(runner);
 
   runner.setupResult({
     stdout: `Google Cloud SDK 315.0.0
@@ -17,7 +17,8 @@ gsutil 4.53`,
 `,
   });
 
-  const result = await sut.verifyCliInstalled();
+  const result = await sut.detect();
 
   assertEquals(result.status, InstallationStatus.Installed);
+  assertEquals(result.version, "315.0.0");
 });

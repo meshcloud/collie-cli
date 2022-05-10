@@ -1,28 +1,24 @@
 import { assertEquals } from "../../dev-deps.ts";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
 import { InstallationStatus } from "../CliInstallationStatus.ts";
-import { AzCli } from "./AzCli.ts";
+import { AzCliDetector } from "./AzCliDetector.ts";
 
 Deno.test("detects az cli version correct", async () => {
   const runner = new StubProcessRunner();
-  const sut = new AzCli(runner);
+  const sut = new AzCliDetector(runner);
 
   runner.setupResult({
-    stdout: `azure-cli                         2.14.2 *
-
-core                              2.14.2 *
-telemetry                          1.0.6
-
-Extensions:
-aro                                1.0.0
-
-Python location '/nix/store/gj2s9dc8zlnrblcyls8jnyx315zrbfj8-python3-3.7.9/bin/python3.7'
-Extensions directory '/Users/user/.azure/cliextensions'
-
-Python (Darwin) 3.7.9 (default, Nov  9 2020, 18:12:58) 
-[Clang 7.1.0 (tags/RELEASE_710/final)]
-
-Legal docs and information: aka.ms/AzureCliLegal`,
+    stdout: `{
+      "azure-cli": "2.34.1",
+      "azure-cli-core": "2.34.1",
+      "azure-cli-telemetry": "1.0.6",
+      "extensions": {
+        "account": "0.2.2",
+        "aro": "1.0.0",
+        "costmanagement": "0.1.1",
+        "interactive": "0.4.5"
+      }
+    }`,
     stderr:
       `You have 2 updates available. Consider updating your CLI installation with 'az upgrade'
 
@@ -31,7 +27,10 @@ and let us know if you're interested in trying out our newest features: https://
 `,
   });
 
-  const result = await sut.verifyCliInstalled();
+  const result = await sut.detect();
 
   assertEquals(result.status, InstallationStatus.Installed);
+  if (result.status == InstallationStatus.Installed) {
+    assertEquals(result.version, "2.34.1");
+  }
 });
