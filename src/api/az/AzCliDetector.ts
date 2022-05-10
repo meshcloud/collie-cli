@@ -5,7 +5,7 @@ import { CliDetector } from "../CliDetector.ts";
 
 export class AzCliDetector extends CliDetector {
   constructor(runner: IProcessRunner<ProcessResultWithOutput>) {
-    super("Az", runner);
+    super("az", runner);
   }
 
   override async runVersionCommand() {

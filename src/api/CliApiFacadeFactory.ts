@@ -23,6 +23,15 @@ import { AwsCliDetector } from "./aws/AwsCliDetector.ts";
 export class CliApiFacadeFactory {
   constructor(private readonly logger: Logger) {}
 
+  buildCliDetectors() {
+    const processRunner = this.buildProcessRunner();
+    return [
+      new AwsCliDetector(processRunner),
+      new AzCliDetector(processRunner),
+      new GcloudCliDetector(processRunner),
+    ];
+  }
+
   buildAws(env?: AwsCliEnv) {
     const processRunner = this.buildProcessRunner();
     const detector = new AwsCliDetector(processRunner);

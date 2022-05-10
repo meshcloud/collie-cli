@@ -16,6 +16,7 @@ import { registerFoundationCommand } from "./commands/foundation/foundation.comm
 import { registerComplianceCommand } from "./commands/compliance/compliance.ts";
 import { registerDocsCommand } from "./commands/foundation/docs.command.ts";
 import { OutputFormatType } from "./commands/GlobalCommandOptions.ts";
+import { registerVersionCommand } from "./commands/version.command.ts";
 
 async function collie() {
   const program = new Command()
@@ -50,6 +51,7 @@ async function collie() {
   registerCreateIssueCommand(program);
   registerFeedbackCommand(program);
   registerUpgradeCommand(program);
+  registerVersionCommand(program);
 
   program.command("completions", new CompletionsCommand());
 
