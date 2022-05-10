@@ -1,6 +1,6 @@
 import { assertEquals } from "../../dev-deps.ts";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
-import { InstallationStatus } from "../CliFacade.ts";
+import { InstallationStatus } from "../CliInstallationStatus.ts";
 import { GcloudCliFacade } from "./GcloudCliFacade.ts";
 
 Deno.test("detects gcloud cli version correct", async () => {

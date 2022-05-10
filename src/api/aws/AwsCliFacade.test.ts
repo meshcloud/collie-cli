@@ -1,6 +1,6 @@
 import { assertEquals } from "../../dev-deps.ts";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
-import { InstallationStatus } from "../CliFacade.ts";
+import { InstallationStatus } from "../CliInstallationStatus.ts";
 import { AwsCliFacade } from "./AwsCliFacade.ts";
 
 Deno.test("detects aws cli version correct", async () => {

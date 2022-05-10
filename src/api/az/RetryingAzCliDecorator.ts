@@ -20,10 +20,6 @@ import {
 export class RetryingAzCliDecorator implements AzCliFacade {
   constructor(private readonly wrapped: AzCliFacade) {}
 
-  async verifyCliInstalled() {
-    return await this.wrapped.verifyCliInstalled();
-  }
-
   setDynamicInstallValue(value: DynamicInstallValue): void {
     this.wrapped.setDynamicInstallValue(value);
   }

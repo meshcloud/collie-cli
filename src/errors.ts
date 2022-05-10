@@ -1,4 +1,4 @@
-import { InstallationStatus } from "./api/CliFacade.ts";
+import { InstallationStatus } from "./api/CliInstallationStatus.ts";
 import { ProcessRunnerOptions } from "./process/ProcessRunnerOptions.ts";
 import {
   ProcessResultWithOutput,
