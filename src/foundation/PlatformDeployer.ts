@@ -78,6 +78,6 @@ export class AzurePlatformDeployer
 
 export class GcpPlatformDeployer extends PlatformDeployer<PlatformConfigGcp> {
   protected platformModuleSequence(): string[] {
-    return ["admin/organization"];
+    return ["admin"];
   }
 }
