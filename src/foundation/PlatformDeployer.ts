@@ -1,3 +1,5 @@
+import * as fs from "std/fs";
+
 import {
   Terragrunt,
   TerragruntRunMode,
@@ -33,16 +35,17 @@ export abstract class PlatformDeployer<T extends PlatformConfig> {
       this.repo.relativePath(moduleDir),
     );
 
-    const env = {};
-    await this.terragrunt.run(moduleDir, env, mode);
+    await this.terragrunt.run(moduleDir, mode);
 
     bootstrapModuleProgress.done();
   }
 
   protected abstract platformModuleSequence(): string[];
 
-  async deployPlatformModules(mode: TerragruntRunMode) {
-    const platformModuleSequence = this.platformModuleSequence();
+  async deployPlatformModules(mode: TerragruntRunMode, module?: string) {
+    const platformModuleSequence = module
+      ? [module]
+      : this.platformModuleSequence();
 
     for (const p of platformModuleSequence) {
       const modulePath = this.foundation.resolvePlatformPath(this.platform, p);
@@ -52,10 +55,31 @@ export abstract class PlatformDeployer<T extends PlatformConfig> {
         this.repo.relativePath(modulePath),
       );
 
-      await this.terragrunt.runAll(modulePath, mode);
+      if (await this.isTerragruntStack(modulePath)) {
+        await this.terragrunt.runAll(modulePath, mode);
+      } else {
+        await this.terragrunt.run(modulePath, mode);
+      }
 
       progress.done();
     }
+  }
+
+  private async isTerragruntStack(modulePath: string) {
+    const files = [];
+
+    for await (
+      const file of fs.expandGlob("**/terragrunt.hcl", {
+        root: modulePath,
+        exclude: ["**/.terragrunt-cache"],
+        globstar: true,
+      })
+    ) {
+      files.push(file);
+    }
+
+    // a terragrunt stack conists of multiple executable terragrunt files
+    return files.length > 1;
   }
 
   private buildProgressReporter(mode: TerragruntRunMode, id: string) {

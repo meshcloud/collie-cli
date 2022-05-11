@@ -7,14 +7,14 @@ import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
 
 export type TerragruntRunMode =
   | "plan"
-  | "apply -auto-approve"
+  | "apply"
   | "init -upgrade";
 
 export function toVerb(mode: TerragruntRunMode) {
   switch (mode) {
     case "plan":
       return "deploying (plan)";
-    case "apply -auto-approve":
+    case "apply":
       return "deploying (apply)";
     case "init -upgrade":
       return "initialising";
@@ -35,19 +35,18 @@ export class Terragrunt {
     return result;
   }
 
-  async run(cwd: string, env: Record<string, string>, mode: TerragruntRunMode) {
-    const cmds = ["terragrunt", ...this.modeCommands(mode)];
+  async run(cwd: string, mode: TerragruntRunMode) {
+    const cmds = ["terragrunt", ...this.modeCommands(mode, false)];
 
     return await this.runTerragrunt(cmds, {
       cwd,
-      env,
     });
   }
 
   async runAll(cwd: string, mode: TerragruntRunMode) {
     // note: terragrunt docs say "This will only exclude the module, not its dependencies."
     // this may be a problem because we want to exclude bootstrap modules AND their dependencies? needs more testing
-    const cmds = ["terragrunt", "run-all", ...this.modeCommands(mode)];
+    const cmds = ["terragrunt", "run-all", ...this.modeCommands(mode, true)];
 
     // we do not have to set -auto-approve as run-all automatically includes it
     // see https://terragrunt.gruntwork.io/docs/reference/cli-options/#run-all
@@ -57,14 +56,14 @@ export class Terragrunt {
     });
   }
 
-  private modeCommands(mode: TerragruntRunMode) {
+  private modeCommands(mode: TerragruntRunMode, isStack: boolean) {
     switch (mode) {
-      case "apply -auto-approve":
-        return ["apply", "-auto-approve", "--terragrunt-non-interactive"];
+      case "apply":
+        return ["apply", "--terragrunt-ignore-external-dependencies"];
       case "init -upgrade":
         return ["init", "-upgrade", "--terragrunt-non-interactive"];
       case "plan":
-        return ["plan", "--terragrunt-non-interactive"];
+        return ["plan", "--terragrunt-ignore-external-dependencies"];
     }
   }
 }

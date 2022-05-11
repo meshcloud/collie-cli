@@ -1,6 +1,6 @@
 import { Logger } from "../cli/Logger.ts";
 import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
-import { DefaultEnvProcessRunnerDecorator } from "../process/DefaultEnvProcessRunnerDecorator.ts";
+import { DefaultsProcessRunnerDecorator } from "../process/DefaultsProcessRunnerDecorator.ts";
 import { IProcessRunner } from "../process/IProcessRunner.ts";
 import { QuietProcessRunner } from "../process/QuietProcessRunner.ts";
 import { LoggingProcessRunnerDecorator } from "../process/LoggingProcessRunnerDecorator.ts";
@@ -94,7 +94,7 @@ export class CliApiFacadeFactory {
   }
 
   // DESIGN: we need ot build up the ProcessRunner behavior in the following order (from outer to inner)
-  //   - DefaultEnvProcessRunnerDecorator -> customise the command that gets run
+  //   - DefaultsProcessRunnerDecorator -> customise the command that gets run
   //   - ResultHandlerProcessRunnerDecorator -> retry/print error on what actually ran
   //   - LoggingProcessRunnerDecorator -> log what actually ran
   //   - actual runner
@@ -124,7 +124,7 @@ export class CliApiFacadeFactory {
     );
 
     if (env) {
-      facadeProcessRunner = new DefaultEnvProcessRunnerDecorator(
+      facadeProcessRunner = new DefaultsProcessRunnerDecorator(
         facadeProcessRunner,
         env,
       );
