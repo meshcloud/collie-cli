@@ -92,20 +92,21 @@ export class MeshFoundationAdapterFactory {
     );
   }
 
-  // TODO: caching per platform, optimize stats decorator building
   private buildPlatformAdapter(config: PlatformConfig): MeshAdapter {
+    const path = this.foundation.resolvePlatformPath(config);
+
     if ("aws" in config) {
-      const aws = this.facadeFactory.buildAws(config.cli.aws);
+      const aws = this.facadeFactory.buildAws(config.cli.aws, path);
       return new AwsMeshAdapter(
         aws,
         config.aws.accountAccessRole,
         this.tenantChangeDetector,
       );
     } else if ("azure" in config) {
-      const az = this.facadeFactory.buildAz(config.cli.az);
+      const az = this.facadeFactory.buildAz(config.cli.az, path);
       return new AzMeshAdapter(az, this.tenantChangeDetector);
     } else if ("gcp" in config) {
-      const gcloud = this.facadeFactory.buildGcloud(config.cli.gcloud);
+      const gcloud = this.facadeFactory.buildGcloud(config.cli.gcloud, path);
       return new GcloudMeshAdapter(
         gcloud,
         this.timeWindowCalc,

@@ -1,3 +1,5 @@
+import * as path from "std/path";
+
 import { ProcessRunnerResult } from "./ProcessRunnerResult.ts";
 import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 
@@ -32,17 +34,22 @@ export function formatAsShellCommand(
 ) {
   let shellCommand = commands.join(" ");
 
-  const cd = options && options.cwd && `cd ${options.cwd}`;
-  if (cd) {
-    shellCommand = cd + " && " + shellCommand;
-  }
-
+  // add env directly before the command
   const env = options &&
     options.env &&
     Object.entries(options.env).map(([k, v]) => `${k}=${v}`);
 
   if (env) {
-    shellCommand = env + "; " + shellCommand;
+    shellCommand = `${env} ${shellCommand}`;
+  }
+
+  // perform a relative cd if necessary - relative cds are shorter than absolute cd's
+  // it's also fine to break with the convention here of always printing "collie-repo relative" paths since this
+  // needs to present commands as the user would run them in their own shell
+  const cd = options && options.cwd &&
+    `cd ${path.relative(Deno.cwd(), options.cwd)}`;
+  if (cd) {
+    shellCommand = `(${cd} && ${shellCommand})`; // wrap in subshell via () so cd doesn't affect parent shell
   }
 
   return shellCommand;
