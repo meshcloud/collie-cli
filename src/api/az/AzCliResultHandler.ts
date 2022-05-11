@@ -112,12 +112,12 @@ export class AzCliResultHandler implements ProcessRunnerResultHandler {
       result.stderr.includes("AADSTS700082")
     ) {
       throw new MeshNotLoggedInError(
-        `You are not logged in into Azure CLI. Please login with "${
+        `You are not logged in into Azure CLI. Please login with\n\t${
           formatAsShellCommand(
             ["az", "login"],
             options,
           )
-        }".`,
+        }`,
       );
     }
 

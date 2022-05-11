@@ -6,8 +6,9 @@ export class DefaultsProcessRunnerDecorator<T extends ProcessRunnerResult>
   implements IProcessRunner<T> {
   constructor(
     private readonly runner: IProcessRunner<T>,
-    private readonly defaultEnv: Record<string, string>,
+    private readonly defaultEnv?: Record<string, string>,
     private readonly defaultArgs?: string[],
+    private readonly defaultCwd?: string,
   ) {}
 
   public async run(
@@ -20,8 +21,9 @@ export class DefaultsProcessRunnerDecorator<T extends ProcessRunnerResult>
       ? {
         ...options,
         env: { ...this.defaultEnv, ...options.env },
+        cwd: this.defaultCwd || options.cwd,
       }
-      : { env: this.defaultEnv };
+      : { env: this.defaultEnv, cwd: this.defaultCwd };
 
     return await this.runner.run(cmds, opts);
   }

@@ -19,6 +19,7 @@ interface DeployOptions {
   platform: string;
   bootstrap: boolean;
   plan: boolean;
+  destroy: boolean;
   autoApprove: boolean;
   upgrade: boolean;
   module?: string;
@@ -43,10 +44,16 @@ export function registerDeployCmd(program: Command) {
     .option(
       "--plan",
       "run the equivalent of 'terragrunt plan' instead of the default 'terraform apply'.",
+      { conflicts: ["destroy"] },
+    )
+    .option(
+      "--destroy",
+      "run the equivalent of 'terragrunt destroy' instead of the default 'terraform apply'.",
+      { conflicts: ["plan"] },
     )
     .option(
       "--upgrade",
-      "run the equivalent of 'terragrunt init --upgrade' before the actual deploy (plan or apply) commands.",
+      "run the equivalent of 'terragrunt init --upgrade' before the actual deploy commands.",
       // note that terragrunt will run auto-init, the upgrade command is useful for local development when a .terragrunt-cache dir already exists
     )
     .description("Deploys your cloud foundation.")
@@ -102,7 +109,13 @@ function terragruntModes(opts: DeployOptions & GlobalCommandOptions) {
     modes.push("init -upgrade");
   }
 
-  modes.push(opts.plan ? "plan" : "apply");
+  if (opts.plan) {
+    modes.push("plan");
+  } else if (opts.destroy) {
+    modes.push("destroy");
+  } else {
+    modes.push("apply");
+  }
 
   return modes;
 }

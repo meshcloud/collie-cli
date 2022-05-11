@@ -38,7 +38,7 @@ export class CliApiFacadeFactory {
     ];
   }
 
-  buildAws(env?: AwsCliEnv) {
+  buildAws(env?: AwsCliEnv, cwd?: string) {
     const processRunner = this.buildProcessRunner();
     const detector = new AwsCliDetector(processRunner);
 
@@ -47,6 +47,7 @@ export class CliApiFacadeFactory {
       processRunner,
       resultHandler,
       env,
+      cwd,
     );
 
     const facade = new AwsCliFacade(facadeProcessRunner);
@@ -54,7 +55,7 @@ export class CliApiFacadeFactory {
     return facade;
   }
 
-  buildGcloud(env?: GcloudCliEnv) {
+  buildGcloud(env?: GcloudCliEnv, cwd?: string) {
     const processRunner = this.buildProcessRunner();
     const detector = new GcloudCliDetector(processRunner);
 
@@ -63,6 +64,7 @@ export class CliApiFacadeFactory {
       processRunner,
       resultHandler,
       env,
+      cwd,
     );
 
     const facade = new GcloudCliFacade(facadeProcessRunner);
@@ -70,7 +72,7 @@ export class CliApiFacadeFactory {
     return facade;
   }
 
-  buildAz(env?: AzCliEnv) {
+  buildAz(env?: AzCliEnv, cwd?: string) {
     const processRunner = this.buildProcessRunner();
     const detector = new AzCliDetector(processRunner);
 
@@ -79,6 +81,7 @@ export class CliApiFacadeFactory {
       processRunner,
       resultHandler,
       env,
+      cwd,
     );
 
     let azure: AzCliFacade = new AzCli(facadeProcessRunner);
@@ -117,18 +120,20 @@ export class CliApiFacadeFactory {
     facadeProcessRunner: IProcessRunner<ProcessResultWithOutput>,
     resultHandler: ProcessRunnerResultHandler,
     env?: Record<string, string>,
+    cwd?: string,
   ) {
     facadeProcessRunner = new ResultHandlerProcessRunnerDecorator(
       facadeProcessRunner,
       resultHandler,
     );
 
-    if (env) {
-      facadeProcessRunner = new DefaultsProcessRunnerDecorator(
-        facadeProcessRunner,
-        env,
-      );
-    }
+    facadeProcessRunner = new DefaultsProcessRunnerDecorator(
+      facadeProcessRunner,
+      env,
+      [],
+      cwd,
+    );
+
     return facadeProcessRunner;
   }
 }
