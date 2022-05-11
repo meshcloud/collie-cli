@@ -13,12 +13,15 @@ import { ProgressReporter } from "../../cli/ProgressReporter.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { PlatformDeployerFactory } from "../../foundation/PlatformDeployerFactory.ts";
 import { buildTransparentProcessRunner } from "./buildTransparentProcessRunner.ts";
+import { DefaultsProcessRunnerDecorator } from "../../process/DefaultsProcessRunnerDecorator.ts";
 
 interface DeployOptions {
   platform: string;
   bootstrap: boolean;
-  apply: boolean;
+  plan: boolean;
+  autoApprove: boolean;
   upgrade: boolean;
+  module?: string;
 }
 export function registerDeployCmd(program: Command) {
   program
@@ -31,9 +34,15 @@ export function registerDeployCmd(program: Command) {
       "--bootstrap",
       "Execute bootstrapping steps instead of non-bootstrap deploy steps.",
     )
+    .option("--module [module:string]", "Execute this specific module", {
+      conflicts: ["bootstrap"],
+    })
+    .option("--auto-approve", "run terragrunt with '--auto-approve' option", {
+      conflicts: ["upgrade", "plan"],
+    })
     .option(
-      "--apply",
-      "run the equivalent of 'terragrunt apply' instead of the default 'terraform plan'.",
+      "--plan",
+      "run the equivalent of 'terragrunt plan' instead of the default 'terraform apply'.",
     )
     .option(
       "--upgrade",
@@ -53,13 +62,15 @@ export function registerDeployCmd(program: Command) {
         const modes = terragruntModes(opts);
 
         for (const mode of modes) {
-          const foundationProgress = new ProgressReporter(
-            toVerb(mode),
-            collieRepo.relativePath(
-              collieRepo.resolvePath("foundations", foundation),
-            ),
-            logger,
-          );
+          const foundationProgress = opts.platform
+            ? new NullProgressReporter()
+            : new ProgressReporter(
+              toVerb(mode),
+              collieRepo.relativePath(
+                collieRepo.resolvePath("foundations", foundation),
+              ),
+              logger,
+            );
 
           const foundationRepo = await FoundationRepository.load(
             collieRepo,
@@ -91,7 +102,7 @@ function terragruntModes(opts: DeployOptions & GlobalCommandOptions) {
     modes.push("init -upgrade");
   }
 
-  modes.push(opts.apply ? "apply -auto-approve" : "plan");
+  modes.push(opts.plan ? "plan" : "apply");
 
   return modes;
 }
@@ -103,7 +114,7 @@ async function deployFoundation(
   opts: GlobalCommandOptions & DeployOptions,
   logger: Logger,
 ) {
-  const terragrunt = buildTerragrunt(logger);
+  const terragrunt = buildTerragrunt(logger, opts);
 
   const platforms = opts.platform
     ? [foundation.findPlatform(opts.platform)]
@@ -114,11 +125,13 @@ async function deployFoundation(
   // challenge to tools that are already equipped to handle this in some sensible way (e.g. terragrunt with multiple --include-dir or gnu parallels etc.)
 
   for (const platform of platforms) {
-    const platformProgress = new ProgressReporter(
-      toVerb(mode),
-      repo.relativePath(foundation.resolvePlatformPath(platform)),
-      logger,
-    );
+    const platformProgress = opts.bootstrap || opts.module
+      ? new NullProgressReporter()
+      : new ProgressReporter(
+        toVerb(mode),
+        repo.relativePath(foundation.resolvePlatformPath(platform)),
+        logger,
+      );
 
     const factory = new PlatformDeployerFactory(
       repo,
@@ -131,15 +144,29 @@ async function deployFoundation(
     if (opts.bootstrap) {
       await cmd.deployBootstrapModules(mode);
     } else {
-      await cmd.deployPlatformModules(mode);
+      await cmd.deployPlatformModules(mode, opts.module);
     }
 
     platformProgress.done();
   }
 }
 
-function buildTerragrunt(logger: Logger) {
+function buildTerragrunt(logger: Logger, opts: DeployOptions) {
   const processRunner = buildTransparentProcessRunner(logger);
 
-  return new Terragrunt(processRunner);
+  const args = [];
+  if (opts.autoApprove) {
+    args.push("--auto-approve");
+  }
+
+  const d = new DefaultsProcessRunnerDecorator(processRunner, {}, args);
+
+  return new Terragrunt(d);
+}
+
+/**
+ * A null object that allows us to skip reporting for foundation/platform progress when those are not needed
+ */
+class NullProgressReporter {
+  done(): void {}
 }
