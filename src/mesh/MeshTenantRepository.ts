@@ -1,11 +1,11 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
-import { Logger } from "../cli/Logger.ts";
 
+import { Logger } from "../cli/Logger.ts";
 import { IoError } from "../errors.ts";
 import { parseJsonWithLog } from "../json.ts";
-import { MeshTenant } from "../mesh/MeshTenantModel.ts";
-import { Meta } from "./meta.ts";
+import { MeshTenant } from "./MeshTenantModel.ts";
+import { Meta } from "./Meta.ts";
 
 /**
  * TODO: the cache and the cachingMeshAdapterDecorator have a somewhat unclear split of responsibilities between them

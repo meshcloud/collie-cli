@@ -4,7 +4,7 @@ import { MeshError } from "../errors.ts";
 import { MeshAdapter } from "./MeshAdapter.ts";
 import { MeshTenant } from "./MeshTenantModel.ts";
 import { MeshTenantRepository } from "./MeshTenantRepository.ts";
-import { Meta } from "./meta.ts";
+import { Meta } from "./Meta.ts";
 
 /**
  * This adapter will try to fetch tenant data first from the local cache before
