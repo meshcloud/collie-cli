@@ -92,7 +92,6 @@
       },
       "required": [
         "aws",
-        "cli",
         "name"
       ]
     },
@@ -165,7 +164,6 @@
         }
       },
       "required": [
-        "cli",
         "gcp",
         "name"
       ]
@@ -197,7 +195,6 @@
       },
       "required": [
         "azure",
-        "cli",
         "name"
       ]
     },
