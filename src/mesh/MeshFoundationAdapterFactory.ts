@@ -96,17 +96,17 @@ export class MeshFoundationAdapterFactory {
     const path = this.foundation.resolvePlatformPath(config);
 
     if ("aws" in config) {
-      const aws = this.facadeFactory.buildAws(config.cli.aws, path);
+      const aws = this.facadeFactory.buildAws(config.cli?.aws, path);
       return new AwsMeshAdapter(
         aws,
         config.aws.accountAccessRole,
         this.tenantChangeDetector,
       );
     } else if ("azure" in config) {
-      const az = this.facadeFactory.buildAz(config.cli.az, path);
+      const az = this.facadeFactory.buildAz(config.cli?.az, path);
       return new AzMeshAdapter(az, this.tenantChangeDetector);
     } else if ("gcp" in config) {
-      const gcloud = this.facadeFactory.buildGcloud(config.cli.gcloud, path);
+      const gcloud = this.facadeFactory.buildGcloud(config.cli?.gcloud, path);
       return new GcloudMeshAdapter(
         gcloud,
         this.timeWindowCalc,
