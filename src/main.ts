@@ -39,7 +39,7 @@ async function collie() {
       "Enable printing debug info (command output, intermediate results)",
     )
     .description(
-      `${CLI} CLI - herd your cloud 🐑 environments.Built with love by meshcloud.io`,
+      `${CLI} CLI - herd your cloud 🐑 environments. Built with love by meshcloud.io`,
     );
 
   registerFoundationCommand(program);
