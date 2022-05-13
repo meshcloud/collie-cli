@@ -21,7 +21,7 @@ export function registerListCommand(program: Command) {
   program.command("list", listTenants);
 }
 
-async function listTenantAction(options: CmdGlobalOptions) {
+export async function listTenantAction(options: CmdGlobalOptions) {
   await setupLogger(options);
   await verifyCliAvailability();
 
