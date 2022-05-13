@@ -3,7 +3,6 @@
 export type AzCliEnv = {
   /**
    * see https://stackoverflow.com/questions/33137145/can-i-access-multiple-azure-accounts-with-azure-cli-from-the-same-machine-at-sam
-   * todo: this works, but requires interactive login into the right tenant
    */
   AZURE_CONFIG_DIR?: string;
 };
