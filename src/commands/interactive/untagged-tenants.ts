@@ -218,7 +218,7 @@ async function selectTag(
 ) {
   const options: Array<Promptoptions> = [];
   const help =
-    `\n\n\nHere you can select a tag, which should be missing on the tenants shown in the next step. This allows ${CLIName} to filter all tenants, which allready have this tag assigned, from the selection in the next prompt. \n\n\n`;
+    `\n\n\nHere you can select a tag, which should be missing on the tenants shown in the next step. This allows ${CLIName} to filter out all tenants, which already have this tag assigned, from the selection in the next prompt. \n\n\n`;
 
   for (const tag of tags) {
     options.push({ value: tag, name: tag });

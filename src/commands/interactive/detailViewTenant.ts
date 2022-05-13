@@ -31,6 +31,8 @@ export async function detailViewTenant(
   if (selectedTenant != undefined) {
     await fetchIAM(options, selectedTenant);
 
+    // -- TAGS
+    console.log("\n\nTags:\n");
     if (
       selectedTenant?.tags[0] != undefined && selectedTenant?.tags != undefined
     ) {
@@ -38,12 +40,15 @@ export async function detailViewTenant(
       for (const tag of selectedTenant.tags) {
         console.log(tag.tagName + ": " + tag.tagValues);
       }
+    } else {
+      console.log("-NONE-\n");
     }
 
     console.log("\n");
 
-    if (selectedTenant?.costs != undefined && !noCost) {
-      console.log("Costs: \n");
+    // -- COSTS
+    console.log("Costs: \n");
+    if (selectedTenant?.costs != undefined && !noCost) {      
 
       for (const cost of selectedTenant.costs) {
         if (cost.cost == "") {
@@ -57,18 +62,27 @@ export async function detailViewTenant(
 
       console.log("\n\n");
     }
+    else {
+      console.log("-NONE-\n");
+    }
 
+    // -- IAM
     console.log("IAM-Information: \n\n");
 
-    for (const roleAssignment of selectedTenant.roleAssignments) {
-      console.log(
-        'Name: "' + roleAssignment.principalName + '";\nType: "' +
-          roleAssignment.principalType + '";\nRole: "' +
-          roleAssignment.roleName + '"\n',
-      );
+    if (selectedTenant.roleAssignments.length > 0) {
+      for (const roleAssignment of selectedTenant.roleAssignments) {
+        console.log(
+          'Name: "' + roleAssignment.principalName + '";\nType: "' +
+            roleAssignment.principalType + '";\nRole: "' +
+            roleAssignment.roleName + '"\n',
+        );
+      }
     }
-    console.log;
+    else {
+      console.log("-NONE-\n");
+    }
 
+    console.log('\n');
     switch (
       await Select.prompt({
         message: "Select what you want to do",
