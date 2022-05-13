@@ -10,6 +10,7 @@ import { VERSION } from "../config/info.ts";
 import { isWindows } from "../os.ts";
 import { registerUserCommand } from "./user/user.command.ts";
 import { registerUpgradeCommand } from "./upgrade.ts";
+import { registerInteractiveCommand } from "./interactive.command.ts";
 
 export function initCommands(): Command {
   const program = new Command()
@@ -42,6 +43,7 @@ export function initCommands(): Command {
 
   registerConfigCommand(program);
   registerTenantCommand(program);
+  registerInteractiveCommand(program);
   registerCreateIssueCommand(program);
   registerFeedbackCommand(program);
   registerUserCommand(program);

@@ -1,6 +1,7 @@
 import { CmdGlobalOptions } from "../cmd-options.ts";
 import { exploreInteractive } from "./untagged-tenants.ts";
-import { listTenantAction, listTenantsCostAction } from "../tenant.command.ts";
+import { listTenantAction } from "../tenant/list.command.ts";
+import { listTenantsCostAction } from "../tenant/cost.command.ts";
 import { Select } from "../../deps.ts";
 import { OutputFormat } from "../../presentation/output-format.ts";
 import { interactiveDate } from "./inputInteractiveDate.ts";
