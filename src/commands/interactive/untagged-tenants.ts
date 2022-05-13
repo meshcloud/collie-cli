@@ -1,27 +1,22 @@
-import { loadConfig } from "../../config/config.model.ts";
 import { moment, Select } from "../../deps.ts";
-import { verifyCliAvailability } from "../../init.ts";
-import { setupLogger } from "../../logger.ts";
-import { MeshAdapterFactory } from "../../mesh/mesh-adapter.factory.ts";
-import { QueryStatistics } from "../../mesh/query-statistics.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
 import { MeshError } from "../../errors.ts";
-import {
-  sortTenantDataByCost,
-  sortTenantDataByName,
-} from "./sortTenantData.ts";
-import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
+import { MeshTenantSorting } from "./MeshTenantSorting.ts";
 import { detailViewTenant } from "./detailViewTenant.ts";
 import { interactiveDate } from "./inputInteractiveDate.ts";
-import { CLIName } from "../../config/config.model.ts";
+import { CLI } from "../../info.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
+import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
+import { prepareTenantCommand } from "../tenant/prepareTenantCommand.ts";
 
-export async function exploreInteractive(options: CmdGlobalOptions) {
+export async function exploreInteractive(
+  options: GlobalCommandOptions,
+  foundation: string,
+) {
   const help =
-    '\n\n\nThis is the mode, which allows you to work with tenants with missing tags.\n\n\n"SORT BY HIGHEST COST"\nAllows you to sort the tenants without a tag by date. This will allow you to find the "worst offenders", tenants with high costs and missing tags. You\’ll see the effect in the prompt after the next prompt.\n\n"SORT BY Name"\nSorts the tenants in the next prompt by name.\n';
+    '\n\n\nThis is the mode, which allows you to work with tenants with missing tags.\n\n\n"SORT BY HIGHEST COST"\nAllows you to sort the tenants without a tag by date. This will allow you to find the "worst offenders", tenants with high costs and missing tags. You’ll see the effect in the prompt after the next prompt.\n\n"SORT BY Name"\nSorts the tenants in the next prompt by name.\n';
   let running = true;
-  console.clear();
   console.log(
-    `Welcome to the interactive mode of ${CLIName}. Have fun herding your tenants.`,
+    `Welcome to the interactive mode of ${CLI}. Have fun herding your tenants.`,
   );
 
   while (running) {
@@ -38,17 +33,18 @@ export async function exploreInteractive(options: CmdGlobalOptions) {
 
     switch (action) {
       case "sortbycost": {
-        const startDate = await interactiveDate(options, "Startdate");
+        const startDate = await interactiveDate("Start date");
         if (startDate == "BACK") {
           break;
         }
-        const endDate = await interactiveDate(options, "Enddate?");
+        const endDate = await interactiveDate("End date?");
         if (endDate == "BACK") {
           break;
         }
         await showUntagged(
           options,
-          await getData(options, startDate, endDate),
+          foundation,
+          await getData(options, foundation, startDate, endDate),
           startDate,
           endDate,
           true,
@@ -56,17 +52,18 @@ export async function exploreInteractive(options: CmdGlobalOptions) {
         break;
       }
       case "sortbyname": {
-        const startDate = await interactiveDate(options, "Startdate");
+        const startDate = await interactiveDate("Start date");
         if (startDate == "BACK") {
           break;
         }
-        const endDate = await interactiveDate(options, "Enddate?");
+        const endDate = await interactiveDate("End date?");
         if (endDate == "BACK") {
           break;
         }
         await showUntagged(
           options,
-          await getData(options, startDate, endDate),
+          foundation,
+          await getData(options, foundation, startDate, endDate),
           startDate,
           endDate,
           false,
@@ -95,33 +92,21 @@ export async function exploreInteractive(options: CmdGlobalOptions) {
 }
 
 async function getData(
-  options: CmdGlobalOptions,
+  options: GlobalCommandOptions,
+  foundation: string,
   from: string | undefined = undefined,
   to: string | undefined = undefined,
 ) {
-  setupLogger(options);
-  await verifyCliAvailability();
+  const { meshAdapter } = await prepareTenantCommand(
+    { ...options, refresh: false },
+    foundation,
+  );
+
+  const allTenants = await meshAdapter.getMeshTenants();
 
   if ((from == undefined || "") && (to == undefined || "")) {
-    const config = loadConfig();
-    const meshAdapterFactory = new MeshAdapterFactory(config);
-    const queryStatistics = new QueryStatistics();
-    const meshAdapter = meshAdapterFactory.buildMeshAdapter(
-      options,
-      queryStatistics,
-    );
-
-    const allTenants = await meshAdapter.getMeshTenants();
     return allTenants;
   } else if (from != undefined) {
-    const config = loadConfig();
-    const meshAdapterFactory = new MeshAdapterFactory(config);
-    const queryStatistics = new QueryStatistics();
-    const meshAdapter = meshAdapterFactory.buildMeshAdapter(
-      options,
-      queryStatistics,
-    );
-
     // We create UTC dates because we do not work with time, hence we do not care about timezones.
     const start = moment.utc(from).startOf("day").toDate();
     if (isNaN(start.valueOf())) {
@@ -131,16 +116,11 @@ async function getData(
     }
     const end = moment.utc(to).endOf("day").toDate();
     if (isNaN(start.valueOf())) {
-      throw new MeshError(
-        `You have entered an invalid date for '--to': ${to}`,
-      );
+      throw new MeshError(`You have entered an invalid date for '--to': ${to}`);
     }
 
-    // Every of these methods can throw e.g. because a CLI tool was not installed we should think about
-    // how to do error management to improve UX.
-    const allTenants = await meshAdapter.getMeshTenants();
-
     await meshAdapter.attachTenantCosts(allTenants, start, end);
+
     return allTenants;
   } else {
     throw new MeshError("Something went horribly wrong.");
@@ -148,7 +128,8 @@ async function getData(
 }
 
 async function showUntagged(
-  options: CmdGlobalOptions,
+  options: GlobalCommandOptions,
+  foundation: string,
   data: MeshTenant[],
   from: string | undefined = undefined,
   to: string | undefined = undefined,
@@ -159,9 +140,9 @@ async function showUntagged(
   let running = true;
 
   if (sortByCost) {
-    data = sortTenantDataByCost(options, data);
+    data = data.sort(MeshTenantSorting.byCost);
   } else {
-    data = sortTenantDataByName(options, data);
+    data = data.sort(MeshTenantSorting.byName);
   }
   while (running) {
     const selectedTag = await selectTag(tags);
@@ -171,7 +152,7 @@ async function showUntagged(
       const untaggedTenant: Array<MeshTenant> | undefined = [];
 
       for (const tenant of data) {
-        if (filterForTag(options, tenant, selectedTag) == false) {
+        if (filterForTag(tenant, selectedTag) == false) {
           untaggedTenant.push(tenant);
         }
       }
@@ -187,9 +168,9 @@ async function showUntagged(
         } else {
           await detailViewTenant(
             options,
+            foundation,
             data,
             selectedTenant,
-            selectedTag,
             from == undefined || to == undefined,
           );
         }
@@ -198,11 +179,7 @@ async function showUntagged(
   }
 }
 
-function filterForTag(
-  _options: CmdGlobalOptions,
-  tenant: MeshTenant,
-  tagName: string,
-) {
+function filterForTag(tenant: MeshTenant, tagName: string) {
   let result = false;
   for (const tag of tenant.tags) {
     if (tag.tagName == tagName) {
@@ -218,7 +195,7 @@ async function selectTag(
 ) {
   const options: Array<Promptoptions> = [];
   const help =
-    `\n\n\nHere you can select a tag, which should be missing on the tenants shown in the next step. This allows ${CLIName} to filter out all tenants, which already have this tag assigned, from the selection in the next prompt. \n\n\n`;
+    `\n\n\nHere you can select a tag, which should be missing on the tenants shown in the next step. This allows ${CLI} to filter out all tenants, which already have this tag assigned, from the selection in the next prompt. \n\n\n`;
 
   for (const tag of tags) {
     options.push({ value: tag, name: tag });

@@ -1,4 +1,4 @@
 export interface TenantCommandOptions {
-  platform: string;
+  platform?: string;
   refresh: boolean;
 }
