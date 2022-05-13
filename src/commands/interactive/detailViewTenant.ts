@@ -11,7 +11,7 @@ export async function detailViewTenant(
   options: CmdGlobalOptions,
   data: MeshTenant[],
   selectedTenantId: string,
-  _selectedTag: string,           // TODO seems to be unused
+  _selectedTag: string, // TODO seems to be unused, the selected tenant should not have it though
   noCost: boolean,
 ) {
   const selectedTenant = data.find((e) =>
@@ -48,8 +48,7 @@ export async function detailViewTenant(
 
     // -- COSTS
     console.log("Costs: \n");
-    if (selectedTenant?.costs != undefined && !noCost) {      
-
+    if (selectedTenant?.costs != undefined && !noCost) {
       for (const cost of selectedTenant.costs) {
         if (cost.cost == "") {
           cost.cost = "0";
@@ -61,8 +60,7 @@ export async function detailViewTenant(
       }
 
       console.log("\n\n");
-    }
-    else {
+    } else {
       console.log("-NONE-\n");
     }
 
@@ -77,12 +75,11 @@ export async function detailViewTenant(
             roleAssignment.roleName + '"\n',
         );
       }
-    }
-    else {
+    } else {
       console.log("-NONE-\n");
     }
 
-    console.log('\n');
+    console.log("\n");
     switch (
       await Select.prompt({
         message: "Select what you want to do",

@@ -5,7 +5,7 @@ import { listTenantsCostAction } from "../tenant/cost.command.ts";
 import { Select } from "../../deps.ts";
 import { OutputFormat } from "../../presentation/output-format.ts";
 import { interactiveDate } from "./inputInteractiveDate.ts";
-import { CLIName} from "../../config/config.model.ts";
+import { CLIName } from "../../config/config.model.ts";
 
 export async function startInteractiveMode(options: CmdGlobalOptions) {
   console.clear();
