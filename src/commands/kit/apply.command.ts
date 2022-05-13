@@ -1,4 +1,4 @@
-import { Command, Select } from "../../deps.ts";
+import { Command } from "../../deps.ts";
 import {
   Dir,
   DirectoryGenerator,
@@ -9,6 +9,7 @@ import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
+import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 
 interface ApplyOptions {
   foundation?: string;
@@ -30,7 +31,8 @@ export function registerApplyCmd(program: Command) {
         const logger = new Logger(kit, opts);
         const validator = new ModelValidator(logger);
 
-        const foundation = opts.foundation || (await selectFoundation(kit));
+        const foundation = opts.foundation ||
+          (await InteractivePrompts.selectFoundation(kit));
 
         const repo = await FoundationRepository.load(
           kit,
@@ -38,7 +40,8 @@ export function registerApplyCmd(program: Command) {
           validator,
         );
 
-        const platform = opts.platform || (await selectPlatform(repo));
+        const platform = opts.platform ||
+          (await InteractivePrompts.selectPlatform(repo));
 
         // by convention, the module id looks like $platform/...
         const platformModuleId = moduleId.split("/").slice(1);
@@ -99,20 +102,4 @@ inputs = {
 }
 
   `;
-}
-
-async function selectFoundation(kit: CollieRepository) {
-  return await Select.prompt({
-    message: "Select a foundation",
-    options: (await kit.listFoundations()).map((x) => ({ name: x, value: x })),
-  });
-}
-
-async function selectPlatform(repo: FoundationRepository): Promise<string> {
-  return await Select.prompt({
-    message: "Select a platform",
-    options: (
-      await repo.platforms
-    ).map((x) => ({ name: x.name, value: x.name })),
-  });
 }

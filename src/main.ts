@@ -17,6 +17,7 @@ import { registerComplianceCommand } from "./commands/compliance/compliance.ts";
 import { registerDocsCommand } from "./commands/foundation/docs.command.ts";
 import { OutputFormatType } from "./commands/GlobalCommandOptions.ts";
 import { registerVersionCommand } from "./commands/version.command.ts";
+import { registerInteractiveCommand } from "./commands/interactive/interactive.command.ts";
 
 async function collie() {
   const program = new Command()
@@ -47,6 +48,7 @@ async function collie() {
   registerKitCommand(program);
   registerComplianceCommand(program);
   registerDocsCommand(program);
+  registerInteractiveCommand(program);
 
   registerCreateIssueCommand(program);
   registerFeedbackCommand(program);

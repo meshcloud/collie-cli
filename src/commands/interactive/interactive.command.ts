@@ -1,16 +1,31 @@
-import { CmdGlobalOptions } from "../cmd-options.ts";
 import { exploreInteractive } from "./untagged-tenants.ts";
 import { listTenantAction } from "../tenant/list.command.ts";
 import { listTenantsCostAction } from "../tenant/cost.command.ts";
-import { Select } from "../../deps.ts";
+import { Command, Select } from "../../deps.ts";
 import { OutputFormat } from "../../presentation/output-format.ts";
 import { interactiveDate } from "./inputInteractiveDate.ts";
-import { CLIName } from "../../config/config.model.ts";
+import { CLI } from "../../info.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
+import { CollieRepository } from "../../model/CollieRepository.ts";
+import { InteractivePrompts } from "./InteractivePrompts.ts";
 
-export async function startInteractiveMode(options: CmdGlobalOptions) {
+export function registerInteractiveCommand(program: Command) {
+  program
+    .command("interactive")
+    .description(
+      `Experimental interactive mode to explore your cloud foundations`,
+    )
+    .action(startInteractiveMode);
+}
+
+export async function startInteractiveMode(options: GlobalCommandOptions) {
   console.clear();
   const interactivehelp =
-    `\n\n\nWelcome to the ${CLIName} interactive mode. This mode allows you to herd your tenants in a quicker, more userfriendly way.\n\n\n "LIST ALL TENANTS"\nis equivalent to "${CLIName} tenant list"\n\n"LIST ALL TENANTS WITH COST"\nis equivalent to "${CLIName} tenant costs"\n\n"EXPLORE TENANTS WITH MISSING TAGS"\nis the superpower of the interactive mode. Go check it out!\n\n`;
+    `\n\n\nWelcome to ${CLI} interactive mode. This experimental mode allows you to herd your tenants in a quicker, more interactive way.\n\n\n "LIST ALL TENANTS"\nis equivalent to "${CLI} tenant list"\n\n"LIST ALL TENANTS WITH COST"\nis equivalent to "${CLI} tenant costs"\n\n"EXPLORE TENANTS WITH MISSING TAGS"\nis the superpower of the interactive mode. Go check it out!\n\n`;
+
+  const collie = new CollieRepository("./");
+
+  const foundation = await InteractivePrompts.selectFoundation(collie);
 
   let running = true;
   while (running) {
@@ -28,20 +43,20 @@ export async function startInteractiveMode(options: CmdGlobalOptions) {
     switch (action) {
       case "alltenants": {
         console.clear();
-        await listTenantAction(options);
+        await listTenantAction({ ...options, refresh: false }, foundation);
         break;
       }
       case "tenantcost": {
         console.clear();
-        const from = await interactiveDate(options, "Startdate?");
+        const from = await interactiveDate("Start date?");
         if (from == "BACK") {
           break;
         }
-        const to = await interactiveDate(options, "Enddate?");
+        const to = await interactiveDate("End date?");
         if (to == "BACK") {
           break;
         }
-        if (from != undefined && to != undefined) {
+        if (from && to) {
           const params = {
             from: from,
             to: to,
@@ -49,12 +64,15 @@ export async function startInteractiveMode(options: CmdGlobalOptions) {
             verbose: options.verbose,
             output: OutputFormat.TABLE,
           };
-          await listTenantsCostAction(params);
+          await listTenantsCostAction(
+            { ...options, ...params, refresh: false },
+            foundation,
+          );
         }
         break;
       }
       case "exploremissing": {
-        await exploreInteractive(options);
+        await exploreInteractive(options, foundation);
         break;
       }
       case "help": {

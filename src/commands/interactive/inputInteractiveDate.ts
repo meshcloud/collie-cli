@@ -1,11 +1,7 @@
 import { Input } from "../../deps.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
 import { dateRegex } from "../custom-types.ts";
 
-export async function interactiveDate(
-  _options: CmdGlobalOptions,
-  question: string,
-) {
+export async function interactiveDate(question: string) {
   let running = true;
   let date = "";
   while (running) {

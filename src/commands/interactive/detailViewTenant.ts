@@ -1,21 +1,18 @@
 import { Select } from "../../deps.ts";
-import { MeshTenant } from "../../mesh/mesh-tenant.model.ts";
-import { CmdGlobalOptions } from "../cmd-options.ts";
 import { MeshError } from "../../errors.ts";
-import { setupLogger } from "../../logger.ts";
-import { verifyCliAvailability } from "../../init.ts";
-import { loadConfig } from "../../config/config.model.ts";
-import { MeshAdapterFactory } from "../../mesh/mesh-adapter.factory.ts";
+import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
+import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
+import { prepareTenantCommand } from "../tenant/prepareTenantCommand.ts";
 
 export async function detailViewTenant(
-  options: CmdGlobalOptions,
+  options: GlobalCommandOptions,
+  foundation: string,
   data: MeshTenant[],
   selectedTenantId: string,
-  _selectedTag: string, // TODO seems to be unused, the selected tenant should not have it though
   noCost: boolean,
 ) {
-  const selectedTenant = data.find((e) =>
-    e.platformTenantId == selectedTenantId
+  const selectedTenant = data.find(
+    (e) => e.platformTenantId == selectedTenantId,
   );
 
   console.clear();
@@ -28,15 +25,15 @@ export async function detailViewTenant(
   console.log("ID: " + selectedTenant?.platformTenantId);
   console.log("Platform: " + selectedTenant?.platform);
 
-  if (selectedTenant != undefined) {
-    await fetchIAM(options, selectedTenant);
+  if (selectedTenant) {
+    await fetchIAM(options, foundation, selectedTenant);
 
     // -- TAGS
     console.log("\n\nTags:\n");
     if (
-      selectedTenant?.tags[0] != undefined && selectedTenant?.tags != undefined
+      selectedTenant?.tags[0] != undefined &&
+      selectedTenant?.tags != undefined
     ) {
-      console.log("\n\nTags:\n");
       for (const tag of selectedTenant.tags) {
         console.log(tag.tagName + ": " + tag.tagValues);
       }
@@ -54,7 +51,13 @@ export async function detailViewTenant(
           cost.cost = "0";
         }
         console.log(
-          "From " + cost.from + " to " + cost.to + ": " + cost.cost + " " +
+          "From " +
+            cost.from +
+            " to " +
+            cost.to +
+            ": " +
+            cost.cost +
+            " " +
             cost.currency,
         );
       }
@@ -70,9 +73,13 @@ export async function detailViewTenant(
     if (selectedTenant.roleAssignments.length > 0) {
       for (const roleAssignment of selectedTenant.roleAssignments) {
         console.log(
-          'Name: "' + roleAssignment.principalName + '";\nType: "' +
-            roleAssignment.principalType + '";\nRole: "' +
-            roleAssignment.roleName + '"\n',
+          'Name: "' +
+            roleAssignment.principalName +
+            '";\nType: "' +
+            roleAssignment.principalType +
+            '";\nRole: "' +
+            roleAssignment.roleName +
+            '"\n',
         );
       }
     } else {
@@ -106,13 +113,15 @@ export async function detailViewTenant(
   }
 }
 
-async function fetchIAM(options: CmdGlobalOptions, tenant: MeshTenant) {
-  await setupLogger(options);
-  await verifyCliAvailability();
-
-  const config = loadConfig();
-  const meshAdapterFactory = new MeshAdapterFactory(config);
-  const meshAdapter = meshAdapterFactory.buildMeshAdapter(options);
+async function fetchIAM(
+  options: GlobalCommandOptions,
+  foundation: string,
+  tenant: MeshTenant,
+) {
+  const { meshAdapter } = await prepareTenantCommand(
+    { ...options, refresh: false },
+    foundation,
+  );
 
   await meshAdapter.attachTenantRoleAssignments([tenant]);
 
