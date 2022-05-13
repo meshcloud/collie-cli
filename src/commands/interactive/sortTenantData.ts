@@ -9,14 +9,14 @@ export function sortTenantDataByCost(
     let costA = 0;
     let costB = 0;
 
-    if (!!a) {
+    if (a) {
       for (const cost of a.costs) {
         if (!!cost.cost && cost.cost != "") {
           costA += Number(cost.cost);
         }
       }
     }
-    if (!!b) {
+    if (b) {
       for (const cost of b.costs) {
         if (!!cost.cost && cost.cost != "") {
           costB += Number(cost.cost);
