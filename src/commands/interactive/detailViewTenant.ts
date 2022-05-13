@@ -11,7 +11,7 @@ export async function detailViewTenant(
   options: CmdGlobalOptions,
   data: MeshTenant[],
   selectedTenantId: string,
-  _selectedTag: string,
+  _selectedTag: string,           // TODO seems to be unused
   noCost: boolean,
 ) {
   const selectedTenant = data.find((e) =>

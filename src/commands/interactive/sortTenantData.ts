@@ -5,29 +5,26 @@ export function sortTenantDataByCost(
   _options: CmdGlobalOptions,
   data: MeshTenant[],
 ) {
-  data.sort(function (a: MeshTenant, b: MeshTenant) {
+  data.sort((a: MeshTenant, b: MeshTenant) => {
     let costA = 0;
     let costB = 0;
 
-    if (a != undefined) {
+    if (!!a) {
       for (const cost of a.costs) {
-        if (cost.cost != undefined && cost.cost != "") {
+        if (!!cost.cost && cost.cost != "") {
           costA += Number(cost.cost);
         }
       }
     }
-    if (b != undefined) {
+    if (!!b) {
       for (const cost of b.costs) {
-        if (cost.cost != undefined && cost.cost != "") {
+        if (!!cost.cost && cost.cost != "") {
           costB += Number(cost.cost);
         }
       }
     }
 
-    if (costA > costB) return -1;
-    else if (costB > costA) return 1;
-
-    return 0;
+    return costB - costA;
   });
 
   return data;
@@ -37,7 +34,7 @@ export function sortTenantDataByName(
   _options: CmdGlobalOptions,
   data: MeshTenant[],
 ) {
-  data = data.sort(function (a, b) {
+  data = data.sort((a, b) => {
     const tenantNameA = a.platformTenantName.toLocaleUpperCase();
     const tenantNameB = b.platformTenantName.toLocaleUpperCase();
     if (tenantNameA < tenantNameB) {
