@@ -1,12 +1,10 @@
 import { Select } from "../../deps.ts";
 import { MeshError } from "../../errors.ts";
+import { MeshAdapter } from "../../mesh/MeshAdapter.ts";
 import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
-import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
-import { prepareTenantCommand } from "../tenant/prepareTenantCommand.ts";
 
 export async function detailViewTenant(
-  options: GlobalCommandOptions,
-  foundation: string,
+  meshAdapter: MeshAdapter,
   data: MeshTenant[],
   selectedTenantId: string,
   noCost: boolean,
@@ -26,7 +24,8 @@ export async function detailViewTenant(
   console.log("Platform: " + selectedTenant?.platform);
 
   if (selectedTenant) {
-    await fetchIAM(options, foundation, selectedTenant);
+    // ensure we have IAM data
+    await meshAdapter.attachTenantRoleAssignments([selectedTenant]);
 
     // -- TAGS
     console.log("\n\nTags:\n");
@@ -111,19 +110,4 @@ export async function detailViewTenant(
   } else {
     throw new MeshError("Tenant is undefined. Something went horribly wrong!");
   }
-}
-
-async function fetchIAM(
-  options: GlobalCommandOptions,
-  foundation: string,
-  tenant: MeshTenant,
-) {
-  const { meshAdapter } = await prepareTenantCommand(
-    { ...options, refresh: false },
-    foundation,
-  );
-
-  await meshAdapter.attachTenantRoleAssignments([tenant]);
-
-  return tenant;
 }

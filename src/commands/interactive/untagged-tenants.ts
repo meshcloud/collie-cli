@@ -7,6 +7,7 @@ import { CLI } from "../../info.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { prepareTenantCommand } from "../tenant/prepareTenantCommand.ts";
+import { MeshAdapter } from "../../mesh/MeshAdapter.ts";
 
 export async function exploreInteractive(
   options: GlobalCommandOptions,
@@ -17,6 +18,11 @@ export async function exploreInteractive(
   let running = true;
   console.log(
     `Welcome to the interactive mode of ${CLI}. Have fun herding your tenants.`,
+  );
+
+  const { meshAdapter } = await prepareTenantCommand(
+    { ...options, refresh: false },
+    foundation,
   );
 
   while (running) {
@@ -42,9 +48,8 @@ export async function exploreInteractive(
           break;
         }
         await showUntagged(
-          options,
-          foundation,
-          await getData(options, foundation, startDate, endDate),
+          meshAdapter,
+          await getData(meshAdapter, startDate, endDate),
           startDate,
           endDate,
           true,
@@ -61,9 +66,8 @@ export async function exploreInteractive(
           break;
         }
         await showUntagged(
-          options,
-          foundation,
-          await getData(options, foundation, startDate, endDate),
+          meshAdapter,
+          await getData(meshAdapter, startDate, endDate),
           startDate,
           endDate,
           false,
@@ -92,16 +96,10 @@ export async function exploreInteractive(
 }
 
 async function getData(
-  options: GlobalCommandOptions,
-  foundation: string,
+  meshAdapter: MeshAdapter,
   from: string | undefined = undefined,
   to: string | undefined = undefined,
 ) {
-  const { meshAdapter } = await prepareTenantCommand(
-    { ...options, refresh: false },
-    foundation,
-  );
-
   const allTenants = await meshAdapter.getMeshTenants();
 
   if ((from == undefined || "") && (to == undefined || "")) {
@@ -128,8 +126,7 @@ async function getData(
 }
 
 async function showUntagged(
-  options: GlobalCommandOptions,
-  foundation: string,
+  meshAdapter: MeshAdapter,
   data: MeshTenant[],
   from: string | undefined = undefined,
   to: string | undefined = undefined,
@@ -167,8 +164,7 @@ async function showUntagged(
           runningInside = false;
         } else {
           await detailViewTenant(
-            options,
-            foundation,
+            meshAdapter,
             data,
             selectedTenant,
             from == undefined || to == undefined,
