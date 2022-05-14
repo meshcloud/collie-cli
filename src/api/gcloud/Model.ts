@@ -45,10 +45,3 @@ export interface CostBigQueryResult {
   project_id?: string;
   currency: string;
 }
-
-export function isProject(
-  // deno-lint-ignore no-explicit-any
-  object: any,
-): object is Project {
-  return "projectId" in object && "projectNumber" in object;
-}

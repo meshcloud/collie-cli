@@ -147,10 +147,3 @@ export interface DimensionValueAttribute {
   Value: string;
   Attributes: { description: string };
 }
-
-export function isAccount(
-  // deno-lint-ignore no-explicit-any
-  object: any,
-): object is Account {
-  return "Id" in object && "Name" in object;
-}

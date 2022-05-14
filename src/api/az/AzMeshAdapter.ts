@@ -1,7 +1,7 @@
 import { pooledMap } from "std/async";
 
 import { MeshPlatform, MeshTag, MeshTenant } from "/mesh/MeshTenantModel.ts";
-import { isSubscription, Tag } from "./Model.ts";
+import { Subscription, Tag } from "./Model.ts";
 import { AzCliFacade } from "./AzCliFacade.ts";
 import { MeshAdapter } from "/mesh/MeshAdapter.ts";
 import { moment } from "/deps.ts";
@@ -27,14 +27,11 @@ export class AzMeshAdapter implements MeshAdapter {
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
-    // Only work on Azure tenants
-    const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
-
     if (moment(endDate).isBefore(moment(startDate))) {
       throw new MeshError("endDate must be after startDate");
     }
 
-    await this.getTenantCosts(azureTenants, startDate, endDate);
+    await this.getTenantCosts(tenants, startDate, endDate);
   }
 
   private async getTenantCosts(
@@ -133,10 +130,7 @@ export class AzMeshAdapter implements MeshAdapter {
   }
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
-    // Only work on Azure tenants
-    const azureTenants = tenants.filter((t) => isSubscription(t.nativeObj));
-
-    for (const t of azureTenants) {
+    for (const t of tenants) {
       const roleAssignments = await this.loadRoleAssignmentsForTenant(t);
       t.roleAssignments.push(...roleAssignments);
     }
@@ -145,15 +139,8 @@ export class AzMeshAdapter implements MeshAdapter {
   private async loadRoleAssignmentsForTenant(
     tenant: MeshTenant,
   ): Promise<MeshTenantRoleAssignment[]> {
-    if (!isSubscription(tenant.nativeObj)) {
-      throw new MeshAzurePlatformError(
-        AzureErrorCode.AZURE_TENANT_IS_NOT_SUBSCRIPTION,
-        "Given tenant did not contain an Azure Subscription native object",
-      );
-    }
-
     const roleAssignments = await this.azureCli.getRoleAssignments(
-      tenant.nativeObj,
+      tenant.nativeObj as Subscription,
     );
 
     return roleAssignments.map((x) => {
@@ -225,17 +212,13 @@ export class AzMeshAdapter implements MeshAdapter {
     updatedTenant: MeshTenant,
     originalTenant: MeshTenant,
   ): Promise<void> {
-    if (!isSubscription(updatedTenant.nativeObj)) {
-      return Promise.resolve();
-    }
-
     const changedTags = this.tenantChangeDetector.getChangedTags(
       updatedTenant.tags,
       originalTenant.tags,
     );
 
     await this.azureCli.putTags(
-      updatedTenant.nativeObj,
+      updatedTenant.nativeObj as Subscription,
       changedTags.map((x) => ({ tagName: x.tagName, values: x.tagValues })),
     );
   }
