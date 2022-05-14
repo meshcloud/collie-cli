@@ -78,13 +78,6 @@ export interface SimpleCostManagementInfo {
   currency: string;
 }
 
-export function isSubscription(
-  // deno-lint-ignore no-explicit-any
-  object: any,
-): object is Subscription {
-  return "tenantId" in object && "id" in object;
-}
-
 export interface RoleAssignment {
   principalId: string;
   principalName: string;

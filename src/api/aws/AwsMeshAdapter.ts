@@ -7,7 +7,7 @@ import {
   MeshTenant,
   MeshTenantCost,
 } from "/mesh/MeshTenantModel.ts";
-import { Account, Credentials, isAccount, User } from "./Model.ts";
+import { Account, Credentials, User } from "./Model.ts";
 import { moment } from "/deps.ts";
 import { AwsErrorCode, MeshAwsPlatformError, MeshError } from "/errors.ts";
 import {
@@ -69,17 +69,13 @@ export class AwsMeshAdapter implements MeshAdapter {
     updatedTenant: MeshTenant,
     originalTenant: MeshTenant,
   ): Promise<void> {
-    if (!isAccount(updatedTenant.nativeObj)) {
-      return Promise.resolve();
-    }
-
     const changedTags = this.tenantChangeDetector.getChangedTags(
       updatedTenant.tags,
       originalTenant.tags,
     );
 
     await this.awsCli.addTags(
-      updatedTenant.nativeObj,
+      updatedTenant.nativeObj as Account,
       changedTags.map((x) => ({ Key: x.tagName, Value: x.tagValues[0] })),
     );
   }
@@ -89,12 +85,10 @@ export class AwsMeshAdapter implements MeshAdapter {
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
-    const awsTenants = tenants.filter((t) => isAccount(t.nativeObj));
     // As with AWS each query costs $0.01, we query as much as possible in one go to minimize cost.
     const costInfo = await this.awsCli.listCosts(startDate, endDate);
 
-    for (const tenant of awsTenants) {
-      // Its already filtered inside awsTenants so we dont need to re-filter here.
+    for (const tenant of tenants) {
       const account = tenant.nativeObj as Account;
 
       // Note: normally we use [TimeWindowCalculator] for handling time windows, but we assume here that AWS returns the
@@ -132,14 +126,8 @@ export class AwsMeshAdapter implements MeshAdapter {
   }
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
-    const awsTenants = tenants.filter((t) => isAccount(t.nativeObj));
-
-    for (const tenant of awsTenants) {
-      isAccount(tenant.nativeObj);
-      const account = tenant.nativeObj;
-      if (!isAccount(account)) {
-        throw new MeshError("A non AWS account was encountered");
-      }
+    for (const tenant of tenants) {
+      const account = tenant.nativeObj as Account;
 
       // Detect if the user gave us a role arn or only a role name. If its only a role name
       // we assume the role lives in his current caller account and try to assume it with this

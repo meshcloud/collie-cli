@@ -7,7 +7,7 @@ import {
   MeshTenantCost,
 } from "/mesh/MeshTenantModel.ts";
 import { GcloudCliFacade } from "./GcloudCliFacade.ts";
-import { isProject, Labels } from "./Model.ts";
+import { Labels, Project } from "./Model.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
@@ -55,10 +55,6 @@ export class GcloudMeshAdapter implements MeshAdapter {
     updatedTenant: MeshTenant,
     originalTenant: MeshTenant,
   ): Promise<void> {
-    if (!isProject(updatedTenant.nativeObj)) {
-      return Promise.resolve();
-    }
-
     const changedTags = this.tenantChangeDetector.getChangedTags(
       updatedTenant.tags,
       originalTenant.tags,
@@ -69,7 +65,7 @@ export class GcloudMeshAdapter implements MeshAdapter {
       labels[x.tagName] = x.tagValues[0];
     });
 
-    await this.gcpCli.updateTags(updatedTenant.nativeObj, labels);
+    await this.gcpCli.updateTags(updatedTenant.nativeObj as Project, labels);
   }
 
   async attachTenantCosts(
@@ -77,10 +73,9 @@ export class GcloudMeshAdapter implements MeshAdapter {
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
-    const gcpTenants = tenants.filter((t) => isProject(t.nativeObj));
     const gcpCosts = await this.gcpCli.listCosts(startDate, endDate);
 
-    for (const tenant of gcpTenants) {
+    for (const tenant of tenants) {
       const timeWindows = this.timeWindowCalculator.calculateTimeWindows(
         startDate,
         endDate,
@@ -110,9 +105,7 @@ export class GcloudMeshAdapter implements MeshAdapter {
   }
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
-    const gcpTenants = tenants.filter((t) => isProject(t.nativeObj));
-
-    const tasks = pooledMap(concurrencyLimit, gcpTenants, async (tenant) => ({
+    const tasks = pooledMap(concurrencyLimit, tenants, async (tenant) => ({
       tenant,
       roleAssignments: await this.getRoleAssignmentsForTenant(tenant),
     }));
@@ -125,15 +118,11 @@ export class GcloudMeshAdapter implements MeshAdapter {
   private async getRoleAssignmentsForTenant(
     tenant: MeshTenant,
   ): Promise<MeshTenantRoleAssignment[]> {
-    if (!isProject(tenant.nativeObj)) {
-      throw new MeshError(
-        "Given tenant did not contain a GCP Project native object",
-      );
-    }
-
     const result: MeshTenantRoleAssignment[] = [];
 
-    const iamPolicies = await this.gcpCli.listIamPolicy(tenant.nativeObj);
+    const iamPolicies = await this.gcpCli.listIamPolicy(
+      tenant.nativeObj as Project,
+    );
     for (const policy of iamPolicies) {
       const assignmentSource = this.toAssignmentSource(policy.type);
       const assignmentId = policy.id;
