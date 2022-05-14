@@ -108,6 +108,7 @@ export class AzMeshAdapter implements MeshAdapter {
   }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
+    // todo: should probably use PlatformConfig.azure.aadTenantId instead?
     const account = await this.azureCli.getAccount();
     const subscriptions = await this.azureCli.listSubscriptions();
 
