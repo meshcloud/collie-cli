@@ -18,6 +18,8 @@ import { registerDocsCommand } from "./commands/foundation/docs.command.ts";
 import { OutputFormatType } from "./commands/GlobalCommandOptions.ts";
 import { registerVersionCommand } from "./commands/version.command.ts";
 import { registerInteractiveCommand } from "./commands/interactive/interactive.command.ts";
+import { FirstTimeExperience } from "./FirstTimeExperience.ts";
+import { CollieFoundationDoesNotExistError } from "./model/schemas/ModelValidator.ts";
 
 async function collie() {
   const program = new Command()
@@ -40,7 +42,7 @@ async function collie() {
       "Enable printing debug info (command output, intermediate results)",
     )
     .description(
-      `${CLI} CLI - herd your cloud 🐑 environments. Built with love by meshcloud.io`,
+      `${CLI} CLI - herd your clouds 🐑. Built with love by meshcloud.io`,
     );
 
   registerFoundationCommand(program);
@@ -62,6 +64,9 @@ async function collie() {
     const hasArgs = Deno.args.length > 0;
     if (!hasArgs) {
       program.showHelp();
+
+      await FirstTimeExperience.tryShowTips();
+
       Deno.exit(0);
     }
     await program.parse(Deno.args);
@@ -69,6 +74,10 @@ async function collie() {
     if (e instanceof CommandOptionError) {
       // if the error indicates a user error, e.g. wrong typing then display the message and the help.
       program.showHelp();
+    } else if (e instanceof CollieFoundationDoesNotExistError) {
+      // for our own errors, only display message and then exit
+      console.error(colors.red(e.message));
+      printTip("set up a new foundation with 'collie foundation new'");
     } else if (e instanceof MeshError) {
       // for our own errors, only display message and then exit
       console.error(colors.red(e.message));
