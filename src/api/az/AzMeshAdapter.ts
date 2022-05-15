@@ -12,13 +12,15 @@ import {
   MeshTenantRoleAssignment,
 } from "/mesh/MeshIamModel.ts";
 import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
+import { PlatformConfigAzure } from "../../model/PlatformConfig.ts";
 
-// limit concurrency because we will run into azure rate limites for sure if we set this off all at once
+// limit concurrency because we will run into azure rate limits for sure if we set this off all at once
 const concurrencyLimit = 8;
 
 export class AzMeshAdapter implements MeshAdapter {
   constructor(
     private readonly azureCli: AzCliFacade,
+    private readonly config: PlatformConfigAzure,
     private readonly tenantChangeDetector: MeshTenantChangeDetector,
   ) {}
 
@@ -105,12 +107,10 @@ export class AzMeshAdapter implements MeshAdapter {
   }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
-    // todo: should probably use PlatformConfig.azure.aadTenantId instead?
-    const account = await this.azureCli.getAccount();
     const subscriptions = await this.azureCli.listSubscriptions();
 
     const tasks = subscriptions
-      .filter((x) => x.tenantId === account.tenantId)
+      .filter((x) => x.tenantId === this.config.azure.aadTenantId)
       .map(async (sub) => {
         const tags = await this.azureCli.listTags(sub);
         const meshTags = this.convertTags(tags);

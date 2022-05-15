@@ -104,7 +104,7 @@ export class MeshFoundationAdapterFactory {
       );
     } else if ("azure" in config) {
       const az = this.facadeFactory.buildAz(config.cli?.az, path);
-      return new AzMeshAdapter(az, this.tenantChangeDetector);
+      return new AzMeshAdapter(az, config, this.tenantChangeDetector);
     } else if ("gcp" in config) {
       const gcloud = this.facadeFactory.buildGcloud(config.cli?.gcloud, path);
       return new GcloudMeshAdapter(
