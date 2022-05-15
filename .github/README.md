@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <i>Herd your cloud 🐑 environments with Collie</i>
+  <i>Herd your clouds 🐑 with collie</i>
 </p>
 
 <p align="center">
-  <a href="https://collie-cli.io/">Visit the Collie website</a>
+  <a href="https://collie-cli.io/">Visit the collie website</a>
 </p>
 
 <br>
@@ -45,7 +45,9 @@
   across all clouds** - See what you spend per day, month, or week in all cloud
   platforms, including the right metadata. Includes support for CSV, YML and
   JSON.
-- **[Build a cost dashboard](https://www.meshcloud.io/2021/09/06/open-source-cloud-cost-dashboard-in-under-10-minutes/)** - Leverage our free-to-use Google Data Studio template and quickly build a multi-cloud cost dashboard using Collie cost data.
+- **[Build a cost dashboard](https://www.meshcloud.io/2021/09/06/open-source-cloud-cost-dashboard-in-under-10-minutes/)** -
+  Leverage our free-to-use Google Data Studio template and quickly build a
+  multi-cloud cost dashboard using Collie cost data.
 - **[Analyze tag inconsistencies](https://github.com/meshcloud/collie-cli/wiki#identifying-inconsistencies-in-the-use-of-tags)** -
   See at a glance what tags are used, by which tenants (and which not), and what
   potential inconsistencies are in place to fix any governance issues.
@@ -102,7 +104,9 @@ curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.
 
 **Windows**
 
-Simply copy the content of [`install.ps1`](https://github.com/meshcloud/collie-cli/blob/develop/install.ps1) and run it in your PowerShell console.
+Simply copy the content of
+[`install.ps1`](https://github.com/meshcloud/collie-cli/blob/develop/install.ps1)
+and run it in your PowerShell console.
 
 ## 👋 Need help or have feedback?
 
@@ -116,12 +120,15 @@ and get in touch with us there!
 
 ## 💡 Why Collie?
 
-At [meshcloud](https://meshcloud.io/) we have years of experience in building cloud foundations in large organizations with our cloud governance platform
+At [meshcloud](https://meshcloud.io/) we have years of experience in building
+cloud foundations in large organizations with our cloud governance platform
 [meshStack](https://meshcloud.io/).
 
-We launched Collie CLI as a tool for smaller teams to start getting more control over their clouds. 
-Collie its features originate from some of the best practices of our [Cloud Foundation Maturity Model](https://cloudfoundation.meshcloud.io/), which
-is a tool that you can use to identify gaps in your cloud setup, define a roadmap and understand where you can save cost by improving efficiency.
+We launched Collie CLI as a tool for smaller teams to start getting more control
+over their clouds. Collie its features originate from some of the best practices
+of our [Cloud Foundation Maturity Model](https://cloudfoundation.meshcloud.io/),
+which is a tool that you can use to identify gaps in your cloud setup, define a
+roadmap and understand where you can save cost by improving efficiency.
 
 <img align="center" src="/.github/cfmm.png">
 

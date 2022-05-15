@@ -8,6 +8,7 @@ import { CollieRepository } from "./CollieRepository.ts";
 import { MarkdownDocument } from "./MarkdownDocument.ts";
 import { PlatformConfig } from "./PlatformConfig.ts";
 import {
+  CollieFoundationDoesNotExistError,
   CollieModelValidationError,
   ModelValidator,
 } from "./schemas/ModelValidator.ts";
@@ -85,12 +86,19 @@ export class FoundationRepository {
     validator: ModelValidator,
   ) {
     const readmePath = path.join(foundationDir, "README.md");
-    const text = await Deno.readTextFile(readmePath);
+
+    const text = await FoundationRepository.readFoundationReadme(
+      kit,
+      readmePath,
+    );
+
     const md = await MarkdownDocument.parse<FoundationFrontmatter>(text);
 
     if (!md?.frontmatter) {
-      throw new Error(
-        "Failed to parse foundation README at " + kit.relativePath(readmePath),
+      throw new CollieModelValidationError(
+        "Failed to parse foundation README frontmatter at " +
+          kit.relativePath(readmePath),
+        [],
       );
     }
 
@@ -110,6 +118,25 @@ export class FoundationRepository {
     }
 
     return data;
+  }
+
+  private static async readFoundationReadme(
+    kit: CollieRepository,
+    readmePath: string,
+  ) {
+    try {
+      return await Deno.readTextFile(readmePath);
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        throw new CollieFoundationDoesNotExistError(
+          "Could not find a foundation configuration at " +
+            kit.relativePath(readmePath) +
+            ". Did you specify the wrong foundation name?",
+        );
+      }
+
+      throw error;
+    }
   }
 
   private static async parsePlatformReadmes(

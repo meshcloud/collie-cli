@@ -83,11 +83,13 @@ export class CollieModelValidationError extends MeshError {
   constructor(message: string, errors: ErrorObject[]) {
     const formattedErrors = [
       message,
-      ...errors.map((x) =>
-        `\t${x.instancePath.replaceAll("/", ".")} - ${x.message}`
+      ...errors.map(
+        (x) => `\t${x.instancePath.replaceAll("/", ".")} - ${x.message}`,
       ),
     ].join("\n");
 
     super(formattedErrors);
   }
 }
+
+export class CollieFoundationDoesNotExistError extends MeshError {}
