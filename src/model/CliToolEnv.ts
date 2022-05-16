@@ -14,6 +14,7 @@ export type GcloudCliEnv = {
 export type AwsCliEnv = {
   AWS_CONFIG_FILE?: string;
   AWS_PROFILE: string;
+  AWS_REGION?: string;
 };
 
 export interface CliToolEnv {

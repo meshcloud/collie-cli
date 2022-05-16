@@ -1,5 +1,5 @@
 import {
-  Config,
+  Configuration,
   CostBigQueryResult,
   IamResponse,
   Labels,
@@ -22,8 +22,8 @@ export class GcloudCliFacade {
     private readonly billingConfig?: GcpBillingExportConfig,
   ) {}
 
-  async configList(): Promise<Config> {
-    return await this.run<Config>(["gcloud", "config", "list"]);
+  async configurationsList(): Promise<Configuration[]> {
+    return await this.run(["gcloud", "config", "configurations", "list"]);
   }
 
   async listProjects(): Promise<Project[]> {

@@ -22,6 +22,7 @@ export { Table } from "https://deno.land/x/cliffy@v0.22.2/table/mod.ts";
 export {
   Confirm,
   Input,
+  prompt,
   Select,
 } from "https://deno.land/x/cliffy@v0.22.2/prompt/mod.ts";
 export {

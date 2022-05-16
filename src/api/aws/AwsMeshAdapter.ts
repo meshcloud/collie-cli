@@ -9,7 +9,7 @@ import {
 } from "/mesh/MeshTenantModel.ts";
 import { Account, Credentials, User } from "./Model.ts";
 import { moment } from "/deps.ts";
-import { AwsErrorCode, MeshAwsPlatformError, MeshError } from "/errors.ts";
+import { AwsErrorCode, MeshAwsPlatformError } from "/errors.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,

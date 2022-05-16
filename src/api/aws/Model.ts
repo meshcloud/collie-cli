@@ -13,6 +13,16 @@ export interface Account {
   JoinedTimestamp: string;
 }
 
+export interface RegionsResponse {
+  Regions: Region[];
+}
+
+export interface Region {
+  Endpoint: string;
+  RegionName: string;
+  OptInStatus: string;
+}
+
 export interface TagResponse {
   Tags: Tag[];
 }

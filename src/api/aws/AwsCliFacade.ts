@@ -9,6 +9,7 @@ import {
   GroupResponse,
   Policy,
   PolicyResponse,
+  RegionsResponse,
   Tag,
   TagResponse,
   User,
@@ -24,8 +25,7 @@ import { IProcessRunner } from "../../process/IProcessRunner.ts";
 export class AwsCliFacade {
   constructor(
     private readonly processRunner: IProcessRunner<ProcessResultWithOutput>,
-  ) {
-  }
+  ) {}
 
   async listProfiles(): Promise<string[]> {
     const result = await this.processRunner.run([
@@ -129,11 +129,47 @@ export class AwsCliFacade {
    * For debugging: will return the identity AWS thinks you are.
    * @param credential Assumed credentials.
    */
-  async getCallerIdentity(credential?: Credentials): Promise<CallerIdentity> {
-    return await this.run<CallerIdentity>(
+  async getCallerIdentity(
+    credential?: Credentials,
+    profile?: string,
+  ): Promise<CallerIdentity> {
+    const env = {
+      ...this.credsToEnv(credential),
+      ...(profile ? { AWS_PROFILE: profile } : {}),
+    };
+
+    const result = await this.processRunner.run(
       ["aws", "sts", "get-caller-identity"],
-      credential,
+      { env },
     );
+
+    return parseJsonWithLog(result.stdout);
+  }
+
+  async getConfig(key: "region", profile?: string): Promise<string> {
+    const env = {
+      ...(profile ? { AWS_PROFILE: profile } : {}),
+    };
+
+    const result = await this.processRunner.run(
+      ["aws", "configure", "get", key],
+      { env },
+    );
+
+    return result.stdout;
+  }
+
+  async listRegions(profile?: string): Promise<RegionsResponse> {
+    const env = {
+      ...(profile ? { AWS_PROFILE: profile } : {}),
+    };
+
+    const result = await this.processRunner.run(
+      ["aws", "ec2", "describe-regions", "--all-regions"],
+      { env },
+    );
+
+    return parseJsonWithLog(result.stdout);
   }
 
   async listUsers(credential: Credentials): Promise<User[]> {

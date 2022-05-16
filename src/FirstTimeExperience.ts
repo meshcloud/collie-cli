@@ -1,4 +1,4 @@
-import { Logger, printTip } from "./cli/Logger.ts";
+import { printTip } from "./cli/Logger.ts";
 import { CollieRepository } from "./model/CollieRepository.ts";
 
 export class FirstTimeExperience {
