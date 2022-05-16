@@ -1,7 +1,10 @@
-export interface Config {
-  core?: {
-    account?: string;
-    project?: string;
+export interface Configuration {
+  name: string;
+  properties: {
+    core: {
+      account?: string;
+      project: string;
+    };
   };
 }
 

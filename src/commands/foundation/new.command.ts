@@ -1,4 +1,5 @@
-import { Command } from "/deps.ts";
+import * as colors from "std/fmt/colors";
+import { Command, prompt, Select } from "/deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import {
   Dir,
@@ -8,15 +9,12 @@ import {
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
-import { CallerIdentity } from "../../api/aws/Model.ts";
-import { MarkdownDocument } from "../../model/MarkdownDocument.ts";
+import { PlatformConfig } from "../../model/PlatformConfig.ts";
+import { AwsPlatformSetup } from "../../api/aws/AwsPlatformSetup.ts";
+import { AzPlatformSetup } from "../../api/az/AzPlatformSetup.ts";
+import { GcloudPlatformSetup } from "../../api/gcloud/GcloudPlatformSetup.ts";
+import { PlatformSetup } from "../../api/PlatformSetup.ts";
 import { MeshError } from "../../errors.ts";
-import {
-  PlatformConfigAws,
-  PlatformConfigAzure,
-  PlatformConfigGcp,
-} from "../../model/PlatformConfig.ts";
-import { Account } from "../../api/az/Model.ts";
 
 export function registerNewCmd(program: Command) {
   program
@@ -30,7 +28,7 @@ export function registerNewCmd(program: Command) {
 
       const factory = new CliApiFacadeFactory(logger);
 
-      const platformEntries = await promptPlatformEntries(logger, factory);
+      const platformEntries = await promptPlatformEntries(foundation, factory);
 
       // tbd: generate platform based on authenticated CLIs
       const dir = new DirectoryGenerator(WriteMode.skip, logger);
@@ -64,157 +62,103 @@ Welcome to your cloud foundation.
   `;
 }
 
-async function detectPlatform(
-  logger: Logger,
-  platform: string,
-  builder: () => Promise<Dir>,
-): Promise<Dir | undefined> {
-  try {
-    console.log(
-      `searching for a valid ${platform} platform in your current environment...`,
-    );
-
-    const dir = await builder();
-
-    logger.progress(`detected valid ${platform} platform`);
-
-    return dir;
-  } catch (error) {
-    console.log(`skipping ${platform}: ${error.message}`);
-
-    return;
-  }
-}
-
-// todo: should probably refactor these into dedicated classes
-
 async function promptPlatformEntries(
-  logger: Logger,
+  foundation: string,
   factory: CliApiFacadeFactory,
-) {
+): Promise<Dir[]> {
   // todo: this is stupidly hardcoded for now, would need some more dynamic detection of platforms and also
   // possibly prompt the user for "do you want to add A? cool, missing a param there, what's your X?" etc.
 
-  const entries: Dir[] = [
-    await detectPlatform(logger, "Azure", () => setupAzurePlatform(factory)),
-    await detectPlatform(logger, "AWS", () => setupAwsPlatform(factory)),
-    await detectPlatform(logger, "GCP", () => setupGcpPlatform(factory)),
-  ].filter((x): x is Dir => !!x);
+  const entries: PlatformConfig[] = [];
 
-  return entries;
-}
-
-async function setupAwsPlatform(factory: CliApiFacadeFactory): Promise<Dir> {
-  const aws = factory.buildAws();
-  const id = await aws.getCallerIdentity();
-  return {
-    name: "aws",
-    entries: [{ name: "README.md", content: generateAwsReadmeMd(id) }],
+  const setup = {
+    aws: new AwsPlatformSetup(factory.buildAws()),
+    azure: new AzPlatformSetup(factory.buildAz()),
+    gcp: new GcloudPlatformSetup(factory.buildGcloud()),
   };
-}
 
-function generateAwsReadmeMd(identity: CallerIdentity): string {
-  const env = Object.entries(Deno.env.toObject()).filter(([key]) =>
-    key.startsWith("AWS_")
-  );
-
-  const frontmatter: PlatformConfigAws = {
-    name: "aws",
-    aws: {
-      accountId: identity.Account,
-      accountAccessRole: "OrganizationAccountAccessRole", // todo: be more smart about this default
-    },
-    cli: {
-      aws: {
-        ...Object.fromEntries(env),
-        AWS_PROFILE: Deno.env.get("AWS_PROFILE") || "default",
+  await prompt([
+    {
+      name: "action",
+      message: "What do you want to do?",
+      type: Select,
+      options: [
+        { value: "add", name: `${colors.green("+")} add cloud platform` },
+        { value: "done", name: `${colors.green("✔")} done` },
+        { value: "cancel", name: `${colors.red("x")} cancel` },
+      ],
+      hint:
+        "After completing the setup, you can always edit the generated foundation configuration files manually.",
+      before: async (_, next) => {
+        renderEntries(foundation, entries);
+        await next();
+      },
+      after: async ({ action }, next) => {
+        switch (action) {
+          case "add":
+            await next("cloud"); // loop;
+            break;
+          case "done":
+            return;
+          case "cancel":
+            Deno.exit(1);
+        }
       },
     },
-  };
-  const md = `
-# AWS
+    {
+      name: "cloud",
+      message: "What type of cloud do you want to add",
+      type: Select,
+      options: [
+        { value: "aws", name: "AWS" },
+        { value: "azure", name: "Azure" },
+        { value: "gcp", name: "GCP" },
+      ],
+      after: async ({ cloud }, next) => {
+        if (!cloud) {
+          throw new Error("no cloud selected");
+        }
 
-This AWS Platform is hosted in account ${identity.Account}.
-  `;
+        const platformSetup = (
+          setup as Record<string, PlatformSetup<PlatformConfig>>
+        )[cloud];
+        if (!platformSetup) {
+          throw new Error("no supported platform setup for " + cloud);
+        }
 
-  const doc = new MarkdownDocument(frontmatter, md);
+        const config = await platformSetup.promptInteractively();
+        entries.push(config);
 
-  return doc.format();
+        await next("action");
+      },
+    },
+  ]);
+
+  const dirs = entries.map((x) => {
+    if ("aws" in x) {
+      return setup.aws.preparePlatformDir(x);
+    } else if ("azure" in x) {
+      return setup.azure.preparePlatformDir(x);
+    } else if ("gcp" in x) {
+      return setup.gcp.preparePlatformDir(x);
+    }
+
+    throw new MeshError("Unsupported platform configuration");
+  });
+
+  return dirs;
 }
 
-async function setupGcpPlatform(factory: CliApiFacadeFactory): Promise<Dir> {
-  const gcp = factory.buildGcloud();
-  const config = await gcp.configList();
-  const project = config?.core?.project;
-
-  if (!project) {
-    throw new MeshError(
-      "'gcloud config list' does not have a configured project",
-    );
+function renderEntries(foundation: string, entries: PlatformConfig[]) {
+  console.log(
+    colors.bold(`Platforms configured for Foundation "${foundation}"`),
+  );
+  if (!entries.length) {
+    console.log(colors.italic("no platforms configured yet"));
+  } else {
+    const list = entries.map((x) => `- ${x.name}`).join("\n");
+    console.log(list);
   }
 
-  return {
-    name: "gcp",
-    entries: [{ name: "README.md", content: generateGcpReadmeMd(project) }],
-  };
-}
-
-function generateGcpReadmeMd(project: string): string {
-  const frontmatter: PlatformConfigGcp = {
-    name: "gcp",
-    gcp: {
-      project: project,
-    },
-    cli: {
-      gcloud: {
-        CLOUDSDK_ACTIVE_CONFIG_NAME:
-          Deno.env.get("CLOUDSDK_ACTIVE_CONFIG_NAME") || "default",
-      },
-    },
-  };
-  const md = `
-# GCP
-
-This GCP Platform is hosted in the organization containing project ${project}.
-  `;
-
-  const doc = new MarkdownDocument(frontmatter, md);
-
-  return doc.format();
-}
-
-async function setupAzurePlatform(factory: CliApiFacadeFactory): Promise<Dir> {
-  const az = factory.buildAz();
-  const account = await az.getAccount();
-
-  return {
-    name: "azure",
-    entries: [{ name: "README.md", content: generateAzureReadmeMd(account) }],
-  };
-}
-
-function generateAzureReadmeMd(account: Account): string {
-  const configDir = Deno.env.get("AZURE_CONFIG_DIR");
-
-  const frontmatter: PlatformConfigAzure = {
-    name: "azure",
-    azure: {
-      aadTenantId: account.tenantId,
-      subscriptionId: account.id,
-    },
-    cli: {
-      az: {
-        ...(configDir && { AZURE_CONFIG_DIR: configDir }),
-      },
-    },
-  };
-  const md = `
-# Azure
-
-This Azure Platform is hosted in the AAD Tenant \`${account.tenantId}\`.
-  `;
-
-  const doc = new MarkdownDocument(frontmatter, md);
-
-  return doc.format();
+  console.log(""); // this will automatically add a newline
 }
