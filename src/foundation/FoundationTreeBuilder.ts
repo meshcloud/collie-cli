@@ -53,7 +53,7 @@ export class FoundationTreeBuilder {
       const tree: PlatformsTree = {};
 
       platforms.forEach((p) => {
-        tree[p.platform.name] = this.buildModuleTree(p);
+        tree[p.platform.id] = this.buildModuleTree(p);
       });
 
       return tree;

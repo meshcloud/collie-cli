@@ -47,7 +47,7 @@ export class MeshFoundationAdapterFactory {
       const adapter = this.buildPlatformAdapter(platform);
       const adapterWithStats = new StatsMeshAdapterDecorator(
         adapter,
-        platform.name,
+        platform.id,
         STATS_LAYER_PLATFORM,
         queryStats,
       );

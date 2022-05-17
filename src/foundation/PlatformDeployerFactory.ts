@@ -45,7 +45,7 @@ export class PlatformDeployerFactory {
     } else {
       const base = platform as PlatformConfigBase;
       throw new Error(
-        "Could not detect platform type for platform " + base.name,
+        "Could not detect platform type for platform " + base.id,
       );
     }
   }

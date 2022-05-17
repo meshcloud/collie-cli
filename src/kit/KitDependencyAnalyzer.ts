@@ -61,7 +61,7 @@ export class KitDependencyAnalyzer {
     for (const platform of foundation.platforms) {
       const progress = new ProgressReporter(
         `parsing platform modules`,
-        platform.name,
+        platform.id,
         this.logger,
       );
 
@@ -91,7 +91,7 @@ export class KitDependencyAnalyzer {
     }
 
     return {
-      foundation: foundation.name,
+      foundation: foundation.id,
       platforms,
     };
   }

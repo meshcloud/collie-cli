@@ -6,10 +6,11 @@ import {
 } from "../model/FoundationConfig.ts";
 import { CollieRepository } from "./CollieRepository.ts";
 import { MarkdownDocument } from "./MarkdownDocument.ts";
-import { PlatformConfig } from "./PlatformConfig.ts";
+import { PlatformConfig, PlatformFrontmatter } from "./PlatformConfig.ts";
 import {
   CollieFoundationDoesNotExistError,
   CollieModelValidationError,
+  ColliePlatformDoesNotExistError,
   ModelValidator,
 } from "./schemas/ModelValidator.ts";
 
@@ -18,6 +19,10 @@ export class FoundationRepository {
     private readonly foundationDir: string,
     private readonly config: FoundationConfig,
   ) {}
+
+  public get id(): string {
+    return this.config.id;
+  }
 
   public get name(): string {
     return this.config.name;
@@ -28,10 +33,10 @@ export class FoundationRepository {
   }
 
   findPlatform(platform: string) {
-    const p = this.config.platforms.find((x) => x.name === platform);
+    const p = this.config.platforms.find((x) => x.id === platform);
     if (!p) {
       throw new Error(
-        `Could not find platform named "${platform}" in configuration.`,
+        `Could not find platform with id "${platform}" in configuration.`,
       );
     }
 
@@ -49,7 +54,7 @@ export class FoundationRepository {
    * Resolve a path relative to a platform
    */
   resolvePlatformPath(platform: PlatformConfig, ...pathSegments: string[]) {
-    return this.resolvePath("platforms", platform.name, ...pathSegments);
+    return this.resolvePath("platforms", platform.id, ...pathSegments);
   }
 
   static async load(
@@ -72,7 +77,8 @@ export class FoundationRepository {
     );
 
     const config: FoundationConfig = {
-      name: foundation,
+      id: foundation,
+      name: foundationReadme.name || foundation,
       meshStack: foundationReadme.meshStack,
       platforms,
     };
@@ -121,7 +127,7 @@ export class FoundationRepository {
   }
 
   private static async readFoundationReadme(
-    kit: CollieRepository,
+    collie: CollieRepository,
     readmePath: string,
   ) {
     try {
@@ -130,8 +136,8 @@ export class FoundationRepository {
       if (error instanceof Deno.errors.NotFound) {
         throw new CollieFoundationDoesNotExistError(
           "Could not find a foundation configuration at " +
-            kit.relativePath(readmePath) +
-            ". Did you specify the wrong foundation name?",
+            collie.relativePath(readmePath) +
+            ". Did you specify the wrong foundation id?",
         );
       }
 
@@ -140,7 +146,7 @@ export class FoundationRepository {
   }
 
   private static async parsePlatformReadmes(
-    kit: CollieRepository,
+    collie: CollieRepository,
     foundationDir: string,
     validator: ModelValidator,
   ): Promise<PlatformConfig[]> {
@@ -151,17 +157,21 @@ export class FoundationRepository {
         root: foundationDir,
       })
     ) {
-      const text = await Deno.readTextFile(file.path);
-      const md = await MarkdownDocument.parse<PlatformConfig>(text);
+      const text = await this.readPlatformReadme(collie, file.path);
+      const md = await MarkdownDocument.parse<PlatformFrontmatter>(text);
 
       if (!md?.frontmatter) {
-        throw new Error(
-          "Failed to parse foundation at " + kit.relativePath(file.path),
+        throw new CollieModelValidationError(
+          "Failed to parse platform README frontmatter at " +
+            collie.relativePath(file.path),
+          [],
         );
       }
 
+      const id = path.basename(path.dirname(file.path));
       const config = {
-        name: path.basename(path.dirname(file.path)), // default the name to the directory name
+        id,
+        name: id, // default the name to the id - unless frontmatter overrides this
         ...md.frontmatter,
       };
 
@@ -169,7 +179,7 @@ export class FoundationRepository {
 
       if (errors) {
         throw new CollieModelValidationError(
-          "Invalid foundation at " + kit.relativePath(file.path),
+          "Invalid foundation at " + collie.relativePath(file.path),
           errors,
         );
       }
@@ -178,5 +188,24 @@ export class FoundationRepository {
     }
 
     return platforms;
+  }
+
+  private static async readPlatformReadme(
+    kit: CollieRepository,
+    readmePath: string,
+  ) {
+    try {
+      return await Deno.readTextFile(readmePath);
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        throw new ColliePlatformDoesNotExistError(
+          "Could not find a platform configuration at " +
+            kit.relativePath(readmePath) +
+            ". Did you specify the wrong platform id?",
+        );
+      }
+
+      throw error;
+    }
   }
 }

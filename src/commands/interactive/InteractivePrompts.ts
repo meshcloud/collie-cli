@@ -18,7 +18,7 @@ export class InteractivePrompts {
       message: "Select a platform",
       options: (
         await repo.platforms
-      ).map((x) => ({ name: x.name, value: x.name })),
+      ).map((x) => ({ name: x.id, value: x.id })),
     });
   }
 }

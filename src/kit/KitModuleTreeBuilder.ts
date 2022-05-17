@@ -19,7 +19,7 @@ export class KitModuleTreeBuilder {
       f.platforms.flatMap((p) =>
         p.modules.flatMap((m) => ({
           module: m.kitModulePath,
-          platform: `foundations/${f.foundation}/platforms/${p.platform.name}`,
+          platform: `foundations/${f.foundation}/platforms/${p.platform.id}`,
         }))
       )
     );

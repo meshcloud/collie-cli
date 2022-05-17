@@ -14,7 +14,7 @@ export class AzPlatformSetup extends PlatformSetup<PlatformConfigAzure> {
   async promptInteractively(): Promise<PlatformConfigAzure> {
     // todo: shoudl this be id of the platform instead?
     // todo: AZURE_CONFIG_DIR?
-    const name = await this.promptPlatformName();
+    const { id, name } = await this.promptPlatformName();
 
     this.progress("detecting available az accounts (subscriptions)");
 
@@ -39,7 +39,8 @@ export class AzPlatformSetup extends PlatformSetup<PlatformConfigAzure> {
     }
 
     return {
-      name: name,
+      id,
+      name,
       azure: {
         aadTenantId: subscription.tenantId,
         subscriptionId: subscription.id,
@@ -52,7 +53,7 @@ export class AzPlatformSetup extends PlatformSetup<PlatformConfigAzure> {
 
   preparePlatformDir(config: PlatformConfigAzure): Dir {
     return {
-      name: config.name,
+      name: config.id,
       entries: [
         { name: "README.md", content: this.generateAzureReadmeMd(config) },
       ],
@@ -62,7 +63,7 @@ export class AzPlatformSetup extends PlatformSetup<PlatformConfigAzure> {
   private generateAzureReadmeMd(config: PlatformConfigAzure): string {
     const frontmatter = config;
     const md = `
-# Azure
+# ${config.name}
   
 This Azure platform is set up in AAD Tenant ${config.azure.aadTenantId}.
 `;

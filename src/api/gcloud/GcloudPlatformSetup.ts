@@ -13,7 +13,7 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
 
   async promptInteractively(): Promise<PlatformConfigGcp> {
     // todo: shoudl this be id of the platform instead?
-    const name = await this.promptPlatformName();
+    const { id, name } = await this.promptPlatformName();
 
     this.progress("detecting available gcloud cli configurations");
 
@@ -37,7 +37,8 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
     }
 
     return {
-      name: name,
+      id,
+      name,
       gcp: {
         project: configuration.properties.core.project,
       },
@@ -51,7 +52,7 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
 
   preparePlatformDir(config: PlatformConfigGcp): Dir {
     return {
-      name: config.name,
+      name: config.id,
       entries: [{ name: "README.md", content: this.generateReadmeMd(config) }],
     };
   }
@@ -60,7 +61,7 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
     // TODO: include info about GCP org, not just the project
     const frontmatter = config;
     const md = `
-# GCP
+# ${config.name}
   
 This GCP platform uses the GCP Organization belonging to GCP project ${config.gcp.project}.
 `;

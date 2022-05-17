@@ -156,7 +156,7 @@ function renderEntries(foundation: string, entries: PlatformConfig[]) {
   if (!entries.length) {
     console.log(colors.italic("no platforms configured yet"));
   } else {
-    const list = entries.map((x) => `- ${x.name}`).join("\n");
+    const list = entries.map((x) => `- ${x.id}`).join("\n");
     console.log(list);
   }
 

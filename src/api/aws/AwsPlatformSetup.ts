@@ -13,7 +13,7 @@ export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
 
   async promptInteractively(): Promise<PlatformConfigAws> {
     // todo: shoudl this be id of the platform instead?
-    const name = await this.promptPlatformName();
+    const { id, name } = await this.promptPlatformName();
 
     this.progress("detecting available profiles");
 
@@ -59,7 +59,8 @@ export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
     });
 
     return {
-      name: name,
+      id,
+      name,
       aws: {
         accountAccessRole,
         accountId,
@@ -75,7 +76,7 @@ export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
 
   preparePlatformDir(config: PlatformConfigAws): Dir {
     return {
-      name: config.name,
+      name: config.id,
       entries: [
         { name: "README.md", content: this.generateAwsReadmeMd(config) },
       ],
@@ -85,7 +86,7 @@ export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
   private generateAwsReadmeMd(config: PlatformConfigAws): string {
     const frontmatter = config;
     const md = `
-# AWS
+# ${config.name}
   
 This AWS platform uses the AWS Organization with root account #${config.aws.accountId}.
 `;
