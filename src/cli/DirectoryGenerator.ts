@@ -14,7 +14,7 @@ export interface File {
 }
 
 function isFile(x: File | Dir): x is File {
-  return !!(x as File).content;
+  return (x as File).content !== undefined;
 }
 
 function isDir(x: File | Dir): x is Dir {

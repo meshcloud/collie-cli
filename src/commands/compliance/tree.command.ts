@@ -8,7 +8,10 @@ import {
   FoundationDependenciesTreeBuilder,
   FoundationsTree,
 } from "../../foundation/FoundationDependenciesTreeBuilder.ts";
-import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
+import {
+  FoundationDependencies,
+  KitDependencyAnalyzer,
+} from "../../kit/KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
@@ -24,6 +27,19 @@ interface TreeOptions {
   view: TreeView;
 }
 
+interface AnalyzeResults {
+  controls: ComplianceControlRepository;
+  dependencies: {
+    foundation: FoundationRepository;
+    results: FoundationDependencies;
+  }[];
+}
+
+const statementExample = `\tcompliance:
+\t- control: my/control # id of the control
+\t  statement: "description how this module implements measures towards this control"
+`;
+
 export function registerTreeCmd(program: Command) {
   program
     .command("tree")
@@ -33,25 +49,49 @@ export function registerTreeCmd(program: Command) {
       default: "control",
     })
     .action(async (opts: GlobalCommandOptions & TreeOptions) => {
-      const kit = new CollieRepository("./");
-      const logger = new Logger(kit, opts);
+      const repo = new CollieRepository("./");
+      const logger = new Logger(repo, opts);
 
-      await renderTree(logger, opts.view);
+      const results = await analyze(repo, logger);
+
+      if (!results.controls.all.length) {
+        logger.warn("no compliance controls found");
+        logger.tipCommand(
+          `To define a new compliance control run`,
+          `compliance new "my-control"`,
+        );
+        return;
+      }
+
+      const hasAnyApplicableStatements = results.dependencies.some((d) =>
+        d.results.platforms.some((p) =>
+          p.modules.some((m) => m.kitModule?.compliance?.length)
+        )
+      );
+
+      if (!hasAnyApplicableStatements) {
+        logger.warn("no compliance control statement found in a kit module");
+        logger.tip(
+          `Add a compliance section to your kit module frontmatter like this\n` +
+            statementExample,
+        );
+        return;
+      }
+
+      switch (opts.view) {
+        case TreeView.Foundation:
+          await renderFoundationTree(results);
+          break;
+        case TreeView.Control:
+          await renderControlTree(results);
+      }
     });
 }
 
-async function renderTree(logger: Logger, view: TreeView) {
-  switch (view) {
-    case TreeView.Foundation:
-      await renderFoundationTree(logger);
-      break;
-    case TreeView.Control:
-      await renderControlTree(logger);
-  }
-}
-
-async function analyze(logger: Logger) {
-  const repo = new CollieRepository("./");
+async function analyze(
+  repo: CollieRepository,
+  logger: Logger,
+): Promise<AnalyzeResults> {
   const validator = new ModelValidator(logger);
 
   const modules = await KitModuleRepository.load(repo, validator, logger);
@@ -77,9 +117,9 @@ async function analyze(logger: Logger) {
   return { controls, dependencies };
 }
 
-async function renderFoundationTree(logger: Logger) {
+function renderFoundationTree(results: AnalyzeResults) {
   // note: this is currently the same as "kit tree --view foundation"
-  const { dependencies } = await analyze(logger);
+  const { dependencies } = results;
 
   const foundations: FoundationsTree = {};
   dependencies.forEach(({ foundation, results }) => {
@@ -94,8 +134,8 @@ async function renderFoundationTree(logger: Logger) {
   console.log(renderedTree);
 }
 
-async function renderControlTree(logger: Logger) {
-  const { controls, dependencies } = await analyze(logger);
+function renderControlTree(results: AnalyzeResults) {
+  const { controls, dependencies } = results;
 
   const builder = new ComplianceControlTreeBuilder(controls);
 
