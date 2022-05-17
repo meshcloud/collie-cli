@@ -1,6 +1,7 @@
 import { Logger } from "../cli/Logger.ts";
 import { moment } from "../deps.ts";
 import { MeshError } from "../errors.ts";
+import { CollieCacheConfig } from "../model/CollieCacheConfig.ts";
 import { MeshAdapter } from "./MeshAdapter.ts";
 import { MeshTenant } from "./MeshTenantModel.ts";
 import { MeshTenantRepository } from "./MeshTenantRepository.ts";
@@ -14,6 +15,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
   constructor(
     private readonly repository: MeshTenantRepository,
     private readonly meshAdapter: MeshAdapter,
+    private readonly config: CollieCacheConfig,
     private readonly logger: Logger,
   ) {}
 
@@ -220,9 +222,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
 
     const age = now - lastCollection;
 
-    // TODO: make this configurable, e.g. via command line parameter
-    // TODO: also add a "--force" mode
-    const evictionDelayMs = 60 * 60 * 1000; // 1h
+    const evictionDelayMs = this.config.maxAgeSeconds * 1000;
 
     this.logDebug(
       () =>

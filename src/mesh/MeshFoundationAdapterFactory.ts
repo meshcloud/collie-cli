@@ -53,7 +53,11 @@ export class MeshFoundationAdapterFactory {
       );
 
       const repo = new MeshTenantRepository(
-        this.foundation.resolvePlatformPath(platform, "tenants"),
+        this.foundation.resolvePlatformPath(
+          platform,
+          "tenants",
+          ".collie-cache",
+        ),
         this.logger,
       );
 
@@ -64,6 +68,7 @@ export class MeshFoundationAdapterFactory {
       const adapterWithCache = new CachingMeshAdapterDecorator(
         repo,
         adapterWithStats,
+        platform.collie?.cache || { maxAgeSeconds: 3600 },
         this.logger,
       );
 

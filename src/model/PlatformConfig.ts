@@ -1,9 +1,13 @@
 import { CliToolEnv } from "./CliToolEnv.ts";
+import { CollieCacheConfig } from "./CollieCacheConfig.ts";
 
 export interface PlatformConfigBase {
   id: string;
   name: string;
   cli?: CliToolEnv;
+  collie?: {
+    cache?: CollieCacheConfig;
+  };
 }
 
 type AwsConfig = {

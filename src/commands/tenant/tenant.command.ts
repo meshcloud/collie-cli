@@ -25,10 +25,7 @@ export function registerTenantCommand(program: Command) {
       "-p, --platform <platform:string>", // todo: make optional -> deploy all platforms!
       "list tenants for this platform only",
     )
-    .globalOption(
-      "--refresh", // todo: make optional -> deploy all platforms!
-      "force refresh of any cached tenant state",
-    )
+    .globalOption("--refresh", "force refresh of any cached tenant state")
     .example(
       "List all tenants across all connected clouds in a table",
       `${CLI} tenant list`,

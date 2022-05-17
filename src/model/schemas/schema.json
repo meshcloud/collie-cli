@@ -18,10 +18,7 @@
           }
         }
       },
-      "required": [
-        "name",
-        "platforms"
-      ]
+      "required": ["name", "platforms"]
     },
     "FoundationFrontmatter": {
       "type": "object",
@@ -33,9 +30,7 @@
           "$ref": "#/definitions/MeshStackConfig"
         }
       },
-      "required": [
-        "name"
-      ]
+      "required": ["name"]
     },
     "MeshStackConfig": {
       "type": "object",
@@ -47,10 +42,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "apiUrl",
-        "credentialsFile"
-      ]
+      "required": ["apiUrl", "credentialsFile"]
     },
     "PlatformConfig": {
       "anyOf": [
@@ -74,6 +66,9 @@
         "cli": {
           "$ref": "#/definitions/CliToolEnv"
         },
+        "collie": {
+          "$ref": "#/definitions/CollieConfig"
+        },
         "aws": {
           "type": "object",
           "properties": {
@@ -84,16 +79,10 @@
               "type": "string"
             }
           },
-          "required": [
-            "accountId",
-            "accountAccessRole"
-          ]
+          "required": ["accountId", "accountAccessRole"]
         }
       },
-      "required": [
-        "aws",
-        "name"
-      ]
+      "required": ["aws", "name"]
     },
     "CliToolEnv": {
       "type": "object",
@@ -127,9 +116,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "AWS_PROFILE"
-      ]
+      "required": ["AWS_PROFILE"]
     },
     "GcloudCliEnv": {
       "type": "object",
@@ -138,9 +125,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "CLOUDSDK_ACTIVE_CONFIG_NAME"
-      ]
+      "required": ["CLOUDSDK_ACTIVE_CONFIG_NAME"]
     },
     "PlatformConfigGcp": {
       "type": "object",
@@ -151,6 +136,9 @@
         "cli": {
           "$ref": "#/definitions/CliToolEnv"
         },
+        "collie": {
+          "$ref": "#/definitions/CollieConfig"
+        },
         "gcp": {
           "type": "object",
           "properties": {
@@ -158,15 +146,10 @@
               "type": "string"
             }
           },
-          "required": [
-            "project"
-          ]
+          "required": ["project"]
         }
       },
-      "required": [
-        "gcp",
-        "name"
-      ]
+      "required": ["gcp", "name"]
     },
     "PlatformConfigAzure": {
       "type": "object",
@@ -176,6 +159,9 @@
         },
         "cli": {
           "$ref": "#/definitions/CliToolEnv"
+        },
+        "collie": {
+          "$ref": "#/definitions/CollieConfig"
         },
         "azure": {
           "type": "object",
@@ -187,16 +173,27 @@
               "type": "string"
             }
           },
-          "required": [
-            "aadTenantId",
-            "subscriptionId"
-          ]
+          "required": ["aadTenantId", "subscriptionId"]
         }
       },
-      "required": [
-        "azure",
-        "name"
-      ]
+      "required": ["azure", "name"]
+    },
+    "CollieConfig": {
+      "type": "object",
+      "properties": {
+        "cache": {
+          "$ref": "#/definitions/CollieCacheConfig"
+        }
+      }
+    },
+    "CollieCacheConfig": {
+      "type": "object",
+      "properties": {
+        "maxAgeSeconds": {
+          "type": "integer"
+        }
+      },
+      "required": ["maxAgeSeconds"]
     },
     "KitModule": {
       "type": "object",
@@ -214,10 +211,7 @@
           }
         }
       },
-      "required": [
-        "name",
-        "summary"
-      ]
+      "required": ["name", "summary"]
     },
     "KitModuleComplianceStatement": {
       "type": "object",
@@ -229,10 +223,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "control",
-        "statement"
-      ]
+      "required": ["control", "statement"]
     },
     "ComplianceControl": {
       "type": "object",
@@ -247,10 +238,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "name",
-        "summary"
-      ]
+      "required": ["name", "summary"]
     }
   }
 }
