@@ -1,12 +1,12 @@
 import { Command } from "../../deps.ts";
 import { registerDeployCmd } from "./deploy.command.ts";
-import { registerListCmd } from "./list.command.ts";
+import { registerConfigCmd } from "./config.command.ts";
 import { registerNewCmd } from "./new.command.ts";
 
 export function registerFoundationCommand(program: Command) {
   const foundationCommands = new Command();
   registerNewCmd(foundationCommands);
-  registerListCmd(foundationCommands);
+  registerConfigCmd(foundationCommands);
   registerDeployCmd(foundationCommands);
 
   program

@@ -10,9 +10,9 @@ import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import {
+  FoundationDependenciesTreeBuilder,
   FoundationsTree,
-  FoundationTreeBuilder,
-} from "../../foundation/FoundationTreeBuilder.ts";
+} from "../../foundation/FoundationDependenciesTreeBuilder.ts";
 
 enum TreeView {
   Kit = "kit",
@@ -76,7 +76,7 @@ async function renderFoundationTree(logger: Logger) {
 
   const foundations: FoundationsTree = {};
   dependencies.forEach(({ foundation, results }) => {
-    const builder = new FoundationTreeBuilder(foundation);
+    const builder = new FoundationDependenciesTreeBuilder(foundation);
     const tree = builder.build(results, { useColors: true });
     Object.assign(foundations, tree);
   });
