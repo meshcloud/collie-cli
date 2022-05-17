@@ -7,7 +7,7 @@ import {
   MeshTenantCost,
 } from "/mesh/MeshTenantModel.ts";
 import { GcloudCliFacade } from "./GcloudCliFacade.ts";
-import { Labels, Project } from "./Model.ts";
+import { Folder, folderId, Labels, Project } from "./Model.ts";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
@@ -17,38 +17,70 @@ import { MeshError } from "/errors.ts";
 import { TimeWindowCalculator } from "/mesh/TimeWindowCalculator.ts";
 import { moment } from "/deps.ts";
 import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
+import { PlatformConfigGcp } from "../../model/PlatformConfig.ts";
 
 // limit concurrency because we will run into azure rate limites for sure if we set this off all at once
 const concurrencyLimit = 8;
 
 export class GcloudMeshAdapter implements MeshAdapter {
   constructor(
-    private readonly gcpCli: GcloudCliFacade,
+    private readonly cli: GcloudCliFacade,
+    private readonly config: PlatformConfigGcp,
     private readonly timeWindowCalculator: TimeWindowCalculator,
     private readonly tenantChangeDetector: MeshTenantChangeDetector,
   ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
-    const projects = await this.gcpCli.listProjects();
+    const projects = await this.cli.listProjects();
 
-    return projects.map((x) => {
-      let tags: MeshTag[] = [];
-      if (x.labels) {
-        tags = Object.entries(x.labels).map(([key, value]) => {
-          return { tagName: key, tagValues: [value] };
-        });
-      }
+    const parents: Set<string> = await this.buildParentsSet();
 
-      return {
-        platformTenantId: x.projectId,
-        platformTenantName: x.name,
-        platform: MeshPlatform.GCP,
-        nativeObj: x,
-        tags: tags,
-        costs: [],
-        roleAssignments: [],
-      };
+    return projects
+      .filter((x) => parents.has(`${x.parent.type}s/${x.parent.id}`))
+      .map((x) => {
+        let tags: MeshTag[] = [];
+        if (x.labels) {
+          tags = Object.entries(x.labels).map(([key, value]) => {
+            return { tagName: key, tagValues: [value] };
+          });
+        }
+
+        return {
+          platformTenantId: x.projectId,
+          platformTenantName: x.name,
+          platform: MeshPlatform.GCP,
+          nativeObj: x,
+          tags: tags,
+          costs: [],
+          roleAssignments: [],
+        };
+      });
+  }
+
+  private async buildParentsSet(): Promise<Set<string>> {
+    const org = "organizations/" + this.config.gcp.organization;
+
+    const firstLevelFolders = await this.cli.listFolders({
+      organizationId: this.config.gcp.organization,
     });
+
+    const allFolders = await this.recursiveListFolders(firstLevelFolders);
+
+    return new Set([org, ...allFolders.map((x) => x.name)]);
+  }
+
+  private async recursiveListFolders(folders: Folder[]): Promise<Folder[]> {
+    if (!folders.length) {
+      return [];
+    }
+
+    const tasks = folders.map(
+      async (x) => await this.cli.listFolders({ folderId: folderId(x) }),
+    );
+
+    const childs = (await Promise.all(tasks)).flatMap((x) => x);
+
+    return [...folders, ...(await this.recursiveListFolders(childs))];
   }
 
   async updateMeshTenant(
@@ -65,7 +97,7 @@ export class GcloudMeshAdapter implements MeshAdapter {
       labels[x.tagName] = x.tagValues[0];
     });
 
-    await this.gcpCli.updateTags(updatedTenant.nativeObj as Project, labels);
+    await this.cli.updateTags(updatedTenant.nativeObj as Project, labels);
   }
 
   async attachTenantCosts(
@@ -73,7 +105,7 @@ export class GcloudMeshAdapter implements MeshAdapter {
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
-    const gcpCosts = await this.gcpCli.listCosts(startDate, endDate);
+    const gcpCosts = await this.cli.listCosts(startDate, endDate);
 
     for (const tenant of tenants) {
       const timeWindows = this.timeWindowCalculator.calculateTimeWindows(
@@ -120,7 +152,7 @@ export class GcloudMeshAdapter implements MeshAdapter {
   ): Promise<MeshTenantRoleAssignment[]> {
     const result: MeshTenantRoleAssignment[] = [];
 
-    const iamPolicies = await this.gcpCli.listIamPolicy(
+    const iamPolicies = await this.cli.listIamPolicy(
       tenant.nativeObj as Project,
     );
     for (const policy of iamPolicies) {

@@ -21,6 +21,7 @@ export type PlatformConfigAws = PlatformConfigBase & AwsConfig;
 
 type GcpConfig = {
   gcp: {
+    organization: string;
     project: string; // project name
     // todo: billing settings
   };

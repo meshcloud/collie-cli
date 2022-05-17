@@ -151,7 +151,9 @@ async function promptPlatformEntries(
 
 function renderEntries(foundation: string, entries: PlatformConfig[]) {
   console.log(
-    colors.bold(`Platforms configured for Foundation "${foundation}"`),
+    colors.bold(
+      `Will generate the following platform configurations under ./foundations/${foundation}/platforms/`,
+    ),
   );
   if (!entries.length) {
     console.log(colors.italic("no platforms configured yet"));

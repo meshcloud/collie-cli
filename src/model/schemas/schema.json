@@ -142,11 +142,14 @@
         "gcp": {
           "type": "object",
           "properties": {
+            "organization": {
+              "type": "string"
+            },
             "project": {
               "type": "string"
             }
           },
-          "required": ["project"]
+          "required": ["organization", "project"]
         }
       },
       "required": ["gcp", "name"]

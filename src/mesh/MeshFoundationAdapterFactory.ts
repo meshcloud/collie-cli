@@ -114,6 +114,7 @@ export class MeshFoundationAdapterFactory {
       const gcloud = this.facadeFactory.buildGcloud(config.cli?.gcloud, path);
       return new GcloudMeshAdapter(
         gcloud,
+        config,
         this.timeWindowCalc,
         this.tenantChangeDetector,
       );
