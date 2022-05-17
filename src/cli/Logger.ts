@@ -1,6 +1,7 @@
 import * as colors from "std/fmt/colors";
 import { CollieRepository } from "/model/CollieRepository.ts";
 import { GlobalCommandOptions } from "/commands/GlobalCommandOptions.ts";
+import { CLI } from "../info.ts";
 
 /**
  * Convenienve format utils we supply to logging methods callbacks. Using these methods simplifies common formatting
@@ -59,6 +60,11 @@ export class Logger {
 
   public tip(msg: string) {
     printTip(msg);
+  }
+
+  public tipCommand(msg: string, command: string) {
+    printTip(msg);
+    console.error(colors.cyan(`\t$ ${CLI} ${command}`));
   }
 }
 
