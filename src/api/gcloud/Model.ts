@@ -20,6 +20,37 @@ export interface Project {
   projectNumber: string;
 }
 
+export interface Organization {
+  displayName: string;
+
+  /**
+   * this is in the format organizations/$id
+   */
+  name: string;
+}
+
+export function organizationId(org: Organization) {
+  return org.name.substring("organizations/".length);
+}
+
+export interface Folder {
+  displayName: string;
+
+  /**
+   * this is in the format folders/$id
+   */
+  name: string;
+
+  /**
+   * this is a Folder.name or Organization.name
+   */
+  parent: string;
+}
+
+export function folderId(folder: Folder) {
+  return folder.name.substring("folders/".length);
+}
+
 export interface ProjectParent {
   id: string;
   type: string;

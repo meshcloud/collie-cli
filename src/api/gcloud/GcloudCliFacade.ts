@@ -1,8 +1,10 @@
 import {
   Configuration,
   CostBigQueryResult,
+  Folder,
   IamResponse,
   Labels,
+  Organization,
   Project,
 } from "./Model.ts";
 import { GcpErrorCode, MeshGcpPlatformError } from "/errors.ts";
@@ -28,6 +30,26 @@ export class GcloudCliFacade {
 
   async listProjects(): Promise<Project[]> {
     return await this.run<Project[]>(["gcloud", "projects", "list"]);
+  }
+
+  async listOrganizations(): Promise<Organization[]> {
+    return await this.run<Organization[]>(["gcloud", "organizations", "list"]);
+  }
+
+  async listFolders(
+    filter: { organizationId: string } | { folderId: string },
+  ): Promise<Folder[]> {
+    const baseCmd = ["gcloud", "resource-manager", "folders", "list"];
+
+    if ("organizationId" in filter) {
+      return await this.run([
+        ...baseCmd,
+        "--organization",
+        filter.organizationId,
+      ]);
+    } else {
+      return await this.run([...baseCmd, "--folder", filter.folderId]);
+    }
   }
 
   async updateTags(project: Project, labels: Labels): Promise<void> {

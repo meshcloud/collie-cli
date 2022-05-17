@@ -5,6 +5,7 @@ import { Dir } from "../../cli/DirectoryGenerator.ts";
 import { PlatformSetup } from "../PlatformSetup.ts";
 import { GcloudCliFacade } from "./GcloudCliFacade.ts";
 import { MeshError } from "../../errors.ts";
+import { organizationId } from "./Model.ts";
 
 export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
   constructor(private readonly gcloud: GcloudCliFacade) {
@@ -20,7 +21,7 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
     const configurations = await this.gcloud.configurationsList();
 
     const configurationName = await Select.prompt({
-      message: "Select a gcloud CLI configuraiton",
+      message: "Select a gcloud CLI configuration",
       options: configurations.map((x) => x.name),
       search: true,
       info: true,
@@ -36,10 +37,31 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
       );
     }
 
+    this.progress("detecting available GCP organizations");
+    const organizations = await this.gcloud.listOrganizations();
+
+    const organizationName = await Select.prompt({
+      message: "Select a GCP organization",
+      options: organizations.map((x) => ({
+        name: x.displayName,
+        value: x.name,
+      })),
+      search: true,
+      info: true,
+    });
+
+    const organization = organizations.find((x) => x.name === organizationName);
+    if (!organization) {
+      throw new MeshError(
+        "Could not find selected organization " + organizationName,
+      );
+    }
+
     return {
       id,
       name,
       gcp: {
+        organization: organizationId(organization),
         project: configuration.properties.core.project,
       },
       cli: {
