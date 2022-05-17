@@ -5,9 +5,9 @@ import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { ComplianceControlRepository } from "../../compliance/ComplianceControlRepository.ts";
 import {
+  FoundationDependenciesTreeBuilder,
   FoundationsTree,
-  FoundationTreeBuilder,
-} from "../../foundation/FoundationTreeBuilder.ts";
+} from "../../foundation/FoundationDependenciesTreeBuilder.ts";
 import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
@@ -83,10 +83,9 @@ async function renderFoundationTree(logger: Logger) {
 
   const foundations: FoundationsTree = {};
   dependencies.forEach(({ foundation, results }) => {
-    const builder = new FoundationTreeBuilder(foundation);
+    const builder = new FoundationDependenciesTreeBuilder(foundation);
     const tree = builder.build(results, {
       useColors: true,
-      platformTree: "modules",
     });
     Object.assign(foundations, tree);
   });

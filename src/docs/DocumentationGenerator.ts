@@ -4,7 +4,7 @@ import { jsonTree } from "x/json_tree";
 
 import { Dir, DirectoryGenerator, File } from "../cli/DirectoryGenerator.ts";
 import { Logger } from "../cli/Logger.ts";
-import { FoundationTreeBuilder } from "../foundation/FoundationTreeBuilder.ts";
+import { FoundationDependenciesTreeBuilder } from "../foundation/FoundationDependenciesTreeBuilder.ts";
 import {
   KitDependencyAnalyzer,
   KitModuleDependency,
@@ -246,7 +246,7 @@ This section describes the platforms.`;
   private generatePlatforDocumentation(
     dependencies: PlatformDependencies,
   ): string {
-    const builder = new FoundationTreeBuilder(this.foundation);
+    const builder = new FoundationDependenciesTreeBuilder(this.foundation);
 
     const moduleTree = builder.buildPlatformsTree([dependencies], {
       useColors: false,

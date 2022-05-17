@@ -29,7 +29,7 @@ export interface ModuleNode {
   controls: string[];
 }
 
-export class FoundationTreeBuilder {
+export class FoundationDependenciesTreeBuilder {
   constructor(private readonly foundation: FoundationRepository) {}
 
   build(

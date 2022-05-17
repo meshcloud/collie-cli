@@ -1,6 +1,5 @@
 import * as colors from "std/fmt/colors";
 
-import { CLI } from "/info.ts";
 import { QueryStatistics } from "../mesh/QueryStatistics.ts";
 import { MeshTable, TableGenerator } from "./mesh-table.ts";
 import { Presenter } from "./presenter.ts";
