@@ -107,3 +107,6 @@ dist
 
 # bin folder with build artifacts
 bin/
+
+# foundations folder used in local testing
+foundations/

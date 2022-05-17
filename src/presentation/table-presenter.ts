@@ -25,7 +25,7 @@ export class TablePresenter implements Presenter {
 
     if (stats.duration["cache"]) {
       summary.push(
-        `Loaded from cache in ${stats.duration.cache}ms. See "${CLI} cache" for details.`,
+        `Loaded from cache in ${stats.duration.cache}ms. Run collie with --refresh option to clear cache.`,
       );
     }
 

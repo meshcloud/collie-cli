@@ -7,9 +7,6 @@ import { parseJsonWithLog } from "../json.ts";
 import { MeshTenant } from "./MeshTenantModel.ts";
 import { Meta } from "./Meta.ts";
 
-/**
- * TODO: the cache and the cachingMeshAdapterDecorator have a somewhat unclear split of responsibilities between them
- */
 export class MeshTenantRepository {
   private readonly metaPath: string;
 
