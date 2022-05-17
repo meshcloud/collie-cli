@@ -43,7 +43,7 @@ export function registerConfigCmd(program: Command) {
         );
       } else {
         logger.warn("no foundations found");
-        logger.tip(`Generate a new foundation using\n\t${CLI} foundation new`);
+        logger.tipCommand(`Generate a new foundation using`, `foundation new`);
       }
     });
 }

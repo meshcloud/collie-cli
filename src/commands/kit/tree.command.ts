@@ -5,7 +5,10 @@ import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { KitModuleTreeBuilder } from "../../kit/KitModuleTreeBuilder.ts";
-import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
+import {
+  FoundationDependencies,
+  KitDependencyAnalyzer,
+} from "../../kit/KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
@@ -13,6 +16,7 @@ import {
   FoundationDependenciesTreeBuilder,
   FoundationsTree,
 } from "../../foundation/FoundationDependenciesTreeBuilder.ts";
+import { CLI } from "../../info.ts";
 
 enum TreeView {
   Kit = "kit",
@@ -32,47 +36,32 @@ export function registerTreeCmd(program: Command) {
       default: "kit",
     })
     .action(async (opts: GlobalCommandOptions & TreeOptions) => {
-      const kit = new CollieRepository("./");
-      const logger = new Logger(kit, opts);
+      const collie = new CollieRepository("./");
+      const logger = new Logger(collie, opts);
 
-      await renderTree(logger, opts.view);
+      const analyzeResults = await analyze(collie, logger);
+
+      if (analyzeResults.modules) {
+        logger.warn("no kit modules found");
+        logger.tipCommand(
+          `To define a new kit module run`,
+          `kit new "mymodule"`,
+        );
+        return;
+      }
+
+      switch (opts.view) {
+        case TreeView.Foundation:
+          renderFoundationTree(analyzeResults);
+          break;
+        case TreeView.Kit:
+          renderKitTree(analyzeResults);
+      }
     });
 }
 
-async function renderTree(logger: Logger, view: TreeView) {
-  switch (view) {
-    case TreeView.Foundation:
-      await renderFoundationTree(logger);
-      break;
-    case TreeView.Kit:
-      await renderKitTree(logger);
-  }
-}
-
-async function analyze(logger: Logger) {
-  const kit = new CollieRepository("./");
-  const validator = new ModelValidator(logger);
-
-  const modules = await KitModuleRepository.load(kit, validator, logger);
-  const foundations = await kit.listFoundations();
-
-  const tasks = foundations.map(async (f) => {
-    const foundation = await FoundationRepository.load(kit, f, validator);
-    const analyzer = new KitDependencyAnalyzer(kit, modules, logger);
-
-    return {
-      foundation,
-      results: await analyzer.findKitModuleDependencies(foundation),
-    };
-  });
-
-  const dependencies = await Promise.all(tasks);
-
-  return { modules, dependencies };
-}
-
-async function renderFoundationTree(logger: Logger) {
-  const { dependencies } = await analyze(logger);
+function renderFoundationTree(analyzeResults: AnalyzeResults) {
+  const { dependencies } = analyzeResults;
 
   const foundations: FoundationsTree = {};
   dependencies.forEach(({ foundation, results }) => {
@@ -85,8 +74,8 @@ async function renderFoundationTree(logger: Logger) {
   console.log(renderedTree);
 }
 
-async function renderKitTree(logger: Logger) {
-  const { modules, dependencies } = await analyze(logger);
+function renderKitTree(analyzeResults: AnalyzeResults) {
+  const { modules, dependencies } = analyzeResults;
 
   const builder = new KitModuleTreeBuilder(modules);
 
@@ -94,4 +83,36 @@ async function renderKitTree(logger: Logger) {
 
   const renderedTree = jsonTree(tree, true);
   console.log(renderedTree);
+}
+
+interface AnalyzeResults {
+  modules: KitModuleRepository;
+  dependencies: {
+    foundation: FoundationRepository;
+    results: FoundationDependencies;
+  }[];
+}
+
+async function analyze(
+  collie: CollieRepository,
+  logger: Logger,
+): Promise<AnalyzeResults> {
+  const validator = new ModelValidator(logger);
+
+  const modules = await KitModuleRepository.load(collie, validator, logger);
+  const foundations = await collie.listFoundations();
+
+  const tasks = foundations.map(async (f) => {
+    const foundation = await FoundationRepository.load(collie, f, validator);
+    const analyzer = new KitDependencyAnalyzer(collie, modules, logger);
+
+    return {
+      foundation,
+      results: await analyzer.findKitModuleDependencies(foundation),
+    };
+  });
+
+  const dependencies = await Promise.all(tasks);
+
+  return { modules, dependencies };
 }
