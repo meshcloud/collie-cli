@@ -8,6 +8,8 @@ import { CLI } from "../../info.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { InteractivePrompts } from "./InteractivePrompts.ts";
+import { prepareTenantCommand } from "../tenant/prepareTenantCommand.ts";
+import { detailViewTenant } from "./detailViewTenant.ts";
 
 export function registerInteractiveCommand(program: Command) {
   program
@@ -33,6 +35,7 @@ export async function startInteractiveMode(options: GlobalCommandOptions) {
       message: "Select what you want to do",
       options: [
         { name: "LIST ALL TENANTS", value: "alltenants" },
+        { name: "SEARCH TENANT", value: "searchtenant" },
         { name: "LIST ALL TENANTS WITH COST", value: "tenantcost" },
         { name: "EXPLORE TENANTS WITH MISSING TAGS", value: "exploremissing" },
         { name: "HELP", value: "help" },
@@ -44,6 +47,30 @@ export async function startInteractiveMode(options: GlobalCommandOptions) {
       case "alltenants": {
         console.clear();
         await listTenantAction({ ...options, refresh: false }, foundation);
+        break;
+      }
+      case "searchtenant": {
+        console.clear();
+        const { meshAdapter } = await prepareTenantCommand(
+          { ...options, refresh: false },
+          foundation,
+        );
+
+        const tenants = await meshAdapter.getMeshTenants();
+
+        const tenantId = await Select.prompt({
+          message: "select a tenant",
+          options: tenants.map((x) => ({
+            value: x.platformTenantId,
+            name:
+              `${x.platformTenantName} (${x.platform} ${x.platformTenantId})`,
+          })),
+          search: true,
+          info: true,
+        });
+
+        await detailViewTenant(meshAdapter, tenants, tenantId, false);
+
         break;
       }
       case "tenantcost": {
