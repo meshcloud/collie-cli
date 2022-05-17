@@ -1,6 +1,6 @@
 import { Command } from "../../deps.ts";
-import { registerNewCmd } from "./new.ts";
-import { registerTreeCmd } from "./tree.ts";
+import { registerNewCmd } from "./new.command.ts";
+import { registerTreeCmd } from "./tree.command.ts";
 
 export function registerComplianceCommand(program: Command) {
   const complianceCommands = new Command();

@@ -84,7 +84,10 @@ async function renderFoundationTree(logger: Logger) {
   const foundations: FoundationsTree = {};
   dependencies.forEach(({ foundation, results }) => {
     const builder = new FoundationTreeBuilder(foundation);
-    const tree = builder.build(results, { useColors: true });
+    const tree = builder.build(results, {
+      useColors: true,
+      platformTree: "modules",
+    });
     Object.assign(foundations, tree);
   });
 
