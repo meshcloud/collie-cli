@@ -16,6 +16,6 @@
     "run": "deno run $(deno run --quiet --no-check ./flags.ts) ./src/main.ts",
     "check": "deno check --import-map src/import_map.json ./src/main.ts",
     "test": "deno test $(deno run --quiet --no-check ./flags.ts) src/",
-    "install": "deno install $(deno run --quiet --no-check ./flags.ts) -n collie src/main.ts"
+    "install": "deno install -f -n collie $(deno run --quiet --no-check ./flags.ts) src/main.ts"
   }
 }
