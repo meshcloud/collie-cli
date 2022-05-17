@@ -24,7 +24,7 @@ export class ComplianceControlTreeBuilder {
               control: c.control,
               module: m.kitModulePath,
               platform:
-                `foundations/${f.foundation}/platforms/${p.platform.name}`,
+                `foundations/${f.foundation}/platforms/${p.platform.id}`,
             })) || [],
         )
       )

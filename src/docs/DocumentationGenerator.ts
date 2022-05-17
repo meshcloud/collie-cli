@@ -78,7 +78,7 @@ export class DocumentationGenerator {
   private generateFoundationReadme() {
     // TODO: replace this with an actual README.md file and then just append the platform links?
     const platformLinks = this.foundation.platforms
-      .map((x) => `- [${x.name}](./platforms/${x.name}/)`)
+      .map((x) => `- [${x.id}](./platforms/${x.id}/)`)
       .join("\n");
 
     const md = `# Cloud Foundation ${this.foundation.name}
@@ -203,7 +203,7 @@ export default defineUserConfig<DefaultThemeOptions, ViteBundlerOptions>({
 
   private generatePackageJson() {
     const config = {
-      name: this.foundation.name + "-docs",
+      name: this.foundation.id + "-docs",
       version: "1.0.0",
       private: "true",
       scripts: {
@@ -232,7 +232,7 @@ export default defineUserConfig<DefaultThemeOptions, ViteBundlerOptions>({
       );
 
     return foundationDependencies.platforms.map((p) => ({
-      name: p.platform.name + ".md",
+      name: p.platform.id + ".md",
       content: this.generatePlatforDocumentation(p),
     }));
   }

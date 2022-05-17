@@ -93,3 +93,4 @@ export class CollieModelValidationError extends MeshError {
 }
 
 export class CollieFoundationDoesNotExistError extends MeshError {}
+export class ColliePlatformDoesNotExistError extends MeshError {}
