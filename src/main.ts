@@ -13,7 +13,7 @@ import { registerCreateIssueCommand } from "./commands/create-issue.command.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.command.ts";
 import { registerKitCommand } from "./commands/kit/kit.command.ts";
 import { registerFoundationCommand } from "./commands/foundation/foundation.command.ts";
-import { registerComplianceCommand } from "./commands/compliance/compliance.ts";
+import { registerComplianceCommand } from "./commands/compliance/compliance.command.ts";
 import { registerDocsCommand } from "./commands/foundation/docs.command.ts";
 import { OutputFormatType } from "./commands/GlobalCommandOptions.ts";
 import { registerVersionCommand } from "./commands/version.command.ts";
