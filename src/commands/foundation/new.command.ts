@@ -15,6 +15,7 @@ import { AzPlatformSetup } from "../../api/az/AzPlatformSetup.ts";
 import { GcloudPlatformSetup } from "../../api/gcloud/GcloudPlatformSetup.ts";
 import { PlatformSetup } from "../../api/PlatformSetup.ts";
 import { MeshError } from "../../errors.ts";
+import { CLI } from "../../info.ts";
 
 export function registerNewCmd(program: Command) {
   program
@@ -30,7 +31,6 @@ export function registerNewCmd(program: Command) {
 
       const platformEntries = await promptPlatformEntries(foundation, factory);
 
-      // tbd: generate platform based on authenticated CLIs
       const dir = new DirectoryGenerator(WriteMode.skip, logger);
       const d: Dir = {
         name: foundationPath,
@@ -46,7 +46,7 @@ export function registerNewCmd(program: Command) {
       await dir.write(d, "");
 
       logger.progress(
-        "generated new foundation " + repo.relativePath(foundationPath),
+        "generated new foundation at " + repo.relativePath(foundationPath),
       );
     });
 }
@@ -80,12 +80,12 @@ async function promptPlatformEntries(
   await prompt([
     {
       name: "action",
-      message: "What do you want to do?",
+      message: "Select an action to continue",
       type: Select,
       options: [
         { value: "add", name: `${colors.green("+")} add cloud platform` },
-        { value: "done", name: `${colors.green("✔")} done` },
-        { value: "cancel", name: `${colors.red("x")} cancel` },
+        { value: "done", name: `${colors.green("✔")} save & exit` },
+        { value: "cancel", name: `${colors.red("x")} exit` },
       ],
       hint:
         "After completing the setup, you can always edit the generated foundation configuration files manually.",
@@ -152,13 +152,18 @@ async function promptPlatformEntries(
 function renderEntries(foundation: string, entries: PlatformConfig[]) {
   console.log(
     colors.bold(
-      `Will generate the following platform configurations under ./foundations/${foundation}/platforms/`,
+      `Interactively configure your new cloud foundation "${foundation}"`,
     ),
   );
+  console.log(
+    `${CLI} will generate the following platform configurations under ./foundations/${foundation}/platforms/`,
+  );
+  console.log();
+
   if (!entries.length) {
-    console.log(colors.italic("no platforms configured yet"));
+    console.log(colors.italic("\tno platforms configured yet"));
   } else {
-    const list = entries.map((x) => `- ${x.id}`).join("\n");
+    const list = entries.map((x) => `\t- ${x.id}`).join("\n");
     console.log(list);
   }
 
