@@ -16,7 +16,6 @@ import {
   FoundationDependenciesTreeBuilder,
   FoundationsTree,
 } from "../../foundation/FoundationDependenciesTreeBuilder.ts";
-import { CLI } from "../../info.ts";
 
 enum TreeView {
   Kit = "kit",
