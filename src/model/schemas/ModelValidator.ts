@@ -34,7 +34,15 @@ export class ModelValidator {
   }
 
   public validatePlatformConfig(data: Partial<PlatformConfig>) {
-    return this.validate("PlatformConfig", data);
+    const result = this.validate("PlatformConfig", data);
+
+    // unforuntately AJV gives us errors for all branches of the oneOf
+    // not just the one that has been selected. So we try to remove those misleading errors here
+    const errorsWithoutIrrelevantOneOfBranches = result.errors?.filter(
+      (x) => !(x.instancePath === "" && x.keyword === "required"),
+    );
+
+    return { data: result.data, errors: errorsWithoutIrrelevantOneOfBranches };
   }
 
   public validateKitModule(data: Partial<KitModule>) {
@@ -84,7 +92,7 @@ export class CollieModelValidationError extends MeshError {
     const formattedErrors = [
       message,
       ...errors.map(
-        (x) => `\t${x.instancePath.replaceAll("/", ".")} - ${x.message}`,
+        (x) => `\t- "${x.instancePath.replaceAll("/", ".")}" ${x.message}`,
       ),
     ].join("\n");
 

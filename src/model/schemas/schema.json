@@ -45,7 +45,7 @@
       "required": ["apiUrl", "credentialsFile"]
     },
     "PlatformConfig": {
-      "anyOf": [
+      "oneOf": [
         {
           "$ref": "#/definitions/PlatformConfigAws"
         },
