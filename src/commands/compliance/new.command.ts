@@ -1,3 +1,5 @@
+import * as path from "std/path";
+
 import { Command, Input } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
@@ -50,5 +52,6 @@ async function generateControl(controlPath: string, name: string) {
   const md = new MarkdownDocument<ComplianceControl>(control, document);
   const text = md.format();
 
+  await Deno.mkdir(path.dirname(controlPath), { recursive: true });
   await Deno.writeTextFile(controlPath, text);
 }
