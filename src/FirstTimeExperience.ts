@@ -8,7 +8,7 @@ export class FirstTimeExperience {
     const foundations = await collie.listFoundations();
     if (!foundations.length) {
       printTip(
-        "Looks like collie has no ☁️ to herd here - run 'collie foundation new' to set up your clouds",
+        "Looks like collie has no ☁️ to herd here - run 'collie init' to set up a new collie repository",
       );
     }
   }
