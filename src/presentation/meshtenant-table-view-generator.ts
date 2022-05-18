@@ -1,3 +1,5 @@
+import { groupBy } from "std/collections";
+
 import { MeshPlatforms, MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { TableGenerator } from "./mesh-table.ts";
 
@@ -22,8 +24,7 @@ export class MeshTenantTableViewGenerator extends TableGenerator {
           row[index] = this.formatMeshTags(meshTenant.tags);
         } else {
           const x = header as keyof typeof meshTenant;
-          row[index] = meshTenant[x]
-            .toString();
+          row[index] = meshTenant[x].toString();
         }
       });
       rows.push(row);
@@ -32,11 +33,9 @@ export class MeshTenantTableViewGenerator extends TableGenerator {
   }
 
   getInfo(): string {
-    const counts = MeshPlatforms.map((mp) => {
-      const count = this.meshTenants.filter((mt) => mt.platform === mp).length;
-      return `${mp}: ${count}`;
-    });
+    const counts = groupBy(this.meshTenants, (x) => x.platformId);
+    const stats = Object.entries(counts).map(([k, v]) => `${k}: ${v?.length}`);
 
-    return counts.join(", ");
+    return stats.join(", ");
   }
 }

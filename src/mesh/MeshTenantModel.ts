@@ -8,11 +8,11 @@ export interface MeshTag {
   tagValues: string[];
 }
 
-// todo: this may need an association to the platform name as well in the model
 export interface MeshTenant {
   platformTenantId: string;
   platformTenantName: string;
-  platform: MeshPlatform;
+  platformType: MeshPlatform;
+  platformId: string;
   tags: MeshTag[];
   nativeObj: Account | Subscription | Project;
   costs: MeshTenantCost[];

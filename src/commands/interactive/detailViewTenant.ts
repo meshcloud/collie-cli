@@ -21,7 +21,7 @@ export async function detailViewTenant(
   console.log("--------------------------\n \n");
   console.log("Name: " + selectedTenant?.platformTenantName);
   console.log("ID: " + selectedTenant?.platformTenantId);
-  console.log("Platform: " + selectedTenant?.platform);
+  console.log("Platform: " + selectedTenant?.platformId);
 
   if (selectedTenant) {
     // ensure we have IAM data

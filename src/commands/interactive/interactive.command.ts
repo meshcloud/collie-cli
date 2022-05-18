@@ -63,7 +63,7 @@ export async function startInteractiveMode(options: GlobalCommandOptions) {
           options: tenants.map((x) => ({
             value: x.platformTenantId,
             name:
-              `${x.platformTenantName} (${x.platform} ${x.platformTenantId})`,
+              `${x.platformTenantName} (${x.platformId} ${x.platformTenantId})`,
           })),
           search: true,
           info: true,

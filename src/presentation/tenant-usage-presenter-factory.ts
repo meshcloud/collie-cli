@@ -11,9 +11,7 @@ import { MeshTableFactory } from "./mesh-table-factory.ts";
 import { QueryStatistics } from "../mesh/QueryStatistics.ts";
 
 export class TenantUsagePresenterFactory {
-  constructor(
-    private readonly tableFactory: MeshTableFactory,
-  ) {}
+  constructor(private readonly tableFactory: MeshTableFactory) {}
 
   buildPresenter(
     format: OutputFormat,
@@ -39,14 +37,7 @@ export class TenantUsagePresenterFactory {
   ): Presenter {
     const costTableViewGenerator = new MeshTenantCostTableViewGenerator(
       meshTenant,
-      [
-        "relatedTenant",
-        "cost",
-        "currency",
-        "from",
-        "to",
-        "tags",
-      ],
+      ["relatedTenant", "cost", "currency", "from", "to", "tags"],
     );
 
     return new TablePresenter(
@@ -56,14 +47,11 @@ export class TenantUsagePresenterFactory {
     );
   }
 
-  private buildCsvPresenter(
-    meshTenants: MeshTenant[],
-  ): Presenter {
-    return new CsvTenantUsagePresenter([
-      "platform",
-      "platformTenantName",
-      "platformTenantId",
-    ], meshTenants);
+  private buildCsvPresenter(meshTenants: MeshTenant[]): Presenter {
+    return new CsvTenantUsagePresenter(
+      ["platformId", "platformTenantName", "platformTenantId"],
+      meshTenants,
+    );
   }
 
   private buildJsonPresenter(meshTenant: MeshTenant[]): Presenter {

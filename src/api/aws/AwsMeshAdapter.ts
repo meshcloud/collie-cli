@@ -15,6 +15,7 @@ import {
   MeshRoleAssignmentSource,
 } from "/mesh/MeshIamModel.ts";
 import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
+import { PlatformConfigAws } from "../../model/PlatformConfig.ts";
 
 // limit concurrency because we will run into aws rate limites for sure if we set this off all at once
 const concurrencyLimit = 5;
@@ -27,7 +28,7 @@ export class AwsMeshAdapter implements MeshAdapter {
    */
   constructor(
     private readonly awsCli: AwsCliFacade,
-    private readonly roleNameToAssume: string,
+    private readonly config: PlatformConfigAws,
     private readonly tenantChangeDetector: MeshTenantChangeDetector,
   ) {}
 
@@ -47,7 +48,8 @@ export class AwsMeshAdapter implements MeshAdapter {
         return {
           platformTenantId: account.Id,
           platformTenantName: account.Name,
-          platform: MeshPlatform.AWS,
+          platformType: MeshPlatform.AWS,
+          platformId: this.config.id,
           nativeObj: account,
           tags: meshTags,
           costs: [],
@@ -133,7 +135,7 @@ export class AwsMeshAdapter implements MeshAdapter {
       // we assume the role lives in his current caller account and try to assume it with this
       // arn.
       const assumeRoleArn =
-        `arn:aws:iam::${account.Id}:role/${this.roleNameToAssume}`;
+        `arn:aws:iam::${account.Id}:role/${this.config.aws.accountAccessRole}`;
       // Assume the role to execute the following commands from the account context.
       // This can fail if the role to assume does not exist in the target account.
 
