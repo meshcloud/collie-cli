@@ -15,14 +15,14 @@ export function registerVersionCommand(program: Command) {
     async function (this: Command) {
       console.log("collie %s\n", this.getVersion());
 
-      const kit = new CollieRepository("./");
-      const logger = new Logger(kit, {
+      const collie = new CollieRepository("./");
+      const logger = new Logger(collie, {
         debug: false,
         verbose: false,
         output: OutputFormat.TABLE,
       });
 
-      const factory = new CliApiFacadeFactory(logger);
+      const factory = new CliApiFacadeFactory(collie, logger);
 
       const detectors = factory.buildCliDetectors();
 

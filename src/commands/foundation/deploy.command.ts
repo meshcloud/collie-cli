@@ -1,8 +1,7 @@
 import {
-  Terragrunt,
   TerragruntRunMode,
   toVerb,
-} from "/api/terragrunt/Terragrunt.ts";
+} from "/api/terragrunt/TerragruntCliFacade.ts";
 
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
@@ -12,8 +11,7 @@ import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { PlatformDeployerFactory } from "../../foundation/PlatformDeployerFactory.ts";
-import { buildTransparentProcessRunner } from "./buildTransparentProcessRunner.ts";
-import { DefaultsProcessRunnerDecorator } from "../../process/DefaultsProcessRunnerDecorator.ts";
+import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 
 interface DeployOptions {
   platform: string;
@@ -128,7 +126,9 @@ async function deployFoundation(
   opts: GlobalCommandOptions & DeployOptions,
   logger: Logger,
 ) {
-  const terragrunt = buildTerragrunt(logger, opts);
+  const factory = new CliApiFacadeFactory(repo, logger);
+
+  const terragrunt = buildTerragrunt(opts, factory);
 
   const platforms = opts.platform
     ? [foundation.findPlatform(opts.platform)]
@@ -165,22 +165,21 @@ async function deployFoundation(
   }
 }
 
-function buildTerragrunt(logger: Logger, opts: DeployOptions) {
-  const processRunner = buildTransparentProcessRunner(logger);
-
-  const args = [];
-  if (opts.autoApprove) {
-    args.push("--auto-approve");
-  }
-
-  const d = new DefaultsProcessRunnerDecorator(processRunner, {}, args);
-
-  return new Terragrunt(d);
-}
-
 /**
  * A null object that allows us to skip reporting for foundation/platform progress when those are not needed
  */
 class NullProgressReporter {
   done(): void {}
+}
+
+function buildTerragrunt(
+  opts: GlobalCommandOptions & DeployOptions,
+  factory: CliApiFacadeFactory,
+) {
+  const args = [];
+  if (opts.autoApprove) {
+    args.push("--auto-approve");
+  }
+
+  return factory.buildTerragrunt(args);
 }

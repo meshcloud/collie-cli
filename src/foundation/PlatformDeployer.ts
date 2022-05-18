@@ -1,10 +1,10 @@
 import * as fs from "std/fs";
 
 import {
-  Terragrunt,
+  TerragruntCliFacade,
   TerragruntRunMode,
   toVerb,
-} from "/api/terragrunt/Terragrunt.ts";
+} from "/api/terragrunt/TerragruntCliFacade.ts";
 import { FoundationRepository } from "/model/FoundationRepository.ts";
 import {
   PlatformConfig,
@@ -21,7 +21,7 @@ export abstract class PlatformDeployer<T extends PlatformConfig> {
     protected readonly platform: T,
     private readonly repo: CollieRepository,
     protected readonly foundation: FoundationRepository,
-    private readonly terragrunt: Terragrunt,
+    private readonly terragrunt: TerragruntCliFacade,
     private readonly logger: Logger,
   ) {}
 

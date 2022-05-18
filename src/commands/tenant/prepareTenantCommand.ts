@@ -25,7 +25,7 @@ export async function prepareTenantCommand(
     validator,
   );
 
-  const facadeFactory = new CliApiFacadeFactory(logger);
+  const facadeFactory = new CliApiFacadeFactory(collieRepo, logger);
   const meshAdapterFactory = new MeshFoundationAdapterFactory(
     collieRepo,
     foundationRepo,

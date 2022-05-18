@@ -1,8 +1,8 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
+import { TerraformDocsCliFacade } from "../api/terraform-docs/TerraformDocsCliFacade.ts";
 
 import { Logger } from "../cli/Logger.ts";
-import { TerraformDocs } from "../api/terraform-docs/TerraformDocs.ts";
 import { ProgressReporter } from "../cli/ProgressReporter.ts";
 import { ComplianceControlRepository } from "../compliance/ComplianceControlRepository.ts";
 import { KitModuleRepository } from "../kit/KitModuleRepository.ts";
@@ -14,7 +14,7 @@ export class KitModuleDocumentationGenerator {
     private readonly kit: CollieRepository,
     private readonly kitModules: KitModuleRepository,
     private readonly controls: ComplianceControlRepository,
-    private readonly tfdocs: TerraformDocs,
+    private readonly tfdocs: TerraformDocsCliFacade,
     private readonly logger: Logger,
   ) {}
 
