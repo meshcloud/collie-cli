@@ -2,7 +2,7 @@ import { KitModule } from "./KitModule.ts";
 
 export interface ParsedKitModule {
   /**
-   * The id of this module is the kit-relative path to directory of the kit module
+   * The id of this module is the relative path from the kit/ directory in the CollieRepository
    */
   id: string;
 

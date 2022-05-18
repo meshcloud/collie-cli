@@ -80,7 +80,7 @@ export class KitModuleParser {
     }
 
     return {
-      id: id,
+      id: id.substring("kit/".length),
       definitionPath: relativeReadmePath,
       kitModule: document.frontmatter,
       readme: document.document,

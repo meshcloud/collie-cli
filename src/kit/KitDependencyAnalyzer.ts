@@ -110,13 +110,13 @@ export class KitDependencyAnalyzer {
       return;
     }
 
-    const kitModulePath = kitModuleSource.replace("${get_repo_root()}//", "");
+    const kitModuleId = kitModuleSource.replace("${get_repo_root()}//kit/", "");
 
-    const kitModule = this.kitModules.tryFindById(kitModulePath);
+    const kitModule = this.kitModules.tryFindById(kitModuleId);
 
     if (!kitModule) {
       const msg =
-        `Could not find kit module with id ${kitModulePath} included from ${sourcePath}`;
+        `Could not find kit module with id ${kitModuleId} included from ${sourcePath}`;
       this.logger.warn(msg);
     }
 
@@ -127,7 +127,7 @@ export class KitDependencyAnalyzer {
 
     return {
       sourcePath,
-      kitModulePath,
+      kitModulePath: path.join("kit", kitModuleId),
       kitModule,
       kitModuleOutputPath,
       kitModuleOutput,
