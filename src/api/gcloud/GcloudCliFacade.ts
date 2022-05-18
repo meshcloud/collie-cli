@@ -7,21 +7,14 @@ import {
   Organization,
   Project,
 } from "./Model.ts";
-import { GcpErrorCode, MeshGcpPlatformError } from "/errors.ts";
-import {
-  GcpBillingExportConfig,
-  GcpCostCollectionViewName,
-} from "./GcpBillingExportConfig.ts";
 import { parseJsonWithLog } from "/json.ts";
 import { moment } from "/deps.ts";
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
-import { CLI } from "../../info.ts";
 
 export class GcloudCliFacade {
   constructor(
     private readonly processRunner: IProcessRunner<ProcessResultWithOutput>,
-    private readonly billingConfig?: GcpBillingExportConfig,
   ) {}
 
   async configurationsList(): Promise<Configuration[]> {
@@ -85,16 +78,13 @@ export class GcloudCliFacade {
   async listCosts(
     startDate: Date,
     endDate: Date,
+    options: {
+      project: string;
+      dataset: string;
+      view: string;
+    },
   ): Promise<CostBigQueryResult[]> {
-    if (!this.billingConfig) {
-      throw new MeshGcpPlatformError(
-        GcpErrorCode.GCP_CLI_GENERAL,
-        `${CLI} is not configured for GCP cost reporting`,
-      );
-    }
-    const billingProject = this.billingConfig.projectId;
-    const viewName =
-      `${billingProject}.${this.billingConfig.datasetName}.${GcpCostCollectionViewName}`;
+    const viewName = `${options.project}.${options.dataset}.${options.view}`;
     const format = "YYYYMM";
     const start = moment(startDate).format(format);
     const end = moment(endDate).format(format);
@@ -104,7 +94,7 @@ export class GcloudCliFacade {
     const command = [
       "bq",
       "--project_id",
-      billingProject,
+      options.project,
       "query",
       "--format",
       "json",

@@ -13,7 +13,7 @@ import {
   MeshRoleAssignmentSource,
   MeshTenantRoleAssignment,
 } from "/mesh/MeshIamModel.ts";
-import { MeshError } from "/errors.ts";
+import { GcpErrorCode, MeshError, MeshGcpPlatformError } from "/errors.ts";
 import { TimeWindowCalculator } from "/mesh/TimeWindowCalculator.ts";
 import { moment } from "/deps.ts";
 import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
@@ -105,7 +105,18 @@ export class GcloudMeshAdapter implements MeshAdapter {
     startDate: Date,
     endDate: Date,
   ): Promise<void> {
-    const gcpCosts = await this.cli.listCosts(startDate, endDate);
+    if (!this.config.gcp.billingExport) {
+      throw new MeshGcpPlatformError(
+        GcpErrorCode.GCP_CLI_GENERAL,
+        `platform ${this.config.id} is not configured for GCP cost reporting`,
+      );
+    }
+
+    const gcpCosts = await this.cli.listCosts(
+      startDate,
+      endDate,
+      this.config.gcp.billingExport,
+    );
 
     for (const tenant of tenants) {
       const timeWindows = this.timeWindowCalculator.calculateTimeWindows(

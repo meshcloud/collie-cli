@@ -23,7 +23,11 @@ type GcpConfig = {
   gcp: {
     organization: string;
     project: string; // project name
-    // todo: billing settings
+    billingExport?: {
+      project: string;
+      dataset: string;
+      view: string;
+    };
   };
 };
 

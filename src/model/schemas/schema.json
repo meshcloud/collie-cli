@@ -147,6 +147,21 @@
             },
             "project": {
               "type": "string"
+            },
+            "billingExport": {
+              "type": "object",
+              "properties": {
+                "project": {
+                  "type": "string"
+                },
+                "dataset": {
+                  "type": "string"
+                },
+                "view": {
+                  "type": "string"
+                }
+              },
+              "required": ["project", "dataset", "view"]
             }
           },
           "required": ["organization", "project"]
