@@ -98,6 +98,9 @@ export class ComplianceControlParser {
 
   private toId(relativeControlPath: string) {
     const components = path.parse(relativeControlPath);
-    return path.join(components.dir, components.name);
+    return path.join(
+      components.dir.substring("compliance/".length),
+      components.name,
+    );
   }
 }
