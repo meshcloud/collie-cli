@@ -7,6 +7,7 @@ import { printTip } from "./cli/Logger.ts";
 import { CLI, VERSION } from "./info.ts";
 import { isWindows } from "./os.ts";
 import { OutputFormat } from "/presentation/output-format.ts";
+import { registerInitCommand } from "./commands/init.command.ts";
 import { registerFeedbackCommand } from "./commands/feedback.command.ts";
 import { registerTenantCommand } from "./commands/tenant/tenant.command.ts";
 import { registerCreateIssueCommand } from "./commands/create-issue.command.ts";
@@ -45,6 +46,7 @@ async function collie() {
       `${CLI} CLI - herd your clouds 🐑. Built with love by meshcloud.io`,
     );
 
+  registerInitCommand(program);
   registerFoundationCommand(program);
   registerTenantCommand(program);
   registerKitCommand(program);
@@ -73,7 +75,8 @@ async function collie() {
   } catch (e) {
     if (e instanceof CommandOptionError) {
       // if the error indicates a user error, e.g. wrong typing then display the message and the help.
-      program.showHelp();
+      console.error(colors.red(e.message));
+      printTip(`run ${CLI} with --help for usage instructions`);
     } else if (e instanceof CollieFoundationDoesNotExistError) {
       // for our own errors, only display message and then exit
       console.error(colors.red(e.message));
@@ -81,12 +84,12 @@ async function collie() {
     } else if (e instanceof MeshError) {
       // for our own errors, only display message and then exit
       console.error(colors.red(e.message));
-      printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
+      printTip(`run ${CLI} with --verbose and --debug flags for more details`);
     } else if (e instanceof Error) {
       // for unexpected errors, raise the full message and stacktrace
       // note that .stack includes the exception message
       console.error(colors.red(e.stack || ""));
-      printTip(`run ${CLI} with --verbose and --debug flags for more details.`);
+      printTip(`run ${CLI} with --verbose and --debug flags for more details`);
     }
 
     Deno.exit(1);
