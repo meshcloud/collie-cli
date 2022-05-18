@@ -24,7 +24,7 @@ export function registerApplyCmd(program: Command) {
   program
     .command("apply [module]")
     .option("-f, --foundation <foundation:string>", "foundation")
-    .option("-p, --platform <platform:string>", "platform", {
+    .option("-p, --platform <platform:platform>", "platform", {
       depends: ["foundation"],
     })
     .description("apply an existing cloud foundation kit module to a platform")

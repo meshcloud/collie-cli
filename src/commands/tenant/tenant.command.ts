@@ -28,7 +28,7 @@ export function registerTenantCommand(program: Command) {
       default: OutputFormat.TABLE,
     })
     .globalOption(
-      "-p, --platform <platform:string>", // todo: make optional -> deploy all platforms!
+      "-p, --platform <platform:platform>",
       "list tenants for this platform only",
     )
     .globalOption("--refresh", "force refresh of any cached tenant state")
