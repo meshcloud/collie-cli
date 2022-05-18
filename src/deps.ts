@@ -15,6 +15,7 @@ export {
   Command,
   CompletionsCommand,
   EnumType,
+  StringType,
   Type,
 } from "https://deno.land/x/cliffy@v0.22.2/command/mod.ts";
 export type { ITypeInfo } from "https://deno.land/x/cliffy@v0.22.2/command/mod.ts";

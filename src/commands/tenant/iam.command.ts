@@ -16,7 +16,7 @@ interface IamCommandOptions extends GlobalCommandOptions {
 
 export function registerIamCommand(program: Command) {
   program
-    .command("iam <foundation>")
+    .command("iam <foundation:foundation>")
     .description(
       "View all IAM assets applied per tenant. This includes users, groups and technical users that are directly assigned to the tenant.",
     )
@@ -30,7 +30,7 @@ export function registerIamCommand(program: Command) {
     )
     .example(
       "List all tenants who have the user john.doe@example.com assigned",
-      `${CLI} tenant iam <foundation> --filter.principal john.doe@example.com`,
+      `${CLI} tenant iam <foundation:foundation> --filter.principal john.doe@example.com`,
     )
     .action(listIamAction);
 }

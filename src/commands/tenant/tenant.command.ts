@@ -6,6 +6,8 @@ import { registerCostCommand } from "./cost.command.ts";
 import { registerIamCommand } from "./iam.command.ts";
 import { registerAnalyzeTagCommand } from "./analyze-tag.command.ts";
 import { registerSetMissingTagCommand } from "./set-missing-tag.command.ts";
+import { OutputFormat } from "../../presentation/output-format.ts";
+import { OutputFormatType } from "../GlobalCommandOptions.ts";
 
 export function registerTenantCommand(program: Command) {
   const tenantCmd = new Command();
@@ -21,6 +23,10 @@ export function registerTenantCommand(program: Command) {
     .description(
       `List tenants in your cloud foundations and manage tags, cost and IAM`,
     )
+    .globalType("output", OutputFormatType)
+    .globalOption("-o --output [output:output]", "Defines the output format", {
+      default: OutputFormat.TABLE,
+    })
     .globalOption(
       "-p, --platform <platform:string>", // todo: make optional -> deploy all platforms!
       "list tenants for this platform only",

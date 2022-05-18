@@ -24,9 +24,10 @@ interface DeployOptions {
   upgrade: boolean;
   module?: string;
 }
+
 export function registerDeployCmd(program: Command) {
   program
-    .command("deploy <foundation>")
+    .command("deploy <foundation:foundation>")
     .option(
       "-p, --platform <platform:string>", // todo: make optional -> deploy all platforms!
       "the platform to deploy",

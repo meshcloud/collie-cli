@@ -19,7 +19,7 @@ import { CLI } from "../../info.ts";
 
 export function registerNewCmd(program: Command) {
   program
-    .command("new <foundation>")
+    .command("new <foundation:foundation>")
     .description("generate a new cloud foundation")
     .action(async (opts: GlobalCommandOptions, foundation: string) => {
       const repo = await CollieRepository.load("./");
