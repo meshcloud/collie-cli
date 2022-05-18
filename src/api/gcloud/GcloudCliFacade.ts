@@ -84,6 +84,8 @@ export class GcloudCliFacade {
       view: string;
     },
   ): Promise<CostBigQueryResult[]> {
+    // todo: maybe we should move the bq invocations into their own CliFacade
+    // for now we assume that bq is always installed with the google cloud sdk and thus versioned in sync with the gcloud cli
     const viewName = `${options.project}.${options.dataset}.${options.view}`;
     const format = "YYYYMM";
     const start = moment(startDate).format(format);

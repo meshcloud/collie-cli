@@ -108,7 +108,7 @@ export class GcloudMeshAdapter implements MeshAdapter {
     if (!this.config.gcp.billingExport) {
       throw new MeshGcpPlatformError(
         GcpErrorCode.GCP_CLI_GENERAL,
-        `platform ${this.config.id} is not configured for GCP cost reporting`,
+        `platform ${this.config.id} is not configured for GCP cost reporting`, // todo: insert docs link here
       );
     }
 
