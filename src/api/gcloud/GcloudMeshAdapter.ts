@@ -48,7 +48,8 @@ export class GcloudMeshAdapter implements MeshAdapter {
         return {
           platformTenantId: x.projectId,
           platformTenantName: x.name,
-          platform: MeshPlatform.GCP,
+          platformId: this.config.id,
+          platformType: MeshPlatform.GCP,
           nativeObj: x,
           tags: tags,
           costs: [],

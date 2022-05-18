@@ -61,7 +61,7 @@ export class TenantIamPresenterFactory {
     const tableViewGenerator = new MeshTenantIamTableViewGenerator(
       meshTenants,
       [
-        "platform",
+        "platformId",
         "platformTenantName",
         "platformTenantId",
         "roleAssignments",
@@ -95,7 +95,7 @@ export class TenantIamPresenterFactory {
     }
     return new CsvTenantIamPresenter(
       [
-        "platform",
+        "platformId",
         "platformTenantName",
         "platformTenantId",
       ],

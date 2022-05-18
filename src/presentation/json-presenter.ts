@@ -8,7 +8,8 @@ import {
 export interface JsonMeshTenantView {
   platformTenantId: string;
   platformTenantName: string;
-  platform: MeshPlatform;
+  platformId: string;
+  platformType: MeshPlatform;
   tags: MeshTag[];
 }
 
@@ -45,7 +46,8 @@ export class JsonPresenter<T> implements Presenter {
     return {
       platformTenantId: meshTenant.platformTenantId,
       platformTenantName: meshTenant.platformTenantName,
-      platform: meshTenant.platform,
+      platformId: meshTenant.platformId,
+      platformType: meshTenant.platformType,
       tags: meshTenant.tags,
     };
   }

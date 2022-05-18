@@ -104,7 +104,7 @@ export class MeshFoundationAdapterFactory {
       const aws = this.facadeFactory.buildAws(config.cli?.aws, path);
       return new AwsMeshAdapter(
         aws,
-        config.aws.accountAccessRole,
+        config,
         this.tenantChangeDetector,
       );
     } else if ("azure" in config) {

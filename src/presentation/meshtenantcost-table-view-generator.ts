@@ -26,7 +26,7 @@ export class MeshTenantCostTableViewGenerator extends TableGenerator {
           // Typing here is suboptimal as this is a key now not present anymore in the MeshTenantCosts.
           // However it will work as we redirect here to the tenant itself.
           if (column === "relatedTenant") {
-            row[index] = `(${mt.platform}) ${mt.platformTenantName}`;
+            row[index] = `(${mt.platformId}) ${mt.platformTenantName}`;
           } else if (column === "tags") {
             row[index] = this.formatMeshTags(mt.tags);
           } else {

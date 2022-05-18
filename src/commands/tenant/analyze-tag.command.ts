@@ -88,7 +88,7 @@ function displayAnalyzeTagResults(results: AnalyzeTagResult[]) {
     if (result.missingTenants.length > 0) {
       console.log("The following tenants are missing this tag:");
       for (const tenant of result.missingTenants) {
-        console.log(`└── [${tenant.platform}] ${tenant.platformTenantName}`);
+        console.log(`└── [${tenant.platformId}] ${tenant.platformTenantName}`);
       }
     }
   }

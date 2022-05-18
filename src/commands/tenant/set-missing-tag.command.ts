@@ -60,7 +60,7 @@ async function askAndSetTag(
   const prefix = `(${count}/${totalCount})`;
   const tagValue: string = await Input.prompt({
     message:
-      `${prefix} For the tenant ${tenant.platformTenantName} (${tenant.platformTenantId}) on ${tenant.platform}, what tag value do you want to set for "${tagKey}"? (Leave empty to skip)`,
+      `${prefix} For the tenant ${tenant.platformTenantName} (${tenant.platformTenantId}) on ${tenant.platformId}, what tag value do you want to set for "${tagKey}"? (Leave empty to skip)`,
   });
 
   if (tagValue !== "") {
