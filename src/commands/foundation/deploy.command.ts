@@ -29,7 +29,7 @@ export function registerDeployCmd(program: Command) {
   program
     .command("deploy <foundation:foundation>")
     .option(
-      "-p, --platform <platform:string>", // todo: make optional -> deploy all platforms!
+      "-p, --platform <platform:platform>", // todo: make optional -> deploy all platforms!
       "the platform to deploy",
     )
     .option(

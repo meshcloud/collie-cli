@@ -1,12 +1,11 @@
 import * as colors from "std/fmt/colors";
 
-import { Command, CompletionsCommand, StringType } from "./deps.ts";
+import { Command, CompletionsCommand } from "./deps.ts";
 import { CommandOptionError } from "./commands/CommandOptionError.ts";
 import { MeshError } from "./errors.ts";
 import { printTip } from "./cli/Logger.ts";
 import { CLI, VERSION } from "./info.ts";
 import { isWindows } from "./os.ts";
-import { OutputFormat } from "/presentation/output-format.ts";
 import { registerInitCommand } from "./commands/init.command.ts";
 import { registerFeedbackCommand } from "./commands/feedback.command.ts";
 import { registerTenantCommand } from "./commands/tenant/tenant.command.ts";
@@ -16,12 +15,12 @@ import { registerKitCommand } from "./commands/kit/kit.command.ts";
 import { registerFoundationCommand } from "./commands/foundation/foundation.command.ts";
 import { registerComplianceCommand } from "./commands/compliance/compliance.command.ts";
 import { registerDocsCommand } from "./commands/foundation/docs.command.ts";
-import { OutputFormatType } from "./commands/GlobalCommandOptions.ts";
 import { registerVersionCommand } from "./commands/version.command.ts";
 import { registerInteractiveCommand } from "./commands/interactive/interactive.command.ts";
 import { FirstTimeExperience } from "./FirstTimeExperience.ts";
 import { CollieFoundationDoesNotExistError } from "./model/schemas/ModelValidator.ts";
 import { FoundationType } from "./commands/FoundationType.ts";
+import { PlatformType } from "./commands/PlatformType.ts";
 
 async function collie() {
   const program = new Command()
@@ -32,6 +31,7 @@ async function collie() {
     })
     .version(VERSION)
     .globalType("foundation", new FoundationType())
+    .globalType("platform", new PlatformType())
     .globalOption(
       "--verbose ",
       "Enable printing verbose info (command execution and results)",
