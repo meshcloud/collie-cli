@@ -1,6 +1,6 @@
 import { groupBy } from "std/collections";
 
-import { MeshPlatforms, MeshTenant } from "../mesh/MeshTenantModel.ts";
+import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { TableGenerator } from "./mesh-table.ts";
 
 export class MeshTenantTableViewGenerator extends TableGenerator {
