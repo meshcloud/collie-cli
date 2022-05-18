@@ -26,8 +26,6 @@ export class TimeWindowCalculator {
       start.startOf("month").add(1, "month");
     }
 
-    console.debug(`Calculated time windows: ${JSON.stringify(windows)}`);
-
     return windows;
   }
 }
