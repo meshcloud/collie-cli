@@ -1,4 +1,7 @@
-import { Command } from "../../deps.ts";
+import * as colors from "std/fmt/colors";
+import * as path from "std/path";
+
+import { Command, Select } from "../../deps.ts";
 import {
   Dir,
   DirectoryGenerator,
@@ -10,6 +13,8 @@ import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
+import { CommandOptionError } from "../CommandOptionError.ts";
 
 interface ApplyOptions {
   foundation?: string;
@@ -17,7 +22,7 @@ interface ApplyOptions {
 }
 export function registerApplyCmd(program: Command) {
   program
-    .command("apply <module>")
+    .command("apply [module]")
     .option("-f, --foundation <foundation:string>", "foundation")
     .option("-p, --platform <platform:string>", "platform", {
       depends: ["foundation"],
@@ -25,38 +30,51 @@ export function registerApplyCmd(program: Command) {
     .description("apply an existing cloud foundation kit module to a platform")
     .action(
       async (opts: GlobalCommandOptions & ApplyOptions, moduleId: string) => {
-        // todo: should we validate the module?
-
-        const kit = new CollieRepository("./");
-        const logger = new Logger(kit, opts);
+        const collie = new CollieRepository("./");
+        const logger = new Logger(collie, opts);
         const validator = new ModelValidator(logger);
 
-        const foundation = opts.foundation ||
-          (await InteractivePrompts.selectFoundation(kit));
+        const moduleRepo = await KitModuleRepository.load(
+          collie,
+          validator,
+          logger,
+        );
 
-        const repo = await FoundationRepository.load(
-          kit,
+        moduleId = moduleId || (await selectModule(moduleRepo));
+        const module = moduleRepo.tryFindById(moduleId);
+        if (!module) {
+          throw new CommandOptionError(
+            "Could not find a module with id " + moduleId,
+          );
+        }
+
+        const foundation = opts.foundation ||
+          (await InteractivePrompts.selectFoundation(collie));
+
+        const foundationRepo = await FoundationRepository.load(
+          collie,
           foundation,
           validator,
         );
 
         const platform = opts.platform ||
-          (await InteractivePrompts.selectPlatform(repo));
+          (await InteractivePrompts.selectPlatform(foundationRepo));
 
         // by convention, the module id looks like $platform/...
         const platformModuleId = moduleId.split("/").slice(1);
 
-        const platformConfig = repo.findPlatform(platform);
-        const targetPath = repo.resolvePlatformPath(
+        const platformConfig = foundationRepo.findPlatform(platform);
+        const targetPath = foundationRepo.resolvePlatformPath(
           platformConfig,
           ...platformModuleId,
         );
-        console.log(targetPath);
 
         const dir = new DirectoryGenerator(WriteMode.skip, logger);
 
-        const kitModulePath = kit.relativePath(
-          kit.resolvePath("kit", moduleId),
+        // todo: clarify definition of kitModuleId and ComplianceControlId - do they include kit/compliance prefix respectively?
+        // must handle this consistently across all objects!
+        const kitModulePath = collie.relativePath(
+          collie.resolvePath("kit", moduleId),
         );
         const d: Dir = {
           name: targetPath,
@@ -71,7 +89,15 @@ export function registerApplyCmd(program: Command) {
         await dir.write(d, "");
 
         logger.progress(
-          `applied module ${kitModulePath} to ${kit.relativePath(targetPath)}`,
+          `applied module ${kitModulePath} to ${
+            collie.relativePath(
+              targetPath,
+            )
+          }`,
+        );
+        logger.tip(
+          "edit the terragrunt configuration invoking the kit module at " +
+            collie.relativePath(path.join(targetPath, "terragrunt.hcl")),
         );
       },
     );
@@ -102,4 +128,18 @@ inputs = {
 }
 
   `;
+}
+
+async function selectModule(moduleRepo: KitModuleRepository) {
+  const options = moduleRepo.all.map((x) => ({
+    value: x.id,
+    name: `${x.kitModule.name} ${colors.dim(x.id)}`,
+  }));
+
+  return await Select.prompt({
+    message: "Select a kit module from your repository",
+    options,
+    info: true,
+    search: true,
+  });
 }

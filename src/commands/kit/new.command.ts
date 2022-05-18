@@ -14,20 +14,16 @@ export function registerNewCmd(program: Command) {
     .description("generate a new kit module")
     .action(
       async (opts: GlobalCommandOptions, module: string, name?: string) => {
-        const kit = new CollieRepository("./");
-        const logger = new Logger(kit, opts);
+        const collie = new CollieRepository("./");
+        const logger = new Logger(collie, opts);
 
-        const modulePath = kit.resolvePath("kit", module);
-        if (!name) {
-          name = await Input.prompt({
+        const modulePath = collie.resolvePath("kit", module);
+        name = name ||
+          (await Input.prompt({
             message: `Choose a human-friendly name for this module`,
+            default: module,
             minLength: 1,
-          });
-        }
-
-        if (!name) {
-          throw new Error("input prompt was not successful");
-        }
+          }));
 
         const dir = new DirectoryGenerator(WriteMode.skip, logger);
         const d: Dir = {
@@ -43,7 +39,15 @@ export function registerNewCmd(program: Command) {
 
         await dir.write(d, "");
 
-        logger.progress("generated new module " + kit.relativePath(modulePath));
+        logger.progress(
+          "generated new kit module at " +
+            collie.relativePath(collie.resolvePath("kit", module, "README.md")),
+        );
+
+        logger.tip(
+          "add terraform code to your kit module at " +
+            collie.relativePath(collie.resolvePath("kit", module, "main.tf")),
+        );
       },
     );
 }
