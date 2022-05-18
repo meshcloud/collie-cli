@@ -1,4 +1,4 @@
-import { TerraformDocs } from "../../api/terraform-docs/TerraformDocs.ts";
+import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
@@ -11,10 +11,7 @@ import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
-import { IProcessRunner } from "../../process/IProcessRunner.ts";
-import { ProcessResult } from "../../process/ProcessRunnerResult.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
-import { buildTransparentProcessRunner } from "./buildTransparentProcessRunner.ts";
 
 interface DocsCommandOptions {
   update: boolean;
@@ -42,14 +39,14 @@ export function registerDocsCommand(program: Command) {
           validator,
         );
 
+        const factory = new CliApiFacadeFactory(repo, logger);
         // todo: instead of flags, maybe these should be subcommands?
         if (opts.update) {
-          const runner = buildTransparentProcessRunner(logger);
-          await updateDocumentation(repo, foundationRepo, runner, logger);
+          await updateDocumentation(repo, foundationRepo, factory, logger);
         }
 
         if (opts.preview) {
-          await previewDocumentation(foundationRepo, logger);
+          await previewDocumentation(foundationRepo, factory);
         }
       },
     )
@@ -68,7 +65,7 @@ export function registerDocsCommand(program: Command) {
 async function updateDocumentation(
   repo: CollieRepository,
   foundation: FoundationRepository,
-  runner: IProcessRunner<ProcessResult>,
+  factory: CliApiFacadeFactory,
   logger: Logger,
 ) {
   const foundationProgress = new ProgressReporter(
@@ -88,7 +85,7 @@ async function updateDocumentation(
   const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
   const dir = new DirectoryGenerator(WriteMode.overwrite, logger);
 
-  const tfDocs = new TerraformDocs(repo, runner);
+  const tfDocs = factory.buildTerraformDocs();
 
   const moduleDocumentation = new KitModuleDocumentationGenerator(
     repo,
@@ -114,12 +111,12 @@ async function updateDocumentation(
 
 async function previewDocumentation(
   repo: FoundationRepository,
-  logger: Logger,
+  factory: CliApiFacadeFactory,
 ) {
   const dir = repo.resolvePath("docs");
 
-  const shell = buildTransparentProcessRunner(logger);
+  const npm = factory.buildNpm();
 
-  await shell.run(["yarn", "install"], { cwd: dir });
-  await shell.run(["yarn", "docs:dev"], { cwd: dir });
+  await npm.run(["install"], { cwd: dir });
+  await npm.run(["run", "docs:dev"], { cwd: dir });
 }

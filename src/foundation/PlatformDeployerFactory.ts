@@ -1,4 +1,4 @@
-import { Terragrunt } from "../api/terragrunt/Terragrunt.ts";
+import { TerragruntCliFacade } from "../api/terragrunt/TerragruntCliFacade.ts";
 import { FoundationRepository } from "../model/FoundationRepository.ts";
 import { PlatformConfig, PlatformConfigBase } from "/model/PlatformConfig.ts";
 import { Logger } from "../cli/Logger.ts";
@@ -13,7 +13,7 @@ export class PlatformDeployerFactory {
   constructor(
     private readonly repo: CollieRepository,
     private readonly foundation: FoundationRepository,
-    private readonly terragrunt: Terragrunt,
+    private readonly terragrunt: TerragruntCliFacade,
     private readonly logger: Logger,
   ) {}
 

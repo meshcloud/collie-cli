@@ -22,7 +22,7 @@ export function toVerb(mode: TerragruntRunMode) {
   }
 }
 
-export class Terragrunt {
+export class TerragruntCliFacade {
   constructor(private runner: IProcessRunner<ProcessResult>) {}
 
   private async runTerragrunt(
