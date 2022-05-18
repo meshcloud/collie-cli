@@ -1,6 +1,6 @@
 import * as colors from "std/fmt/colors";
 
-import { Command, CompletionsCommand } from "./deps.ts";
+import { Command, CompletionsCommand, StringType } from "./deps.ts";
 import { CommandOptionError } from "./commands/CommandOptionError.ts";
 import { MeshError } from "./errors.ts";
 import { printTip } from "./cli/Logger.ts";
@@ -21,6 +21,7 @@ import { registerVersionCommand } from "./commands/version.command.ts";
 import { registerInteractiveCommand } from "./commands/interactive/interactive.command.ts";
 import { FirstTimeExperience } from "./FirstTimeExperience.ts";
 import { CollieFoundationDoesNotExistError } from "./model/schemas/ModelValidator.ts";
+import { FoundationType } from "./commands/FoundationType.ts";
 
 async function collie() {
   const program = new Command()
@@ -30,10 +31,7 @@ async function collie() {
       colors: !isWindows,
     })
     .version(VERSION)
-    .globalType("output", OutputFormatType)
-    .globalOption("-o --output [output:output]", "Defines the output format", {
-      default: OutputFormat.TABLE,
-    })
+    .globalType("foundation", new FoundationType())
     .globalOption(
       "--verbose ",
       "Enable printing verbose info (command execution and results)",

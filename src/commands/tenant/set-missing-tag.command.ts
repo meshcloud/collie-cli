@@ -9,7 +9,7 @@ import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 
 export function registerSetMissingTagCommand(program: Command) {
   program
-    .command("set-missing-tag <foundation> <tagKey>")
+    .command("set-missing-tag <foundation:foundation> <tagKey>")
     .description(
       "Fix all tenants missing the given tag interactively",
     )

@@ -23,7 +23,7 @@ interface DocsCommandOptions {
 
 export function registerDocsCommand(program: Command) {
   program
-    .command("docs <foundation>")
+    .command("docs <foundation:foundation>")
     .description(
       "Generate end-user friendly documentation for your cloud foundation",
     )

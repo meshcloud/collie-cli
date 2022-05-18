@@ -12,7 +12,7 @@ interface ListCostsCommandOptions extends GlobalCommandOptions {
 
 export function registerCostCommand(program: Command) {
   program
-    .command("cost <foundation>")
+    .command("cost <foundation:foundation>")
     .description(
       "Gathers the costs of all tenants in a given time interval on a monthly basis. Includes tags as columns when outputting as CSV.",
     )

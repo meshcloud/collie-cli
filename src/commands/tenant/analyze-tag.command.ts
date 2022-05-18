@@ -9,7 +9,7 @@ import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 
 export function registerAnalyzeTagCommand(program: Command) {
   program
-    .command("analyze-tags <foundation>")
+    .command("analyze-tags <foundation:foundation>")
     .description(
       "Analyzes all available tags on tenants and returns the percentage of tenants that make use of this tag.",
     )

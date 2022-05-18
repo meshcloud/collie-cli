@@ -6,7 +6,7 @@ import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 
 export function registerListCommand(program: Command) {
   program
-    .command("list <foundation>")
+    .command("list <foundation:foundation>")
     .description(
       "Returns a list of tenants with their name, id, tags and platform.",
     )
