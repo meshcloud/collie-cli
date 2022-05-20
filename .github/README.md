@@ -30,13 +30,15 @@
 </p>
 
 <p align="center">
-    One project on AWS, two on Azure, and might there be something on GCP too 😵? Collie helps you get an overview of everything going on in all your clouds.
-  See your costs, IAM, tags, and more across all cloud accounts within minutes - using your existing cloud CLIs - and take control of your cloud landscape.
+    One project on AWS, two on Azure, and might there be something on GCP too 😵? As soon as you have to herd more than a handful of cloud environments, ensuring consistent tagging, permission management and responsible spending becomes a challenge. Collie helps you establish visibility across all your clouds and bring structure to your cloud landscape with landing zones.
 </p>
 
 <img align="center" src="/.github/collie-demo.gif">
 
 ## ⛅️ Overview
+
+See your costs, IAM, tags, and more across all cloud accounts within minutes -
+using your existing cloud CLIs:
 
 - **[View all cloud tenants](https://github.com/meshcloud/collie-cli/wiki#listing-tenants)
   in one single overview** - View your AWS Accounts, Azure Subscriptions, and
@@ -54,6 +56,79 @@
 - **[View IAM assignments](https://github.com/meshcloud/collie-cli/wiki#listing-iam-setup-per-tenant)** -
   See who (or what) has access in what roles to what cloud tenants, including
   inherited roles from ancestors.
+
+Develop and deploy landing zones to provide a solid foundation for your teams to
+build on:
+
+- **[Manage a landing zone construction kit](https://github.com/meshcloud/landing-zone-construction-kit)** -
+  jumpstart building landing zones for all clouds with a structured and
+  consistent workflow and reusable modules
+- **Deploy landing zones** across all clouds - deploy landing zones to separate
+  dev/prod environments using terraform
+- **Document landing zones** for application teams and security stakeholders
+
+## Getting Started
+
+Assuming you have some cloud cli's like `aws`, `az` or `gcloud` already
+installed (see [Prerequisites](#️-prerequisites)), here's how to get started
+
+### 🕹 Installation
+
+You can install `collie` using our install scripts below
+
+**Linux / Ubuntu**
+
+```
+curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
+```
+
+**Mac OS X**
+
+```
+curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sh
+```
+
+**Windows**
+
+Simply copy the content of
+[`install.ps1`](https://github.com/meshcloud/collie-cli/blob/develop/install.ps1)
+and run it in your PowerShell console.
+
+### 🚀 Connecting to your clouds
+
+Initialize a new collie repository to hold configuration about your cloud
+platforms and start the interactive configuration wizard
+
+```shell
+collie init
+collie foundation new "my-foundation"
+```
+
+### Work with cloud tenants
+
+You can list tenants (e.g. AWS Accounts, Azure Subscriptions, GCP Projects) in
+your cloud foundations and manage tags, cost and IAM using the following
+commands
+
+```shell
+collie tenant list "my-foundation"    # List tenants across all clouds in the foundation
+collie tenant cost "my-foundation"    --from 2021-01-01 --to 2021-01-31  # List tenants costs across all clouds in the foundation
+collie tenant iam "my-foundation"     # Review access and permissions on tenants
+```
+
+### Build Landing Zones
+
+To build landing zones with collie, follow this workflow
+
+```shell
+collie kit new "aws/organization-policies"   # generate a new IaC module skeleton
+collie kit apply "aws/organization-policies" # apply the module to a cloud platform in your foundation
+collie foundation deploy "my-foundation"     # deploy the module to your cloud foundation
+```
+
+You can find more information about building and deploying landing zones with
+`collie` in the
+[Landing Zone Construction Kit documentation](https://landingzone.meshcloud.io).
 
 ## ☝️ Prerequisites<a name="prerequisites"></a>
 
@@ -75,38 +150,17 @@ installed.
   - Make sure that your user has access to all possible Google Cloud Projects.
     Projects that you do not have access to will not be listed with Collie.
 
-That's it! Let's get Collie installed ⤵️
+_Optional_: To build and deploy landing zones, you'll also need
 
-## 🕹 Install and Usage
+- [terraform](https://www.terraform.io/downloads) to define landing zones using
+  infrastructure as code
+- [terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/) to
+  build and deploy terraform
+- [terraform-docs](https://github.com/terraform-docs/terraform-docs/#installation)
+  to generate terraform module documentation
+- [node.js](https://nodejs.org/en/) to generate your cloud foundation
 
-We have an easy-to-use install script prepared that will install Collie for you
-in under a minute. To use it, run the command below depending on your operating
-system. Additionally, check the content of the file to be sure that the install
-script is safe. If you want, you could also download the
-[`install.sh`](https://github.com/meshcloud/collie-cli/blob/develop/install.sh)
-script in this repository and execute it locally.
-
-Once you're finished with installing, head over to
-[our Wiki](https://github.com/meshcloud/collie-cli/wiki#before-using-collie) to
-learn more!
-
-**Linux / Ubuntu**
-
-```
-curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
-```
-
-**Mac OS X**
-
-```
-curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sh
-```
-
-**Windows**
-
-Simply copy the content of
-[`install.ps1`](https://github.com/meshcloud/collie-cli/blob/develop/install.ps1)
-and run it in your PowerShell console.
+That's it! Let's get `collie` installed ⤵️
 
 ## 👋 Need help or have feedback?
 
@@ -121,16 +175,12 @@ and get in touch with us there!
 ## 💡 Why Collie?
 
 At [meshcloud](https://meshcloud.io/) we have years of experience in building
-cloud foundations in large organizations with our cloud governance platform
+cloud foundations in enterprise organizations with our cloud governance platform
 [meshStack](https://meshcloud.io/).
 
-We launched Collie CLI as a tool for smaller teams to start getting more control
-over their clouds. Collie its features originate from some of the best practices
-of our [Cloud Foundation Maturity Model](https://cloudfoundation.meshcloud.io/),
-which is a tool that you can use to identify gaps in your cloud setup, define a
-roadmap and understand where you can save cost by improving efficiency.
-
-<img align="center" src="/.github/cfmm.png">
+We launched `collie` CLI as a tool for platform engineers and enterprise
+architects that want to start getting more control over their clouds with a lean
+and tried approach.
 
 ## 🙋‍ Contributor List
 
