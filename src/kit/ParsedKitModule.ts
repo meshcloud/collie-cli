@@ -7,9 +7,14 @@ export interface ParsedKitModule {
   id: string;
 
   /**
-   * kit-relative path to the README.md file this module was parsed from
+   * repository-relative path to the README.md file this module was parsed from
    */
   definitionPath: string;
+
+  /**
+   * repository-relative path to the kit module directory
+   */
+  kitModulePath: string;
 
   /**
    * the parsed kit module definition
