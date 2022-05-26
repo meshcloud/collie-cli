@@ -1,4 +1,5 @@
 import * as colors from "std/fmt/colors";
+import { CollieRepository } from "../model/CollieRepository.ts";
 
 import { FoundationRepository } from "../model/FoundationRepository.ts";
 
@@ -18,13 +19,16 @@ export interface PlatformsTree {
 }
 
 export class FoundationConfigTreeBuilder {
+  constructor(private readonly collie: CollieRepository) {}
   public build(repos: FoundationRepository[]): RepositoryTree {
     const tree: FoundationsTree = {};
 
     repos.forEach((foundation) => {
       const id = colors.green(foundation.id) +
         " " +
-        colors.dim(foundation.resolvePath("README.md"));
+        colors.dim(
+          this.collie.relativePath(foundation.resolvePath("README.md")),
+        );
 
       tree[id] = {
         platforms: this.buildPlatformsTree(foundation),
@@ -39,7 +43,7 @@ export class FoundationConfigTreeBuilder {
 
     repo.platforms.forEach((p) => {
       tree[colors.blue(p.id)] = colors.dim(
-        repo.resolvePlatformPath(p, "README.md"),
+        this.collie.relativePath(repo.resolvePlatformPath(p, "README.md")),
       );
     });
 
