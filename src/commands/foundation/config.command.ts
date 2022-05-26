@@ -31,7 +31,7 @@ export function registerConfigCmd(program: Command) {
 
         const foundationRepos = await Promise.all(tasks);
 
-        const treeBuilder = new FoundationConfigTreeBuilder();
+        const treeBuilder = new FoundationConfigTreeBuilder(repo);
         const tree = treeBuilder.build(foundationRepos);
 
         const renderedTree = jsonTree(tree, true);
