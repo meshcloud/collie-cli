@@ -61,11 +61,12 @@ export class KitModuleParser {
 
   private async tryParseKitModule(readmePath: string) {
     const modulePath = path.dirname(readmePath);
-    const id = this.repo.relativePath(modulePath);
+    const relativeModulePath = this.repo.relativePath(modulePath);
     const relativeReadmePath = this.repo.relativePath(readmePath);
 
     this.logger.verbose(
-      () => `parsing kit module ${id} via ${relativeReadmePath}`,
+      () =>
+        `parsing kit module ${relativeModulePath} via ${relativeReadmePath}`,
     );
 
     const text = await Deno.readTextFile(readmePath);
@@ -80,7 +81,8 @@ export class KitModuleParser {
     }
 
     return {
-      id: id.substring("kit/".length),
+      id: relativeModulePath.substring("kit/".length),
+      kitModulePath: relativeModulePath,
       definitionPath: relativeReadmePath,
       kitModule: document.frontmatter,
       readme: document.document,
