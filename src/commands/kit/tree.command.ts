@@ -19,18 +19,37 @@ export function registerTreeCmd(program: Command) {
       const logger = new Logger(collie, opts);
 
       const analyzeResults = await prepareAnalyzeCommand(collie, logger);
-      if (!analyzeResults) {
+
+      if (!analyzeResults.modules.all.length) {
+        logger.warn("no kit modules found");
+        logger.tipCommand(
+          `To define a new kit module run`,
+          `kit new "my-module"`,
+        );
         return;
       }
 
-      renderKitTree(analyzeResults);
+      const hasAppliedModules = analyzeResults.dependencies.some((d) =>
+        d.results.platforms.some((p) => p.modules.length)
+      );
+
+      if (!hasAppliedModules) {
+        logger.warn("no kit modules applied to any platform");
+        logger.tipCommand(`To apply a kit module run`, `kit apply "my-module"`);
+        return;
+      }
+
+      renderKitTree(collie, analyzeResults);
     });
 }
 
-function renderKitTree(analyzeResults: AnalyzeResults) {
+function renderKitTree(
+  collie: CollieRepository,
+  analyzeResults: AnalyzeResults,
+) {
   const { modules, dependencies } = analyzeResults;
 
-  const builder = new KitModuleTreeBuilder(modules);
+  const builder = new KitModuleTreeBuilder(collie, modules);
 
   const tree = builder.build(dependencies.map((x) => x.results));
 

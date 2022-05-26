@@ -8,8 +8,18 @@ import { ParsedKitModule } from "./ParsedKitModule.ts";
 export class KitModuleRepository {
   private readonly modulesById: Map<string, KitModule>;
 
-  constructor(private readonly modules: ParsedKitModule[]) {
+  constructor(
+    private readonly collie: CollieRepository,
+    private readonly modules: ParsedKitModule[],
+  ) {
     this.modulesById = new Map(modules.map((x) => [x.id, x.kitModule]));
+  }
+
+  /**
+   * Resolve a path relative to the kit folder
+   */
+  resolvePath(...pathSegments: string[]) {
+    return this.collie.resolvePath("kit", ...pathSegments);
   }
 
   tryFindById(id: string) {
@@ -30,6 +40,6 @@ export class KitModuleRepository {
 
     const parsedModules = modules.filter((x): x is ParsedKitModule => !!x);
 
-    return new KitModuleRepository(parsedModules);
+    return new KitModuleRepository(repo, parsedModules);
   }
 }

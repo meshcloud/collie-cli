@@ -246,7 +246,10 @@ This section describes the platforms.`;
   private generatePlatforDocumentation(
     dependencies: PlatformDependencies,
   ): string {
-    const builder = new FoundationDependenciesTreeBuilder(this.foundation);
+    const builder = new FoundationDependenciesTreeBuilder(
+      this.kit,
+      this.foundation,
+    );
 
     const moduleTree = builder.buildPlatformsTree([dependencies], {
       useColors: false,
