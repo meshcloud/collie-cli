@@ -4,7 +4,10 @@ import { Command } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
-import { KitModuleTreeBuilder } from "../../kit/KitModuleTreeBuilder.ts";
+import {
+  FoundationDependenciesTreeBuilder,
+  FoundationsTree,
+} from "../../foundation/FoundationDependenciesTreeBuilder.ts";
 import {
   AnalyzeResults,
   prepareAnalyzeCommand,
@@ -13,7 +16,7 @@ import {
 export function registerTreeCmd(program: Command) {
   program
     .command("tree")
-    .description("show the kit module tree with foundation dependencies")
+    .description("show the foundation tree with module dependencies")
     .action(async (opts: GlobalCommandOptions) => {
       const collie = new CollieRepository("./");
       const logger = new Logger(collie, opts);
@@ -23,17 +26,20 @@ export function registerTreeCmd(program: Command) {
         return;
       }
 
-      renderKitTree(analyzeResults);
+      renderFoundationTree(analyzeResults);
     });
 }
 
-function renderKitTree(analyzeResults: AnalyzeResults) {
-  const { modules, dependencies } = analyzeResults;
+function renderFoundationTree(analyzeResults: AnalyzeResults) {
+  const { dependencies } = analyzeResults;
 
-  const builder = new KitModuleTreeBuilder(modules);
+  const foundations: FoundationsTree = {};
+  dependencies.forEach(({ foundation, results }) => {
+    const builder = new FoundationDependenciesTreeBuilder(foundation);
+    const tree = builder.build(results, { useColors: true });
+    Object.assign(foundations, tree);
+  });
 
-  const tree = builder.build(dependencies.map((x) => x.results));
-
-  const renderedTree = jsonTree(tree, true);
+  const renderedTree = jsonTree({ foundations: foundations }, true);
   console.log(renderedTree);
 }
