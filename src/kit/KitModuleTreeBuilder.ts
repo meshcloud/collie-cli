@@ -1,18 +1,22 @@
 import * as colors from "std/fmt/colors";
-import * as path from "std/path";
 import * as collections from "std/collections";
 
 import { FoundationDependencies } from "./KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "./KitModuleRepository.ts";
-import { insert, Tree } from "/model/tree.ts";
+import { buildLabeledIdPath, insert, Tree } from "/model/tree.ts";
+import { CollieRepository } from "../model/CollieRepository.ts";
 
 export interface KitModuleInfo {
   name: string;
-  usedByPlatforms: string[];
+  platforms: string[];
+  controls: string[];
 }
 
 export class KitModuleTreeBuilder {
-  constructor(private readonly modules: KitModuleRepository) {}
+  constructor(
+    private readonly collie: CollieRepository,
+    private readonly modules: KitModuleRepository,
+  ) {}
 
   build(dependencies: FoundationDependencies[]): Tree<KitModuleInfo> {
     const entries = dependencies.flatMap((f) =>
@@ -28,15 +32,20 @@ export class KitModuleTreeBuilder {
 
     const tree: Tree<KitModuleInfo> = {};
 
-    this.modules.all.forEach((x) => {
-      const components = ["kit", ...x.id.split(path.sep)];
+    this.modules.all.forEach((m) => {
+      const label = this.collie.relativePath(m.definitionPath);
+      const labeledComponents = buildLabeledIdPath(m.id, label);
+
       const info = {
-        name: x.kitModule.name,
-        usedByPlatforms: dependeciesByPath[x.id]
+        name: m.kitModule.name,
+        platforms: dependeciesByPath[m.id]
           ?.map((p) => colors.green(p.platform))
           .sort() || [],
+        controls: m.kitModule?.compliance?.map((x) => colors.blue(x.control)) ||
+          [],
       };
-      insert(tree, components, info);
+
+      insert(tree, labeledComponents, info);
     });
 
     return tree;

@@ -1,39 +1,16 @@
 import { jsonTree } from "x/json_tree";
-import { Command, EnumType } from "../../deps.ts";
+import { Command } from "../../deps.ts";
 
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { ComplianceControlRepository } from "../../compliance/ComplianceControlRepository.ts";
-import {
-  FoundationDependenciesTreeBuilder,
-  FoundationsTree,
-} from "../../foundation/FoundationDependenciesTreeBuilder.ts";
-import {
-  FoundationDependencies,
-  KitDependencyAnalyzer,
-} from "../../kit/KitDependencyAnalyzer.ts";
-import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
-import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { ComplianceControlTreeBuilder } from "../../compliance/ComplianceControlTreeBuilder.ts";
-
-enum TreeView {
-  Control = "control",
-  Foundation = "foundation",
-}
-
-interface TreeOptions {
-  view: TreeView;
-}
-
-interface AnalyzeResults {
-  controls: ComplianceControlRepository;
-  dependencies: {
-    foundation: FoundationRepository;
-    results: FoundationDependencies;
-  }[];
-}
+import {
+  AnalyzeResults,
+  prepareAnalyzeCommand,
+} from "../prepareAnalyzeCommand.ts";
 
 const statementExample = `\tcompliance:
 \t- control: my/control # id of the control
@@ -43,18 +20,21 @@ const statementExample = `\tcompliance:
 export function registerTreeCmd(program: Command) {
   program
     .command("tree")
-    .type("view", new EnumType(TreeView))
-    .description("show the compliance control tree")
-    .option("--view [view:view]", "select the primary dimension of the tree", {
-      default: "control",
-    })
-    .action(async (opts: GlobalCommandOptions & TreeOptions) => {
+    .description("show the compliance control tree with module implementations")
+    .action(async (opts: GlobalCommandOptions) => {
       const repo = new CollieRepository("./");
       const logger = new Logger(repo, opts);
 
-      const results = await analyze(repo, logger);
+      const results = await prepareAnalyzeCommand(repo, logger);
 
-      if (!results.controls.all.length) {
+      const validator = new ModelValidator(logger);
+      const controls = await ComplianceControlRepository.load(
+        repo,
+        validator,
+        logger,
+      );
+
+      if (!controls.all.length) {
         logger.warn("no compliance controls found");
         logger.tipCommand(
           `To define a new compliance control run`,
@@ -78,66 +58,18 @@ export function registerTreeCmd(program: Command) {
         return;
       }
 
-      switch (opts.view) {
-        case TreeView.Foundation:
-          await renderFoundationTree(results);
-          break;
-        case TreeView.Control:
-          await renderControlTree(results);
-      }
+      await renderControlTree(repo, results, controls);
     });
 }
 
-async function analyze(
-  repo: CollieRepository,
-  logger: Logger,
-): Promise<AnalyzeResults> {
-  const validator = new ModelValidator(logger);
-
-  const modules = await KitModuleRepository.load(repo, validator, logger);
-  const foundations = await repo.listFoundations();
-
-  const tasks = foundations.map(async (f) => {
-    const foundation = await FoundationRepository.load(repo, f, validator);
-    const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
-
-    return {
-      foundation,
-      results: await analyzer.findKitModuleDependencies(foundation),
-    };
-  });
-
-  const dependencies = await Promise.all(tasks);
-  const controls = await ComplianceControlRepository.load(
-    repo,
-    validator,
-    logger,
-  );
-
-  return { controls, dependencies };
-}
-
-function renderFoundationTree(results: AnalyzeResults) {
-  // note: this is currently the same as "kit tree --view foundation"
+function renderControlTree(
+  collie: CollieRepository,
+  results: AnalyzeResults,
+  controls: ComplianceControlRepository,
+) {
   const { dependencies } = results;
 
-  const foundations: FoundationsTree = {};
-  dependencies.forEach(({ foundation, results }) => {
-    const builder = new FoundationDependenciesTreeBuilder(foundation);
-    const tree = builder.build(results, {
-      useColors: true,
-    });
-    Object.assign(foundations, tree);
-  });
-
-  const renderedTree = jsonTree({ foundations: foundations }, true);
-  console.log(renderedTree);
-}
-
-function renderControlTree(results: AnalyzeResults) {
-  const { controls, dependencies } = results;
-
-  const builder = new ComplianceControlTreeBuilder(controls);
+  const builder = new ComplianceControlTreeBuilder(collie, controls);
 
   const tree = builder.build(dependencies.map((x) => x.results));
 

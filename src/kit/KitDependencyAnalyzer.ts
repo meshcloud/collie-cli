@@ -31,6 +31,11 @@ export interface KitModuleDependency {
   kitModuleId: string;
 
   /**
+   * repository-relative path to the kit module directory
+   */
+  kitModulePath: string;
+
+  /**
    * if available, the parsed kit module data
    */
   kitModule?: KitModule;
@@ -48,7 +53,7 @@ export interface KitModuleDependency {
 
 export class KitDependencyAnalyzer {
   constructor(
-    private readonly kit: CollieRepository,
+    private readonly collie: CollieRepository,
     private readonly kitModules: KitModuleRepository,
     private readonly logger: Logger,
   ) {}
@@ -61,7 +66,7 @@ export class KitDependencyAnalyzer {
     for (const platform of foundation.platforms) {
       const progress = new ProgressReporter(
         `parsing platform modules`,
-        this.kit.relativePath(foundation.resolvePlatformPath(platform)),
+        this.collie.relativePath(foundation.resolvePlatformPath(platform)),
         this.logger,
       );
 
@@ -99,7 +104,7 @@ export class KitDependencyAnalyzer {
   async tryParseDependency(
     terragruntFilePath: string,
   ): Promise<KitModuleDependency | undefined> {
-    const sourcePath = this.kit.relativePath(terragruntFilePath);
+    const sourcePath = this.collie.relativePath(terragruntFilePath);
 
     this.logger.verbose(() => `reading platform module at ${sourcePath}`);
 
@@ -111,7 +116,7 @@ export class KitDependencyAnalyzer {
     }
 
     const kitModuleId = kitModuleSource.replace("${get_repo_root()}//kit/", "");
-
+    const kitModulePath = this.kitModules.resolvePath(kitModuleId);
     const kitModule = this.kitModules.tryFindById(kitModuleId);
 
     if (!kitModule) {
@@ -128,6 +133,7 @@ export class KitDependencyAnalyzer {
     return {
       sourcePath,
       kitModuleId,
+      kitModulePath,
       kitModule,
       kitModuleOutputPath,
       kitModuleOutput,
@@ -140,7 +146,7 @@ export class KitDependencyAnalyzer {
       terragruntFilePath,
       "../output.md",
     );
-    const kitModuleOutputPath = this.kit.relativePath(
+    const kitModuleOutputPath = this.collie.relativePath(
       absoluteKitModuleOutputPath,
     );
 

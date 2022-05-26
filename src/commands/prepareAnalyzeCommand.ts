@@ -22,22 +22,6 @@ export async function prepareAnalyzeCommand(
 ) {
   const analyzeResults = await analyze(collie, logger);
 
-  if (!analyzeResults.modules.all.length) {
-    logger.warn("no kit modules found");
-    logger.tipCommand(`To define a new kit module run`, `kit new "my-module"`);
-    return;
-  }
-
-  const hasAppliedModules = analyzeResults.dependencies.some((d) =>
-    d.results.platforms.some((p) => p.modules.length)
-  );
-
-  if (!hasAppliedModules) {
-    logger.warn("no kit modules applied to any platform");
-    logger.tipCommand(`To apply a kit module run`, `kit apply "my-module"`);
-    return;
-  }
-
   return analyzeResults;
 }
 

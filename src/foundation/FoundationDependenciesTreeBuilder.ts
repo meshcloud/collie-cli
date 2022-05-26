@@ -6,7 +6,8 @@ import {
   FoundationDependencies,
   PlatformDependencies,
 } from "../kit/KitDependencyAnalyzer.ts";
-import { insert } from "../model/tree.ts";
+import { buildLabeledIdPath, insert } from "../model/tree.ts";
+import { CollieRepository } from "../model/CollieRepository.ts";
 
 export interface FoundationsTree {
   [foundation: string]: FoundationTree;
@@ -30,7 +31,10 @@ export interface ModuleNode {
 }
 
 export class FoundationDependenciesTreeBuilder {
-  constructor(private readonly foundation: FoundationRepository) {}
+  constructor(
+    private readonly collie: CollieRepository,
+    private readonly foundation: FoundationRepository,
+  ) {}
 
   build(
     dependencies: FoundationDependencies,
@@ -71,9 +75,10 @@ export class FoundationDependenciesTreeBuilder {
         path.resolve(m.sourcePath, "../"),
       );
 
-      const components = moduleDir.split(path.sep);
+      const label = this.collie.relativePath(m.sourcePath);
+      const labeledComponents = buildLabeledIdPath(moduleDir, label);
 
-      insert<ModuleNode>(tree, components, {
+      insert<ModuleNode>(tree, labeledComponents, {
         kitModule: colors.green(m.kitModuleId),
         controls: m.kitModule?.compliance?.map((x) => colors.blue(x.control)) ||
           [],

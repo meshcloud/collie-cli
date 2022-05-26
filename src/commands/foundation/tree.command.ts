@@ -22,20 +22,40 @@ export function registerTreeCmd(program: Command) {
       const logger = new Logger(collie, opts);
 
       const analyzeResults = await prepareAnalyzeCommand(collie, logger);
-      if (!analyzeResults) {
+
+      const foundations = await collie.listFoundations();
+      if (!foundations.length) {
+        logger.warn("no foundations found");
+        logger.tipCommand(
+          `To interactively define a new foundation run`,
+          `foundation new "my-foundation"`,
+        );
         return;
       }
 
-      renderFoundationTree(analyzeResults);
+      const hasAppliedModules = analyzeResults.dependencies.some((d) =>
+        d.results.platforms.some((p) => p.modules.length)
+      );
+
+      if (!hasAppliedModules) {
+        logger.warn("no kit modules applied to any platform");
+        logger.tipCommand(`To apply a kit module run`, `kit apply "my-module"`);
+        return;
+      }
+
+      renderFoundationTree(collie, analyzeResults);
     });
 }
 
-function renderFoundationTree(analyzeResults: AnalyzeResults) {
+function renderFoundationTree(
+  collie: CollieRepository,
+  analyzeResults: AnalyzeResults,
+) {
   const { dependencies } = analyzeResults;
 
   const foundations: FoundationsTree = {};
   dependencies.forEach(({ foundation, results }) => {
-    const builder = new FoundationDependenciesTreeBuilder(foundation);
+    const builder = new FoundationDependenciesTreeBuilder(collie, foundation);
     const tree = builder.build(results, { useColors: true });
     Object.assign(foundations, tree);
   });
