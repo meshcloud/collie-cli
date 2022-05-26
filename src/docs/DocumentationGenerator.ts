@@ -1,10 +1,9 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
-import { jsonTree } from "x/json_tree";
 
 import { Dir, DirectoryGenerator, File } from "../cli/DirectoryGenerator.ts";
 import { Logger } from "../cli/Logger.ts";
-import { FoundationDependenciesTreeBuilder } from "../foundation/FoundationDependenciesTreeBuilder.ts";
+import { CLI } from "../info.ts";
 import {
   KitDependencyAnalyzer,
   KitModuleDependency,
@@ -246,16 +245,6 @@ This section describes the platforms.`;
   private generatePlatforDocumentation(
     dependencies: PlatformDependencies,
   ): string {
-    const builder = new FoundationDependenciesTreeBuilder(
-      this.kit,
-      this.foundation,
-    );
-
-    const moduleTree = builder.buildPlatformsTree([dependencies], {
-      useColors: false,
-    });
-    const renderedTree = jsonTree(moduleTree, true);
-
     const kitModuleImplementationDescriptions = dependencies.modules
       .sort(kitModuleSorter)
       .map((x) => {
@@ -298,15 +287,13 @@ ${kitModuleImplementationDescriptions}
 
 ## Discovered dependencies
 
-This documentation was generated based on the following auto-discovered dependencies of 
+This documentation was generated based on auto-discovered dependencies of 
 ${md.code("terragrunt.hcl")} files in ${md.code(platformDir)}.
 
-${md.codeBlock("text", renderedTree)}
-
 ::: tip
-You can generate this output using the ${
+You can review the disocvered dependencies using the ${
       md.code(
-        "foundation kit tree --view foundation",
+        `${CLI} foundation tree`,
       )
     } command.
 :::

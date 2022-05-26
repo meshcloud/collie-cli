@@ -56,7 +56,7 @@ function renderFoundationTree(
   const foundations: FoundationsTree = {};
   dependencies.forEach(({ foundation, results }) => {
     const builder = new FoundationDependenciesTreeBuilder(collie, foundation);
-    const tree = builder.build(results, { useColors: true });
+    const tree = builder.build(results);
     Object.assign(foundations, tree);
   });
 

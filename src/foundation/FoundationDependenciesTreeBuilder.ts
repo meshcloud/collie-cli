@@ -36,32 +36,24 @@ export class FoundationDependenciesTreeBuilder {
     private readonly foundation: FoundationRepository,
   ) {}
 
-  build(
-    dependencies: FoundationDependencies,
-    opts: { useColors: boolean },
-  ): FoundationsTree {
+  build(dependencies: FoundationDependencies): FoundationsTree {
     const tree: FoundationsTree = {};
 
     tree[dependencies.foundation] = {
-      platforms: this.buildPlatformsTree(dependencies.platforms, opts),
+      platforms: this.buildPlatformsTree(dependencies.platforms),
     };
 
     return tree;
   }
 
-  public buildPlatformsTree(
-    platforms: PlatformDependencies[],
-    opts: { useColors: boolean },
-  ): PlatformsTree {
-    return withColors(opts.useColors, () => {
-      const tree: PlatformsTree = {};
+  public buildPlatformsTree(platforms: PlatformDependencies[]): PlatformsTree {
+    const tree: PlatformsTree = {};
 
-      platforms.forEach((p) => {
-        tree[p.platform.id] = this.buildModuleTree(p);
-      });
-
-      return tree;
+    platforms.forEach((p) => {
+      tree[p.platform.id] = this.buildModuleTree(p);
     });
+
+    return tree;
   }
 
   private buildModuleTree(platform: PlatformDependencies): PlatformTree {
@@ -86,16 +78,5 @@ export class FoundationDependenciesTreeBuilder {
     });
 
     return tree;
-  }
-}
-
-function withColors<T>(enabled: boolean, f: () => T) {
-  const wasEnabled = colors.getColorEnabled();
-  colors.setColorEnabled(enabled);
-
-  try {
-    return f();
-  } finally {
-    colors.setColorEnabled(wasEnabled);
   }
 }

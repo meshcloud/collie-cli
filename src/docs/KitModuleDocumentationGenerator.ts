@@ -58,7 +58,7 @@ export class KitModuleDocumentationGenerator {
   }
 
   private async generateModuleDocumentation(parsed: ParsedKitModule) {
-    await this.tfdocs.updateReadme(parsed.id);
+    await this.tfdocs.updateReadme(parsed.kitModulePath);
 
     const complianceStatements = this.generateComplianceStatements(parsed);
 
