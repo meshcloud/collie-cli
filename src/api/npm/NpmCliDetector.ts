@@ -8,9 +8,7 @@ export class NpmCliDetector extends CliDetector {
   }
 
   protected parseVersion(versionCmdOutput: string): string {
-    return versionCmdOutput.split("\n")[0].substring(
-      "npm version ".length,
-    );
+    return versionCmdOutput.trim();
   }
 
   protected isSupportedVersion(version: string): boolean {
