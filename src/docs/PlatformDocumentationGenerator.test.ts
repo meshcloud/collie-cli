@@ -1,22 +1,25 @@
-import { kitModuleSorter } from "./DocumentationGenerator.ts";
 import { assertEquals } from "../dev-deps.ts";
 import { KitModuleDependency } from "../kit/KitDependencyAnalyzer.ts";
+import { kitModuleSorter } from "./PlatformDocumentationGenerator.ts";
 
 Deno.test("kitModuleSorter alwas sorts boostrap modules first", () => {
   const modules: KitModuleDependency[] = [
     {
-      sourcePath: "platform/y",
+      kitModuleId: "y",
       kitModulePath: "kit/y",
+      sourcePath: "platform/y",
       kitModuleOutputPath: "platform/y/output.md",
     },
     {
+      kitModuleId: "x",
       sourcePath: "platform/x",
       kitModulePath: "kit/x",
       kitModuleOutputPath: "platform/x/output.md",
     },
     {
-      sourcePath: "platform/bootstrap",
+      kitModuleId: "bootstrap",
       kitModulePath: "kit/bootstrap",
+      sourcePath: "platform/bootstrap",
       kitModuleOutputPath: "platform/bootstrap/output.md",
     },
   ];
