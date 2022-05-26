@@ -74,7 +74,7 @@ export class FoundationDependenciesTreeBuilder {
       const components = moduleDir.split(path.sep);
 
       insert<ModuleNode>(tree, components, {
-        kitModule: colors.green(m.kitModulePath),
+        kitModule: colors.green(m.kitModuleId),
         controls: m.kitModule?.compliance?.map((x) => colors.blue(x.control)) ||
           [],
       });
