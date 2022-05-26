@@ -26,12 +26,12 @@ export interface KitModuleDependency {
   sourcePath: string;
 
   /**
-   * repository-relative path to the kit module
+   * id of the kit module
    */
-  kitModulePath: string;
+  kitModuleId: string;
 
   /**
-   * if properly defined, the kit module
+   * if available, the parsed kit module data
    */
   kitModule?: KitModule;
 
@@ -127,7 +127,7 @@ export class KitDependencyAnalyzer {
 
     return {
       sourcePath,
-      kitModulePath: path.join("kit", kitModuleId),
+      kitModuleId,
       kitModule,
       kitModuleOutputPath,
       kitModuleOutput,

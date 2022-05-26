@@ -18,7 +18,7 @@ export class KitModuleTreeBuilder {
     const entries = dependencies.flatMap((f) =>
       f.platforms.flatMap((p) =>
         p.modules.flatMap((m) => ({
-          module: m.kitModulePath,
+          module: m.kitModuleId,
           platform: `foundations/${f.foundation}/platforms/${p.platform.id}`,
         }))
       )
@@ -29,12 +29,12 @@ export class KitModuleTreeBuilder {
     const tree: Tree<KitModuleInfo> = {};
 
     this.modules.all.forEach((x) => {
-      const components = x.id.split(path.sep);
+      const components = ["kit", ...x.id.split(path.sep)];
       const info = {
         name: x.kitModule.name,
-        usedByPlatforms: dependeciesByPath[x.id]?.map((p) =>
-          colors.green(p.platform)
-        ).sort() || [],
+        usedByPlatforms: dependeciesByPath[x.id]
+          ?.map((p) => colors.green(p.platform))
+          .sort() || [],
       };
       insert(tree, components, info);
     });
