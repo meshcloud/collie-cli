@@ -4,8 +4,11 @@ import { Logger } from "../../cli/Logger.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
 import { ComplianceControlRepository } from "../../compliance/ComplianceControlRepository.ts";
 import { Command } from "../../deps.ts";
+import { ComplianceDocumentationGenerator } from "../../docs/ComplianceDocumentationGenerator.ts";
 import { DocumentationGenerator } from "../../docs/DocumentationGenerator.ts";
 import { KitModuleDocumentationGenerator } from "../../docs/KitModuleDocumentationGenerator.ts";
+import { PlatformDocumentationGenerator } from "../../docs/PlatformDocumentationGenerator.ts";
+import { VuepressDocumentationSiteGenerator } from "../../docs/VuepressDocumentationSiteGenerator.ts";
 import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
@@ -74,6 +77,10 @@ async function updateDocumentation(
     logger,
   );
 
+  const dir = new DirectoryGenerator(WriteMode.overwrite, logger);
+  const siteGenerator = new VuepressDocumentationSiteGenerator(dir);
+
+  const tfDocs = factory.buildTerraformDocs();
   const validator = new ModelValidator(logger);
   const modules = await KitModuleRepository.load(repo, validator, logger);
   const controls = await ComplianceControlRepository.load(
@@ -81,12 +88,6 @@ async function updateDocumentation(
     validator,
     logger,
   );
-
-  const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
-  const dir = new DirectoryGenerator(WriteMode.overwrite, logger);
-
-  const tfDocs = factory.buildTerraformDocs();
-
   const moduleDocumentation = new KitModuleDocumentationGenerator(
     repo,
     modules,
@@ -95,16 +96,24 @@ async function updateDocumentation(
     logger,
   );
 
-  const generator = new DocumentationGenerator(
+  const complianceDocumentation = new ComplianceDocumentationGenerator(logger);
+
+  const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
+  const platformDocumentation = new PlatformDocumentationGenerator(
     repo,
     foundation,
     analyzer,
-    moduleDocumentation,
     dir,
-    logger,
   );
 
-  await generator.generateFoundationDocumentation();
+  const generator = new DocumentationGenerator(
+    siteGenerator,
+    moduleDocumentation,
+    complianceDocumentation,
+    platformDocumentation,
+  );
+
+  await generator.generateFoundationDocumentation(foundation);
 
   foundationProgress.done();
 }

@@ -8,18 +8,19 @@ import { ComplianceControlRepository } from "../compliance/ComplianceControlRepo
 import { KitModuleRepository } from "../kit/KitModuleRepository.ts";
 import { ParsedKitModule } from "../kit/ParsedKitModule.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
+import { DocumentationRepository } from "./DocumentationRepository.ts";
 
 export class KitModuleDocumentationGenerator {
   constructor(
-    private readonly kit: CollieRepository,
+    private readonly collie: CollieRepository,
     private readonly kitModules: KitModuleRepository,
     private readonly controls: ComplianceControlRepository,
     private readonly tfdocs: TerraformDocsCliFacade,
     private readonly logger: Logger,
   ) {}
 
-  async generate(docsKitDir: string) {
-    const kitModulesDir = this.kit.resolvePath("kit");
+  async generate(docsRepo: DocumentationRepository) {
+    const kitModulesDir = this.collie.resolvePath("kit");
 
     const progress = new ProgressReporter(
       "generating",
@@ -29,18 +30,17 @@ export class KitModuleDocumentationGenerator {
 
     // generate all kit module READMEs
     const tasks = this.kitModules.all.map(async (x) => {
-      const kitModuleId = path.relative(kitModulesDir, x.id);
-      const dest = path.join(docsKitDir, kitModuleId + ".md");
+      const dest = docsRepo.kitModulePath(x.id);
 
       this.logger.verbose((fmt) => `generating ${fmt.kitPath(dest)}`);
 
-      const md = await this.generateModuleDocumentation(x);
+      const md = await this.generateModuleDocumentation(x, docsRepo);
 
       await Deno.mkdir(path.dirname(dest), { recursive: true });
       await Deno.writeTextFile(dest, md);
     });
 
-    tasks.push(this.copyTopLevelKitReamde(kitModulesDir, docsKitDir));
+    tasks.push(this.copyTopLevelKitReamde(kitModulesDir, docsRepo.kitDir));
 
     await Promise.all(tasks);
 
@@ -57,10 +57,16 @@ export class KitModuleDocumentationGenerator {
     await fs.copy(source, dest, { overwrite: true });
   }
 
-  private async generateModuleDocumentation(parsed: ParsedKitModule) {
+  private async generateModuleDocumentation(
+    parsed: ParsedKitModule,
+    docsRepo: DocumentationRepository,
+  ) {
     await this.tfdocs.updateReadme(parsed.kitModulePath);
 
-    const complianceStatements = this.generateComplianceStatements(parsed);
+    const complianceStatements = this.generateComplianceStatements(
+      parsed,
+      docsRepo,
+    );
 
     if (!complianceStatements?.length) {
       return parsed.readme; // return verbatim
@@ -74,7 +80,10 @@ ${complianceStatements.filter((x) => !!x).join("\n")}
 `;
   }
 
-  private generateComplianceStatements(parsed: ParsedKitModule) {
+  private generateComplianceStatements(
+    parsed: ParsedKitModule,
+    docsRepo: DocumentationRepository,
+  ) {
     return parsed.kitModule.compliance?.map((x) => {
       const control = this.controls.tryFindById(x.control);
       if (!control) {
@@ -91,7 +100,12 @@ ${complianceStatements.filter((x) => !!x).join("\n")}
 
 ${x.statement}
 
-[${control.name}](/${x.control + ".md"})
+[${control.name}](${
+        docsRepo.controlLink(
+          docsRepo.kitModulePath(parsed.id),
+          x.control,
+        )
+      })
 `;
     });
   }
