@@ -6,7 +6,9 @@ import {
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
 
 export type TerragruntRunMode = "plan" | "apply" | "init -upgrade" | "destroy";
-
+export interface TerragruntRunAllOpts {
+  excludeDirs?: string[];
+}
 export function toVerb(mode: TerragruntRunMode) {
   switch (mode) {
     case "plan":
@@ -42,10 +44,24 @@ export class TerragruntCliFacade {
     });
   }
 
-  async runAll(cwd: string, mode: TerragruntRunMode) {
+  async runAll(
+    cwd: string,
+    mode: TerragruntRunMode,
+    opts: TerragruntRunAllOpts,
+  ) {
     // note: terragrunt docs say "This will only exclude the module, not its dependencies."
     // this may be a problem because we want to exclude bootstrap modules AND their dependencies? needs more testing
-    const cmds = ["terragrunt", "run-all", ...this.modeCommands(mode)];
+    const excludeDirFlags = (opts.excludeDirs || []).flatMap((x) => [
+      "--terragrunt-exclude-dir",
+      x,
+    ]);
+
+    const cmds = [
+      "terragrunt",
+      "run-all",
+      ...this.modeCommands(mode),
+      ...excludeDirFlags,
+    ];
 
     // we do not have to set -auto-approve as run-all automatically includes it
     // see https://terragrunt.gruntwork.io/docs/reference/cli-options/#run-all

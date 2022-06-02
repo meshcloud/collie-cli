@@ -6,17 +6,12 @@ import {
   toVerb,
 } from "/api/terragrunt/TerragruntCliFacade.ts";
 import { FoundationRepository } from "/model/FoundationRepository.ts";
-import {
-  PlatformConfig,
-  PlatformConfigAws,
-  PlatformConfigAzure,
-  PlatformConfigGcp,
-} from "/model/PlatformConfig.ts";
+import { PlatformConfig } from "/model/PlatformConfig.ts";
 import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "/cli/ProgressReporter.ts";
 import { CollieRepository } from "/model/CollieRepository.ts";
 
-export abstract class PlatformDeployer<T extends PlatformConfig> {
+export class PlatformDeployer<T extends PlatformConfig> {
   constructor(
     protected readonly platform: T,
     private readonly repo: CollieRepository,
@@ -26,10 +21,7 @@ export abstract class PlatformDeployer<T extends PlatformConfig> {
   ) {}
 
   async deployBootstrapModules(mode: TerragruntRunMode) {
-    const moduleDir = this.foundation.resolvePlatformPath(
-      this.platform,
-      "bootstrap",
-    );
+    const moduleDir = this.bootstrapModuleDir();
     const bootstrapModuleProgress = this.buildProgressReporter(
       mode,
       this.repo.relativePath(moduleDir),
@@ -40,29 +32,30 @@ export abstract class PlatformDeployer<T extends PlatformConfig> {
     bootstrapModuleProgress.done();
   }
 
-  protected abstract platformModuleSequence(): string[];
+  private bootstrapModuleDir() {
+    return this.foundation.resolvePlatformPath(this.platform, "bootstrap");
+  }
 
   async deployPlatformModules(mode: TerragruntRunMode, module?: string) {
-    const platformModuleSequence = module
-      ? [module]
-      : this.platformModuleSequence();
+    const modulePath = this.foundation.resolvePlatformPath(
+      this.platform,
+      module || "",
+    );
 
-    for (const p of platformModuleSequence) {
-      const modulePath = this.foundation.resolvePlatformPath(this.platform, p);
+    const progress = this.buildProgressReporter(
+      mode,
+      this.repo.relativePath(modulePath),
+    );
 
-      const progress = this.buildProgressReporter(
-        mode,
-        this.repo.relativePath(modulePath),
-      );
-
-      if (await this.isTerragruntStack(modulePath)) {
-        await this.terragrunt.runAll(modulePath, mode);
-      } else {
-        await this.terragrunt.run(modulePath, mode);
-      }
-
-      progress.done();
+    if (await this.isTerragruntStack(modulePath)) {
+      await this.terragrunt.runAll(modulePath, mode, {
+        excludeDirs: [this.bootstrapModuleDir()],
+      });
+    } else {
+      await this.terragrunt.run(modulePath, mode);
     }
+
+    progress.done();
   }
 
   private async isTerragruntStack(modulePath: string) {
@@ -84,24 +77,5 @@ export abstract class PlatformDeployer<T extends PlatformConfig> {
 
   private buildProgressReporter(mode: TerragruntRunMode, id: string) {
     return new ProgressReporter(toVerb(mode), id, this.logger);
-  }
-}
-
-export class AwsPlatformDeployer extends PlatformDeployer<PlatformConfigAws> {
-  protected platformModuleSequence(): string[] {
-    return ["admin-accounts"];
-  }
-}
-
-export class AzurePlatformDeployer
-  extends PlatformDeployer<PlatformConfigAzure> {
-  protected platformModuleSequence(): string[] {
-    return ["admin/tenant"];
-  }
-}
-
-export class GcpPlatformDeployer extends PlatformDeployer<PlatformConfigGcp> {
-  protected platformModuleSequence(): string[] {
-    return ["admin"];
   }
 }
