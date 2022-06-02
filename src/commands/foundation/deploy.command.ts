@@ -12,6 +12,7 @@ import { ProgressReporter } from "../../cli/ProgressReporter.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { PlatformDeployer } from "../../foundation/PlatformDeployer.ts";
+import { PlatformModuleType } from "./PlatformModuleType.ts";
 
 interface DeployOptions {
   platform: string;
@@ -34,9 +35,10 @@ export function registerDeployCmd(program: Command) {
       "--bootstrap",
       "Execute bootstrapping steps instead of non-bootstrap deploy steps.",
     )
-    .option("--module [module:string]", "Execute this specific module", {
+    .option("--module [module:module]", "Execute this specific module", {
       conflicts: ["bootstrap"],
     })
+    .type("module", new PlatformModuleType())
     .option("--auto-approve", "run terragrunt with '--auto-approve' option", {
       conflicts: ["upgrade", "plan"],
     })
