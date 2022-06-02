@@ -10,8 +10,8 @@ import { Logger } from "../../cli/Logger.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
-import { PlatformDeployerFactory } from "../../foundation/PlatformDeployerFactory.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
+import { PlatformDeployer } from "../../foundation/PlatformDeployer.ts";
 
 interface DeployOptions {
   platform: string;
@@ -147,18 +147,18 @@ async function deployFoundation(
         logger,
       );
 
-    const factory = new PlatformDeployerFactory(
+    const deployer = new PlatformDeployer(
+      platform,
       repo,
       foundation,
       terragrunt,
       logger,
     );
-    const cmd = factory.buildDeployer(platform);
 
     if (opts.bootstrap) {
-      await cmd.deployBootstrapModules(mode);
+      await deployer.deployBootstrapModules(mode);
     } else {
-      await cmd.deployPlatformModules(mode, opts.module);
+      await deployer.deployPlatformModules(mode, opts.module);
     }
 
     platformProgress.done();
