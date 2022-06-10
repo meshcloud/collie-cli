@@ -163,8 +163,8 @@ export default defineUserConfig<DefaultThemeOptions, ViteBundlerOptions>({
         "docs:build": "vuepress build docs",
       },
       devDependencies: {
-        vuepress: "^2.0.0-beta.37",
-        "@vuepress/plugin-search": "^2.0.0-beta.37",
+        vuepress: "2.0.0-beta.37",
+        "@vuepress/plugin-search": "2.0.0-beta.37",
       },
     };
 
