@@ -180,7 +180,9 @@ function buildTerragrunt(
 ) {
   const args = [];
   if (opts.autoApprove) {
-    args.push("--auto-approve");
+    // we pass --auto-approve to individual terraform commands
+    // and --terragrunt-non-interactive to terragrunt's own prompts, e.g. when terragrunt run-all
+    args.push("--auto-approve", "--terragrunt-non-interactive");
   }
 
   return factory.buildTerragrunt(args);
