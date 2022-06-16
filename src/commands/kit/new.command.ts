@@ -32,7 +32,7 @@ export function registerNewCmd(program: Command) {
             { name: "main.tf", content: mainTf },
             {
               name: "documentation.tf",
-              content: generateDocumentationTf(name),
+              content: generateDocumentationTf(),
             },
             { name: "README.md", content: generateReadmeMd(name) },
             { name: "variables.tf", content: "" },
@@ -60,7 +60,7 @@ const mainTf = `# Place your module's terraform resources here as usual.
 # these will be provided by the platform implementations using this kit module.
 `;
 
-function generateDocumentationTf(moduleName: string) {
+function generateDocumentationTf() {
   return `variable "output_md_file" {
   type        = string
   description = "location of the file where this cloud foundation kit module generates its documentation output"
@@ -72,10 +72,10 @@ resource "local_file" "output_md" {
   # pro-tip: you can 
   content = <<EOF
 
-### ${moduleName}
-
 This documentation is intended as a summary of resources deployed and managed by this module for landing zone consumers
 and security auditors.
+
+### TODO
 
 TODO: describe the deployed resources and its configuration in a human-friendly way.
 
