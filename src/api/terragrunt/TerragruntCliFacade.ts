@@ -16,7 +16,7 @@ export function toVerb(mode: TerragruntRunMode) {
     case "apply":
       return "deploying (apply)";
     case "init -upgrade":
-      return "initialising";
+      return "initializing";
     case "destroy":
       return "destroying";
     default:
