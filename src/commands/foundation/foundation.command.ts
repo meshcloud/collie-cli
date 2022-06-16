@@ -3,6 +3,7 @@ import { registerDeployCmd } from "./deploy.command.ts";
 import { registerConfigCmd } from "./config.command.ts";
 import { registerNewCmd } from "./new.command.ts";
 import { registerTreeCmd } from "./tree.command.ts";
+import { registerDocsCmd } from "./docs.command.ts";
 
 export function registerFoundationCommand(program: Command) {
   const foundationCommands = new Command();
@@ -10,6 +11,7 @@ export function registerFoundationCommand(program: Command) {
   registerConfigCmd(foundationCommands);
   registerTreeCmd(foundationCommands);
   registerDeployCmd(foundationCommands);
+  registerDocsCmd(foundationCommands);
 
   program
     .command("foundation", foundationCommands)

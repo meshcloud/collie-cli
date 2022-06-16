@@ -14,7 +14,6 @@ import { registerUpgradeCommand } from "./commands/upgrade.command.ts";
 import { registerKitCommand } from "./commands/kit/kit.command.ts";
 import { registerFoundationCommand } from "./commands/foundation/foundation.command.ts";
 import { registerComplianceCommand } from "./commands/compliance/compliance.command.ts";
-import { registerDocsCommand } from "./commands/foundation/docs.command.ts";
 import { registerVersionCommand } from "./commands/version.command.ts";
 import { registerInteractiveCommand } from "./commands/interactive/interactive.command.ts";
 import { FirstTimeExperience } from "./FirstTimeExperience.ts";
@@ -49,7 +48,6 @@ async function collie() {
   registerTenantCommand(program);
   registerKitCommand(program);
   registerComplianceCommand(program);
-  registerDocsCommand(program);
   registerInteractiveCommand(program);
 
   registerCreateIssueCommand(program);
