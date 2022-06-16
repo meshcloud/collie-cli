@@ -21,7 +21,7 @@ interface DocsCommandOptions {
   preview: boolean;
 }
 
-export function registerDocsCommand(program: Command) {
+export function registerDocsCmd(program: Command) {
   program
     .command("docs <foundation:foundation>")
     .description(
