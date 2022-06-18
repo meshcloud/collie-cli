@@ -7,6 +7,10 @@ export class MarkdownUtils {
     return "```" + type + "\n" + content + "\n```";
   }
 
+  static link(text: string, href: string) {
+    return `[${text}](${href})`;
+  }
+
   /**
    * A vuepress custom container, see https://v2.vuepress.vuejs.org/reference/default-theme/markdown.html#custom-containers
    */
