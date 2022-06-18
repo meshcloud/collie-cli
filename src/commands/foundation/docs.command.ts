@@ -102,8 +102,10 @@ async function updateDocumentation(
   const platformDocumentation = new PlatformDocumentationGenerator(
     repo,
     foundation,
+    controls,
     analyzer,
     dir,
+    logger,
   );
 
   const generator = new DocumentationGenerator(

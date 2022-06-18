@@ -87,7 +87,6 @@ ${complianceStatements.filter((x) => !!x).join("\n")}
     return parsed.kitModule.compliance?.map((x) => {
       const control = this.controls.tryFindById(x.control);
       if (!control) {
-        console.log(parsed);
         this.logger.warn(
           `could not find compliance control ${x.control} referenced in a compliance statement in ${parsed.definitionPath}`,
         );

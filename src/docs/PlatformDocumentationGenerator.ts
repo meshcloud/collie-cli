@@ -1,4 +1,6 @@
 import { Dir, DirectoryGenerator, File } from "../cli/DirectoryGenerator.ts";
+import { Logger } from "../cli/Logger.ts";
+import { ComplianceControlRepository } from "../compliance/ComplianceControlRepository.ts";
 import { CLI } from "../info.ts";
 import {
   KitDependencyAnalyzer,
@@ -28,8 +30,10 @@ export class PlatformDocumentationGenerator {
   constructor(
     private readonly kit: CollieRepository,
     private readonly foundation: FoundationRepository,
+    private readonly controls: ComplianceControlRepository,
     private readonly kitDependencyAnalyzer: KitDependencyAnalyzer,
     private readonly dir: DirectoryGenerator,
+    private readonly logger: Logger,
   ) {}
 
   async generate(docsRepo: DocumentationRepository) {
@@ -129,32 +133,64 @@ You can review the disocvered dependencies using the ${
   }
 
   private generatePlatformModuleDocumentation(
-    x: KitModuleDependency,
+    dep: KitModuleDependency,
     docsRepo: DocumentationRepository,
     platform: PlatformConfig,
   ): string {
-    if (!x.kitModule) {
+    if (!dep.kitModule) {
       return MarkdownUtils.container(
         "warning",
         "Invalid Kit Module Dependency",
-        "Could not find kit module at " + MarkdownUtils.code(x.kitModulePath),
+        "Could not find kit module at " + MarkdownUtils.code(dep.kitModulePath),
       );
     }
+    const platformPath = docsRepo.platformPath(platform.id);
 
-    return `## ${x.kitModule.name}
+    const complianceStatements = dep.kitModule.compliance
+      ?.map((x) => {
+        const control = this.controls.tryFindById(x.control);
+        if (!control) {
+          this.logger.warn(
+            `could not find compliance control ${x.control} referenced in a compliance statement in ${dep.kitModulePath}`,
+          );
 
-  ::: tip Kit module
-  The [${x.kitModule.name} kit module](${
-      docsRepo.kitModuleLink(
-        docsRepo.platformPath(platform.id),
-        x.kitModuleId,
-      )
-    }) ${x.kitModule.summary}
-  :::
+          return;
+        }
+
+        return `- [${control.name}](${
+          docsRepo.controlLink(
+            platformPath,
+            x.control,
+          )
+        }): ${x.statement}`;
+      })
+      .filter((x): x is string => !!x);
+
+    const complianceStatementsBlock = !complianceStatements?.length ? "" : `
+::: details Compliance Statements
+${complianceStatements.join("\n")}
+:::
+`;
+
+    const kitModuleLink = MarkdownUtils.link(
+      dep.kitModule.name + " kit module",
+      docsRepo.kitModuleLink(platformPath, dep.kitModuleId),
+    );
+
+    return `## ${dep.kitModule.name}
+
+::: tip Kit module
+The ${kitModuleLink} ${dep.kitModule.summary}
+:::
   
-  ${
-      x.kitModuleOutput ||
-      `<!-- did not find output at ${x.kitModuleOutputPath} -->`
+${
+      complianceStatementsBlock ||
+      `<!-- kit module has no compliance statements -->`
+    }
+
+${
+      dep.kitModuleOutput ||
+      `<!-- did not find output at ${dep.kitModuleOutputPath} -->`
     }
   `;
   }
