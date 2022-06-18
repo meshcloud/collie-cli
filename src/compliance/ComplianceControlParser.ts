@@ -81,10 +81,10 @@ export class ComplianceControlParser {
 
     const text = await Deno.readTextFile(mdPath);
 
-    const parsed = MarkdownDocument.parse<ComplianceControl>(text);
+    const { parsed, error } = MarkdownDocument.parse<ComplianceControl>(text);
     if (!parsed) {
       this.logger.warn(
-        "Invalid YAML frontmatter in compliance control at " + relativeMdPath,
+        `Invalid YAML frontmatter in compliance control at ${relativeMdPath}. ${error}`,
       );
       return;
     }

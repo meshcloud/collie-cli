@@ -70,11 +70,11 @@ export class KitModuleParser {
     );
 
     const text = await Deno.readTextFile(readmePath);
-    const document = MarkdownDocument.parse<KitModule>(text);
+    const { parsed, error } = MarkdownDocument.parse<KitModule>(text);
 
-    if (!document) {
+    if (!parsed) {
       this.logger.warn(
-        "Invalid YAML frontmatter in kit module at " + relativeReadmePath,
+        `Invalid YAML frontmatter in kit module at ${relativeReadmePath}. ${error}`,
       );
 
       return;
@@ -84,8 +84,8 @@ export class KitModuleParser {
       id: relativeModulePath.substring("kit/".length),
       kitModulePath: relativeModulePath,
       definitionPath: relativeReadmePath,
-      kitModule: document.frontmatter,
-      readme: document.document,
+      kitModule: parsed.frontmatter,
+      readme: parsed.document,
     };
   }
 
