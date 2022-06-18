@@ -1,5 +1,6 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
+import { MeshError } from "../errors.ts";
 import {
   FoundationConfig,
   FoundationFrontmatter,
@@ -98,19 +99,21 @@ export class FoundationRepository {
       readmePath,
     );
 
-    const md = await MarkdownDocument.parse<FoundationFrontmatter>(text);
+    const { parsed, error } = await MarkdownDocument.parse<
+      FoundationFrontmatter
+    >(text);
 
-    if (!md?.frontmatter) {
-      throw new CollieModelValidationError(
+    if (!parsed?.frontmatter) {
+      throw new MeshError(
         "Failed to parse foundation README frontmatter at " +
           kit.relativePath(readmePath),
-        [],
+        error,
       );
     }
 
     const config = {
       name: path.basename(foundationDir), // default the name to the directory name
-      ...md.frontmatter,
+      ...parsed.frontmatter,
     };
 
     const { data, errors } = validator.validateFoundationFrontmatter(config);
@@ -158,13 +161,14 @@ export class FoundationRepository {
       })
     ) {
       const text = await this.readPlatformReadme(collie, file.path);
-      const md = await MarkdownDocument.parse<PlatformFrontmatter>(text);
-
-      if (!md?.frontmatter) {
-        throw new CollieModelValidationError(
+      const { parsed, error } = MarkdownDocument.parse<PlatformFrontmatter>(
+        text,
+      );
+      if (!parsed?.frontmatter) {
+        throw new MeshError(
           "Failed to parse platform README frontmatter at " +
             collie.relativePath(file.path),
-          [],
+          error,
         );
       }
 
@@ -172,7 +176,7 @@ export class FoundationRepository {
       const config = {
         id,
         name: id, // default the name to the id - unless frontmatter overrides this
-        ...md.frontmatter,
+        ...parsed.frontmatter,
       };
 
       const { data, errors } = validator.validatePlatformConfig(config);

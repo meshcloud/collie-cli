@@ -33,7 +33,12 @@ export enum AzureErrorCode {
 }
 
 export class MeshError extends Error {
-  constructor(message: string) {
+  constructor(message: string, cause?: unknown) {
+    if (cause) {
+      super(`${message}. Caused by ${cause}`);
+      return;
+    }
+
     super(message);
   }
 }
