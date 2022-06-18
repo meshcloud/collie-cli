@@ -9,6 +9,7 @@ import { CollieRepository } from "../model/CollieRepository.ts";
 
 import { FoundationRepository } from "../model/FoundationRepository.ts";
 import { MarkdownUtils } from "../model/MarkdownUtils.ts";
+import { PlatformConfig } from "../model/PlatformConfig.ts";
 import { DocumentationRepository } from "./DocumentationRepository.ts";
 
 const md = MarkdownUtils;
@@ -89,36 +90,14 @@ This section describes the platforms.`;
     dependencies: PlatformDependencies,
     docsRepo: DocumentationRepository,
   ): string {
-    const kitModuleImplementationDescriptions = dependencies.modules
+    const platformModuleDescriptions = dependencies.modules
       .sort(kitModuleSorter)
       .map((x) => {
-        // todo: render kit module link
-        // todo: include kit module output.md
-        if (!x.kitModule) {
-          return MarkdownUtils.container(
-            "warning",
-            "Invalid Kit Module Dependency",
-            "Could not find kit module at " +
-              MarkdownUtils.code(x.kitModulePath),
-          );
-        }
-
-        return `## ${x.kitModule.name}
-
-::: tip Kit module
-The [${x.kitModule.name} kit module](${
-          docsRepo.kitModuleLink(
-            docsRepo.platformPath(dependencies.platform.id),
-            x.kitModuleId,
-          )
-        }) ${x.kitModule.summary}
-:::
-
-${
-          x.kitModuleOutput ||
-          `<!-- did not find output at ${x.kitModuleOutputPath} -->`
-        }
-`;
+        return this.generatePlatformModuleDocumentation(
+          x,
+          docsRepo,
+          dependencies.platform,
+        );
       })
       .join("\n");
 
@@ -132,7 +111,7 @@ The following section describe the configuration of this cloud platform based on
 Each section includes a link to the relevant [kit module](/kit/) documentation. Review this documentation to learn more
 about the kit module and its [compliance](/compliance/) statements.
 
-${kitModuleImplementationDescriptions}
+${platformModuleDescriptions}
 
 ## Discovered dependencies
 
@@ -147,5 +126,36 @@ You can review the disocvered dependencies using the ${
     } command.
 :::
 `;
+  }
+
+  private generatePlatformModuleDocumentation(
+    x: KitModuleDependency,
+    docsRepo: DocumentationRepository,
+    platform: PlatformConfig,
+  ): string {
+    if (!x.kitModule) {
+      return MarkdownUtils.container(
+        "warning",
+        "Invalid Kit Module Dependency",
+        "Could not find kit module at " + MarkdownUtils.code(x.kitModulePath),
+      );
+    }
+
+    return `## ${x.kitModule.name}
+
+  ::: tip Kit module
+  The [${x.kitModule.name} kit module](${
+      docsRepo.kitModuleLink(
+        docsRepo.platformPath(platform.id),
+        x.kitModuleId,
+      )
+    }) ${x.kitModule.summary}
+  :::
+  
+  ${
+      x.kitModuleOutput ||
+      `<!-- did not find output at ${x.kitModuleOutputPath} -->`
+    }
+  `;
   }
 }
