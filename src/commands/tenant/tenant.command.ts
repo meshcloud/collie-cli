@@ -8,11 +8,13 @@ import { registerAnalyzeTagCommand } from "./analyze-tag.command.ts";
 import { registerSetMissingTagCommand } from "./set-missing-tag.command.ts";
 import { OutputFormat } from "../../presentation/output-format.ts";
 import { OutputFormatType } from "../GlobalCommandOptions.ts";
+import { registerTreeCommand } from "./tree.command.ts";
 
 export function registerTenantCommand(program: Command) {
   const tenantCmd = new Command();
 
   registerListCommand(tenantCmd);
+  registerTreeCommand(tenantCmd);
   registerCostCommand(tenantCmd);
   registerIamCommand(tenantCmd);
   registerAnalyzeTagCommand(tenantCmd);
@@ -24,9 +26,6 @@ export function registerTenantCommand(program: Command) {
       `List tenants in your cloud foundations and manage tags, cost and IAM`,
     )
     .globalType("output", OutputFormatType)
-    .globalOption("-o --output [output:output]", "Defines the output format", {
-      default: OutputFormat.TABLE,
-    })
     .globalOption(
       "-p, --platform <platform:platform>",
       "list tenants for this platform only",
