@@ -1,17 +1,21 @@
 import {
   Account,
-  AccountResponse,
+  AccountsResponse,
   AssumedRoleResponse,
   CallerIdentity,
   CostResponse,
   Credentials,
   Group,
   GroupResponse,
+  OrganizationalUnit,
+  OrganizationalUnitsResponse,
   Policy,
   PolicyResponse,
   RegionsResponse,
+  Root,
+  RootResponse,
   Tag,
-  TagResponse,
+  TagsResponse,
   User,
   UserResponse,
 } from "/api/aws/Model.ts";
@@ -22,6 +26,14 @@ import { parseJsonWithLog } from "/json.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 
+/**
+ * TODO: I'm not sure the paging implementation here is really necessary, according to
+ * https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-pagination.html the aws cli already handles it
+ *
+ * > The --no-paginate option disables following pagination tokens on the client side.
+ * > When using a command, by default the AWS CLI automatically makes multiple calls to return all
+ * > possible results to create pagination.
+ */
 export class AwsCliFacade {
   constructor(
     private readonly processRunner: IProcessRunner<ProcessResultWithOutput>,
@@ -39,21 +51,45 @@ export class AwsCliFacade {
   }
 
   async listAccounts(): Promise<Account[]> {
-    const command = [
-      "aws",
-      "organizations",
-      "list-accounts",
-      "--output",
-      "json",
-    ];
+    const command = ["aws", "organizations", "list-accounts"];
 
-    const pages = await this.runPaged<AccountResponse>(
+    const pages = await this.runPaged<AccountsResponse>(
       command,
       (x) => x.NextToken,
       (x) => ["--starting-token", x],
     );
 
     return pages.flatMap((x) => x.Accounts);
+  }
+
+  async listAccountsForParent(parentId: string): Promise<Account[]> {
+    const command = [
+      "aws",
+      "organizations",
+      "list-accounts-for-parent",
+      "--parent-id",
+      parentId,
+    ];
+
+    const result = await this.run<AccountsResponse>(command);
+
+    return result.Accounts;
+  }
+
+  async listOrganizationalUnitsForParent(
+    parentId: string,
+  ): Promise<OrganizationalUnit[]> {
+    const command = [
+      "aws",
+      "organizations",
+      "list-organizational-units-for-parent",
+      "--parent-id",
+      parentId,
+    ];
+
+    const result = await this.run<OrganizationalUnitsResponse>(command);
+
+    return result.OrganizationalUnits;
   }
 
   async listTags(account: Account): Promise<Tag[]> {
@@ -75,7 +111,15 @@ export class AwsCliFacade {
       return await this.listTags(account);
     }
 
-    return parseJsonWithLog<TagResponse>(result.stdout).Tags;
+    return parseJsonWithLog<TagsResponse>(result.stdout).Tags;
+  }
+
+  async listRoots(): Promise<Root[]> {
+    const command = ["aws", "organizations", "list-roots"];
+
+    const result = await this.processRunner.run(command);
+
+    return parseJsonWithLog<RootResponse>(result.stdout).Roots;
   }
 
   async addTags(account: Account, tags: Tag[]): Promise<void> {
@@ -304,7 +348,7 @@ export class AwsCliFacade {
 
   private async run<T>(command: string[], credentials?: Credentials) {
     const result = await this.processRunner.run(
-      command,
+      [...command, "--output", "json"],
       this.credsToEnv(credentials),
     );
 

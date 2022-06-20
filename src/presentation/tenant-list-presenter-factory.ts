@@ -11,25 +11,24 @@ import { TablePresenter } from "./table-presenter.ts";
 import { YamlPresenter } from "./yaml-presenter.ts";
 
 export class TenantListPresenterFactory {
-  constructor(
-    private readonly tableFactory: MeshTableFactory,
-  ) {}
+  constructor(private readonly tableFactory: MeshTableFactory) {}
 
   buildPresenter(
     format: OutputFormat,
     meshTenants: MeshTenant[],
     stats: QueryStatistics,
   ): Presenter {
-    if (format === OutputFormat.CSV) {
-      return this.buildCsvPresenter(meshTenants);
-    } else if (format === OutputFormat.TABLE) {
-      return this.buildTablePresenter(meshTenants, stats);
-    } else if (format === OutputFormat.JSON) {
-      return this.builJsonPresenter(meshTenants);
-    } else if (format === OutputFormat.YAML) {
-      return this.buildYamlPresenter(meshTenants);
-    } else {
-      throw new MeshError("Unknown output format specified: " + format);
+    switch (format) {
+      case OutputFormat.CSV:
+        return this.buildCsvPresenter(meshTenants);
+      case OutputFormat.TABLE:
+        return this.buildTablePresenter(meshTenants, stats);
+      case OutputFormat.JSON:
+        return this.builJsonPresenter(meshTenants);
+      case OutputFormat.YAML:
+        return this.buildYamlPresenter(meshTenants);
+      default:
+        throw new MeshError("Unknown output format specified: " + format);
     }
   }
 
@@ -37,15 +36,12 @@ export class TenantListPresenterFactory {
     meshTenants: MeshTenant[],
     stats: QueryStatistics,
   ): Presenter {
-    const tableViewGenerator = new MeshTenantTableViewGenerator(
-      meshTenants,
-      [
-        "platformId",
-        "platformTenantName",
-        "platformTenantId",
-        "tags",
-      ],
-    );
+    const tableViewGenerator = new MeshTenantTableViewGenerator(meshTenants, [
+      "platformId",
+      "platformTenantName",
+      "platformTenantId",
+      "tags",
+    ]);
 
     return new TablePresenter(
       tableViewGenerator,
@@ -55,11 +51,10 @@ export class TenantListPresenterFactory {
   }
 
   private buildCsvPresenter(meshTenants: MeshTenant[]): Presenter {
-    return new CsvTenantListPresenter([
-      "platformId",
-      "platformTenantName",
-      "platformTenantId",
-    ], meshTenants);
+    return new CsvTenantListPresenter(
+      ["platformId", "platformTenantName", "platformTenantId"],
+      meshTenants,
+    );
   }
 
   private builJsonPresenter(meshTenants: MeshTenant[]): Presenter {

@@ -5,9 +5,16 @@ import { AwsCliFacade } from "./AwsCliFacade.ts";
 import {
   MeshPlatform,
   MeshTenant,
+  MeshTenantAncestor,
   MeshTenantCost,
 } from "/mesh/MeshTenantModel.ts";
-import { Account, Credentials, User } from "./Model.ts";
+import {
+  Account,
+  Credentials,
+  OrganizationalUnit,
+  Root,
+  User,
+} from "./Model.ts";
 import { moment } from "/deps.ts";
 import { AwsErrorCode, MeshAwsPlatformError } from "/errors.ts";
 import {
@@ -19,6 +26,17 @@ import { PlatformConfigAws } from "../../model/PlatformConfig.ts";
 
 // limit concurrency because we will run into aws rate limites for sure if we set this off all at once
 const concurrencyLimit = 5;
+
+type OrgNode = {
+  type: "ORGANIZATIONAL_UNIT" | "ROOT";
+  parentId: string;
+  node: OrganizationalUnit | Root;
+};
+
+type AccountNode = {
+  parentId: string;
+  account: Account;
+};
 
 export class AwsMeshAdapter implements MeshAdapter {
   /**
@@ -33,14 +51,36 @@ export class AwsMeshAdapter implements MeshAdapter {
   ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
-    const accounts = await this.awsCli.listAccounts();
+    const structure = await this.getOrgStructure();
+
+    const listAccountsInOrgUnitIterator = pooledMap(
+      concurrencyLimit,
+      [...structure.values()],
+      async (orgNode) => ({
+        parentId: orgNode.node.Id,
+        accounts: await this.awsCli.listAccountsForParent(orgNode.node.Id),
+      }),
+    );
+
+    const accounts: AccountNode[] = [];
+    for await (const ou of listAccountsInOrgUnitIterator) {
+      accounts.push(
+        ...ou.accounts.map((x) => ({
+          parentId: ou.parentId,
+          account: x,
+        })),
+      );
+    }
 
     const getTagsIterator = pooledMap(
       concurrencyLimit,
       accounts,
-      async (account) => {
-        const tags = await this.awsCli.listTags(account);
+      async (acctNode) => {
+        // unfortunately there's no way around a SELECT N+1 (issue a query for every aws account) performance
+        // for listing all AWS tenants because there's no batch API to list accounts and all their tags
 
+        const account = acctNode.account;
+        const tags = await this.awsCli.listTags(account);
         const meshTags = tags.map((t) => {
           return { tagName: t.Key, tagValues: [t.Value] };
         });
@@ -50,7 +90,8 @@ export class AwsMeshAdapter implements MeshAdapter {
           platformTenantName: account.Name,
           platformType: MeshPlatform.AWS,
           platformId: this.config.id,
-          nativeObj: account,
+          ancestors: this.buildAncestorsPath(acctNode.parentId, structure),
+          nativeObj: acctNode.account,
           tags: meshTags,
           costs: [],
           roleAssignments: [],
@@ -65,6 +106,64 @@ export class AwsMeshAdapter implements MeshAdapter {
     }
 
     return tenants;
+  }
+
+  private async getOrgStructure() {
+    const roots = await this.awsCli.listRoots();
+    const rootNodeEntries: [string, OrgNode][] = roots.map((x) => [
+      x.Id,
+      {
+        type: "ROOT",
+        parentId: "organization", // todo: get the organization id instead for accurate picature
+        node: x,
+      },
+    ]);
+
+    const getNodes = roots.map((r) => this.getOrgUnitNodes(r.Id));
+    const stuctureResults = await Promise.all(getNodes);
+    const childNodeEntries: [string, OrgNode][] = stuctureResults
+      .flat()
+      .map((y) => [y.node.Id, y]);
+
+    return new Map(rootNodeEntries.concat(childNodeEntries));
+  }
+
+  async getOrgUnitNodes(parentId: string): Promise<OrgNode[]> {
+    const orgUnits = await this.awsCli.listOrganizationalUnitsForParent(
+      parentId,
+    );
+
+    const entries: OrgNode[] = orgUnits.map((x) => ({
+      type: "ORGANIZATIONAL_UNIT",
+      parentId: parentId,
+      node: x,
+    }));
+
+    const listChildren = orgUnits.map(
+      async (x) => await this.getOrgUnitNodes(x.Id),
+    );
+
+    const children = await Promise.all(listChildren);
+
+    return entries.concat(children.flat());
+  }
+
+  private buildAncestorsPath(
+    parentId: string,
+    structure: Map<string, OrgNode>,
+  ): MeshTenantAncestor[] {
+    const parent = structure.get(parentId);
+    if (!parent) {
+      return [];
+    }
+
+    const self = {
+      type: parent.type,
+      id: parent.node.Id,
+      name: parent.node.Name,
+    };
+
+    return [...this.buildAncestorsPath(parent.parentId, structure), self];
   }
 
   async updateMeshTenant(
