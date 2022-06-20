@@ -27,12 +27,10 @@ import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 
 /**
- * TODO: I'm not sure the paging implementation here is really necessary, according to
+ * Design: We don't have to care about paging because
  * https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-pagination.html the aws cli already handles it
  *
- * > The --no-paginate option disables following pagination tokens on the client side.
- * > When using a command, by default the AWS CLI automatically makes multiple calls to return all
- * > possible results to create pagination.
+ * > By default, the AWS CLI uses a page size determined by the individual service and retrieves all available items.
  */
 export class AwsCliFacade {
   constructor(
@@ -48,18 +46,6 @@ export class AwsCliFacade {
 
     // this output is not json
     return result.stdout.trim().split("\n");
-  }
-
-  async listAccounts(): Promise<Account[]> {
-    const command = ["aws", "organizations", "list-accounts"];
-
-    const pages = await this.runPaged<AccountsResponse>(
-      command,
-      (x) => x.NextToken,
-      (x) => ["--starting-token", x],
-    );
-
-    return pages.flatMap((x) => x.Accounts);
   }
 
   async listAccountsForParent(parentId: string): Promise<Account[]> {
@@ -217,28 +203,19 @@ export class AwsCliFacade {
   }
 
   async listUsers(credential: Credentials): Promise<User[]> {
-    const command = ["aws", "iam", "list-users", "--max-items", "50"];
+    const command = ["aws", "iam", "list-users"];
 
-    const pages = await this.runPaged<UserResponse>(
-      command,
-      (x) => x.NextToken,
-      (x) => ["--starting-token", x],
-      credential,
-    );
+    const result = await this.run<UserResponse>(command, credential);
 
-    return pages.flatMap((x) => x.Users);
+    return result.Users;
   }
+
   async listGroups(credential: Credentials): Promise<Group[]> {
-    const command = ["aws", "iam", "list-groups", "--max-items", "50"];
+    const command = ["aws", "iam", "list-groups"];
 
-    const pages = await this.runPaged<GroupResponse>(
-      command,
-      (x) => x.NextToken,
-      (x) => ["--starting-token", x],
-      credential,
-    );
+    const result = await this.run<GroupResponse>(command, credential);
 
-    return pages.flatMap((x) => x.Groups);
+    return result.Groups;
   }
 
   async listUserOfGroup(
@@ -251,18 +228,11 @@ export class AwsCliFacade {
       "get-group",
       "--group-name",
       group.GroupName,
-      "--max-items",
-      "50",
     ];
 
-    const pages = await this.runPaged<UserResponse>(
-      command,
-      (x) => x.NextToken,
-      (x) => ["--starting-token", x],
-      credential,
-    );
+    const result = await this.run<UserResponse>(command, credential);
 
-    return pages.flatMap((x) => x.Users);
+    return result.Users;
   }
 
   async listAttachedGroupPolicies(
@@ -277,14 +247,9 @@ export class AwsCliFacade {
       group.GroupName,
     ];
 
-    const pages = await this.runPaged<PolicyResponse>(
-      command,
-      (x) => x.Marker,
-      (x) => ["--starting-token", x],
-      credential,
-    );
+    const result = await this.run<PolicyResponse>(command, credential);
 
-    return pages.flatMap((x) => x.AttachedPolicies);
+    return result.AttachedPolicies;
   }
 
   async listAttachedUserPolicies(
@@ -299,20 +264,13 @@ export class AwsCliFacade {
       user.UserName,
     ];
 
-    const pages = await this.runPaged<PolicyResponse>(
-      command,
-      (x) => x.Marker,
-      (x) => ["--starting-token", x],
-      credential,
-    );
+    const result = await this.run<PolicyResponse>(command, credential);
 
-    return pages.flatMap((x) => x.AttachedPolicies);
+    return result.AttachedPolicies;
   }
 
   /**
    * https://docs.aws.amazon.com/cli/latest/reference/ce/get-cost-and-usage.html
-   *
-   * Note: the actual paging handling has not been tested but has been built by using [listAccounts]' logic and AWS docs.
    */
   async listCosts(startDate: Date, endDate: Date): Promise<CostResponse> {
     const format = "YYYY-MM-DD";
@@ -333,17 +291,9 @@ export class AwsCliFacade {
       "Type=DIMENSION,Key=LINKED_ACCOUNT",
     ];
 
-    const pages = await this.runPaged<CostResponse>(
-      command,
-      (x) => x.NextPageToken,
-      (x) => [`--next-page-token=${x}`],
-    );
+    const result = await this.run<CostResponse>(command);
 
-    // This is a bit hacky but we extend the original response with new data, rather than overwriting it.
-    // We do not concat the other values since (we assume) they do not change in-between requests.
-    pages[0].ResultsByTime = pages.flatMap((x) => x.ResultsByTime);
-
-    return pages[0];
+    return result;
   }
 
   private async run<T>(command: string[], credentials?: Credentials) {
@@ -353,29 +303,6 @@ export class AwsCliFacade {
     );
 
     return parseJsonWithLog<T>(result.stdout);
-  }
-
-  private async runPaged<T>(
-    command: string[],
-    paginationToken: (result: T) => string | undefined,
-    paginationOptions: (token: string) => string[],
-    credentials?: Credentials,
-  ): Promise<T[]> {
-    const results: T[] = [];
-
-    let result: T = await this.run<T>(command, credentials);
-    results.push(result);
-
-    let token: string | undefined;
-    while ((token = paginationToken(result))) {
-      const pagedCommand = command.concat(paginationOptions(token));
-
-      result = await this.run<T>(pagedCommand);
-
-      results.push(result);
-    }
-
-    return results;
   }
 
   private credsToEnv(credentials?: Credentials): { [key: string]: string } {
