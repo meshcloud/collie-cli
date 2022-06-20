@@ -4,6 +4,7 @@ import {
   MeshPlatform,
   MeshTag,
   MeshTenant,
+  MeshTenantAncestor,
   MeshTenantCost,
 } from "/mesh/MeshTenantModel.ts";
 import { GcloudCliFacade } from "./GcloudCliFacade.ts";
@@ -33,10 +34,11 @@ export class GcloudMeshAdapter implements MeshAdapter {
   async getMeshTenants(): Promise<MeshTenant[]> {
     const projects = await this.cli.listProjects();
 
-    const parents: Set<string> = await this.buildParentsSet();
+    const folders = await this.allFolders();
+    const parents: Set<string> = await this.buildParentsSet(folders);
 
     return projects
-      .filter((x) => parents.has(`${x.parent.type}s/${x.parent.id}`))
+      .filter((x) => parents.has(this.parentName(x)))
       .map((x) => {
         let tags: MeshTag[] = [];
         if (x.labels) {
@@ -50,6 +52,7 @@ export class GcloudMeshAdapter implements MeshAdapter {
           platformTenantName: x.name,
           platformId: this.config.id,
           platformType: MeshPlatform.GCP,
+          ancestors: this.buildAncestorsPath(this.parentName(x), folders),
           nativeObj: x,
           tags: tags,
           costs: [],
@@ -57,17 +60,52 @@ export class GcloudMeshAdapter implements MeshAdapter {
         };
       });
   }
+  private parentName(x: Project): string {
+    return `${x.parent.type}s/${x.parent.id}`;
+  }
 
-  private async buildParentsSet(): Promise<Set<string>> {
+  /**
+   * Builds a set of all potential parents for a GCP project in the organization
+   * by recursing through the GCP organiization hierarchy from the top down.
+   */
+  private buildParentsSet(allFolders: Folder[]): Set<string> {
     const org = "organizations/" + this.config.gcp.organization;
 
+    return new Set([org, ...allFolders.map((x) => x.name)]);
+  }
+
+  /**
+   * Builds a set of all potential parents for a GCP project in the organization
+   * by recursing through the GCP organiization hierarchy from the top down.
+   */
+  private async allFolders(): Promise<Folder[]> {
     const firstLevelFolders = await this.cli.listFolders({
       organizationId: this.config.gcp.organization,
     });
 
-    const allFolders = await this.recursiveListFolders(firstLevelFolders);
+    return await this.recursiveListFolders(firstLevelFolders);
+  }
 
-    return new Set([org, ...allFolders.map((x) => x.name)]);
+  buildAncestorsPath(parent: string, folders: Folder[]): MeshTenantAncestor[] {
+    const folder = folders.find((x) => x.name === parent);
+
+    if (!folder) {
+      return [
+        {
+          type: "organization",
+          id: this.config.gcp.organization,
+          name: this.config.id,
+        },
+      ];
+    }
+
+    const ancestor = {
+      type: "folder",
+      id: folder.name,
+      name: folder?.displayName,
+    };
+
+    return [...this.buildAncestorsPath(folder.parent, folders), ancestor];
   }
 
   private async recursiveListFolders(folders: Folder[]): Promise<Folder[]> {

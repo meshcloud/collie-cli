@@ -4,7 +4,7 @@ import { AzCliFacade, DynamicInstallValue } from "./AzCliFacade.ts";
 import {
   Account,
   AzureMeshTag,
-  ManagementGroup,
+  Entity,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
@@ -16,7 +16,6 @@ import {
  * a too many request problem. There are also other typical Azure related problems
  * like the 401 error which tells us about a certificat error.
  */
-
 export class RetryingAzCliDecorator implements AzCliFacade {
   constructor(private readonly wrapped: AzCliFacade) {}
 
@@ -34,9 +33,9 @@ export class RetryingAzCliDecorator implements AzCliFacade {
     });
   }
 
-  async listManagementGroups(): Promise<ManagementGroup[]> {
+  async listEntities(): Promise<Entity[]> {
     return await this.retryable(async () => {
-      return await this.wrapped.listManagementGroups();
+      return await this.wrapped.listEntities();
     });
   }
 

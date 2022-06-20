@@ -6,7 +6,6 @@ import { registerCostCommand } from "./cost.command.ts";
 import { registerIamCommand } from "./iam.command.ts";
 import { registerAnalyzeTagCommand } from "./analyze-tag.command.ts";
 import { registerSetMissingTagCommand } from "./set-missing-tag.command.ts";
-import { OutputFormat } from "../../presentation/output-format.ts";
 import { OutputFormatType } from "../GlobalCommandOptions.ts";
 import { registerTreeCommand } from "./tree.command.ts";
 

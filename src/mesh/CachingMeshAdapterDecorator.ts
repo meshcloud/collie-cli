@@ -62,7 +62,7 @@ export class CachingMeshAdapterDecorator implements MeshAdapter {
 
     // Update meta info.
     const updatedMeta = meta || {
-      version: 2,
+      version: 3,
       tenantCollection: {
         lastCollection: "",
       },

@@ -18,9 +18,7 @@ export class CsvTenantIamPresenter extends CsvTenantPresenter {
   }
 
   async present() {
-    const rows: string[][] = [
-      [...this.printedKeys, ...this.printedIamKeys],
-    ];
+    const rows: string[][] = [[...this.printedKeys, ...this.printedIamKeys]];
 
     this.meshTenant.forEach((mt) => {
       mt.roleAssignments.forEach((ra) => {
@@ -39,7 +37,10 @@ export class CsvTenantIamPresenter extends CsvTenantPresenter {
 
     this.printedKeys.forEach((k) => {
       if (
-        k !== "tags" && k !== "roleAssignments" && k !== "nativeObj" &&
+        k !== "tags" &&
+        k !== "roleAssignments" &&
+        k !== "nativeObj" &&
+        k !== "ancestors" &&
         k !== "costs"
       ) {
         row.push(tenant[k]);

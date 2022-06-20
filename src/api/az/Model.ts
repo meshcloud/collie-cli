@@ -17,23 +17,25 @@ export interface Account {
   tenantId: string;
 }
 
-export interface ManagementGroup {
+export interface Subscription {
+  id: string;
+  name: string;
+  tenantId: string;
+  parentId: string;
+}
+
+export interface Entity {
   displayName: string;
   id: string;
   name: string;
+  parent: {
+    id: string;
+    // id: "/providers/Microsoft.Management/managementGroups/sas";
+  };
+  parentDisplayNameChain: string[];
+  parentNameChain: string[];
   tenantId: string;
-  type: string;
-}
-
-export interface Subscription {
-  cloudName: string;
-  homeTenantId: string;
-  id: string;
-  isDefault: boolean;
-  name: string;
-  state: string;
-  tenantId: string;
-  user: User;
+  type: "/subscriptions" | "Microsoft.Management/managementGroups";
 }
 
 export interface Tag {

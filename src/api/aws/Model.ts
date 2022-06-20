@@ -1,4 +1,4 @@
-export interface AccountResponse {
+export interface AccountsResponse {
   Accounts: Account[];
   NextToken?: string;
 }
@@ -13,6 +13,26 @@ export interface Account {
   JoinedTimestamp: string;
 }
 
+export interface RootResponse {
+  Roots: Root[];
+}
+
+export interface Root {
+  Id: string;
+  Arn: string;
+  Name: string;
+}
+
+export interface OrganizationalUnitsResponse {
+  OrganizationalUnits: OrganizationalUnit[];
+}
+
+export interface OrganizationalUnit {
+  Id: string;
+  Arn: string;
+  Name: string;
+}
+
 export interface RegionsResponse {
   Regions: Region[];
 }
@@ -23,7 +43,7 @@ export interface Region {
   OptInStatus: string;
 }
 
-export interface TagResponse {
+export interface TagsResponse {
   Tags: Tag[];
 }
 

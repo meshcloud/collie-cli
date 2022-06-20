@@ -13,10 +13,17 @@ export interface MeshTenant {
   platformTenantName: string;
   platformType: MeshPlatform;
   platformId: string;
+  ancestors: MeshTenantAncestor[];
   tags: MeshTag[];
   nativeObj: Account | Subscription | Project;
   costs: MeshTenantCost[];
   roleAssignments: MeshTenantRoleAssignment[];
+}
+
+export interface MeshTenantAncestor {
+  type: string;
+  id: string;
+  name: string;
 }
 
 export interface MeshTenantCostDetails {
