@@ -106,6 +106,7 @@ export class MeshFoundationAdapterFactory {
         aws,
         config,
         this.tenantChangeDetector,
+        this.logger,
       );
     } else if ("azure" in config) {
       const az = this.facadeFactory.buildAz(config.cli?.az, path);
