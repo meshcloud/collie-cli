@@ -46,8 +46,8 @@ Direct pushes to `main` are prevented. The full workflow from forth to back is
 as follows:
 
 - decide on the version number you want to use for the release
-- **Important: Change the version number in `version.ts`. This process is sadly
-  not automated at the moment.**
+- **Important: Change the version number in `info.ts`. This process is sadly not
+  automated at the moment.**
 - create a "release vX.Y.Z" pull request containing that version number bump
 - release PRs must be merged using the merge strategy 'Rebase and Merge' and NOT
   Squash.
