@@ -23,6 +23,7 @@ import {
 } from "/mesh/MeshIamModel.ts";
 import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
 import { PlatformConfigAws } from "../../model/PlatformConfig.ts";
+import { Logger } from "../../cli/Logger.ts";
 
 // limit concurrency because we will run into aws rate limites for sure if we set this off all at once
 const concurrencyLimit = 5;
@@ -48,6 +49,7 @@ export class AwsMeshAdapter implements MeshAdapter {
     private readonly awsCli: AwsCliFacade,
     private readonly config: PlatformConfigAws,
     private readonly tenantChangeDetector: MeshTenantChangeDetector,
+    private readonly logger: Logger,
   ) {}
 
   async getMeshTenants(): Promise<MeshTenant[]> {
@@ -227,93 +229,112 @@ export class AwsMeshAdapter implements MeshAdapter {
   }
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {
-    for (const tenant of tenants) {
-      const account = tenant.nativeObj as Account;
+    // Process fetching IAM information for all tenants concurrently.
+    // This outer level provides the best level for concurrency control as controlling concurrency
+    // within an individual account is more difficult as it depends on the number of users/roles within an account.
+    const tenantIterator = pooledMap(
+      concurrencyLimit,
+      tenants,
+      async (tenant) => {
+        const account = tenant.nativeObj as Account;
 
-      // Detect if the user gave us a role arn or only a role name. If its only a role name
-      // we assume the role lives in his current caller account and try to assume it with this
-      // arn.
-      const assumeRoleArn =
-        `arn:aws:iam::${account.Id}:role/${this.config.aws.accountAccessRole}`;
-      // Assume the role to execute the following commands from the account context.
-      // This can fail if the role to assume does not exist in the target account.
+        // Detect if the user gave us a role arn or only a role name. If its only a role name
+        // we assume the role lives in his current caller account and try to assume it with this
+        // arn.
+        const assumeRoleArn =
+          `arn:aws:iam::${account.Id}:role/${this.config.aws.accountAccessRole}`;
 
-      const assumedCredentials = await this.tryAssumeRole(assumeRoleArn);
-      if (assumedCredentials == null) {
-        continue;
-      }
+        // Assume the role to execute the following commands from the account context.
+        // This can fail if the role to assume does not exist in the target account.
+        const assumedCredentials = await this.tryAssumeRole(assumeRoleArn);
+        if (assumedCredentials == null) {
+          this.logger.warn(
+            () =>
+              `failed to assume role ${assumeRoleArn}, not fetching iam information for this account. Results will be incomplete!`,
+          );
 
-      const tenantUsers = await this.awsCli.listUsers(assumedCredentials);
+          return;
+        }
 
-      // Fetch the user attached policies first.
-      for (const tenantUser of tenantUsers) {
-        const attachedUserPolicies = await this.awsCli.listAttachedUserPolicies(
-          tenantUser,
+        await this.processAttachTenantRoleAssignments(
+          tenant,
           assumedCredentials,
         );
+      },
+    );
 
-        // We now combine these users with the policies.
-        const roleAssignments = attachedUserPolicies.flatMap((p) => {
+    for await (const it of tenantIterator) {
+      await it;
+    }
+  }
+
+  private async processAttachTenantRoleAssignments(
+    tenant: MeshTenant,
+    assumedCredentials: Credentials,
+  ) {
+    const tenantUsers = await this.awsCli.listUsers(assumedCredentials);
+
+    // Fetch the user attached policies first.
+    for (const tenantUser of tenantUsers) {
+      const attachedUserPolicies = await this.awsCli.listAttachedUserPolicies(
+        tenantUser,
+        assumedCredentials,
+      );
+
+      // We now combine these users with the policies.
+      const roleAssignments = attachedUserPolicies.flatMap((p) => {
+        return {
+          principalId: tenantUser.Arn,
+          principalName: tenantUser.UserName,
+          principalType: MeshPrincipalType.User,
+          roleId: p.PolicyArn,
+          roleName: p.PolicyName,
+          assignmentSource: MeshRoleAssignmentSource.Tenant,
+          assignmentId: "", // There is no assignment representation in AWS. Users are directly placed in a group.
+        };
+      });
+
+      tenant.roleAssignments.push(...roleAssignments);
+    }
+
+    const groups = await this.awsCli.listGroups(assumedCredentials);
+    const userIdsWithGroup: string[] = [];
+
+    // Fetch the group attached policies and correlate them with the user.
+    for (const group of groups) {
+      const usersOfGroup = await this.awsCli.listUserOfGroup(
+        group,
+        assumedCredentials,
+      );
+
+      // Save the ids so we can find users without a group later
+      userIdsWithGroup.push(...usersOfGroup.map((x) => x.UserId));
+
+      // Find the inline and attached policies of a group.
+      const attachedGroupPolicies = await this.awsCli.listAttachedGroupPolicies(
+        group,
+        assumedCredentials,
+      );
+
+      // We now combine these users with the policies.
+      const roleAssignments = attachedGroupPolicies.flatMap((p) => {
+        return usersOfGroup.map((u) => {
           return {
-            principalId: tenantUser.Arn,
-            principalName: tenantUser.UserName,
-            principalType: MeshPrincipalType.User,
+            principalId: group.Arn,
+            principalName: u.UserName,
+            principalType: MeshPrincipalType.Group,
             roleId: p.PolicyArn,
             roleName: p.PolicyName,
             assignmentSource: MeshRoleAssignmentSource.Tenant,
             assignmentId: "", // There is no assignment representation in AWS. Users are directly placed in a group.
           };
         });
+      });
 
-        tenant.roleAssignments.push(...roleAssignments);
-      }
-
-      const groups = await this.awsCli.listGroups(assumedCredentials);
-      const userIdsWithGroup: string[] = [];
-
-      // Fetch the group attached policies and correlate them with the user.
-      for (const group of groups) {
-        const usersOfGroup = await this.awsCli.listUserOfGroup(
-          group,
-          assumedCredentials,
-        );
-
-        // Save the ids so we can find users without a group later
-        userIdsWithGroup.push(...usersOfGroup.map((x) => x.UserId));
-
-        // Find the inline and attached policies of a group.
-        const attachedGroupPolicies = await this.awsCli
-          .listAttachedGroupPolicies(
-            group,
-            assumedCredentials,
-          );
-
-        // We now combine these users with the policies.
-        const roleAssignments = attachedGroupPolicies.flatMap((p) => {
-          return usersOfGroup.map((u) => {
-            return {
-              principalId: group.Arn,
-              principalName: u.UserName,
-              principalType: MeshPrincipalType.Group,
-              roleId: p.PolicyArn,
-              roleName: p.PolicyName,
-              assignmentSource: MeshRoleAssignmentSource.Tenant,
-              assignmentId: "", // There is no assignment representation in AWS. Users are directly placed in a group.
-            };
-          });
-        });
-
-        tenant.roleAssignments.push(...roleAssignments);
-      }
-
-      this.attachUserWithNoRoleAssignment(
-        tenant,
-        userIdsWithGroup,
-        tenantUsers,
-      );
+      tenant.roleAssignments.push(...roleAssignments);
     }
 
-    return Promise.resolve();
+    this.attachUserWithNoRoleAssignment(tenant, userIdsWithGroup, tenantUsers);
   }
 
   private attachUserWithNoRoleAssignment(
@@ -352,13 +373,10 @@ export class AwsMeshAdapter implements MeshAdapter {
           AwsErrorCode.AWS_UNAUTHORIZED,
         )
       ) {
-        console.error(
-          `Could not assume role ${assumeRoleArn}. It probably does not exist in the target account`,
-        );
-
-        return Promise.resolve(null);
+        return null;
       }
 
+      this.logger.warn("unexpected error tryAssumeRole:  " + e);
       throw e;
     }
   }
