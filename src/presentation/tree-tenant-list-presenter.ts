@@ -20,6 +20,7 @@ export class TreeTenantListPresenter implements Presenter {
       insert(
         tree,
         [
+          x.platformId,
           ...x.ancestors.map((x) => `${x.name} ${colors.dim(x.id)}`),
           `${x.platformTenantName} ${colors.dim(x.platformTenantId)}`,
         ],
