@@ -94,7 +94,7 @@ export class GcloudMeshAdapter implements MeshAdapter {
         {
           type: "organization",
           id: this.config.gcp.organization,
-          name: this.config.id,
+          name: "organization",
         },
       ];
     }
