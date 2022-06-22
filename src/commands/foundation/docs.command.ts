@@ -6,6 +6,7 @@ import { ComplianceControlRepository } from "../../compliance/ComplianceControlR
 import { Command } from "../../deps.ts";
 import { ComplianceDocumentationGenerator } from "../../docs/ComplianceDocumentationGenerator.ts";
 import { DocumentationGenerator } from "../../docs/DocumentationGenerator.ts";
+import { DocumentationRepository } from "../../docs/DocumentationRepository.ts";
 import { KitModuleDocumentationGenerator } from "../../docs/KitModuleDocumentationGenerator.ts";
 import { PlatformDocumentationGenerator } from "../../docs/PlatformDocumentationGenerator.ts";
 import { VuepressDocumentationSiteGenerator } from "../../docs/VuepressDocumentationSiteGenerator.ts";
@@ -78,7 +79,7 @@ async function updateDocumentation(
   );
 
   const dir = new DirectoryGenerator(WriteMode.overwrite, logger);
-  const siteGenerator = new VuepressDocumentationSiteGenerator(dir);
+  const siteGenerator = new VuepressDocumentationSiteGenerator(dir, foundation);
 
   const tfDocs = factory.buildTerraformDocs();
   const validator = new ModelValidator(logger);
@@ -96,7 +97,10 @@ async function updateDocumentation(
     logger,
   );
 
-  const complianceDocumentation = new ComplianceDocumentationGenerator(logger);
+  const complianceDocumentation = new ComplianceDocumentationGenerator(
+    repo,
+    logger,
+  );
 
   const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
   const platformDocumentation = new PlatformDocumentationGenerator(
@@ -108,6 +112,8 @@ async function updateDocumentation(
     logger,
   );
 
+  const docsRepo = new DocumentationRepository(foundation);
+
   const generator = new DocumentationGenerator(
     siteGenerator,
     moduleDocumentation,
@@ -115,16 +121,17 @@ async function updateDocumentation(
     platformDocumentation,
   );
 
-  await generator.generateFoundationDocumentation(foundation);
+  await generator.generateFoundationDocumentation(docsRepo);
 
   foundationProgress.done();
 }
 
 async function previewDocumentation(
-  repo: FoundationRepository,
+  foundation: FoundationRepository,
   factory: CliApiFacadeFactory,
 ) {
-  const dir = repo.resolvePath("docs");
+  const docsRepo = new DocumentationRepository(foundation);
+  const dir = foundation.resolvePath(docsRepo.docsRootDir);
 
   const npm = factory.buildNpm();
 

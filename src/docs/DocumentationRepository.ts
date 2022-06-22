@@ -1,14 +1,32 @@
 import * as path from "std/path";
+import { FoundationRepository } from "../model/FoundationRepository.ts";
 
 export class DocumentationRepository {
-  public readonly kitDir: string;
-  public readonly complianceDir: string;
-  public readonly platformsDir: string;
+  // we use a "hidden" directory with a leading "." because terragrunt excludes hidden files and dirs
+  // when building a terragrunt-cache folder, see  https://terragrunt.gruntwork.io/docs/reference/config-blocks-and-attributes/#terraform "include_in_copy"
+  // >  By default, Terragrunt excludes hidden files and folders during the copy step.
+  public readonly docsRootDir = ".docs";
+  public readonly docsContentDir = "docs";
 
-  constructor(public readonly contentDir: string) {
-    this.kitDir = path.join(this.contentDir, "kit");
-    this.complianceDir = path.join(this.contentDir, "compliance");
-    this.platformsDir = path.join(this.contentDir, "platforms");
+  // these paths are the same in collie repository and docs content
+  public readonly platformsDir = "platforms";
+  public readonly complianceDir = "compliance";
+  public readonly kitDir = "kit";
+
+  public readonly docsContentPath: string;
+  public readonly kitPath: string;
+  public readonly compliancePath: string;
+  public readonly platformsPath: string;
+
+  constructor(foundation: FoundationRepository) {
+    this.docsContentPath = foundation.resolvePath(
+      this.docsRootDir,
+      this.docsContentDir,
+    );
+
+    this.kitPath = path.join(this.docsContentPath, this.kitDir);
+    this.compliancePath = path.join(this.docsContentPath, this.complianceDir);
+    this.platformsPath = path.join(this.docsContentPath, this.platformsDir);
   }
 
   kitModuleLink(from: string, moduleId: string) {
@@ -18,7 +36,7 @@ export class DocumentationRepository {
   }
 
   kitModulePath(moduleId: string) {
-    return path.join(this.kitDir, moduleId + ".md");
+    return path.join(this.kitPath, moduleId + ".md");
   }
 
   controlLink(from: string, controlId: string) {
@@ -28,10 +46,10 @@ export class DocumentationRepository {
   }
 
   controlPath(controlId: string) {
-    return path.join(this.complianceDir, controlId + ".md");
+    return path.join(this.compliancePath, controlId + ".md");
   }
 
   platformPath(platformId: string) {
-    return path.join(this.platformsDir, platformId + ".md");
+    return path.join(this.platformsPath, platformId + ".md");
   }
 }

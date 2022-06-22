@@ -1,7 +1,6 @@
-import * as path from "std/path";
-
 import { Dir, DirectoryGenerator } from "../cli/DirectoryGenerator.ts";
 import { FoundationRepository } from "../model/FoundationRepository.ts";
+import { DocumentationRepository } from "./DocumentationRepository.ts";
 
 /**
  * Generates a skeleton for a Vuepress documentation site.
@@ -11,23 +10,26 @@ import { FoundationRepository } from "../model/FoundationRepository.ts";
  * site generator for convenience/demo.
  */
 export class VuepressDocumentationSiteGenerator {
-  constructor(private readonly dir: DirectoryGenerator) {}
+  constructor(
+    private readonly dir: DirectoryGenerator,
+    private readonly foundation: FoundationRepository,
+  ) {}
 
-  async generateSite(foundation: FoundationRepository) {
+  async generateSite(docsRepo: DocumentationRepository) {
     const d: Dir = {
-      name: "docs",
+      name: docsRepo.docsRootDir,
       entries: [
-        { name: "package.json", content: this.generatePackageJson(foundation) },
+        { name: "package.json", content: this.generatePackageJson() },
         { name: ".gitignore", content: this.generateGitignore() },
         {
-          name: "docs",
+          name: docsRepo.docsContentDir,
           entries: [
             {
               name: ".vuepress",
               entries: [
                 {
                   name: "config.ts",
-                  content: this.generateVuepressConfig(foundation),
+                  content: this.generateVuepressConfig(),
                 },
               ],
             },
@@ -36,14 +38,10 @@ export class VuepressDocumentationSiteGenerator {
       ],
     };
 
-    const foundationDir = foundation.resolvePath();
-    await this.dir.write(d, foundationDir);
-
-    const contentDir = path.join(foundationDir, "docs", "docs");
-    return contentDir;
+    await this.dir.write(d, this.foundation.resolvePath());
   }
 
-  private generateVuepressConfig(foundation: FoundationRepository) {
+  private generateVuepressConfig() {
     return `import * as fs from "fs";
 import * as path from "path";
 import {
@@ -126,8 +124,8 @@ export default defineUserConfig<DefaultThemeOptions, ViteBundlerOptions>({
   locales: {
     "/": {
       lang: "en-US",
-      title: "${foundation.name} Cloud Foundation",
-      description: "Documentation for the ${foundation.name} cloud foundations",
+      title: "${this.foundation.name} Cloud Foundation",
+      description: "Documentation for the ${this.foundation.name} cloud foundations",
     },
   },
 
@@ -153,9 +151,9 @@ export default defineUserConfig<DefaultThemeOptions, ViteBundlerOptions>({
 `;
   }
 
-  private generatePackageJson(foundation: FoundationRepository) {
+  private generatePackageJson() {
     const config = {
-      name: foundation.id + "-docs",
+      name: this.foundation.id + "-docs",
       version: "1.0.0",
       private: "true",
       scripts: {

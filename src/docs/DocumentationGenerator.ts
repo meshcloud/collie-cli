@@ -1,5 +1,3 @@
-import { FoundationRepository } from "../model/FoundationRepository.ts";
-
 import { ComplianceDocumentationGenerator } from "./ComplianceDocumentationGenerator.ts";
 import { DocumentationRepository } from "./DocumentationRepository.ts";
 import { KitModuleDocumentationGenerator } from "./KitModuleDocumentationGenerator.ts";
@@ -14,10 +12,8 @@ export class DocumentationGenerator {
     private readonly platformDocumentation: PlatformDocumentationGenerator,
   ) {}
 
-  async generateFoundationDocumentation(foundation: FoundationRepository) {
-    const contentDir = await this.siteGenerator.generateSite(foundation);
-
-    const docsRepo = new DocumentationRepository(contentDir);
+  async generateFoundationDocumentation(docsRepo: DocumentationRepository) {
+    await this.siteGenerator.generateSite(docsRepo);
 
     // todo: can we flatten the duplicate docs/ folder nesting?
     await this.complianceDocumentation.generate(docsRepo);

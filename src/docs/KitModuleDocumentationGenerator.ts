@@ -20,7 +20,7 @@ export class KitModuleDocumentationGenerator {
   ) {}
 
   async generate(docsRepo: DocumentationRepository) {
-    const kitModulesDir = this.collie.resolvePath("kit");
+    const kitModulesDir = this.collie.resolvePath(docsRepo.kitDir);
 
     const progress = new ProgressReporter(
       "generating",
@@ -40,7 +40,7 @@ export class KitModuleDocumentationGenerator {
       await Deno.writeTextFile(dest, md);
     });
 
-    tasks.push(this.copyTopLevelKitReamde(kitModulesDir, docsRepo.kitDir));
+    tasks.push(this.copyTopLevelKitReamde(kitModulesDir, docsRepo.kitPath));
 
     await Promise.all(tasks);
 
