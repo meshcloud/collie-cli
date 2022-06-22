@@ -21,6 +21,7 @@ export function registerInitCommand(program: Command) {
         name: "",
         entries: [
           { name: "README.md", content: readmeMd },
+          { name: ".gitignore", content: gitignore },
           { name: "kit", entries: [{ name: ".gitkeep", content: "" }] },
           { name: "compliance", entries: [{ name: ".gitkeep", content: "" }] },
           { name: "foundations", entries: [{ name: ".gitkeep", content: "" }] },
@@ -95,4 +96,16 @@ vi kit/aws/organization-policies/README.md   # add a compliance statement to you
 collie compliance tree                       # review compliance control implementation across platforms
 collie docs "my-foundation"                  # generate a documentation site for your cloud foundation, incl. compliance info
 \`\`\`
+`;
+
+const gitignore = `# terraform/terragrunt caches
+.terraform
+.terragrunt-cache
+
+# collie generated docs
+.docs
+
+# collie cache
+**.collie.json
+**.meta.json
 `;
