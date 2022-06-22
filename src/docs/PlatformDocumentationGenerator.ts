@@ -38,11 +38,11 @@ export class PlatformDocumentationGenerator {
 
   async generate(docsRepo: DocumentationRepository) {
     const d: Dir = {
-      name: docsRepo.contentDir,
+      name: "",
       entries: [
         { name: "README.md", content: this.generateFoundationReadme() },
         {
-          name: "platforms",
+          name: docsRepo.platformsDir,
           entries: [
             { name: "README.md", content: this.generatePlatformsReadme() },
             ...(await this.generatePlatformDocumentations(docsRepo)),
@@ -51,7 +51,7 @@ export class PlatformDocumentationGenerator {
       ],
     };
 
-    await this.dir.write(d, "");
+    await this.dir.write(d, docsRepo.docsContentPath);
   }
 
   private generateFoundationReadme() {
