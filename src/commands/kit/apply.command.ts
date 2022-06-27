@@ -104,19 +104,12 @@ export function registerApplyCmd(program: Command) {
 }
 
 function generateTerragrunt(kitModulePath: string) {
-  return `include "root" {
-  path = find_in_parent_folders()
+  return `include "platform" {
+  path = find_in_parent_folders("platform.hcl")
 }
 
-locals {
-}
-
-generate "provider" {
-  path      = "provider.tf"
-  if_exists = "overwrite"
-  contents  = <<EOF
-# todo: define module's required providers
-EOF
+include "module" {
+  path = find_in_parent_folders("module.hcl")
 }
 
 terraform {
@@ -124,10 +117,9 @@ terraform {
 }
 
 inputs = {
-  output_md_file = "\${get_terragrunt_dir()}/output.md"
+  # todo: specify inputs to terraform module
 }
-
-  `;
+`;
 }
 
 async function selectModule(moduleRepo: KitModuleRepository) {
