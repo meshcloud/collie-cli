@@ -1,7 +1,7 @@
 import {
   Account,
   AzureMeshTag,
-  ManagementGroup,
+  Entity,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
@@ -16,8 +16,7 @@ export interface AzCliFacade {
 
   getAccount(): Promise<Account>;
 
-  listManagementGroups(): Promise<ManagementGroup[]>;
-
+  listEntities(): Promise<Entity[]>;
   listSubscriptions(): Promise<Subscription[]>;
 
   listTags(subscription: Subscription): Promise<Tag[]>;

@@ -3,7 +3,7 @@ import {
   Account,
   AzureMeshTag,
   CostManagementInfo,
-  ManagementGroup,
+  Entity,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
@@ -65,6 +65,18 @@ export class AzCli implements AzCliFacade {
     return parseJsonWithLog(result.stdout);
   }
 
+  async listEntities(): Promise<Entity[]> {
+    const result = await this.processRunner.run([
+      "az",
+      "account",
+      "management-group",
+      "entities",
+      "list",
+    ]);
+
+    return parseJsonWithLog(result.stdout);
+  }
+
   async listTags(subscription: Subscription): Promise<Tag[]> {
     const result = await this.processRunner.run([
       "az",
@@ -75,17 +87,6 @@ export class AzCli implements AzCliFacade {
     ]);
 
     return parseJsonWithLog(result.stdout);
-  }
-
-  async listManagementGroups(): Promise<ManagementGroup[]> {
-    const result = await this.processRunner.run([
-      "az",
-      "account",
-      "management-group",
-      "list",
-    ]);
-
-    return await parseJsonWithLog(result.stdout);
   }
 
   async getAccount(): Promise<Account> {

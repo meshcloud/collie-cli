@@ -4,7 +4,7 @@ import { AzCliFacade, DynamicInstallValue } from "./AzCliFacade.ts";
 import {
   Account,
   AzureMeshTag,
-  ManagementGroup,
+  Entity,
   RoleAssignment,
   SimpleCostManagementInfo,
   Subscription,
@@ -40,9 +40,9 @@ export class AutoInstallAzModuleAzCliDecorator implements AzCliFacade {
     });
   }
 
-  async listManagementGroups(): Promise<ManagementGroup[]> {
-    return await this.wrapCallWithInstallInterception(() => {
-      return this.azureFacade.listManagementGroups();
+  async listEntities(): Promise<Entity[]> {
+    return await this.wrapCallWithInstallInterception(async () => {
+      return await this.azureFacade.listEntities();
     });
   }
 

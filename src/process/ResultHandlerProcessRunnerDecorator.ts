@@ -14,18 +14,24 @@ export class ResultHandlerProcessRunnerDecorator<T extends ProcessRunnerResult>
     commands: string[],
     options: ProcessRunnerOptions,
   ): Promise<T> {
-    try {
-      const result = await this.runner.run(commands, options);
-      await this.handler.handleResult(commands, options, result);
+    let result: T;
 
-      return result;
+    try {
+      result = await this.runner.run(commands, options);
     } catch (error) {
       await this.handler.handleError(commands, options, error);
     }
 
-    // typescript isn't smart enough to figure out this code should never be reachable, see
-    // https://github.com/microsoft/TypeScript/issues/34955
+    // it's important we handle result outside of try catch, otherwise we will end up passing
+    // custom errors thrown from handleResult into handleError
 
-    throw new Error("Inavlid ProcessRunnerResultHandler");
+    // typescript isn't smart enough to figure result is set when we got here
+    // because the handleError called from catch block above is a Promise<never>
+
+    // deno-lint-ignore no-extra-non-null-assertion
+    await this.handler.handleResult(commands, options, result!!);
+
+    // deno-lint-ignore no-extra-non-null-assertion
+    return result!!;
   }
 }

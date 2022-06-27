@@ -1,7 +1,12 @@
 import { pooledMap } from "std/async";
 
-import { MeshPlatform, MeshTag, MeshTenant } from "/mesh/MeshTenantModel.ts";
-import { Subscription, Tag } from "./Model.ts";
+import {
+  MeshPlatform,
+  MeshTag,
+  MeshTenant,
+  MeshTenantAncestor,
+} from "/mesh/MeshTenantModel.ts";
+import { Entity, Subscription, Tag } from "./Model.ts";
 import { AzCliFacade } from "./AzCliFacade.ts";
 import { MeshAdapter } from "/mesh/MeshAdapter.ts";
 import { moment } from "/deps.ts";
@@ -107,7 +112,20 @@ export class AzMeshAdapter implements MeshAdapter {
   }
 
   async getMeshTenants(): Promise<MeshTenant[]> {
-    const subscriptions = await this.azureCli.listSubscriptions();
+    const entities = await this.azureCli.listEntities();
+
+    const entitiesById = new Map(entities.map((x) => [x.id, x]));
+
+    // we used Subscription moduels (from az account show) before, and the model looks diferent
+    // so we now have to convert from an Entity to Subscription model
+    const subscriptions = entities
+      .filter((x) => x.type === "/subscriptions")
+      .map((x) => ({
+        id: x.name,
+        name: x.displayName,
+        tenantId: x.tenantId,
+        parentId: x.parent.id,
+      }));
 
     const tasks = subscriptions
       .filter((x) => x.tenantId === this.config.azure.aadTenantId)
@@ -121,6 +139,7 @@ export class AzMeshAdapter implements MeshAdapter {
           platformTenantName: sub.name,
           platformId: this.config.id,
           platformType: MeshPlatform.Azure,
+          ancestors: this.buildAncestorsPath(sub.parentId, entitiesById),
           nativeObj: sub,
           costs: [],
           roleAssignments: [],
@@ -128,6 +147,24 @@ export class AzMeshAdapter implements MeshAdapter {
       });
 
     return Promise.all(tasks);
+  }
+
+  buildAncestorsPath(
+    nodeId: string | null,
+    entitiesById: Map<string, Entity>,
+  ): MeshTenantAncestor[] {
+    const node = nodeId && entitiesById.get(nodeId);
+    if (!node) {
+      return [];
+    }
+
+    const self = {
+      id: node.id,
+      name: node.displayName,
+      type: node.type,
+    };
+
+    return [...this.buildAncestorsPath(node.parent.id, entitiesById), self];
   }
 
   async attachTenantRoleAssignments(tenants: MeshTenant[]): Promise<void> {

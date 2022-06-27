@@ -6,6 +6,7 @@ import { TenantIamPresenterFactory } from "../../presentation/tenant-iam-present
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
+import { OutputFormat } from "../../presentation/output-format.ts";
 
 interface IamCommandOptions extends GlobalCommandOptions {
   includeAncestors: boolean;
@@ -20,6 +21,9 @@ export function registerIamCommand(program: Command) {
     .description(
       "View all IAM assets applied per tenant. This includes users, groups and technical users that are directly assigned to the tenant.",
     )
+    .option("-o --output [output:output]", "Defines the output format", {
+      default: OutputFormat.TABLE,
+    })
     .option(
       "--include-ancestors [includeAncestors:boolean]",
       "Shows the IAM Role Assignments inherited from an ancestor level as well (Azure Management Groups & Root, GCP Folders & Organizations)",

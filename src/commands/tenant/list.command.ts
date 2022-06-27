@@ -3,10 +3,14 @@ import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TenantListPresenterFactory } from "../../presentation/tenant-list-presenter-factory.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
+import { OutputFormat } from "../../presentation/output-format.ts";
 
 export function registerListCommand(program: Command) {
   program
     .command("list <foundation:foundation>")
+    .option("-o --output [output:output]", "Defines the output format", {
+      default: OutputFormat.TABLE,
+    })
     .description(
       "Returns a list of tenants with their name, id, tags and platform.",
     )
