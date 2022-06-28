@@ -27,7 +27,9 @@ export function registerApplyCmd(program: Command) {
     .option("-p, --platform <platform:platform>", "platform", {
       depends: ["foundation"],
     })
-    .description("apply an existing cloud foundation kit module to a platform")
+    .description(
+      "Generate a platform module applying a kit module to a cloud platform",
+    )
     .action(
       async (opts: GlobalCommandOptions & ApplyOptions, moduleId: string) => {
         const collie = new CollieRepository("./");

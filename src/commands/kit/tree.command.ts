@@ -13,7 +13,7 @@ import {
 export function registerTreeCmd(program: Command) {
   program
     .command("tree")
-    .description("show the kit module tree with foundation dependencies")
+    .description("Show kit modules their dependent platform modules")
     .action(async (opts: GlobalCommandOptions) => {
       const collie = new CollieRepository("./");
       const logger = new Logger(collie, opts);

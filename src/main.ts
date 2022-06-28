@@ -31,6 +31,7 @@ async function collie() {
     .version(VERSION)
     .globalType("foundation", new FoundationType())
     .globalType("platform", new PlatformType())
+    // todo: cliffy 0.24.2 has a nice group options that we could use here
     .globalOption(
       "--verbose ",
       "Enable printing verbose info (command execution and results)",
