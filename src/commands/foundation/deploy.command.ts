@@ -50,8 +50,20 @@ export function registerDeployCmd(program: Command) {
       "pass the following raw arguments to terragrunt instead of running the default 'apply'.",
     )
     .example(
-      "Dump terraform state",
+      "Run terraform apply on all modules",
+      `${CLI} foundation deploy myfoundation --platform aws`,
+    )
+    .example(
+      "Run terraform plan on all modules",
+      `${CLI} foundation deploy myfoundation --platform aws -- plan`,
+    )
+    .example(
+      "Dump terraform state for a specific module",
       `${CLI} foundation deploy myfoundation --platform aws --module admin/root -- state pull`,
+    )
+    .example(
+      "Import a resource into terraform state",
+      `${CLI} foundation deploy myfoundation --platform aws --module admin/root -- import aws_organizations_account.root 123456789012`,
     )
     .action(
       async (
