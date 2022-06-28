@@ -68,10 +68,7 @@ function generateDocumentationTf() {
 
 resource "local_file" "output_md" {
   filename = var.output_md_file
-  # tip: 
-  # pro-tip: you can 
   content = <<EOF
-
 This documentation is intended as a summary of resources deployed and managed by this module for landing zone consumers
 and security auditors.
 
