@@ -13,61 +13,58 @@ import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { PlatformDeployer } from "../../foundation/PlatformDeployer.ts";
 import { PlatformModuleType } from "./PlatformModuleType.ts";
+import { CLI } from "../../info.ts";
+import { LiteralArgsParser } from "../LiteralArgsParser.ts";
 
 interface DeployOptions {
   platform: string;
   bootstrap: boolean;
-  plan: boolean;
-  destroy: boolean;
   autoApprove: boolean;
   upgrade: boolean;
   module?: string;
 }
 
 export function registerDeployCmd(program: Command) {
-  program
+  const cmd = program
     .command("deploy <foundation:foundation>")
+    .description(
+      "Deploy platform modules in your cloud foundations using terragrunt",
+    )
+    .type("module", new PlatformModuleType())
     .option(
       "-p, --platform <platform:platform>", // todo: make optional -> deploy all platforms!
       "the platform to deploy",
     )
-    .option(
-      "--bootstrap",
-      "Execute bootstrapping steps instead of non-bootstrap deploy steps.",
-    )
     .option("--module [module:module]", "Execute this specific module", {
       conflicts: ["bootstrap"],
     })
-    .type("module", new PlatformModuleType())
-    .option("--auto-approve", "run terragrunt with '--auto-approve' option", {
-      conflicts: ["upgrade", "plan"],
-    })
-    .option(
-      "--plan",
-      "run the equivalent of 'terragrunt plan' instead of the default 'terraform apply'.",
-      { conflicts: ["destroy"] },
-    )
-    .option(
-      "--destroy",
-      "run the equivalent of 'terragrunt destroy' instead of the default 'terraform apply'.",
-      { conflicts: ["plan"] },
-    )
+    .option("--bootstrap", "deploy the bootstrap module")
     .option(
       "--upgrade",
       "run the equivalent of 'terragrunt init --upgrade' before the actual deploy commands.",
-      // note that terragrunt will run auto-init, the upgrade command is useful for local development when a .terragrunt-cache dir already exists
+      // note that terragrunt will run auto-init when a configuration has never been initialised, but it will not run upgrades
+      // this option quickly and elegantly solves that problem
     )
-    .description("Deploys your cloud foundation.")
+    .option(
+      "-- [args...]",
+      "pass the following raw arguments to terragrunt instead of running the default 'apply'.",
+    )
+    .example(
+      "Dump terraform state",
+      `${CLI} foundation deploy myfoundation --platform aws --module admin/root -- state pull`,
+    )
     .action(
       async (
         opts: DeployOptions & GlobalCommandOptions,
         foundation: string,
       ) => {
+        const literalArgs = LiteralArgsParser.parse(cmd.getRawArgs());
+
         const collieRepo = new CollieRepository("./");
         const logger = new Logger(collieRepo, opts);
         const validator = new ModelValidator(logger);
 
-        const modes = terragruntModes(opts);
+        const modes = terragruntModes(opts, literalArgs);
 
         for (const mode of modes) {
           const foundationProgress = opts.platform
@@ -94,26 +91,23 @@ export function registerDeployCmd(program: Command) {
           );
 
           foundationProgress.done();
-
-          if (mode === "plan") {
-            logger.tip("to apply changes re-run with --apply option.");
-          }
         }
       },
     );
 }
 
-function terragruntModes(opts: DeployOptions & GlobalCommandOptions) {
+function terragruntModes(
+  opts: DeployOptions & GlobalCommandOptions,
+  literalArgs: string[],
+) {
   const modes: TerragruntRunMode[] = [];
 
   if (opts.upgrade) {
     modes.push("init -upgrade");
   }
 
-  if (opts.plan) {
-    modes.push("plan");
-  } else if (opts.destroy) {
-    modes.push("destroy");
+  if (literalArgs.length) {
+    modes.push({ raw: literalArgs });
   } else {
     modes.push("apply");
   }
@@ -141,14 +135,6 @@ async function deployFoundation(
   // challenge to tools that are already equipped to handle this in some sensible way (e.g. terragrunt with multiple --include-dir or gnu parallels etc.)
 
   for (const platform of platforms) {
-    const platformProgress = opts.bootstrap || opts.module
-      ? new NullProgressReporter()
-      : new ProgressReporter(
-        toVerb(mode),
-        repo.relativePath(foundation.resolvePlatformPath(platform)),
-        logger,
-      );
-
     const deployer = new PlatformDeployer(
       platform,
       repo,
@@ -162,8 +148,6 @@ async function deployFoundation(
     } else {
       await deployer.deployPlatformModules(mode, opts.module);
     }
-
-    platformProgress.done();
   }
 }
 

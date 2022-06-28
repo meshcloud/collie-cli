@@ -5,23 +5,28 @@ import {
 } from "../../process/ProcessRunnerResult.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
 
-export type TerragruntRunMode = "plan" | "apply" | "init -upgrade" | "destroy";
+export type TerragruntRunMode =
+  | "apply"
+  | "init -upgrade"
+  | {
+    raw: string[];
+  };
 export interface TerragruntRunAllOpts {
   excludeDirs?: string[];
 }
 export function toVerb(mode: TerragruntRunMode) {
-  switch (mode) {
-    case "plan":
-      return "planning";
-    case "apply":
-      return "deploying (apply)";
-    case "init -upgrade":
-      return "initializing";
-    case "destroy":
-      return "destroying";
-    default:
-      throw new Error("unkown mode: " + mode);
+  if (typeof mode === "string") {
+    switch (mode) {
+      case "apply":
+        return "deploying (apply) in";
+      case "init -upgrade":
+        return "initializing";
+      default:
+        throw new Error("unknown mode: " + mode);
+    }
   }
+
+  return `running '${mode.raw.join(" ")} in'`;
 }
 
 export class TerragruntCliFacade {
@@ -72,15 +77,17 @@ export class TerragruntCliFacade {
   }
 
   private modeCommands(mode: TerragruntRunMode) {
-    switch (mode) {
-      case "apply":
-        return ["apply", "--terragrunt-ignore-external-dependencies"];
-      case "init -upgrade":
-        return ["init", "-upgrade", "--terragrunt-non-interactive"];
-      case "plan":
-        return ["plan", "--terragrunt-ignore-external-dependencies"];
-      case "destroy":
-        return ["destroy", "--terragrunt-ignore-external-dependencies"];
+    if (typeof mode === "string") {
+      switch (mode) {
+        case "apply":
+          return ["apply", "--terragrunt-ignore-external-dependencies"];
+        case "init -upgrade":
+          return ["init", "-upgrade", "--terragrunt-non-interactive"];
+        default:
+          throw new Error("unknown mode: " + mode);
+      }
     }
+
+    return mode.raw;
   }
 }
