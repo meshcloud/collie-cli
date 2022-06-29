@@ -26,7 +26,7 @@ export function toVerb(mode: TerragruntRunMode) {
     }
   }
 
-  return `running '${mode.raw.join(" ")} in'`;
+  return `running '${mode.raw.join(" ")}' in`;
 }
 
 export class TerragruntCliFacade {
