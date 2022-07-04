@@ -11,7 +11,7 @@ import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 export function registerNewCmd(program: Command) {
   program
     .command("new <module> [name]")
-    .description("generate a new kit module")
+    .description("Generate a new kit module terraform template")
     .action(
       async (opts: GlobalCommandOptions, module: string, name?: string) => {
         const collie = new CollieRepository("./");

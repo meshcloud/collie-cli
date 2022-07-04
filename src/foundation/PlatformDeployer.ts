@@ -48,10 +48,21 @@ export class PlatformDeployer<T extends PlatformConfig> {
     );
 
     if (await this.isTerragruntStack(modulePath)) {
+      this.logger.debug((fmt) =>
+        `detected a stack of platform modules at ${
+          fmt.kitPath(modulePath)
+        }, will deploy with "terragrunt run-all <cmd>"`
+      );
+
       await this.terragrunt.runAll(modulePath, mode, {
         excludeDirs: [this.bootstrapModuleDir()],
       });
     } else {
+      this.logger.debug((fmt) =>
+        `detected a single platform module at ${
+          fmt.kitPath(modulePath)
+        }, will deploy with "terragrunt <cmd>"`
+      );
       await this.terragrunt.run(modulePath, mode);
     }
 
