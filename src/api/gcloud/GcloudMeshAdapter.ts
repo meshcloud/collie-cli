@@ -167,8 +167,8 @@ export class GcloudMeshAdapter implements MeshAdapter {
         const invoiceMonthString = moment(window.from).format("YYYYMM");
         const tenantCostItem: MeshTenantCost = {
           currency: "",
-          from: window.from,
-          to: window.to,
+          from: window.from.toISOString(),
+          to: window.to.toISOString(),
           cost: "0",
           details: [],
         };
