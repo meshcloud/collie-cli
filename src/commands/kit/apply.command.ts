@@ -15,6 +15,7 @@ import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CommandOptionError } from "../CommandOptionError.ts";
+import { PlatformConfig } from "../../model/PlatformConfig.ts";
 
 interface ApplyOptions {
   foundation?: string;
@@ -63,22 +64,24 @@ export function registerApplyCmd(program: Command) {
           (await InteractivePrompts.selectPlatform(foundationRepo));
 
         // by convention, the module id looks like $platform/...
-        const platformModuleId = moduleId.split("/").slice(1);
-
         const platformConfig = foundationRepo.findPlatform(platform);
+
+        const dir = new DirectoryGenerator(WriteMode.skip, logger);
+
+        generatePlatformConfiguration(foundationRepo, platformConfig, dir);
+
+        const platformModuleId = moduleId.split("/").slice(1);
         const targetPath = foundationRepo.resolvePlatformPath(
           platformConfig,
           ...platformModuleId,
         );
-
-        const dir = new DirectoryGenerator(WriteMode.skip, logger);
 
         // todo: clarify definition of kitModuleId and ComplianceControlId - do they include kit/compliance prefix respectively?
         // must handle this consistently across all objects!
         const kitModulePath = collie.relativePath(
           collie.resolvePath("kit", moduleId),
         );
-        const d: Dir = {
+        const platformModuleDir: Dir = {
           name: targetPath,
           entries: [
             {
@@ -88,7 +91,7 @@ export function registerApplyCmd(program: Command) {
           ],
         };
 
-        await dir.write(d, "");
+        await dir.write(platformModuleDir, "");
 
         logger.progress(
           `applied module ${kitModulePath} to ${
@@ -103,6 +106,73 @@ export function registerApplyCmd(program: Command) {
         );
       },
     );
+}
+
+function generatePlatformConfiguration(
+  foundationRepo: FoundationRepository,
+  platformConfig: PlatformConfig,
+  dir: DirectoryGenerator,
+) {
+  const platformHcl =
+    `# define shared configuration here that's included by all terragrunt configurations in this platform
+
+# recommended: remote state configuration
+remote_state {
+  backend = todo
+  generate = {
+    path      = "backend.tf"
+    if_exists = "overwrite"
+  }
+  config = {
+    # tip: use "my/path/\${path_relative_to_include()}" to dynamically include the module id in a prefix
+  }
+}
+
+# recommended: enable documentation generation for kit modules
+inputs = {
+  output_md_file = "\${get_path_to_repo_root()}/../output.md"
+}
+`;
+
+  const moduleHcl =
+    `# define shared configuration here that most non-bootstrap modules in this platform want to include
+
+# optional: make collie's platform config available in terragrunt by parsing frontmatter
+locals {
+  platform = yamldecode(regex("^---([\\\\s\\\\S]*)\\\\n---\\\\n[\\\\s\\\\S]*$", file(".//README.md"))[0])
+}
+
+# optional: reference the bootstrap module to access its outputs
+dependency "bootstrap" {
+  config_path = "\${path_relative_from_include()}/bootstrap"
+}
+
+# recommended: generate a default provider configuration
+generate "provider" {
+  path      = "provider.tf"
+  if_exists = "overwrite"
+  contents  = <<EOF
+provider "todo" {
+  # tip: you can access collie configuration from the local above, e.g. "\${local.platform.azure.aadTenantId}"
+  # tip: you can access bootstrap module output like secrets from the dependency above, e.g. "\${dependency.bootstrap.outputs.client_secret}"
+}
+EOF
+}
+`;
+  const platformDir = {
+    name: foundationRepo.resolvePlatformPath(platformConfig),
+    entries: [
+      {
+        name: "platform.hcl",
+        content: platformHcl,
+      },
+      {
+        name: "module.hcl",
+        content: moduleHcl,
+      },
+    ],
+  };
+  dir.write(platformDir, "");
 }
 
 function generateTerragrunt(kitModulePath: string) {
@@ -142,7 +212,7 @@ EOF
     isBootstrap ? bootstrapProviderBlock : moduleIncludeBlock,
     terraformBlock,
     inputsBlock,
-  ].join("\n");
+  ].join("\n\n");
 }
 
 async function selectModule(moduleRepo: KitModuleRepository) {
