@@ -45,12 +45,12 @@ export class CollieRepository {
     // find parent directory containing the next best git repository
     while (!(await fs.exists(path.join(...components, ".git")))) {
       components.pop();
-    }
 
-    if (!components.length) {
-      throw new Error(
-        `${absolutePath} nor any of its parent directories seemse to be a collie repository`,
-      );
+      if (!components.length) {
+        throw new Error(
+          `${absolutePath} nor any of its parent directories seemse to be a collie repository`,
+        );
+      }
     }
 
     return new CollieRepository(path.join(...components));

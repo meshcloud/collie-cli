@@ -104,8 +104,8 @@ export class AzMeshAdapter implements MeshAdapter {
       t.costs.push({
         currency: currencySymbol,
         cost: summedCost.toString(),
-        from: startDate,
-        to: endDate,
+        from: from,
+        to: to,
         details: [],
       });
     }
