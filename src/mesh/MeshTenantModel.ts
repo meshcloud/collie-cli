@@ -33,10 +33,12 @@ export interface MeshTenantCostDetails {
   usageCost: string;
 }
 
+export type IsoDate = string;
+
 export interface MeshTenantCost {
   cost: string;
-  from: Date;
-  to: Date;
+  from: IsoDate;
+  to: IsoDate;
   currency: string;
   details: MeshTenantCostDetails[];
 }
