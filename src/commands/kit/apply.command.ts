@@ -104,22 +104,43 @@ export function registerApplyCmd(program: Command) {
 }
 
 function generateTerragrunt(kitModulePath: string) {
-  return `include "platform" {
+  const isBootstrap = kitModulePath.endsWith("/bootstrap");
+
+  const platformIncludeBlock = `include "platform" {
   path = find_in_parent_folders("platform.hcl")
-}
+}`;
 
-include "module" {
+  const moduleIncludeBlock = `include module" {
   path = find_in_parent_folders("module.hcl")
-}
+}`;
 
-terraform {
+  const bootstrapProviderBlock =
+    `# todo: this is a bootstrap module, you typically want to set up a provider
+# with user credentials (cloud CLI based authentication) here
+generate "provider" {
+  path      = "provider.tf"
+  if_exists = "overwrite"
+  contents  = <<EOF
+provider "google|aws|azurerm" {
+  # todo
+}
+EOF
+}`;
+
+  const terraformBlock = `terraform {
   source = "\${get_repo_root()}//${kitModulePath}"
-}
+}`;
 
-inputs = {
+  const inputsBlock = `inputs = {
   # todo: specify inputs to terraform module
-}
-`;
+}`;
+
+  return [
+    platformIncludeBlock,
+    isBootstrap ? bootstrapProviderBlock : moduleIncludeBlock,
+    terraformBlock,
+    inputsBlock,
+  ].join("\n");
 }
 
 async function selectModule(moduleRepo: KitModuleRepository) {
