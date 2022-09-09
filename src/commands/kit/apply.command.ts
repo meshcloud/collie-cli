@@ -182,7 +182,7 @@ function generateTerragrunt(kitModulePath: string) {
   path = find_in_parent_folders("platform.hcl")
 }`;
 
-  const moduleIncludeBlock = `include module" {
+  const moduleIncludeBlock = `include "module" {
   path = find_in_parent_folders("module.hcl")
 }`;
 
