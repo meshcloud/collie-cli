@@ -179,10 +179,10 @@ function generateTerragrunt(kitModulePath: string) {
   const isBootstrap = kitModulePath.endsWith("/bootstrap");
 
   const platformIncludeBlock = `include "platform" {
-  path = find_in_parent_folders("platform.hcl")
+  path = find_in_parent_folders("platform.hcl") 
 }`;
 
-  const moduleIncludeBlock = `include module" {
+  const moduleIncludeBlock = `include "module" {
   path = find_in_parent_folders("module.hcl")
 }`;
 
