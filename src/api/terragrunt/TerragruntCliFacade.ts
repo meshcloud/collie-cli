@@ -7,7 +7,6 @@ import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
 
 export type TerragruntRunMode =
   | "apply"
-  | "init -upgrade"
   | {
     raw: string[];
   };
@@ -25,9 +24,7 @@ export function toVerb(mode: TerragruntRunMode) {
   if (typeof mode === "string") {
     switch (mode) {
       case "apply":
-        return "deploying (apply) in";
-      case "init -upgrade":
-        return "initializing";
+        return "running 'apply' in";
       default:
         throw new Error("unknown mode: " + mode);
     }
@@ -113,8 +110,6 @@ export class TerragruntCliFacade {
       switch (mode) {
         case "apply":
           return ["apply", "--terragrunt-ignore-external-dependencies"];
-        case "init -upgrade":
-          return ["init", "-upgrade", "--terragrunt-non-interactive"];
         default:
           throw new Error("unknown mode: " + mode);
       }

@@ -20,7 +20,6 @@ interface DeployOptions {
   platform: string;
   bootstrap: boolean;
   autoApprove: boolean;
-  upgrade: boolean;
   module?: string;
 }
 
@@ -44,12 +43,6 @@ export function registerDeployCmd(program: Command) {
       "auto approve confirmation prompts in underyling terragrunt and terraform commands",
     )
     .option(
-      "--upgrade",
-      "run the equivalent of 'terragrunt init --upgrade' before the actual deploy commands.",
-      // note that terragrunt will run auto-init when a configuration has never been initialised, but it will not run upgrades
-      // this option quickly and elegantly solves that problem
-    )
-    .option(
       "-- [args...]",
       "pass the following raw arguments to terragrunt instead of running the default 'apply'.",
     )
@@ -69,6 +62,10 @@ export function registerDeployCmd(program: Command) {
       "Import a resource into terraform state",
       `${CLI} foundation deploy myfoundation --platform aws --module admin/root -- import aws_organizations_account.root 123456789012`,
     )
+    .example(
+      "Update terraform modules and providers",
+      `${CLI} foundation deploy myfoundation --platform aws --module admin/root -- init -upgrade`,
+    )
     .action(
       async (
         opts: DeployOptions & GlobalCommandOptions,
@@ -80,55 +77,28 @@ export function registerDeployCmd(program: Command) {
         const logger = new Logger(collieRepo, opts);
         const validator = new ModelValidator(logger);
 
-        const modes = terragruntModes(opts, literalArgs);
+        const mode = literalArgs.length ? { raw: literalArgs } : "apply";
 
-        for (const mode of modes) {
-          const foundationProgress = opts.platform
-            ? new NullProgressReporter()
-            : new ProgressReporter(
-              toVerb(mode),
-              collieRepo.relativePath(
-                collieRepo.resolvePath("foundations", foundation),
-              ),
-              logger,
-            );
-
-          const foundationRepo = await FoundationRepository.load(
-            collieRepo,
-            foundation,
-            validator,
-          );
-          await deployFoundation(
-            collieRepo,
-            foundationRepo,
-            mode,
-            opts,
+        const foundationProgress = opts.platform
+          ? new NullProgressReporter()
+          : new ProgressReporter(
+            toVerb(mode),
+            collieRepo.relativePath(
+              collieRepo.resolvePath("foundations", foundation),
+            ),
             logger,
           );
 
-          foundationProgress.done();
-        }
+        const foundationRepo = await FoundationRepository.load(
+          collieRepo,
+          foundation,
+          validator,
+        );
+        await deployFoundation(collieRepo, foundationRepo, mode, opts, logger);
+
+        foundationProgress.done();
       },
     );
-}
-
-function terragruntModes(
-  opts: DeployOptions & GlobalCommandOptions,
-  literalArgs: string[],
-) {
-  const modes: TerragruntRunMode[] = [];
-
-  if (opts.upgrade) {
-    modes.push("init -upgrade");
-  }
-
-  if (literalArgs.length) {
-    modes.push({ raw: literalArgs });
-  } else {
-    modes.push("apply");
-  }
-
-  return modes;
 }
 
 async function deployFoundation(
