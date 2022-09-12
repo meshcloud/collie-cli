@@ -40,6 +40,10 @@ export function registerDeployCmd(program: Command) {
     })
     .option("--bootstrap", "deploy the bootstrap module")
     .option(
+      "--auto-approve",
+      "auto approve confirmation prompts in underyling terragrunt and terraform commands",
+    )
+    .option(
       "--upgrade",
       "run the equivalent of 'terragrunt init --upgrade' before the actual deploy commands.",
       // note that terragrunt will run auto-init when a configuration has never been initialised, but it will not run upgrades
@@ -136,7 +140,7 @@ async function deployFoundation(
 ) {
   const factory = new CliApiFacadeFactory(repo, logger);
 
-  const terragrunt = buildTerragrunt(opts, factory);
+  const terragrunt = factory.buildTerragrunt();
 
   const platforms = opts.platform
     ? [foundation.findPlatform(opts.platform)]
@@ -156,9 +160,9 @@ async function deployFoundation(
     );
 
     if (opts.bootstrap) {
-      await deployer.deployBootstrapModules(mode);
+      await deployer.deployBootstrapModules(mode, opts.autoApprove);
     } else {
-      await deployer.deployPlatformModules(mode, opts.module);
+      await deployer.deployPlatformModules(mode, opts.module, opts.autoApprove);
     }
   }
 }
@@ -168,18 +172,4 @@ async function deployFoundation(
  */
 class NullProgressReporter {
   done(): void {}
-}
-
-function buildTerragrunt(
-  opts: GlobalCommandOptions & DeployOptions,
-  factory: CliApiFacadeFactory,
-) {
-  const args = [];
-  if (opts.autoApprove) {
-    // we pass --auto-approve to individual terraform commands
-    // and --terragrunt-non-interactive to terragrunt's own prompts, e.g. when terragrunt run-all
-    args.push("--auto-approve", "--terragrunt-non-interactive");
-  }
-
-  return factory.buildTerragrunt(args);
 }

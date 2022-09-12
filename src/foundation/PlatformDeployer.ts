@@ -20,14 +20,14 @@ export class PlatformDeployer<T extends PlatformConfig> {
     private readonly logger: Logger,
   ) {}
 
-  async deployBootstrapModules(mode: TerragruntRunMode) {
+  async deployBootstrapModules(mode: TerragruntRunMode, autoApprove: boolean) {
     const moduleDir = this.bootstrapModuleDir();
     const bootstrapModuleProgress = this.buildProgressReporter(
       mode,
       this.repo.relativePath(moduleDir),
     );
 
-    await this.terragrunt.run(moduleDir, mode);
+    await this.terragrunt.run(moduleDir, mode, { autoApprove });
 
     bootstrapModuleProgress.done();
   }
@@ -36,7 +36,11 @@ export class PlatformDeployer<T extends PlatformConfig> {
     return this.foundation.resolvePlatformPath(this.platform, "bootstrap");
   }
 
-  async deployPlatformModules(mode: TerragruntRunMode, module?: string) {
+  async deployPlatformModules(
+    mode: TerragruntRunMode,
+    module: string | undefined,
+    autoApprove: boolean,
+  ) {
     const modulePath = this.foundation.resolvePlatformPath(
       this.platform,
       module || "",
@@ -48,22 +52,29 @@ export class PlatformDeployer<T extends PlatformConfig> {
     );
 
     if (await this.isTerragruntStack(modulePath)) {
-      this.logger.debug((fmt) =>
-        `detected a stack of platform modules at ${
-          fmt.kitPath(modulePath)
-        }, will deploy with "terragrunt run-all <cmd>"`
+      this.logger.debug(
+        (fmt) =>
+          `detected a stack of platform modules at ${
+            fmt.kitPath(
+              modulePath,
+            )
+          }, will deploy with "terragrunt run-all <cmd>"`,
       );
 
       await this.terragrunt.runAll(modulePath, mode, {
         excludeDirs: [this.bootstrapModuleDir()],
+        autoApprove,
       });
     } else {
-      this.logger.debug((fmt) =>
-        `detected a single platform module at ${
-          fmt.kitPath(modulePath)
-        }, will deploy with "terragrunt <cmd>"`
+      this.logger.debug(
+        (fmt) =>
+          `detected a single platform module at ${
+            fmt.kitPath(
+              modulePath,
+            )
+          }, will deploy with "terragrunt <cmd>"`,
       );
-      await this.terragrunt.run(modulePath, mode);
+      await this.terragrunt.run(modulePath, mode, { autoApprove });
     }
 
     progress.done();
