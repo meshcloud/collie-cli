@@ -1,5 +1,5 @@
 import {
-  TerragruntRunMode,
+  TerragruntArguments,
   toVerb,
 } from "/api/terragrunt/TerragruntCliFacade.ts";
 
@@ -77,7 +77,7 @@ export function registerDeployCmd(program: Command) {
         const logger = new Logger(collieRepo, opts);
         const validator = new ModelValidator(logger);
 
-        const mode = literalArgs.length ? { raw: literalArgs } : "apply";
+        const mode = { raw: literalArgs.length ? literalArgs : ["apply"] };
 
         const foundationProgress = opts.platform
           ? new NullProgressReporter()
@@ -104,7 +104,7 @@ export function registerDeployCmd(program: Command) {
 async function deployFoundation(
   repo: CollieRepository,
   foundation: FoundationRepository,
-  mode: TerragruntRunMode,
+  mode: TerragruntArguments,
   opts: GlobalCommandOptions & DeployOptions,
   logger: Logger,
 ) {

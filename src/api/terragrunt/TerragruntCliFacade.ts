@@ -5,11 +5,9 @@ import {
 } from "../../process/ProcessRunnerResult.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
 
-export type TerragruntRunMode =
-  | "apply"
-  | {
-    raw: string[];
-  };
+export type TerragruntArguments = {
+  raw: string[];
+};
 
 export interface TerragruntRunAllOpts {
   excludeDirs?: string[];
@@ -20,17 +18,8 @@ export interface TerragruntRunOpts {
   autoApprove?: boolean;
 }
 
-export function toVerb(mode: TerragruntRunMode) {
-  if (typeof mode === "string") {
-    switch (mode) {
-      case "apply":
-        return "running 'apply' in";
-      default:
-        throw new Error("unknown mode: " + mode);
-    }
-  }
-
-  return `running '${mode.raw.join(" ")}' in`;
+export function toVerb(args: TerragruntArguments) {
+  return `running '${args.raw.join(" ")}' in`;
 }
 
 export class TerragruntCliFacade {
@@ -45,7 +34,7 @@ export class TerragruntCliFacade {
     return result;
   }
 
-  async run(cwd: string, mode: TerragruntRunMode, opts: TerragruntRunOpts) {
+  async run(cwd: string, mode: TerragruntArguments, opts: TerragruntRunOpts) {
     const autoApproveFlags = opts.autoApprove
       ? [
         "--auto-approve", // --auto-approve is passed to terraform and enables auto approval there
@@ -57,7 +46,7 @@ export class TerragruntCliFacade {
 
     const cmds = [
       "terragrunt",
-      ...this.modeCommands(mode),
+      ...mode.raw,
       ...autoApproveFlags,
     ];
 
@@ -68,7 +57,7 @@ export class TerragruntCliFacade {
 
   async runAll(
     cwd: string,
-    mode: TerragruntRunMode,
+    mode: TerragruntArguments,
     opts: TerragruntRunAllOpts,
   ) {
     // note: terragrunt docs say "This will only exclude the module, not its dependencies."
@@ -92,7 +81,7 @@ export class TerragruntCliFacade {
     const cmds = [
       "terragrunt",
       "run-all",
-      ...this.modeCommands(mode),
+      ...mode.raw,
       ...excludeDirFlags,
       ...autoApproveFlags,
     ];
@@ -103,18 +92,5 @@ export class TerragruntCliFacade {
     return await this.runTerragrunt(cmds, {
       cwd,
     });
-  }
-
-  private modeCommands(mode: TerragruntRunMode) {
-    if (typeof mode === "string") {
-      switch (mode) {
-        case "apply":
-          return ["apply", "--terragrunt-ignore-external-dependencies"];
-        default:
-          throw new Error("unknown mode: " + mode);
-      }
-    }
-
-    return mode.raw;
   }
 }

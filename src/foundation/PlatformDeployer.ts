@@ -1,8 +1,8 @@
 import * as fs from "std/fs";
 
 import {
+  TerragruntArguments,
   TerragruntCliFacade,
-  TerragruntRunMode,
   toVerb,
 } from "/api/terragrunt/TerragruntCliFacade.ts";
 import { FoundationRepository } from "/model/FoundationRepository.ts";
@@ -20,7 +20,10 @@ export class PlatformDeployer<T extends PlatformConfig> {
     private readonly logger: Logger,
   ) {}
 
-  async deployBootstrapModules(mode: TerragruntRunMode, autoApprove: boolean) {
+  async deployBootstrapModules(
+    mode: TerragruntArguments,
+    autoApprove: boolean,
+  ) {
     const moduleDir = this.bootstrapModuleDir();
     const bootstrapModuleProgress = this.buildProgressReporter(
       mode,
@@ -37,7 +40,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
   }
 
   async deployPlatformModules(
-    mode: TerragruntRunMode,
+    mode: TerragruntArguments,
     module: string | undefined,
     autoApprove: boolean,
   ) {
@@ -97,7 +100,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
     return files.length > 1;
   }
 
-  private buildProgressReporter(mode: TerragruntRunMode, id: string) {
+  private buildProgressReporter(mode: TerragruntArguments, id: string) {
     return new ProgressReporter(toVerb(mode), id, this.logger);
   }
 }
