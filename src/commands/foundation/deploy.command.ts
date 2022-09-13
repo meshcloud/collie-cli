@@ -1,5 +1,5 @@
 import {
-  TerragruntRunMode,
+  TerragruntArguments,
   toVerb,
 } from "/api/terragrunt/TerragruntCliFacade.ts";
 
@@ -20,7 +20,6 @@ interface DeployOptions {
   platform: string;
   bootstrap: boolean;
   autoApprove: boolean;
-  upgrade: boolean;
   module?: string;
 }
 
@@ -40,10 +39,8 @@ export function registerDeployCmd(program: Command) {
     })
     .option("--bootstrap", "deploy the bootstrap module")
     .option(
-      "--upgrade",
-      "run the equivalent of 'terragrunt init --upgrade' before the actual deploy commands.",
-      // note that terragrunt will run auto-init when a configuration has never been initialised, but it will not run upgrades
-      // this option quickly and elegantly solves that problem
+      "--auto-approve",
+      "auto approve confirmation prompts in underyling terragrunt and terraform commands",
     )
     .option(
       "-- [args...]",
@@ -65,6 +62,10 @@ export function registerDeployCmd(program: Command) {
       "Import a resource into terraform state",
       `${CLI} foundation deploy myfoundation --platform aws --module admin/root -- import aws_organizations_account.root 123456789012`,
     )
+    .example(
+      "Update terraform modules and providers",
+      `${CLI} foundation deploy myfoundation --platform aws --module admin/root -- init -upgrade`,
+    )
     .action(
       async (
         opts: DeployOptions & GlobalCommandOptions,
@@ -76,67 +77,40 @@ export function registerDeployCmd(program: Command) {
         const logger = new Logger(collieRepo, opts);
         const validator = new ModelValidator(logger);
 
-        const modes = terragruntModes(opts, literalArgs);
+        const mode = { raw: literalArgs.length ? literalArgs : ["apply"] };
 
-        for (const mode of modes) {
-          const foundationProgress = opts.platform
-            ? new NullProgressReporter()
-            : new ProgressReporter(
-              toVerb(mode),
-              collieRepo.relativePath(
-                collieRepo.resolvePath("foundations", foundation),
-              ),
-              logger,
-            );
-
-          const foundationRepo = await FoundationRepository.load(
-            collieRepo,
-            foundation,
-            validator,
-          );
-          await deployFoundation(
-            collieRepo,
-            foundationRepo,
-            mode,
-            opts,
+        const foundationProgress = opts.platform
+          ? new NullProgressReporter()
+          : new ProgressReporter(
+            toVerb(mode),
+            collieRepo.relativePath(
+              collieRepo.resolvePath("foundations", foundation),
+            ),
             logger,
           );
 
-          foundationProgress.done();
-        }
+        const foundationRepo = await FoundationRepository.load(
+          collieRepo,
+          foundation,
+          validator,
+        );
+        await deployFoundation(collieRepo, foundationRepo, mode, opts, logger);
+
+        foundationProgress.done();
       },
     );
-}
-
-function terragruntModes(
-  opts: DeployOptions & GlobalCommandOptions,
-  literalArgs: string[],
-) {
-  const modes: TerragruntRunMode[] = [];
-
-  if (opts.upgrade) {
-    modes.push("init -upgrade");
-  }
-
-  if (literalArgs.length) {
-    modes.push({ raw: literalArgs });
-  } else {
-    modes.push("apply");
-  }
-
-  return modes;
 }
 
 async function deployFoundation(
   repo: CollieRepository,
   foundation: FoundationRepository,
-  mode: TerragruntRunMode,
+  mode: TerragruntArguments,
   opts: GlobalCommandOptions & DeployOptions,
   logger: Logger,
 ) {
   const factory = new CliApiFacadeFactory(repo, logger);
 
-  const terragrunt = buildTerragrunt(opts, factory);
+  const terragrunt = factory.buildTerragrunt();
 
   const platforms = opts.platform
     ? [foundation.findPlatform(opts.platform)]
@@ -156,9 +130,9 @@ async function deployFoundation(
     );
 
     if (opts.bootstrap) {
-      await deployer.deployBootstrapModules(mode);
+      await deployer.deployBootstrapModules(mode, opts.autoApprove);
     } else {
-      await deployer.deployPlatformModules(mode, opts.module);
+      await deployer.deployPlatformModules(mode, opts.module, opts.autoApprove);
     }
   }
 }
@@ -168,18 +142,4 @@ async function deployFoundation(
  */
 class NullProgressReporter {
   done(): void {}
-}
-
-function buildTerragrunt(
-  opts: GlobalCommandOptions & DeployOptions,
-  factory: CliApiFacadeFactory,
-) {
-  const args = [];
-  if (opts.autoApprove) {
-    // we pass --auto-approve to individual terraform commands
-    // and --terragrunt-non-interactive to terragrunt's own prompts, e.g. when terragrunt run-all
-    args.push("--auto-approve", "--terragrunt-non-interactive");
-  }
-
-  return factory.buildTerragrunt(args);
 }

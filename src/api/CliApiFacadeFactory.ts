@@ -23,7 +23,7 @@ import { ProcessRunnerResultHandler } from "../process/ProcessRunnerResultHandle
 import { AwsCliResultHandler } from "./aws/AwsCliResultHandler.ts";
 import { AwsCliDetector } from "./aws/AwsCliDetector.ts";
 import { TerraformDocsCliDetector } from "./terraform-docs/TerraformDocsCliDetector.ts";
-import { TerraformCliDetector } from "./terragrunt/TerraformCliDetector.ts";
+import { TerraformCliDetector } from "./terraform/TerraformCliDetector.ts";
 import { TerragruntCliDetector } from "./terragrunt/TerragruntCliDetector.ts";
 import { ProcessRunnerErrorResultHandler } from "./ProcessRunnerErrorResultHandler.ts";
 import { TerragruntCliFacade } from "./terragrunt/TerragruntCliFacade.ts";
@@ -111,7 +111,7 @@ export class CliApiFacadeFactory {
     return azure;
   }
 
-  public buildTerragrunt(defaultArgs: string[]) {
+  public buildTerragrunt() {
     const detectorRunner = this.buildProcessRunner();
     const detector = new TerragruntCliDetector(detectorRunner);
 
@@ -120,7 +120,6 @@ export class CliApiFacadeFactory {
     processRunner = new DefaultsProcessRunnerDecorator(
       processRunner,
       {},
-      defaultArgs,
     );
 
     return new TerragruntCliFacade(processRunner);
