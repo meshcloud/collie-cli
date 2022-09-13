@@ -5,28 +5,21 @@ import {
 } from "../../process/ProcessRunnerResult.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
 
-export type TerragruntRunMode =
-  | "apply"
-  | "init -upgrade"
-  | {
-    raw: string[];
-  };
+export type TerragruntArguments = {
+  raw: string[];
+};
+
 export interface TerragruntRunAllOpts {
   excludeDirs?: string[];
+  autoApprove?: boolean;
 }
-export function toVerb(mode: TerragruntRunMode) {
-  if (typeof mode === "string") {
-    switch (mode) {
-      case "apply":
-        return "deploying (apply) in";
-      case "init -upgrade":
-        return "initializing";
-      default:
-        throw new Error("unknown mode: " + mode);
-    }
-  }
 
-  return `running '${mode.raw.join(" ")}' in`;
+export interface TerragruntRunOpts {
+  autoApprove?: boolean;
+}
+
+export function toVerb(args: TerragruntArguments) {
+  return `running '${args.raw.join(" ")}' in`;
 }
 
 export class TerragruntCliFacade {
@@ -41,8 +34,21 @@ export class TerragruntCliFacade {
     return result;
   }
 
-  async run(cwd: string, mode: TerragruntRunMode) {
-    const cmds = ["terragrunt", ...this.modeCommands(mode)];
+  async run(cwd: string, mode: TerragruntArguments, opts: TerragruntRunOpts) {
+    const autoApproveFlags = opts.autoApprove
+      ? [
+        "--auto-approve", // --auto-approve is passed to terraform and enables auto approval there
+        "--terragrunt-non-interactive", // disable terragrunt's own prompts, e.g. at the start of a terragrunt run-all run
+      ]
+      : [
+        // by default, terragrunt and terraform prompt for all changes
+      ];
+
+    const cmds = [
+      "terragrunt",
+      ...mode.raw,
+      ...autoApproveFlags,
+    ];
 
     return await this.runTerragrunt(cmds, {
       cwd,
@@ -51,7 +57,7 @@ export class TerragruntCliFacade {
 
   async runAll(
     cwd: string,
-    mode: TerragruntRunMode,
+    mode: TerragruntArguments,
     opts: TerragruntRunAllOpts,
   ) {
     // note: terragrunt docs say "This will only exclude the module, not its dependencies."
@@ -61,11 +67,23 @@ export class TerragruntCliFacade {
       x,
     ]);
 
+    // By default, "terragrunt run-all" auto approves all individual applies, a notable difference to "terragrunt run"
+    // which does interactive confirmation prompts by default.
+    // This is undesirable for collie beause it unexpectedly changes the behavior when running a single vs. multi-module
+    // deploy. We thus force the behavior to be consistent for collie
+    const autoApproveFlags = opts.autoApprove
+      ? [
+        "--auto-approve", // --auto-approve is passed to terraform and enables auto approval there
+        "--terragrunt-non-interactive", // disable terragrunt's own prompts, e.g. at the start of a terragrunt run-all run
+      ]
+      : ["--terragrunt-no-auto-approve"];
+
     const cmds = [
       "terragrunt",
       "run-all",
-      ...this.modeCommands(mode),
+      ...mode.raw,
       ...excludeDirFlags,
+      ...autoApproveFlags,
     ];
 
     // we do not have to set -auto-approve as run-all automatically includes it
@@ -74,20 +92,5 @@ export class TerragruntCliFacade {
     return await this.runTerragrunt(cmds, {
       cwd,
     });
-  }
-
-  private modeCommands(mode: TerragruntRunMode) {
-    if (typeof mode === "string") {
-      switch (mode) {
-        case "apply":
-          return ["apply", "--terragrunt-ignore-external-dependencies"];
-        case "init -upgrade":
-          return ["init", "-upgrade", "--terragrunt-non-interactive"];
-        default:
-          throw new Error("unknown mode: " + mode);
-      }
-    }
-
-    return mode.raw;
   }
 }

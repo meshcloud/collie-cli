@@ -14,6 +14,7 @@ export class TerragruntCliDetector extends CliDetector {
   }
 
   protected isSupportedVersion(version: string): boolean {
-    return version > "v0.34.0";
+    // required for "--terragrunt-no-auto-apply" option, see https://github.com/gruntwork-io/terragrunt/pull/2156
+    return version >= "v0.38.1";
   }
 }
