@@ -7,6 +7,7 @@ import {
 } from "../cli/DirectoryGenerator.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "./GlobalCommandOptions.ts";
+import { CliApiFacadeFactory } from "../api/CliApiFacadeFactory.ts";
 
 export function registerInitCommand(program: Command) {
   program
@@ -15,6 +16,12 @@ export function registerInitCommand(program: Command) {
     .action(async (opts: GlobalCommandOptions) => {
       const kit = new CollieRepository("./");
       const logger = new Logger(kit, opts);
+
+      // ensure git is initialized
+      const cliFactory = new CliApiFacadeFactory(kit, logger);
+      const git = cliFactory.buildGit();
+
+      await git.init();
 
       const dir = new DirectoryGenerator(WriteMode.skip, logger);
       const d: Dir = {

@@ -33,6 +33,8 @@ import { NpmCliDetector } from "./npm/NpmCliDetector.ts";
 import { NpmCliFacade } from "./npm/NpmCliFacade.ts";
 import { TerraformDocsCliFacade } from "./terraform-docs/TerraformDocsCliFacade.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
+import { GitCliDetector } from "./git/GitCliDetector.ts";
+import { GitCliFacade } from "./git/GitCliFacade.ts";
 
 export class CliApiFacadeFactory {
   constructor(
@@ -46,6 +48,7 @@ export class CliApiFacadeFactory {
       new AwsCliDetector(processRunner),
       new AzCliDetector(processRunner),
       new GcloudCliDetector(processRunner),
+      new GitCliDetector(processRunner),
       new TerraformCliDetector(processRunner),
       new TerragruntCliDetector(processRunner),
       new TerraformDocsCliDetector(processRunner),
@@ -109,6 +112,15 @@ export class CliApiFacadeFactory {
     azure = new RetryingAzCliDecorator(azure);
 
     return azure;
+  }
+
+  public buildGit() {
+    const detectorRunner = this.buildProcessRunner();
+    const detector = new GitCliDetector(detectorRunner);
+
+    const processRunner = this.buildTransparentProcessRunner(detector);
+
+    return new GitCliFacade(processRunner);
   }
 
   public buildTerragrunt() {
