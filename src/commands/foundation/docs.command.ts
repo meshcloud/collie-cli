@@ -33,7 +33,7 @@ export function registerDocsCmd(program: Command) {
         opts: GlobalCommandOptions & DocsCommandOptions,
         foundation: string,
       ) => {
-        const repo = new CollieRepository("./");
+        const repo = await CollieRepository.load();
         const logger = new Logger(repo, opts);
         const validator = new ModelValidator(logger);
 

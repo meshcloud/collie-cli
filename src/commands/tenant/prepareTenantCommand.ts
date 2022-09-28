@@ -13,7 +13,7 @@ export async function prepareTenantCommand(
   options: GlobalCommandOptions & TenantCommandOptions,
   foundation: string,
 ) {
-  const collieRepo = await CollieRepository.load("./");
+  const collieRepo = await CollieRepository.load();
 
   const logger = new Logger(collieRepo, options);
 

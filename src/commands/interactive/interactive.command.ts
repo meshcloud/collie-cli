@@ -25,7 +25,7 @@ export async function startInteractiveMode(options: GlobalCommandOptions) {
   const interactivehelp =
     `\n\n\nWelcome to ${CLI} interactive mode. This experimental mode allows you to herd your tenants in a quicker, more interactive way.\n\n\n "LIST ALL TENANTS"\nis equivalent to "${CLI} tenant list"\n\n"LIST ALL TENANTS WITH COST"\nis equivalent to "${CLI} tenant costs"\n\n"EXPLORE TENANTS WITH MISSING TAGS"\nis the superpower of the interactive mode. Go check it out!\n\n`;
 
-  const collie = new CollieRepository("./");
+  const collie = await CollieRepository.load();
 
   const foundation = await InteractivePrompts.selectFoundation(collie);
 
