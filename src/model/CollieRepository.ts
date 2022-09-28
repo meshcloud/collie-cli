@@ -38,7 +38,7 @@ export class CollieRepository {
     }
   }
 
-  static async load(searchDir: string) {
+  static async load(searchDir = "./"): Promise<CollieRepository> {
     const absolutePath = path.resolve(searchDir);
     const components = absolutePath.split(path.SEP);
 

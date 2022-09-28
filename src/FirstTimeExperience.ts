@@ -3,7 +3,7 @@ import { CollieRepository } from "./model/CollieRepository.ts";
 
 export class FirstTimeExperience {
   static async tryShowTips() {
-    const collie = new CollieRepository("./");
+    const collie = await CollieRepository.load();
 
     const foundations = await collie.listFoundations();
     if (!foundations.length) {
