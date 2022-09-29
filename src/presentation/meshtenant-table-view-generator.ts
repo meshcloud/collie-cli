@@ -1,4 +1,4 @@
-import { groupBy } from "std/collections";
+import { groupBy } from "std/collections/groupBy";
 
 import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { TableGenerator } from "./mesh-table.ts";

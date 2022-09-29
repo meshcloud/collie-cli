@@ -1,5 +1,5 @@
 import * as colors from "std/fmt/colors";
-import * as collections from "std/collections";
+import { groupBy } from "std/collections/groupBy";
 
 import { FoundationDependencies } from "./KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "./KitModuleRepository.ts";
@@ -28,7 +28,7 @@ export class KitModuleTreeBuilder {
       )
     );
 
-    const dependeciesByPath = collections.groupBy(entries, (x) => x.module);
+    const dependeciesByPath = groupBy(entries, (x) => x.module);
 
     const tree: Tree<KitModuleInfo> = {};
 
