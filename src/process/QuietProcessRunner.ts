@@ -1,6 +1,7 @@
 import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 import { IProcessRunner } from "./IProcessRunner.ts";
 import { ProcessResultWithOutput } from "./ProcessRunnerResult.ts";
+import { ShellRunnerPolicy } from "./ShellRunnerPolicy.ts";
 
 /**
  * Runs a subprocess quietly by buffering its stdout and stderr in memory until completion.
@@ -13,7 +14,7 @@ export class QuietProcessRunner
   ): Promise<ProcessResultWithOutput> {
     const p = Deno.run({
       ...options,
-      cmd: commands,
+      cmd: ShellRunnerPolicy.shellCommands(commands),
       stdout: "piped",
       stderr: "piped",
     });

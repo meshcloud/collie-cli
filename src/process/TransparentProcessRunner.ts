@@ -1,6 +1,7 @@
 import { ProcessResult } from "./ProcessRunnerResult.ts";
 import { ProcessRunnerOptions } from "./ProcessRunnerOptions.ts";
 import { IProcessRunner } from "./IProcessRunner.ts";
+import { ShellRunnerPolicy } from "./ShellRunnerPolicy.ts";
 
 /**
  * Runs a subprocess transaprently by connecting it to collie's stdout/stderr.
@@ -13,7 +14,7 @@ export class TransparentProcessRunner implements IProcessRunner<ProcessResult> {
   ): Promise<ProcessResult> {
     const p = Deno.run({
       ...options,
-      cmd: commands,
+      cmd: ShellRunnerPolicy.shellCommands(commands),
       stdout: "inherit",
       stderr: "inherit",
     });
