@@ -15,6 +15,7 @@
   "tasks": {
     "run": "deno run $(deno run --quiet --no-check ./flags.ts) ./src/main.ts",
     "check": "deno check --import-map src/import_map.json ./src/main.ts",
+    "bundlesize": "deno bundle --import-map src/import_map.json ./src/main.ts | wc -c | awk '{print $1/1000\"K\"}'",
     "info": "deno info --import-map src/import_map.json ./src/main.ts",
     "test": "deno test $(deno run --quiet --no-check ./flags.ts) src/",
     "install": "deno install -f -n collie $(deno run --quiet --no-check ./flags.ts) src/main.ts"
