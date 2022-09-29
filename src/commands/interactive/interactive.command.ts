@@ -10,6 +10,8 @@ import { CollieRepository } from "../../model/CollieRepository.ts";
 import { InteractivePrompts } from "./InteractivePrompts.ts";
 import { prepareTenantCommand } from "../tenant/prepareTenantCommand.ts";
 import { detailViewTenant } from "./detailViewTenant.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
+import { isWindows } from "../../os.ts";
 
 export function registerInteractiveCommand(program: Command) {
   program
@@ -65,7 +67,7 @@ export async function startInteractiveMode(options: GlobalCommandOptions) {
             name:
               `${x.platformTenantName} (${x.platformId} ${x.platformTenantId})`,
           })),
-          search: true,
+          search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264
           info: true,
         });
 

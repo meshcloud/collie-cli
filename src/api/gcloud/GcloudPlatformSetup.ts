@@ -6,6 +6,7 @@ import { PlatformSetup } from "../PlatformSetup.ts";
 import { GcloudCliFacade } from "./GcloudCliFacade.ts";
 import { MeshError } from "../../errors.ts";
 import { organizationId } from "./Model.ts";
+import { isWindows } from "../../os.ts";
 
 export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
   constructor(private readonly gcloud: GcloudCliFacade) {
@@ -23,7 +24,7 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
     const configurationName = await Select.prompt({
       message: "Select a gcloud CLI configuration",
       options: configurations.map((x) => x.name),
-      search: true,
+      search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264
       info: true,
     });
 
@@ -46,7 +47,7 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
         name: x.displayName,
         value: x.name,
       })),
-      search: true,
+      search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264,
       info: true,
     });
 

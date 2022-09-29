@@ -1,7 +1,7 @@
 import * as colors from "std/fmt/colors";
 import * as path from "std/path";
 
-import { Command, Select } from "../../deps.ts";
+import {  Select } from "../../deps.ts";
 import {
   Dir,
   DirectoryGenerator,
@@ -16,6 +16,8 @@ import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CommandOptionError } from "../CommandOptionError.ts";
 import { PlatformConfig } from "../../model/PlatformConfig.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
+import { isWindows } from "../../os.ts";
 
 interface ApplyOptions {
   foundation?: string;
@@ -225,6 +227,6 @@ async function selectModule(moduleRepo: KitModuleRepository) {
     message: "Select a kit module from your repository",
     options,
     info: true,
-    search: true,
+    search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264
   });
 }
