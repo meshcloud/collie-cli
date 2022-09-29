@@ -178,7 +178,10 @@ EOF
 }
 
 function generateTerragrunt(kitModulePath: string) {
-  const isBootstrap = kitModulePath.endsWith("/bootstrap");
+  const isBootstrap = kitModulePath.endsWith(`${path.SEP}bootstrap`);
+
+  // terragrunt needs a posix style path
+  const posixKitModulePath = kitModulePath.replaceAll("\\", "/")
 
   const platformIncludeBlock = `include "platform" {
   path = find_in_parent_folders("platform.hcl") 
@@ -202,7 +205,7 @@ EOF
 }`;
 
   const terraformBlock = `terraform {
-  source = "\${get_repo_root()}//${kitModulePath}"
+  source = "\${get_repo_root()}//${posixKitModulePath}"
 }`;
 
   const inputsBlock = `inputs = {

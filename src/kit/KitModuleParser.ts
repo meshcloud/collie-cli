@@ -80,8 +80,10 @@ export class KitModuleParser {
       return;
     }
 
+    const posixRelativeModulePath = relativeModulePath.replaceAll("\\", "/")
+
     return {
-      id: relativeModulePath.substring("kit/".length),
+      id: posixRelativeModulePath.substring("kit/".length),
       kitModulePath: relativeModulePath,
       definitionPath: relativeReadmePath,
       kitModule: parsed.frontmatter,
