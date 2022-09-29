@@ -13,7 +13,7 @@ export function registerConfigCmd(program: Command) {
     .command("config")
     .description("show cloud foundation config file tree")
     .action(async (opts: GlobalCommandOptions) => {
-      const repo = await CollieRepository.load("./");
+      const repo = await CollieRepository.load();
       const logger = new Logger(repo, opts);
 
       const foundations = await repo.listFoundations();

@@ -22,7 +22,7 @@ export function registerNewCmd(program: Command) {
     .command("new <foundation:foundation>")
     .description("generate a new cloud foundation")
     .action(async (opts: GlobalCommandOptions, foundation: string) => {
-      const repo = await CollieRepository.load("./");
+      const repo = await CollieRepository.load();
       const logger = new Logger(repo, opts);
 
       const foundationPath = repo.resolvePath("foundations", foundation);

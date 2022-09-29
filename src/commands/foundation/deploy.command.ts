@@ -73,7 +73,7 @@ export function registerDeployCmd(program: Command) {
       ) => {
         const literalArgs = LiteralArgsParser.parse(cmd.getRawArgs());
 
-        const collieRepo = new CollieRepository("./");
+        const collieRepo = await CollieRepository.load();
         const logger = new Logger(collieRepo, opts);
         const validator = new ModelValidator(logger);
 
