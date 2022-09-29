@@ -1,6 +1,5 @@
 import { jsonTree } from "x/json_tree";
 
-import { Command } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
@@ -9,8 +8,9 @@ import {
   AnalyzeResults,
   prepareAnalyzeCommand,
 } from "../prepareAnalyzeCommand.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 
-export function registerTreeCmd(program: Command) {
+export function registerTreeCmd(program: TopLevelCommand) {
   program
     .command("tree")
     .description("Show kit modules their dependent platform modules")

@@ -1,4 +1,4 @@
-import { Command, moment } from "../../deps.ts";
+import { moment } from "../../deps.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { dateType } from "../custom-types.ts";
 import { MeshError } from "../../errors.ts";
@@ -6,18 +6,20 @@ import { TenantUsagePresenterFactory } from "../../presentation/tenant-usage-pre
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { OutputFormat } from "../../presentation/output-format.ts";
-interface ListCostsCommandOptions extends GlobalCommandOptions {
+import { OutputOptions, TenantCommand } from "./TenantCommand.ts";
+
+interface ListCostsCommandOptions extends GlobalCommandOptions, OutputOptions {
   from: string;
   to: string;
 }
 
-export function registerCostCommand(program: Command) {
+export function registerCostCommand(program: TenantCommand) {
   program
     .command("cost <foundation:foundation>")
     .description(
       "Gathers the costs of all tenants in a given time interval on a monthly basis. Includes tags as columns when outputting as CSV.",
     )
-    .option("-o --output [output:output]", "Defines the output format", {
+    .option("-o, --output <output:output>", "Defines the output format", {
       default: OutputFormat.TABLE,
     })
     .type("date", dateType)

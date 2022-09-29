@@ -17,7 +17,9 @@ export class ModelValidator {
   constructor(private readonly logger: Logger) {
     this.ajv = new Ajv({ allErrors: true });
 
-    addFormats(this.ajv);
+    // something's wrong about the typings here
+    // deno-lint-ignore no-explicit-any
+    addFormats(this.ajv as any);
 
     this.ajv.addSchema(schema);
   }

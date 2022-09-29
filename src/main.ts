@@ -1,6 +1,6 @@
 import * as colors from "std/fmt/colors";
 
-import { Command, CompletionsCommand } from "./deps.ts";
+import { CompletionsCommand } from "./deps.ts";
 import { CommandOptionError } from "./commands/CommandOptionError.ts";
 import { MeshError } from "./errors.ts";
 import { printTip } from "./cli/Logger.ts";
@@ -18,31 +18,19 @@ import { registerVersionCommand } from "./commands/version.command.ts";
 import { registerInteractiveCommand } from "./commands/interactive/interactive.command.ts";
 import { FirstTimeExperience } from "./FirstTimeExperience.ts";
 import { CollieFoundationDoesNotExistError } from "./model/schemas/ModelValidator.ts";
-import { FoundationType } from "./commands/FoundationType.ts";
-import { PlatformType } from "./commands/PlatformType.ts";
+import { makeTopLevelCommand } from "./commands/TopLevelCommand.ts";
 
 async function collie() {
-  const program = new Command()
+  const program = makeTopLevelCommand()
     .name(CLI)
+    .description(
+      `${CLI} CLI - herd your clouds 🐑. Built with love by meshcloud.io`,
+    )
     .help({
       // The darkblue of Cliffy doesn't look great on the blue of PowerShell.
       colors: !isWindows,
     })
-    .version(VERSION)
-    .globalType("foundation", new FoundationType())
-    .globalType("platform", new PlatformType())
-    // todo: cliffy 0.24.2 has a nice group options that we could use here
-    .globalOption(
-      "--verbose ",
-      "Enable printing verbose info (command execution and results)",
-    )
-    .globalOption(
-      "--debug",
-      "Enable printing debug info (command output, intermediate results)",
-    )
-    .description(
-      `${CLI} CLI - herd your clouds 🐑. Built with love by meshcloud.io`,
-    );
+    .version(VERSION);
 
   registerInitCommand(program);
   registerFoundationCommand(program);

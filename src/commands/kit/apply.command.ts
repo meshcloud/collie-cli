@@ -1,7 +1,7 @@
 import * as colors from "std/fmt/colors";
 import * as path from "std/path";
 
-import { Command, Select } from "../../deps.ts";
+import { Select } from "../../deps.ts";
 import {
   Dir,
   DirectoryGenerator,
@@ -16,13 +16,14 @@ import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CommandOptionError } from "../CommandOptionError.ts";
 import { PlatformConfig } from "../../model/PlatformConfig.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { isWindows } from "../../os.ts";
 
 interface ApplyOptions {
   foundation?: string;
   platform?: string;
 }
-export function registerApplyCmd(program: Command) {
+export function registerApplyCmd(program: TopLevelCommand) {
   program
     .command("apply [module]")
     .option("-f, --foundation <foundation:string>", "foundation")
@@ -33,7 +34,7 @@ export function registerApplyCmd(program: Command) {
       "Generate a platform module applying a kit module to a cloud platform",
     )
     .action(
-      async (opts: GlobalCommandOptions & ApplyOptions, moduleId: string) => {
+      async (opts: GlobalCommandOptions & ApplyOptions, moduleId?: string) => {
         const collie = new CollieRepository("./");
         const logger = new Logger(collie, opts);
         const validator = new ModelValidator(logger);

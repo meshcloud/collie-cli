@@ -7,5 +7,5 @@ export {
   assertEquals,
   assertMatch,
   assertThrows,
-} from "https://deno.land/std@0.136.0/testing/asserts.ts";
-export { delay } from "https://deno.land/std@0.136.0/async/mod.ts";
+} from "https://deno.land/std@0.155.0/testing/asserts.ts";
+export { delay } from "https://deno.land/std@0.155.0/async/mod.ts";

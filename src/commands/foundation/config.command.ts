@@ -1,14 +1,14 @@
 import { jsonTree } from "x/json_tree";
 
-import { Command } from "/deps.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { FoundationConfigTreeBuilder } from "../../foundation/FoundationConfigTreeBuilder.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 
-export function registerConfigCmd(program: Command) {
+export function registerConfigCmd(program: TopLevelCommand) {
   program
     .command("config")
     .description("show cloud foundation config file tree")

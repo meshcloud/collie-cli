@@ -1,4 +1,4 @@
-import { clone, Command, Input } from "../../deps.ts";
+import { clone, Input } from "../../deps.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CLI } from "/info.ts";
 import { MeshAdapter } from "../../mesh/MeshAdapter.ts";
@@ -6,8 +6,9 @@ import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { MeshInvalidTagValueError } from "../../errors.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 
-export function registerSetMissingTagCommand(program: Command) {
+export function registerSetMissingTagCommand(program: TopLevelCommand) {
   program
     .command("set-missing-tag <foundation:foundation> <tagKey>")
     .description(

@@ -4,23 +4,18 @@ import { CliApiFacadeFactory } from "../api/CliApiFacadeFactory.ts";
 import { CliDetectionResult } from "../api/CliDetector.ts";
 import { InstallationStatus } from "../api/CliInstallationStatus.ts";
 import { Logger } from "../cli/Logger.ts";
-import { Command } from "../deps.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
-import { OutputFormat } from "../presentation/output-format.ts";
+import { TopLevelCommand } from "./TopLevelCommand.ts";
 
-export function registerVersionCommand(program: Command) {
+export function registerVersionCommand(program: TopLevelCommand) {
   program.versionOption(
     "-V, --version",
     "Show the version number for this program.",
-    async function (this: Command) {
-      console.log("collie %s\n", this.getVersion());
+    async function () {
+      console.log("collie %s\n", program.getVersion());
 
       const collie = new CollieRepository("./");
-      const logger = new Logger(collie, {
-        debug: false,
-        verbose: false,
-        output: OutputFormat.TABLE,
-      });
+      const logger = new Logger(collie, {});
 
       const factory = new CliApiFacadeFactory(collie, logger);
 

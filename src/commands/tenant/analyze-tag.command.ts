@@ -1,13 +1,13 @@
 import * as colors from "std/fmt/colors";
 
-import { Command } from "../../deps.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CLI } from "/info.ts";
 import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
+import { TenantCommand } from "./TenantCommand.ts";
 
-export function registerAnalyzeTagCommand(program: Command) {
+export function registerAnalyzeTagCommand(program: TenantCommand) {
   program
     .command("analyze-tags <foundation:foundation>")
     .description(

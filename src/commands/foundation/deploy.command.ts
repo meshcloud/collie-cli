@@ -5,7 +5,6 @@ import {
 
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
-import { Command } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
@@ -15,15 +14,16 @@ import { PlatformDeployer } from "../../foundation/PlatformDeployer.ts";
 import { PlatformModuleType } from "./PlatformModuleType.ts";
 import { CLI } from "../../info.ts";
 import { LiteralArgsParser } from "../LiteralArgsParser.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 
 interface DeployOptions {
-  platform: string;
-  bootstrap: boolean;
-  autoApprove: boolean;
+  platform?: string;
+  bootstrap?: boolean;
+  autoApprove?: boolean;
   module?: string;
 }
 
-export function registerDeployCmd(program: Command) {
+export function registerDeployCmd(program: TopLevelCommand) {
   const cmd = program
     .command("deploy <foundation:foundation>")
     .description(
@@ -34,7 +34,7 @@ export function registerDeployCmd(program: Command) {
       "-p, --platform <platform:platform>", // todo: make optional -> deploy all platforms!
       "the platform to deploy",
     )
-    .option("--module [module:module]", "Execute this specific module", {
+    .option("--module <module:module>", "Execute this specific module", {
       conflicts: ["bootstrap"],
     })
     .option("--bootstrap", "deploy the bootstrap module")
@@ -130,9 +130,13 @@ async function deployFoundation(
     );
 
     if (opts.bootstrap) {
-      await deployer.deployBootstrapModules(mode, opts.autoApprove);
+      await deployer.deployBootstrapModules(mode, !!opts.autoApprove);
     } else {
-      await deployer.deployPlatformModules(mode, opts.module, opts.autoApprove);
+      await deployer.deployPlatformModules(
+        mode,
+        opts.module,
+        !!opts.autoApprove,
+      );
     }
   }
 }
