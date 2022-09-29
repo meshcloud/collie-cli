@@ -1,5 +1,6 @@
 import * as colors from "std/fmt/colors";
-import * as collections from "std/collections";
+import { groupBy } from "std/collections/groupBy";
+import { distinct } from "std/collections/distinct";
 
 import { ComplianceControlRepository } from "./ComplianceControlRepository.ts";
 import { buildLabeledIdPath, insert, Tree } from "/model/tree.ts";
@@ -33,7 +34,7 @@ export class ComplianceControlTreeBuilder {
       )
     );
 
-    const dependeciesByPath = collections.groupBy(entries, (x) => x?.control);
+    const dependeciesByPath = groupBy(entries, (x) => x?.control);
 
     const tree: Tree<ComplianceControlInfo> = {};
 
@@ -45,8 +46,7 @@ export class ComplianceControlTreeBuilder {
 
       const info = {
         name: x.control.name,
-        modules: collections
-          .distinct(dependeciesByPath[x.id]?.map((p) => p.module) || [])
+        modules: distinct(dependeciesByPath[x.id]?.map((p) => p.module) || [])
           .map((m) => colors.green(this.collie.relativePath(m))),
         platforms: dependeciesByPath[x.id]
           ?.map((p) => colors.blue(p.platform))
