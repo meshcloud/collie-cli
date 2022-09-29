@@ -5,6 +5,7 @@ import { MarkdownDocument } from "../../model/MarkdownDocument.ts";
 import { Dir } from "../../cli/DirectoryGenerator.ts";
 import { PlatformSetup } from "../PlatformSetup.ts";
 import { MeshError } from "../../errors.ts";
+import { isWindows } from "../../os.ts";
 
 export class AzPlatformSetup extends PlatformSetup<PlatformConfigAzure> {
   constructor(private readonly az: AzCliFacade) {
@@ -27,7 +28,7 @@ export class AzPlatformSetup extends PlatformSetup<PlatformConfigAzure> {
         name: x.name + " / AAD " + x.tenantId,
         value: x.id,
       })),
-      search: true,
+      search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264
       info: true,
     });
 

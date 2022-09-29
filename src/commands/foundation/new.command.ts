@@ -82,6 +82,7 @@ async function promptPlatformEntries(
       name: "action",
       message: "Select an action to continue",
       type: Select,
+      info: true,
       options: [
         { value: "add", name: `${colors.green("+")} add cloud platform` },
         { value: "done", name: `${colors.green("✔")} save & exit` },
@@ -109,6 +110,7 @@ async function promptPlatformEntries(
       name: "cloud",
       message: "What type of cloud do you want to add",
       type: Select,
+      info: true,
       options: [
         { value: "aws", name: "AWS" },
         { value: "azure", name: "Azure" },

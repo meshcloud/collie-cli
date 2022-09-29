@@ -5,6 +5,7 @@ import { MarkdownDocument } from "../../model/MarkdownDocument.ts";
 import { Dir } from "../../cli/DirectoryGenerator.ts";
 import { CLI } from "../../info.ts";
 import { PlatformSetup } from "../PlatformSetup.ts";
+import { isWindows } from "../../os.ts";
 
 export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
   constructor(private readonly aws: AwsCliFacade) {
@@ -22,7 +23,8 @@ export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
     const profile = await Select.prompt({
       message: "Select an AWS CLI Profile",
       options: profiles,
-      search: true,
+      search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264,
+      info: true
     });
 
     this.progress("trying to sign in and get account info");
@@ -54,7 +56,7 @@ export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
       message: `Choose the default AWS region for collie commands`,
       default: region,
       options: regions.Regions.map((x) => x.RegionName),
-      search: true,
+      search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264
       info: true,
     });
 
