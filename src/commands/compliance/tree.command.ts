@@ -1,5 +1,4 @@
 import { jsonTree } from "x/json_tree";
-import { Command } from "../../deps.ts";
 
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
@@ -11,13 +10,14 @@ import {
   AnalyzeResults,
   prepareAnalyzeCommand,
 } from "../prepareAnalyzeCommand.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 
 const statementExample = `\tcompliance:
 \t- control: my/control # id of the control
 \t  statement: "description how this module implements measures towards this control"
 `;
 
-export function registerTreeCmd(program: Command) {
+export function registerTreeCmd(program: TopLevelCommand) {
   program
     .command("tree")
     .description("show the compliance control tree with module implementations")

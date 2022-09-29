@@ -41,7 +41,7 @@ export async function prepareTenantCommand(
   const meshAdapter = await meshAdapterFactory.buildMeshAdapter(
     platforms,
     queryStatistics,
-    options.refresh,
+    !!options.refresh,
   );
 
   const isatty = Deno.isatty(Deno.stdout.rid);

@@ -25,8 +25,8 @@ export class Logger {
   readonly fmtUtils: FormatUtils;
 
   constructor(kit: CollieRepository, opts: GlobalCommandOptions) {
-    this.enableVerbose = opts.verbose;
-    this.enableDebug = opts.debug;
+    this.enableVerbose = !!opts.verbose;
+    this.enableDebug = !!opts.debug;
 
     this.fmtUtils = {
       kitPath(dest: string) {

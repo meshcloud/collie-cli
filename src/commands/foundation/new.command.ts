@@ -1,5 +1,5 @@
 import * as colors from "std/fmt/colors";
-import { Command, prompt, Select } from "/deps.ts";
+import { prompt, Select } from "/deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import {
   Dir,
@@ -16,8 +16,9 @@ import { GcloudPlatformSetup } from "../../api/gcloud/GcloudPlatformSetup.ts";
 import { PlatformSetup } from "../../api/PlatformSetup.ts";
 import { MeshError } from "../../errors.ts";
 import { CLI } from "../../info.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 
-export function registerNewCmd(program: Command) {
+export function registerNewCmd(program: TopLevelCommand) {
   program
     .command("new <foundation:foundation>")
     .description("generate a new cloud foundation")

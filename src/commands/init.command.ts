@@ -1,4 +1,3 @@
-import { Command } from "../deps.ts";
 import { Logger } from "../cli/Logger.ts";
 import {
   Dir,
@@ -8,8 +7,9 @@ import {
 import { CollieRepository } from "../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "./GlobalCommandOptions.ts";
 import { CliApiFacadeFactory } from "../api/CliApiFacadeFactory.ts";
+import { TopLevelCommand } from "./TopLevelCommand.ts";
 
-export function registerInitCommand(program: Command) {
+export function registerInitCommand(program: TopLevelCommand) {
   program
     .command("init")
     .description("initialize a new collie repository in the current directory")

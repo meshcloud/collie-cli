@@ -1,7 +1,7 @@
 import { exploreInteractive } from "./untagged-tenants.ts";
 import { listTenantAction } from "../tenant/list.command.ts";
 import { listTenantsCostAction } from "../tenant/cost.command.ts";
-import { Command, Select } from "../../deps.ts";
+import { Select } from "../../deps.ts";
 import { OutputFormat } from "../../presentation/output-format.ts";
 import { interactiveDate } from "./inputInteractiveDate.ts";
 import { CLI } from "../../info.ts";
@@ -10,9 +10,10 @@ import { CollieRepository } from "../../model/CollieRepository.ts";
 import { InteractivePrompts } from "./InteractivePrompts.ts";
 import { prepareTenantCommand } from "../tenant/prepareTenantCommand.ts";
 import { detailViewTenant } from "./detailViewTenant.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { isWindows } from "../../os.ts";
 
-export function registerInteractiveCommand(program: Command) {
+export function registerInteractiveCommand(program: TopLevelCommand) {
   program
     .command("interactive")
     .description(
@@ -47,7 +48,11 @@ export async function startInteractiveMode(options: GlobalCommandOptions) {
     switch (action) {
       case "alltenants": {
         console.clear();
-        await listTenantAction({ ...options, refresh: false }, foundation);
+        await listTenantAction({
+          ...options,
+          refresh: false,
+          output: OutputFormat.TABLE,
+        }, foundation);
         break;
       }
       case "searchtenant": {

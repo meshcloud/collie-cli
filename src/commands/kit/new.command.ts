@@ -1,4 +1,4 @@
-import { Command, Input } from "../../deps.ts";
+import { Input } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import {
   Dir,
@@ -7,8 +7,9 @@ import {
 } from "../../cli/DirectoryGenerator.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 
-export function registerNewCmd(program: Command) {
+export function registerNewCmd(program: TopLevelCommand) {
   program
     .command("new <module> [name]")
     .description("Generate a new kit module terraform template")

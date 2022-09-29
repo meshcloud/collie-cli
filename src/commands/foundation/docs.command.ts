@@ -3,7 +3,6 @@ import { DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
 import { ComplianceControlRepository } from "../../compliance/ComplianceControlRepository.ts";
-import { Command } from "../../deps.ts";
 import { ComplianceDocumentationGenerator } from "../../docs/ComplianceDocumentationGenerator.ts";
 import { DocumentationGenerator } from "../../docs/DocumentationGenerator.ts";
 import { DocumentationRepository } from "../../docs/DocumentationRepository.ts";
@@ -16,13 +15,14 @@ import { CollieRepository } from "../../model/CollieRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 
 interface DocsCommandOptions {
-  update: boolean;
-  preview: boolean;
+  update?: boolean;
+  preview?: boolean;
 }
 
-export function registerDocsCmd(program: Command) {
+export function registerDocsCmd(program: TopLevelCommand) {
   program
     .command("docs <foundation:foundation>")
     .description(

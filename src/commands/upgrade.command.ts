@@ -1,12 +1,13 @@
 import * as path from "std/path";
 
-import { Command, GithubProvider, UpgradeCommand } from "../deps.ts";
+import { GithubProvider, UpgradeCommand } from "../deps.ts";
 import { FLAGS, GITHUB_REPO, VERSION } from "../info.ts";
+import { TopLevelCommand } from "./TopLevelCommand.ts";
 
 const flagsWithImportMap = FLAGS +
   ` --import-map=https://raw.githubusercontent.com/${GITHUB_REPO}/v${VERSION}/src/import_map.json`;
 
-export function registerUpgradeCommand(program: Command) {
+export function registerUpgradeCommand(program: TopLevelCommand) {
   const denoExecutable = Deno.execPath();
   const isRuntime = path.basename(denoExecutable) === "deno"; // simple and stupid, but avoids recursively invoking ourselves!
 

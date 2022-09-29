@@ -1,10 +1,9 @@
-import { Command } from "../../deps.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
-import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { TreeTenantListPresenter } from "../../presentation/tree-tenant-list-presenter.ts";
+import { TenantCommand } from "./TenantCommand.ts";
 
-export function registerTreeCommand(program: Command) {
+export function registerTreeCommand(program: TenantCommand) {
   program
     .command("tree <foundation:foundation>")
     .description(
@@ -14,7 +13,7 @@ export function registerTreeCommand(program: Command) {
 }
 
 export async function treeTenantAction(
-  options: TenantCommandOptions & GlobalCommandOptions,
+  options: GlobalCommandOptions,
   foundation: string,
 ) {
   const { meshAdapter } = await prepareTenantCommand(options, foundation);

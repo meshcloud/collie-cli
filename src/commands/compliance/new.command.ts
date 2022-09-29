@@ -1,13 +1,14 @@
 import * as path from "std/path";
 
-import { Command, Input } from "../../deps.ts";
+import { Input } from "../../deps.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { MarkdownDocument } from "../../model/MarkdownDocument.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { ComplianceControl } from "../../compliance/ComplianceControl.ts";
+import { TopLevelCommand } from "../TopLevelCommand.ts";
 
-export function registerNewCmd(program: Command) {
+export function registerNewCmd(program: TopLevelCommand) {
   program
     .command("new <control> [name]")
     .description("generate a new compliance control")
