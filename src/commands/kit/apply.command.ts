@@ -1,7 +1,7 @@
 import * as colors from "std/fmt/colors";
 import * as path from "std/path";
 
-import { Select } from "../../deps.ts";
+import { Command, Select } from "../../deps.ts";
 import {
   Dir,
   DirectoryGenerator,
