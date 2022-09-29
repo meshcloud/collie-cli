@@ -1,7 +1,7 @@
 import * as colors from "std/fmt/colors";
 import * as path from "std/path";
 
-import {  Select } from "../../deps.ts";
+import { Select } from "../../deps.ts";
 import {
   Dir,
   DirectoryGenerator,
@@ -16,7 +16,6 @@ import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CommandOptionError } from "../CommandOptionError.ts";
 import { PlatformConfig } from "../../model/PlatformConfig.ts";
-import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { isWindows } from "../../os.ts";
 
 interface ApplyOptions {
@@ -181,7 +180,7 @@ function generateTerragrunt(kitModulePath: string) {
   const isBootstrap = kitModulePath.endsWith(`${path.SEP}bootstrap`);
 
   // terragrunt needs a posix style path
-  const posixKitModulePath = kitModulePath.replaceAll("\\", "/")
+  const posixKitModulePath = kitModulePath.replaceAll("\\", "/");
 
   const platformIncludeBlock = `include "platform" {
   path = find_in_parent_folders("platform.hcl") 

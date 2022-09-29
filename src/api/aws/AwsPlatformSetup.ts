@@ -24,7 +24,7 @@ export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
       message: "Select an AWS CLI Profile",
       options: profiles,
       search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264,
-      info: true
+      info: true,
     });
 
     this.progress("trying to sign in and get account info");

@@ -10,7 +10,6 @@ import { CollieRepository } from "../../model/CollieRepository.ts";
 import { InteractivePrompts } from "./InteractivePrompts.ts";
 import { prepareTenantCommand } from "../tenant/prepareTenantCommand.ts";
 import { detailViewTenant } from "./detailViewTenant.ts";
-import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { isWindows } from "../../os.ts";
 
 export function registerInteractiveCommand(program: Command) {
