@@ -78,21 +78,21 @@ You can install `collie` using our install scripts below
 
 **Linux / Ubuntu**
 
-```
+```sh
 curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
 ```
 
 **Mac OS X**
 
-```
+```sh
 curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sh
 ```
 
 **Windows**
 
-Simply copy the content of
-[`install.ps1`](https://github.com/meshcloud/collie-cli/blob/develop/install.ps1)
-and run it in your PowerShell console.
+```powershell
+irm https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.ps1 | iex
+```
 
 ### 🚀 Connecting to your clouds
 
