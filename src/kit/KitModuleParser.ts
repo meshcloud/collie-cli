@@ -80,7 +80,7 @@ export class KitModuleParser {
       return;
     }
 
-    const posixRelativeModulePath = relativeModulePath.replaceAll("\\", "/")
+    const posixRelativeModulePath = relativeModulePath.replaceAll("\\", "/");
 
     return {
       id: posixRelativeModulePath.substring("kit/".length),
