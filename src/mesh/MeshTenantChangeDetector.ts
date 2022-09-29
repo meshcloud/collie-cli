@@ -1,5 +1,4 @@
 import { MeshTag } from "./MeshTenantModel.ts";
-import { equal } from "../deps.ts";
 
 /**
  * This is a class that is useful for detecting differences between a meshTenant, e.g. you can identify which MeshTags
@@ -7,8 +6,17 @@ import { equal } from "../deps.ts";
  */
 export class MeshTenantChangeDetector {
   getChangedTags(updatedTags: MeshTag[], originalTags: MeshTag[]) {
-    return updatedTags.filter((updatedTag) =>
-      !originalTags.some((originalTag) => equal(updatedTag, originalTag))
+    return updatedTags.filter(
+      (ut) =>
+        !originalTags.some(
+          (ot) =>
+            ut.tagName === ot.tagName &&
+            scalarArrayEquals(ut.tagValues, ot.tagValues),
+        ),
     );
   }
+}
+
+function scalarArrayEquals(x: string[], y: string[]) {
+  return x.length === y.length && x.every((value, index) => value === y[index]);
 }
