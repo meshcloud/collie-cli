@@ -42,12 +42,14 @@ catch {
 # Ask user whether to add Collie to the environment variables automatically
 $userenv = $(Write-Host "Adding Collie to your Environment-Variables? (y/n)" -NoNewLine -ForegroundColor Green; Read-Host)
 if ($userenv -like "y") {
-    $Reg = "HKCU:Environment"
-    $OldPath = (Get-ItemProperty -Path $Reg -Name PATH).Path
-    $NewPath = $OldPath + ";" + $($folder.FullName).ToString()
-    Set-ItemProperty -Path $Reg -Name PATH -Value $NewPath
-    Write-Host "Reloading Powershell is required!`n" -ForegroundColor Yellow
+    $BinDir = $($folder.FullName).ToString()
+    $User = [EnvironmentVariableTarget]::User
+    $Path = [Environment]::GetEnvironmentVariable('Path', $User)
+    if (!(";$Path;".ToLower() -like "*;$BinDir;*".ToLower())) {
+        [Environment]::SetEnvironmentVariable('Path', "$Path;$BinDir", $User)
+        $Env:Path += ";$BinDir"
+    }
 }
 
 Write-Host "[OK] Collie CLI successfully installed: '$($folder.FullName)'`n" -ForegroundColor Green
-# Done
+Write-Output "Run 'collie --help' to get started"
