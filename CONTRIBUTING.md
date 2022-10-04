@@ -50,13 +50,14 @@ as follows:
 - decide on the version number you want to use for the release
 - **Important: Change the version number in `info.ts`. This process is sadly not
   automated at the moment.**
-- create a "release vX.Y.Z" pull request containing that version number bump
-- release PRs must be merged using the merge strategy 'Rebase and Merge' and NOT
+- create a "release vX.Y.Z" **pull request** containing that version number bump
+- release PRs must be merged using the merge strategy **'Rebase and Merge'** and NOT
   Squash.
 - manually tag the resulting merge commit with a version tag, e.g.
-  `git tag -a v1.4.0` and push the tag to github
+  `git tag -a v1.4.0 -m "<Tag Message>"` and push the tag to github using 'git push --tags'
 - the release is created automatically by the
   [release workflow](.github/workflows/releases.yml)
+- update the release note if needed in "draft a new release" with choosing the write tag 
 
 > Note: The install script also always works with the latest version, so you're
 > done. Nice! 🎉
