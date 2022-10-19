@@ -1,7 +1,7 @@
 import { DirectoryGenerator,WriteMode,Dir } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 
-export async function kitDirectoryCreation(modulePath: string, name: string, logger: Logger) {
+export async function newKitDirectoryCreation(modulePath: string, name: string, logger: Logger) {
   const dir = new DirectoryGenerator(WriteMode.skip, logger);
   const d: Dir = {
     name: modulePath,
@@ -18,6 +18,16 @@ export async function kitDirectoryCreation(modulePath: string, name: string, log
   };
 
   await dir.write(d, "");
+}
+
+export async function emptyKitDirectoryCreation(modulePath: string, logger: Logger) {
+    const dir = new DirectoryGenerator(WriteMode.skip, logger);
+    const d: Dir = {
+      name: modulePath,
+      entries: [],
+    };
+
+    await dir.write(d, "");
 }
 
 const mainTf = `# Place your module's terraform resources here as usual.

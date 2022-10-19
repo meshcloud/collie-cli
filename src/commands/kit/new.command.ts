@@ -3,7 +3,7 @@ import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
-import { kitDirectoryCreation } from "./kit-creation.ts";
+import { newKitDirectoryCreation } from "./kit-creation.ts";
 
 export function registerNewCmd(program: TopLevelCommand) {
   program
@@ -22,7 +22,7 @@ export function registerNewCmd(program: TopLevelCommand) {
             minLength: 1,
           }));
 
-        await kitDirectoryCreation(modulePath, name, logger)
+        await newKitDirectoryCreation(modulePath, name, logger)
 
         logger.progress(
           "generated new kit module at " +
