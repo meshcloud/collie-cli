@@ -5,6 +5,7 @@ import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Select } from "../../deps.ts";
 import { emptyKitDirectoryCreation } from "./kit-creation.ts";
 import { KitBundle, KitRepresentation } from "./bundles/kitbundle.ts";
+import { kitDownload } from "./kit-download.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
 import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
@@ -52,6 +53,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       await kits.forEach((repr: KitRepresentation, name: string) => {
         const modulePath = collie.resolvePath("kit", `${prefix}-${name}`);
         emptyKitDirectoryCreation(modulePath, logger);        
+        const url = 'https://github.com/Azure/caf-terraform-landingzones/archive/57d67d2640ea8541e639d60fc70de5a3409c8876.tar.gz'
+        kitDownload(modulePath, url);
         logger.progress(`  Downloading Kit from ${repr.sourceUrl}.`);
 
         // TODO for each kit:
@@ -59,7 +62,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         //      2. let user configure repr.requiredParameters
         //      3. apply kit to foundation
       });
-
 
       // TODO now we can get going here.
       // rough plan:
