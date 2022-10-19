@@ -1,3 +1,12 @@
+export class KitRepresentation {
+  sourceUrl: string
+  requiredParameters: string[]
+  constructor(sourceUrl: string, requiredParameters: string[]) {
+    this.sourceUrl = sourceUrl;
+    this.requiredParameters = requiredParameters;
+  }
+}
+
 export abstract class KitBundle {
   identifier: string;
   displayName: string;
@@ -11,5 +20,5 @@ export abstract class KitBundle {
     return this.identifier === identifier;
   }
 
-  abstract kitsAndSources(): Map<string, string>;
+  abstract kitsAndSources(): Map<string, KitRepresentation>;
 }
