@@ -4,14 +4,14 @@ import { tgz } from "x/tar";
 import { MeshError } from "../../errors.ts";
 
 export async function kitDownload(modulePath: string, url: string) {
-  const tmpDirFilepath = await downloadToTemporaryDir(url);
+  const tmpFilepath = await downloadToTemporaryFile(url);
   // TODO this currently creates an unnecessary directory,
   // like caf-terraform-landingzones-57d67d2640ea8541e639d60fc70de5a3409c8876
-  await tgz.uncompress(tmpDirFilepath, modulePath);
-  await Deno.remove(tmpDirFilepath);
+  await tgz.uncompress(tmpFilepath, modulePath);
+  await Deno.remove(tmpFilepath);
 }
 
-async function downloadToTemporaryDir(url: string): Promise<string> {
+async function downloadToTemporaryFile(url: string): Promise<string> {
   const filepath = await Deno.makeTempFile();
   const response = await fetch(url);
   const streamReader = response.body?.getReader();
