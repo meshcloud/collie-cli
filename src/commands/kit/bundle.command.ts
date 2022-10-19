@@ -25,7 +25,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
     .command("bundle <prefix>")
     .option("-f, --foundation <foundation:string>", "foundation")
     .option("-p, --platform <platform:platform>", "platform", {
-      depends: ["foundation"],
+      depends: ["foundation", "platform"],
     })
     .description("Generate predefined bundled kits for your cloud foundation")
     .action(async (opts: GlobalCommandOptions & ApplyOptions, prefix: string) => {
@@ -52,26 +52,14 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       const kits = bundleToSetup.kitsAndSources();
       await kits.forEach((repr: KitRepresentation, name: string) => {
         const modulePath = collie.resolvePath("kit", `${prefix}-${name}`);
-        emptyKitDirectoryCreation(modulePath, logger);        
-        const url = 'https://github.com/Azure/caf-terraform-landingzones/archive/57d67d2640ea8541e639d60fc70de5a3409c8876.tar.gz'
-        kitDownload(modulePath, url);
-        logger.progress(`  Downloading Kit from ${repr.sourceUrl}.`);
-
+        emptyKitDirectoryCreation(modulePath, logger);  
+        kitDownload(modulePath, repr.sourceUrl, logger);
+        
         // TODO for each kit:
         //      1. download from repr.sourceUrl here
         //      2. let user configure repr.requiredParameters
         //      3. apply kit to foundation
       });
-
-      // TODO now we can get going here.
-      // rough plan:
-      // download TF modules from selected predefined foundation (currently only Azure CAF ES related)
-      // create one bootstrap kit named: "<prefix>-bootstrap"
-      // create another kit "<prefix>-base" with the actual LZ resources (maybe even split it into multiple kits, probly not for first version)
-            
-      // request config variables from user that are required
-      // apply all new kits to foundation
-      // done, deployment works as usual with '$ collie foundation deploy <foundation>' 
     });
 }
 
