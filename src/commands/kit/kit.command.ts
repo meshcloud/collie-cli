@@ -1,11 +1,13 @@
 import { makeTopLevelCommand, TopLevelCommand } from "../TopLevelCommand.ts";
 import { registerApplyCmd } from "./apply.command.ts";
+import { registerBundledKitCmd } from "./bundle.command.ts";
 import { registerNewCmd } from "./new.command.ts";
 import { registerTreeCmd } from "./tree.command.ts";
 
 export function registerKitCommand(program: TopLevelCommand) {
   const kitCommands = makeTopLevelCommand();
   registerNewCmd(kitCommands);
+  registerBundledKitCmd(kitCommands);
   registerApplyCmd(kitCommands);
   registerTreeCmd(kitCommands);
 
