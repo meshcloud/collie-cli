@@ -22,7 +22,17 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       logger.progress("Choosing a predefined bundled kit.");
       const bundleToSetup = await promptKitBundleOption();      
-      logger.progress(`'${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`);
+      logger.progress(`Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`);
+
+      const kits = bundleToSetup.kitsAndSources();
+      
+      await kits.forEach((name: string, source: string) => {
+        const modulePath = collie.resolvePath("kit", `${prefix}-${name}`);
+        emptyKitDirectoryCreation(modulePath, logger);
+        //TODO download from source here instead of logging it.
+        logger.progress(`  Downloading Kit from ${source}.`);
+      });
+
 
       // TODO now we can get going here.
       // rough plan:
@@ -33,12 +43,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       // request config variables from user that are required
       // apply all new kits to foundation
       // done, deployment works as usual with '$ collie foundation deploy <foundation>' 
-
-      const moduleBootstrapPath = collie.resolvePath("kit", `${prefix}-bootstrap`);
-      await emptyKitDirectoryCreation(moduleBootstrapPath, logger);
-
-      const moduleBasePath = collie.resolvePath("kit", `${prefix}-base`);
-      await emptyKitDirectoryCreation(moduleBasePath, logger);
     });
 }
 
