@@ -1,14 +1,12 @@
 import { registerDeployCmd } from "./deploy.command.ts";
 import { registerConfigCmd } from "./config.command.ts";
 import { registerNewCmd } from "./new.command.ts";
-import { registerPredefinedCmd } from "./predefined.command.ts";
 import { registerTreeCmd } from "./tree.command.ts";
 import { registerDocsCmd } from "./docs.command.ts";
 import { makeTopLevelCommand, TopLevelCommand } from "../TopLevelCommand.ts";
 
 export function registerFoundationCommand(program: TopLevelCommand) {
   const foundationCommands = makeTopLevelCommand();
-  registerPredefinedCmd(foundationCommands);
   registerNewCmd(foundationCommands);
   registerConfigCmd(foundationCommands);
   registerTreeCmd(foundationCommands);
