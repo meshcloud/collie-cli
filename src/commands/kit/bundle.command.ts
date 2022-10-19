@@ -6,6 +6,7 @@ import { Select } from "../../deps.ts";
 import { emptyKitDirectoryCreation } from "./kit-creation.ts";
 import { KitBundle } from "./bundles/kitbundle.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
+import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
@@ -20,8 +21,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       const logger = new Logger(collie, opts);
 
       logger.progress("Choosing a predefined bundled kit.");
-      const option = await promptKitBundleOption();      
-      logger.progress(`'${option}' chosen.`);
+      const bundleToSetup = await promptKitBundleOption();      
+      logger.progress(`'${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`);
 
       // TODO now we can get going here.
       // rough plan:
@@ -38,15 +39,21 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       const moduleBasePath = collie.resolvePath("kit", `${prefix}-base`);
       await emptyKitDirectoryCreation(moduleBasePath, logger);
-
     });
 }
 
-async function promptKitBundleOption() {
-  await Select.prompt({
+async function promptKitBundleOption(): Promise<KitBundle> {
+
+  const bundleOptions: SelectValueOptions = availableKitBundles.map((x) => ({ name: x.displayName, value: x.identifier }));
+  bundleOptions.push({ name: "Quit", value: "quit" });
+
+  const selectedOption = await Select.prompt({
     message: "Select the predefined Foundation you want to use:",
-    options: (
-      availableKitBundles
-    ).map((x) => ({ name: x.displayName, value: x.identifier })),
+    options: bundleOptions,
   });
+  if (selectedOption === 'quit') {
+    Deno.exit(1);
+  } else {
+    return availableKitBundles.find(x => x.identifiedBy(selectedOption))!;
+  }
 }
