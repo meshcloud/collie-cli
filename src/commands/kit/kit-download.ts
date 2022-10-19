@@ -2,26 +2,44 @@ import { readerFromStreamReader, copy} from "std/streams/conversion";
 import * as path from "std/path";
 
 import { tgz } from "x/tar";
+import { cryptoRandomString } from "x/crypto_random_string";
 import { MeshError } from "../../errors.ts";
+import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
+import { Logger } from "../../cli/Logger.ts";
 
-export async function kitDownload(modulePath: string, url: string) {
+export async function kitDownload(modulePath: string, url: string, logger: Logger) {
+  if (url === "") {
+    return
+  }
+
   const tmpFilepath = await downloadToTemporaryFile(url);
-  // TODO this currently creates an unnecessary directory,
-  // like caf-terraform-landingzones-57d67d2640ea8541e639d60fc70de5a3409c8876
-  await tgz.uncompress(tmpFilepath, modulePath);
+  const rndStr = cryptoRandomString({length: 16});
+  const containerDir = path.join(modulePath, rndStr);
+  const dir = new DirectoryGenerator(WriteMode.skip, logger);
+  const d: Dir = {
+    name: containerDir,
+    entries: [],
+  };
+  await dir.write(d, "");
+  await tgz.uncompress(tmpFilepath, containerDir);
   await Deno.remove(tmpFilepath);
-  // tar archives created from git repositories often include a pax_global_header file which
-  // includes metadata. It includes no relevant info for the user, so we remove it.
-  const headerFile = path.join(modulePath, 'pax_global_header');
-  try {
-    await Deno.remove(headerFile);
-  } catch (e) {
-    if (e instanceof Deno.errors.NotFound) {
-      // Nothing to remove if the file does not exist.
-    } else {
-      throw e;
+
+  // now move content out of container directory, into module path:
+  for (const containerDirEntry of Deno.readDirSync(containerDir)) {
+    if (containerDirEntry.isDirectory) {
+      console.log(`Container directory ${containerDirEntry.name}`);
+      const filesToMove = [];
+      for (const dirEntry of Deno.readDirSync(path.join(containerDir, containerDirEntry.name))) {
+        filesToMove.push(dirEntry.name);
+      }
+      for (const i in filesToMove) {
+        Deno.renameSync(path.join(containerDir, containerDirEntry.name, filesToMove[i]), path.join(modulePath, filesToMove[i]));
+      }
+      break;
     }
   }
+  //console.log(containerDir);
+  //Deno.removeSync(containerDir, { recursive: true });
 }
 
 async function downloadToTemporaryFile(url: string): Promise<string> {
