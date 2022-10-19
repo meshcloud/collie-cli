@@ -3,8 +3,13 @@ import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Select } from "../../deps.ts";
-import { MeshError } from "../../errors.ts";
-import { kitDirectoryCreation } from "./kit-creation.ts";
+import { emptyKitDirectoryCreation } from "./kit-creation.ts";
+import { KitBundle } from "./bundles/kitbundle.ts";
+import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
+
+const availableKitBundles: KitBundle[] = [
+  new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
+]; 
 
 export function registerBundledKitCmd(program: TopLevelCommand) {
   program
@@ -29,33 +34,19 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       // done, deployment works as usual with '$ collie foundation deploy <foundation>' 
 
       const moduleBootstrapPath = collie.resolvePath("kit", `${prefix}-bootstrap`);
-      const moduleBasePath = collie.resolvePath("kit", `${prefix}-base`);
+      await emptyKitDirectoryCreation(moduleBootstrapPath, logger);
 
-      await kitDirectoryCreation(moduleBootstrapPath, `${prefix}-bootstrap`, logger);
-      await kitDirectoryCreation(moduleBasePath, `${prefix}-base`, logger);
+      const moduleBasePath = collie.resolvePath("kit", `${prefix}-base`);
+      await emptyKitDirectoryCreation(moduleBasePath, logger);
+
     });
 }
 
 async function promptKitBundleOption() {
-  switch (
-    await Select.prompt({
-      message: `Select the predefined Foundation you want to use:`,
-      options: [
-        { name: "Azure Enterprise Scale", value: "AZURE CAF ES" },
-        { name: "Quit", value: "Quit" },
-      ],
-    })
-  ) {
-    case "AZURE CAF ES": {
-      console.clear();
-      return "Azure Enterprise Scale";
-    }
-    case "Quit": {
-      Deno.exit();
-      break;
-    }
-    default: {
-      throw new MeshError("Invalid value. Something went horribly wrong.");
-    }
-  }
+  await Select.prompt({
+    message: "Select the predefined Foundation you want to use:",
+    options: (
+      availableKitBundles
+    ).map((x) => ({ name: x.displayName, value: x.identifier })),
+  });
 }
