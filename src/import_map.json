@@ -3,6 +3,7 @@
     "std/fs": "https://deno.land/std@0.155.0/fs/mod.ts",
     "std/path": "https://deno.land/std@0.155.0/path/mod.ts",
     "std/async": "https://deno.land/std@0.155.0/async/mod.ts",
+    "std/streams/conversion": "https://deno.land/std@0.155.0/streams/conversion.ts",
     "std/collections/groupBy": "https://deno.land/std@0.155.0/collections/group_by.ts",
     "std/collections/distinct": "https://deno.land/std@0.155.0/collections/distinct.ts",
     "std/fmt/colors": "https://deno.land/std@0.155.0/fmt/colors.ts",
@@ -10,6 +11,7 @@
     "std/testing/assert": "https://deno.land/std@0.155.0/testing/asserts.ts",
     "std/testing/mock": "https://deno.land/std@0.155.0/testing/mock.ts",
     "x/json_tree": "https://deno.land/x/json_tree@latest/mod.ts",
+    "x/tar": "https://deno.land/x/compress@v0.3.3/mod.ts",
     "/": "./",
     "./": "./"
   }
