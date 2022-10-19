@@ -18,6 +18,15 @@ export function registerPredefinedCmd(program: TopLevelCommand) {
       logger.progress(`'${option}' chosen for '${foundation}'.`);
 
       // TODO now we can get going here.
+      // rough plan:
+      // create a new foundation
+      // download TF modules from selected predefined foundation (currently only Azure CAF ES related)
+      // create one bootstrap kit
+      // create another kit with the actual LZ resources (maybe even split it into multiple kits, probly not for first version)
+      // request config variables from user that are required
+      // apply all new kits to foundation
+      // done, deployment works as usual with '$ collie foundation deploy <foundation>' 
+
     });
 }
 
