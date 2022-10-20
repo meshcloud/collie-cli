@@ -1,6 +1,5 @@
 import { readerFromStreamReader, copy} from "std/streams/conversion";
 import * as path from "std/path";
-
 import { gunzipFile, tar } from "x/compress";
 import { Untar } from "std/archive/tar";
 import { cryptoRandomString } from "x/crypto_random_string";
@@ -13,11 +12,13 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
     return
   }
 
-  // FIXME this is just a placeholder. We need to select only this path from the sources.
-  if(repoPath === "foo") {
-    console.log("");
+  // remove leading '/'s
+  while(repoPath != null && repoPath.charAt(0) === '/' && repoPath.length > 0) {
+    repoPath = repoPath.substring(1);
   }
 
+  // FIXME with the new dir name look-ahead this becomes obsolete
+  //       and we can get rid of the crypto dependency again
   const tarGzipTmpFilepath = await downloadToTemporaryFile(url);
   const rndStr = cryptoRandomString({length: 16});
   const containerDir = path.join(modulePath, rndStr);
@@ -35,10 +36,46 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
   Deno.removeSync(tarGzipTmpFilepath);
   Deno.removeSync(tarTmpFilepath);
 
-  // now, move content out of container directory into module path:
-  for (const dirEntry of Deno.readDirSync(fullContainerPath)) {
-    Deno.renameSync(path.join(fullContainerPath, dirEntry.name), path.join(modulePath, dirEntry.name));
+  // now, move content out of container directory into module path  
+  if(repoPath == null || repoPath == "") {
+    // we need everything, so just take all files iteratively
+    for (const dirEntry of Deno.readDirSync(fullContainerPath)) {
+      const target = path.join(modulePath, dirEntry.name); // make sure target does not exist. (override)    
+      Deno.removeSync(target, { recursive: true });
+      Deno.renameSync(path.join(fullContainerPath, dirEntry.name), target);
+    }
+  } else {
+    // we step into the repopath step by step and copy only those files within the path
+    const paths = repoPath.split('/');
+    let subDir = fullContainerPath;
+    let i = 0;
+    while (i < paths.length) {
+      let found = false;
+      for (const dirEntry of Deno.readDirSync(subDir)) {
+        if (dirEntry.name === paths[i]) {
+          found = true;
+          // when this is the final part of path, we copy everything within to target
+          // otherwise we go deeper
+          if (i == paths.length -1) {
+            const sourcePath = path.join(subDir, dirEntry.name);
+            for (const sourceDirEntry of Deno.readDirSync(sourcePath)) {
+              Deno.renameSync(path.join(sourcePath, sourceDirEntry.name), path.join(modulePath, sourceDirEntry.name));
+            }            
+          } else {
+            subDir = path.join(subDir, dirEntry.name);
+          }
+          i++; // always increase, iff done, we jump out of the while loop like this.
+          break; // for loop
+        }
+      }
+      // there is no such path in the sources, so we abort.
+      // we should probably throw here, this is clearly a misconfig in the KitBundle config then!
+      if(!found) {
+        break;
+      }
+    }
   }
+
   Deno.removeSync(containerDir, { recursive: true });
 }
 

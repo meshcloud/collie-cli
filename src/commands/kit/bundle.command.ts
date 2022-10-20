@@ -60,13 +60,13 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       bundleToSetup.kitsAndSources().forEach((repr: KitRepresentation, name: string) => {
 
         const modulePath = collie.resolvePath("kit", `${prefix}-${name}`);
-        logger.progress(`Create an new kit structure for ${name}.`);
+        logger.progress(`  Creating an new kit structure for ${name}`);
         emptyKitDirectoryCreation(modulePath, logger);
 
-        logger.progress(`Download kit from ${repr.sourceUrl}.`);
+        logger.progress(`  Downloading kit from ${repr.sourceUrl.length > 50 ? repr.sourceUrl.substring(0, 47) + "..." : repr.sourceUrl}`);
         kitDownload(modulePath, repr.sourceUrl, repr.sourcePath, logger);
 
-        logger.progress(`Applying kit ${name} to ${foundation} : ${platform}.`);
+        logger.progress(`  Applying kit ${name} to ${foundation} : ${platform}`);
         applyKit(foundationRepo, platform, logger, name);
 
         // TODO 4. Configure required variables for kit
