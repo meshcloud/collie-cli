@@ -27,19 +27,18 @@ export async function kitDownload(modulePath: string, url: string, logger: Logge
   // now move content out of container directory, into module path:
   for (const containerDirEntry of Deno.readDirSync(containerDir)) {
     if (containerDirEntry.isDirectory) {
-      console.log(`Container directory ${containerDirEntry.name}`);
+      const fullContainerPath = path.join(containerDir, containerDirEntry.name);
       const filesToMove = [];
-      for (const dirEntry of Deno.readDirSync(path.join(containerDir, containerDirEntry.name))) {
+      for (const dirEntry of Deno.readDirSync(fullContainerPath)) {
         filesToMove.push(dirEntry.name);
       }
       for (const i in filesToMove) {
-        Deno.renameSync(path.join(containerDir, containerDirEntry.name, filesToMove[i]), path.join(modulePath, filesToMove[i]));
+        Deno.renameSync(path.join(fullContainerPath, filesToMove[i]), path.join(modulePath, filesToMove[i]));
       }
       break;
     }
   }
-  //console.log(containerDir);
-  //Deno.removeSync(containerDir, { recursive: true });
+  Deno.removeSync(containerDir, { recursive: true });
 }
 
 async function downloadToTemporaryFile(url: string): Promise<string> {
