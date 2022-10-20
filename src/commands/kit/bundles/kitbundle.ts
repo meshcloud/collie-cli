@@ -1,8 +1,10 @@
 export class KitRepresentation {
   sourceUrl: string
+  sourcePath: string | null
   requiredParameters: string[]
-  constructor(sourceUrl: string, requiredParameters: string[]) {
+  constructor(sourceUrl: string, sourcePath: string | null, requiredParameters: string[]) {
     this.sourceUrl = sourceUrl;
+    this.sourcePath = sourcePath;
     this.requiredParameters = requiredParameters;
   }
 }

@@ -7,10 +7,13 @@ import { MeshError } from "../../errors.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 
-export async function kitDownload(modulePath: string, url: string, logger: Logger) {
+export async function kitDownload(modulePath: string, url: string, repoPath: string, logger: Logger) {
   if (url === "") {
     return
   }
+
+  // FIXME
+  console.log(repoPath);
 
   const tmpFilepath = await downloadToTemporaryFile(url);
   const rndStr = cryptoRandomString({length: 16});
