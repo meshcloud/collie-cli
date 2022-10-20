@@ -15,7 +15,6 @@ import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CommandOptionError } from "../CommandOptionError.ts";
-import { PlatformConfig } from "../../model/PlatformConfig.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { isWindows } from "../../os.ts";
 import { generatePlatformConfiguration, generateTerragrunt } from "./kit-utilities.ts";
