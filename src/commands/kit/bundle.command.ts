@@ -15,7 +15,7 @@ import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
-]; 
+];
 
 interface ApplyOptions {
   foundation?: string;
@@ -34,7 +34,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       const logger = new Logger(collie, opts);
       const validator = new ModelValidator(logger);
 
-      const foundation = opts.foundation || 
+      const foundation = opts.foundation ||
         (await InteractivePrompts.selectFoundation(collie));
 
       const foundationRepo = await FoundationRepository.load(
@@ -47,21 +47,29 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         (await InteractivePrompts.selectPlatform(foundationRepo));
 
       logger.progress("Choosing a predefined bundled kit.");
-      const bundleToSetup = await promptKitBundleOption();      
+      const bundleToSetup = await promptKitBundleOption();
       logger.progress(`Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`);
 
-      const kits = bundleToSetup.kitsAndSources();
-      await kits.forEach((repr: KitRepresentation, name: string) => {
+      /**
+       * For each kit of the bundle:
+       * 1. Create a kit folder
+       * 2. Download the kit sources from github (or other URL)
+       * 3. Apply kit to foundation + platform selection
+       * 4. Configure required variables for kit
+       */
+      bundleToSetup.kitsAndSources().forEach((repr: KitRepresentation, name: string) => {
+
         const modulePath = collie.resolvePath("kit", `${prefix}-${name}`);
-        emptyKitDirectoryCreation(modulePath, logger);  
-        // FIXME get the correct repoPath
-        const repoPath = ''
-        kitDownload(modulePath, repr.sourceUrl, repoPath, logger);
+        logger.progress(`Create an new kit structure for ${name}.`);
+        emptyKitDirectoryCreation(modulePath, logger);
+
+        logger.progress(`Download kit from ${repr.sourceUrl}.`);
+        kitDownload(modulePath, repr.sourceUrl, repr.sourcePath, logger);
+
+        logger.progress(`Applying kit ${name} to ${foundation} : ${platform}.`);
         applyKit(foundationRepo, platform, logger, name);
-        // TODO for each kit:
-        //      1. download from repr.sourceUrl here
-        //      2. let user configure repr.requiredParameters
-        //      3. apply kit to foundation
+
+        // TODO 4. Configure required variables for kit
       });
     });
 }

@@ -8,13 +8,15 @@ import { MeshError } from "../../errors.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 
-export async function kitDownload(modulePath: string, url: string, repoPath: string, logger: Logger) {
+export async function kitDownload(modulePath: string, url: string, repoPath: string | null, logger: Logger) {
   if (url === "") {
     return
   }
 
-  // FIXME
-  console.log(repoPath);
+  // FIXME this is just a placeholder. We need to select only this path from the sources.
+  if(repoPath === "foo") {
+    console.log("");
+  }
 
   const tarGzipTmpFilepath = await downloadToTemporaryFile(url);
   const rndStr = cryptoRandomString({length: 16});
