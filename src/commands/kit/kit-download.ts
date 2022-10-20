@@ -28,12 +28,8 @@ export async function kitDownload(modulePath: string, url: string, logger: Logge
   for (const containerDirEntry of Deno.readDirSync(containerDir)) {
     if (containerDirEntry.isDirectory) {
       const fullContainerPath = path.join(containerDir, containerDirEntry.name);
-      const filesToMove = [];
       for (const dirEntry of Deno.readDirSync(fullContainerPath)) {
-        filesToMove.push(dirEntry.name);
-      }
-      for (const i in filesToMove) {
-        Deno.renameSync(path.join(fullContainerPath, filesToMove[i]), path.join(modulePath, filesToMove[i]));
+        Deno.renameSync(path.join(fullContainerPath, dirEntry.name), path.join(modulePath, dirEntry.name));
       }
       break;
     }
