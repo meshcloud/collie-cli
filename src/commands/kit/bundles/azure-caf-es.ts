@@ -8,7 +8,7 @@ export class AzureKitBundle extends KitBundle {
   kitsAndSources(): Map<string, KitRepresentation> {
     return new Map<string, KitRepresentation>([
       ["bootstrap", new KitRepresentation("", [])],
-      ["base", new KitRepresentation("https://github.com/Azure/caf-terraform-landingzones/archive/57d67d2640ea8541e639d60fc70de5a3409c8876.tar.gz", [])]
+      ["base", new KitRepresentation("https://github.com/Azure/terraform-azurerm-caf-enterprise-scale/archive/refs/tags/v2.4.1.tar.gz", [])]
     ]);
   }
 }
