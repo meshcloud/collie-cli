@@ -54,7 +54,9 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       await kits.forEach((repr: KitRepresentation, name: string) => {
         const modulePath = collie.resolvePath("kit", `${prefix}-${name}`);
         emptyKitDirectoryCreation(modulePath, logger);  
-        kitDownload(modulePath, repr.sourceUrl, logger);
+        // FIXME get the correct repoPath
+        const repoPath = ''
+        kitDownload(modulePath, repr.sourceUrl, repoPath, logger);
         applyKit(foundationRepo, platform, logger, name);
         // TODO for each kit:
         //      1. download from repr.sourceUrl here
