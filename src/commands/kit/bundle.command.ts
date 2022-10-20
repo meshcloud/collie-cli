@@ -12,7 +12,6 @@ import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
-import { PlatformConfig } from "../../model/PlatformConfig.ts";
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
