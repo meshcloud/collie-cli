@@ -1,7 +1,7 @@
 import { readerFromStreamReader, copy} from "std/streams/conversion";
 import * as path from "std/path";
 
-import { tgz } from "x/tar";
+import { tgz } from "x/compress";
 import { cryptoRandomString } from "x/crypto_random_string";
 import { MeshError } from "../../errors.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
