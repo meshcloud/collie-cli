@@ -3,7 +3,7 @@ import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
-import { newKitDirectoryCreation } from "./kit-creation.ts";
+import { newKitDirectoryCreation } from "./kit-utilities.ts";
 
 export function registerNewCmd(program: TopLevelCommand) {
   program
