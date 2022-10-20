@@ -3,6 +3,7 @@
     "std/fs": "https://deno.land/std@0.155.0/fs/mod.ts",
     "std/path": "https://deno.land/std@0.155.0/path/mod.ts",
     "std/async": "https://deno.land/std@0.155.0/async/mod.ts",
+    "std/archive/tar": "https://deno.land/std@0.155.0/archive/tar.ts",
     "std/streams/conversion": "https://deno.land/std@0.155.0/streams/conversion.ts",
     "std/collections/groupBy": "https://deno.land/std@0.155.0/collections/group_by.ts",
     "std/collections/distinct": "https://deno.land/std@0.155.0/collections/distinct.ts",
