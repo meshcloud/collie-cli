@@ -3,7 +3,7 @@ import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Select } from "../../deps.ts";
-import { emptyKitDirectoryCreation } from "./kit-creation.ts";
+import { emptyKitDirectoryCreation, generatePlatformConfiguration, generateTerragrunt } from "./kit-utilities.ts";
 import { KitBundle, KitRepresentation } from "./bundles/kitbundle.ts";
 import { kitDownload } from "./kit-download.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
@@ -11,6 +11,8 @@ import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/se
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
+import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
+import { PlatformConfig } from "../../model/PlatformConfig.ts";
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
@@ -54,7 +56,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         const modulePath = collie.resolvePath("kit", `${prefix}-${name}`);
         emptyKitDirectoryCreation(modulePath, logger);  
         kitDownload(modulePath, repr.sourceUrl, logger);
-        
+        applyKit(foundationRepo, platform, logger, name);
         // TODO for each kit:
         //      1. download from repr.sourceUrl here
         //      2. let user configure repr.requiredParameters
@@ -77,4 +79,33 @@ async function promptKitBundleOption(): Promise<KitBundle> {
   } else {
     return availableKitBundles.find(x => x.identifiedBy(selectedOption))!;
   }
+}
+
+async function applyKit(foundationRepo: FoundationRepository, platform: string, logger: Logger, kitName: string) {
+  const dir = new DirectoryGenerator(WriteMode.skip, logger);
+  const collie = new CollieRepository("./");
+  const platformConfig = foundationRepo.findPlatform(platform);
+
+  generatePlatformConfiguration(foundationRepo, platformConfig, dir);
+
+  const platformModuleId = kitName.split("/").slice(1);
+  const targetPath = foundationRepo.resolvePlatformPath(
+    platformConfig,
+    ...platformModuleId,
+  );
+
+  const kitModulePath = collie.relativePath(
+    collie.resolvePath("kit", kitName),
+  );
+  const platformModuleDir: Dir = {
+    name: targetPath,
+    entries: [
+      {
+        name: "terragrunt.hcl",
+        content: generateTerragrunt(kitModulePath),
+      },
+    ],
+  };
+
+  await dir.write(platformModuleDir, "");
 }
