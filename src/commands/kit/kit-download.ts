@@ -18,12 +18,12 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
   const tmpFilepath = await downloadToTemporaryFile(url);
   const rndStr = cryptoRandomString({length: 16});
   const containerDir = path.join(modulePath, rndStr);
-  const dir = new DirectoryGenerator(WriteMode.skip, logger);
-  const d: Dir = {
+  const dirGenerator = new DirectoryGenerator(WriteMode.skip, logger);
+  const dir: Dir = {
     name: containerDir,
     entries: [],
   };
-  await dir.write(d, "");
+  await dirGenerator.write(dir, "");
   await tgz.uncompress(tmpFilepath, containerDir);
   await Deno.remove(tmpFilepath);
 
