@@ -11,7 +11,7 @@
     "std/testing/assert": "https://deno.land/std@0.155.0/testing/asserts.ts",
     "std/testing/mock": "https://deno.land/std@0.155.0/testing/mock.ts",
     "x/json_tree": "https://deno.land/x/json_tree@latest/mod.ts",
-    "x/tar": "https://deno.land/x/compress@v0.3.3/mod.ts",
+    "x/compress": "https://deno.land/x/compress@v0.4.5/mod.ts",
     "x/crypto_random_string": "https://deno.land/x/crypto_random_string@1.1.0/mod.ts",
     "/": "./",
     "./": "./"
