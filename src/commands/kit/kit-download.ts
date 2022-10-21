@@ -7,15 +7,13 @@ import { MeshError } from "../../errors.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 
-export async function kitDownload(modulePath: string, url: string, repoPath: string | null, logger: Logger) {
+export async function kitDownload(modulePath: string, url: string, repoPath: string | null | undefined, logger: Logger) {
   if (url === "") {
     return
   }
 
-  if (repoPath !== null) {
-    // remove leading '/'s
-    repoPath = repoPath.replace(/^\/+/, '')
-  }
+  // remove leading '/'s
+  repoPath = repoPath?.replace(/^\/+/, '')
 
   // FIXME with the new dir name look-ahead this becomes obsolete
   //       and we can get rid of the crypto dependency again
@@ -37,7 +35,7 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
   Deno.removeSync(tarTmpFilepath);
 
   // now, move content out of container directory into module path
-  if (repoPath === null || repoPath === "") {
+  if (!repoPath) {
     // we need everything, so just take all files iteratively
     for (const dirEntry of Deno.readDirSync(fullContainerPath)) {
       const target = path.join(modulePath, dirEntry.name); // make sure target does not exist. (override)
@@ -60,7 +58,7 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
             const sourcePath = path.join(subDir, dirEntry.name);
             for (const sourceDirEntry of Deno.readDirSync(sourcePath)) {
               Deno.renameSync(path.join(sourcePath, sourceDirEntry.name), path.join(modulePath, sourceDirEntry.name));
-            }            
+            }
           } else {
             subDir = path.join(subDir, dirEntry.name);
           }
@@ -70,7 +68,7 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
       }
       // there is no such path in the sources, so we abort.
       // we should probably throw here, this is clearly a misconfig in the KitBundle config then!
-      if(!found) {
+      if (!found) {
         break;
       }
     }
