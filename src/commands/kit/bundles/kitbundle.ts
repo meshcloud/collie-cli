@@ -1,11 +1,23 @@
+export class KitMetadata {
+  name: string
+  description: string
+  constructor(name: string, description: string) {
+    this.name = name;
+    this.description = description;
+  }
+}
+
 export class KitRepresentation {
   sourceUrl: string
   sourcePath: string | undefined
   requiredParameters: string[]
-  constructor(sourceUrl: string, sourcePath: string | undefined, requiredParameters: string[]) {
+  metadataOverride: KitMetadata | undefined
+
+  constructor(sourceUrl: string, sourcePath: string | undefined, requiredParameters: string[], metadataOverride: KitMetadata | undefined) {
     this.sourceUrl = sourceUrl;
     this.sourcePath = sourcePath;
     this.requiredParameters = requiredParameters;
+    this.metadataOverride = metadataOverride;
   }
 }
 
