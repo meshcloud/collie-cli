@@ -13,6 +13,7 @@ import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
+import { sleep } from "https://deno.land/x/sleep@v1.2.1/mod.ts";
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
@@ -60,14 +61,15 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
        * 3. Apply kit to foundation + platform selection
        * 4. Configure required variables for kit
        */
-       allKits.forEach((kitRepr: KitRepresentation, name: string) => {
+       allKits.forEach(async (kitRepr: KitRepresentation, name: string) => {
 
         const kitPath = collie.resolvePath("kit", prefix, name);
         logger.progress(`  Creating an new kit structure for ${name}`);
         emptyKitDirectoryCreation(kitPath, logger);
 
         logger.progress(`  Downloading kit from ${kitRepr.sourceUrl.length > 50 ? kitRepr.sourceUrl.substring(0, 47) + "..." : kitRepr.sourceUrl}`);
-        kitDownload(kitPath, kitRepr.sourceUrl, kitRepr.sourcePath, logger);
+        await kitDownload(kitPath, kitRepr.sourceUrl, kitRepr.sourcePath, logger);
+
         if (kitRepr.metadataOverride) {
           applyKitMetadataOverride(kitPath, kitRepr.metadataOverride);
         }
