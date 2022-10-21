@@ -68,7 +68,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         emptyKitDirectoryCreation(kitPath, logger);
 
         logger.progress(`  Downloading kit from ${kitRepr.sourceUrl.length > 50 ? kitRepr.sourceUrl.substring(0, 47) + "..." : kitRepr.sourceUrl}`);
-        await kitDownload(kitPath, kitRepr.sourceUrl, kitRepr.sourcePath, logger);
+        await kitDownload(kitPath, kitRepr.sourceUrl, kitRepr.sourcePath);
 
         if (kitRepr.metadataOverride) {
           applyKitMetadataOverride(kitPath, kitRepr.metadataOverride);
