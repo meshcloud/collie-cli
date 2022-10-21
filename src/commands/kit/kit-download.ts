@@ -1,10 +1,10 @@
-import { readerFromStreamReader, copy} from "std/streams/conversion";
+import { readerFromStreamReader, copy } from "std/streams/conversion";
 import * as path from "std/path";
 import { gunzipFile } from "x/compress";
 import { TarEntry, Untar } from "std/archive/tar";
 import { MeshError } from "../../errors.ts";
-import { ensureDir } from "std/fs/ensure_dir";
-import { ensureFile } from "std/fs/ensure_file";
+import { ensureDirSync } from "std/fs/ensure_dir";
+import { ensureFileSync } from "std/fs/ensure_file";
 
 export async function kitDownload(modulePath: string, url: string, repoPath: string | undefined) {
   if (url === "") {
@@ -73,7 +73,7 @@ async function downloadToTemporaryFile(url: string): Promise<string> {
  *                        Use the empty string to extract everything.
  */
  async function extractTar(tarFilepath: string, directoryPrefix: string, targetDirectory: string) {
-  const reader = await Deno.open(tarFilepath, { read: true });
+  const reader = Deno.openSync(tarFilepath, { read: true });
   const untar = new Untar(reader);
 
   for await (const entry of untar) {
@@ -84,12 +84,12 @@ async function downloadToTemporaryFile(url: string): Promise<string> {
     const targetFilepath = path.join(targetDirectory, filenameWithoutPrefix)
 
     if (entry.type === "directory") {
-      ensureDir(targetFilepath);
+      ensureDirSync(targetFilepath);
       continue;
     }
 
-    await ensureFile(targetFilepath);
-    const file = await Deno.open(targetFilepath, { write: true });
+    ensureFileSync(targetFilepath);
+    const file = Deno.openSync(targetFilepath, { write: true });
     try {
       await copy(entry, file);
     } finally {
