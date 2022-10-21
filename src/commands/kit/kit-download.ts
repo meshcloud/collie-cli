@@ -13,7 +13,7 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
   }
 
   // remove leading '/'s
-  repoPath = repoPath?.replace(/^\/+/, '')
+  repoPath = repoPath?.replace(/^\/+/, '');
 
   // FIXME with the new dir name look-ahead this becomes obsolete
   //       and we can get rid of the crypto dependency again
