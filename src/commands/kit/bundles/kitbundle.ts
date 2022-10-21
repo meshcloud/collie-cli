@@ -19,12 +19,14 @@ export class KitRepresentation {
   sourcePath: string | undefined
   requiredParameters: string[]
   metadataOverride: KitMetadata | undefined
+  autoDeploy: boolean
 
-  constructor(sourceUrl: string, sourcePath: string | undefined, requiredParameters: string[], metadataOverride: KitMetadata | undefined) {
+  constructor(sourceUrl: string, sourcePath: string | undefined, requiredParameters: string[], metadataOverride: KitMetadata | undefined, autoDeploy: boolean) {
     this.sourceUrl = sourceUrl;
     this.sourcePath = sourcePath;
     this.requiredParameters = requiredParameters;
     this.metadataOverride = metadataOverride;
+    this.autoDeploy = autoDeploy;
   }
 }
 

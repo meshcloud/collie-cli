@@ -51,6 +51,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       const bundleToSetup = await promptKitBundleOption();
       logger.progress(`Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`);
 
+      const allKits = bundleToSetup.kitsAndSources();
+
       /**
        * For each kit of the bundle:
        * 1. Create a kit folder
@@ -58,7 +60,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
        * 3. Apply kit to foundation + platform selection
        * 4. Configure required variables for kit
        */
-      bundleToSetup.kitsAndSources().forEach((kitRepr: KitRepresentation, name: string) => {
+       allKits.forEach((kitRepr: KitRepresentation, name: string) => {
 
         const kitPath = collie.resolvePath("kit", prefix, name);
         logger.progress(`  Creating an new kit structure for ${name}`);
@@ -75,6 +77,16 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
         // TODO 4. Configure required variables for kit
       });
+
+
+      // TODO autoDeploy
+      //      we need to probably need to define a concrete deployOrder for all autoDeploy kits, if there will be more of them within one bundle.
+      allKits.forEach((kitRepr: KitRepresentation, name: string) => {
+        if (kitRepr.autoDeploy) {
+          console.log(`Auto-deploying: ${name}`);
+        }
+      });
+
     });
 }
 
