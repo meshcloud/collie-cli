@@ -13,7 +13,7 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
   }
 
   // remove leading '/'s
-  while(repoPath != null && repoPath.charAt(0) === '/' && repoPath.length > 0) {
+  while (repoPath != null && repoPath.charAt(0) === '/' && repoPath.length > 0) {
     repoPath = repoPath.substring(1);
   }
 
@@ -37,7 +37,7 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
   Deno.removeSync(tarTmpFilepath);
 
   // now, move content out of container directory into module path
-  if(repoPath === null || repoPath === "") {
+  if (repoPath === null || repoPath === "") {
     // we need everything, so just take all files iteratively
     for (const dirEntry of Deno.readDirSync(fullContainerPath)) {
       const target = path.join(modulePath, dirEntry.name); // make sure target does not exist. (override)
