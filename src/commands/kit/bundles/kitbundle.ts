@@ -1,10 +1,17 @@
-export class KitMetadata {
-  name: string
-  description: string
-  constructor(name: string, description: string) {
-    this.name = name;
-    this.description = description;
+export abstract class KitBundle {
+  identifier: string;
+  displayName: string;
+
+  constructor(identifier: string, displayName: string) {
+    this.identifier = identifier;
+    this.displayName = displayName;
   }
+
+  identifiedBy(identifier: string): boolean {
+    return this.identifier === identifier;
+  }
+
+  abstract kitsAndSources(): Map<string, KitRepresentation>;
 }
 
 export class KitRepresentation {
@@ -21,18 +28,13 @@ export class KitRepresentation {
   }
 }
 
-export abstract class KitBundle {
-  identifier: string;
-  displayName: string;
+export const metadataKitFileName = "README.md";
 
-  constructor(identifier: string, displayName: string) {
-    this.identifier = identifier;
-    this.displayName = displayName;
+export class KitMetadata {
+  name: string
+  description: string
+  constructor(name: string, description: string) {
+    this.name = name;
+    this.description = description;
   }
-
-  identifiedBy(identifier: string): boolean {
-    return this.identifier === identifier;
-  }
-
-  abstract kitsAndSources(): Map<string, KitRepresentation>;
 }
