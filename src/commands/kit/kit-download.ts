@@ -12,9 +12,9 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
     return
   }
 
-  // remove leading '/'s
-  while (repoPath != null && repoPath.charAt(0) === '/' && repoPath.length > 0) {
-    repoPath = repoPath.substring(1);
+  if (repoPath !== null) {
+    // remove leading '/'s
+    repoPath = repoPath.replace(/^\/+/, '')
   }
 
   // FIXME with the new dir name look-ahead this becomes obsolete
