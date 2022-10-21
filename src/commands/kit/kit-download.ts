@@ -90,7 +90,11 @@ async function downloadToTemporaryFile(url: string): Promise<string> {
 
     await ensureFile(targetFilepath);
     const file = await Deno.open(targetFilepath, { write: true });
-    await copy(entry, file);
+    try {
+      await copy(entry, file);
+    } finally {
+      file.close();
+    }
   }
   reader.close();
 }
