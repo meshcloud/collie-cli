@@ -4,7 +4,7 @@ import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Select } from "../../deps.ts";
 import { emptyKitDirectoryCreation, generatePlatformConfiguration, generateTerragrunt } from "./kit-utilities.ts";
-import { KitBundle, KitRepresentation } from "./bundles/kitbundle.ts";
+import { KitBundle, KitMetadata, KitRepresentation, metadataKitFileName } from "./bundles/kitbundle.ts";
 import { kitDownload } from "./kit-download.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
 import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
@@ -12,6 +12,7 @@ import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
+import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
@@ -57,16 +58,16 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
        * 3. Apply kit to foundation + platform selection
        * 4. Configure required variables for kit
        */
-      bundleToSetup.kitsAndSources().forEach((repr: KitRepresentation, name: string) => {
+      bundleToSetup.kitsAndSources().forEach((kitRepr: KitRepresentation, name: string) => {
 
-        const modulePath = collie.resolvePath("kit", prefix, name);
+        const kitPath = collie.resolvePath("kit", prefix, name);
         logger.progress(`  Creating an new kit structure for ${name}`);
-        emptyKitDirectoryCreation(modulePath, logger);
+        emptyKitDirectoryCreation(kitPath, logger);
 
-        logger.progress(`  Downloading kit from ${repr.sourceUrl.length > 50 ? repr.sourceUrl.substring(0, 47) + "..." : repr.sourceUrl}`);
-        kitDownload(modulePath, repr.sourceUrl, repr.sourcePath, logger);
-        if (repr.metadataOverride) {
-          // TODO add metadata here accordingly.
+        logger.progress(`  Downloading kit from ${kitRepr.sourceUrl.length > 50 ? kitRepr.sourceUrl.substring(0, 47) + "..." : kitRepr.sourceUrl}`);
+        kitDownload(kitPath, kitRepr.sourceUrl, kitRepr.sourcePath, logger);
+        if (kitRepr.metadataOverride) {
+          applyKitMetadataOverride(kitPath, kitRepr.metadataOverride);
         }
 
         logger.progress(`  Applying kit ${name} to ${foundation} : ${platform}`);
@@ -120,4 +121,26 @@ async function applyKit(foundationRepo: FoundationRepository, platform: string, 
   };
 
   await dir.write(platformModuleDir, "");
+}
+
+// FIXME err handling missing, seems not to work atm?
+function applyKitMetadataOverride(kitPath: string, metadata: KitMetadata) {  
+  const fileToUpdate = path.join(kitPath, metadataKitFileName);  
+  const metadataHeader = `
+---
+name: ${metadata.name}
+summary: |
+  ${metadata.description}
+---
+  `;
+
+  const existingText = Deno.readTextFileSync(fileToUpdate);  
+  if (existingText.startsWith("---")) {
+    // TODO could be improved
+    // for idenpotency of this function, return early here
+    return;
+  }
+
+  Deno.writeTextFileSync(fileToUpdate, metadataHeader);
+  Deno.writeTextFileSync(fileToUpdate, `\n${existingText}`, {append: true});
 }
