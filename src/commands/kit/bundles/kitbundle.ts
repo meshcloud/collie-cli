@@ -21,6 +21,10 @@ export class KitRepresentation {
   metadataOverride: KitMetadata | undefined
   autoDeployOrder: number | undefined
 
+  /**
+   * @param sourceUrl the URL to fetch the kit from
+   * @param sourcePath a sub-directory of the given sourceUrl, if only a sub-directory is relevant. Set to `undefined` if the entire directory is relevant.
+   */
   constructor(sourceUrl: string, sourcePath: string | undefined, requiredParameters: string[], metadataOverride: KitMetadata | undefined, autoDeploy: number | undefined) {
     this.sourceUrl = sourceUrl;
     this.sourcePath = sourcePath;
