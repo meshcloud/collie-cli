@@ -143,8 +143,7 @@ async function applyKit(foundationRepo: FoundationRepository, platform: string, 
 // FIXME err handling missing, seems not to work atm?
 function applyKitMetadataOverride(kitPath: string, metadata: KitMetadata) {  
   const fileToUpdate = path.join(kitPath, metadataKitFileName);  
-  const metadataHeader = `
----
+  const metadataHeader = `---
 name: ${metadata.name}
 summary: |
   ${metadata.description}
