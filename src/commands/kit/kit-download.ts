@@ -38,8 +38,8 @@ export async function kitDownload(modulePath: string, url: string, repoPath: str
   if (!repoPath) {
     // we need everything, so just take all files iteratively
     for (const dirEntry of Deno.readDirSync(fullContainerPath)) {
-      const target = path.join(modulePath, dirEntry.name); // make sure target does not exist. (override)
-      Deno.removeSync(target, { recursive: true });
+      const target = path.join(modulePath, dirEntry.name); // make sure target does not exist. (override) //TODO check dir exists first
+      //Deno.removeSync(target, { recursive: true });
       Deno.renameSync(path.join(fullContainerPath, dirEntry.name), target);
     }
   } else {
