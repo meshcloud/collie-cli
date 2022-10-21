@@ -7,7 +7,7 @@ import { MeshError } from "../../errors.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 
-export async function kitDownload(modulePath: string, url: string, repoPath: string | null | undefined, logger: Logger) {
+export async function kitDownload(modulePath: string, url: string, repoPath: string | undefined, logger: Logger) {
   if (url === "") {
     return
   }
