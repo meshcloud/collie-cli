@@ -78,15 +78,18 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         // TODO 4. Configure required variables for kit
       });
 
+      
+      // TODO yeah, make it readable
+      [...allKits.entries()]
+        .filter( (v,_) => v[1].autoDeployOrder !== undefined )
+        .sort((a,b) => a[1].autoDeployOrder! - b[1].autoDeployOrder!)
+        .forEach(v => {
+          const name = v[0];
+          const kitRepr = v[1];
+          // TODO autoDeploy here instead of logging
+          console.log(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
 
-      // TODO autoDeploy
-      //      we need to probably need to define a concrete deployOrder for all autoDeploy kits, if there will be more of them within one bundle.
-      allKits.forEach((kitRepr: KitRepresentation, name: string) => {
-        if (kitRepr.autoDeploy) {
-          console.log(`Auto-deploying: ${name}`);
-        }
-      });
-
+        });  
     });
 }
 

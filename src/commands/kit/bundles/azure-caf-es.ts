@@ -12,14 +12,14 @@ export class AzureKitBundle extends KitBundle {
         "/kit/azure/bootstrap-es",
         [],
         undefined,
-        true)
+        0)
       ],
       ["base", new KitRepresentation(
         "https://github.com/Azure/terraform-azurerm-caf-enterprise-scale/archive/refs/tags/v2.4.1.tar.gz",
          undefined,
          [],
          new KitMetadata("Azure CAF Enterprise Scale", "todo description goes here"),
-         false)
+         undefined)
         ]
     ]);
   }
