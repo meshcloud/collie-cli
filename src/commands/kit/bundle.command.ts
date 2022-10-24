@@ -48,6 +48,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       const platform = opts.platform ||
         (await InteractivePrompts.selectPlatform(foundationRepo));
 
+      const platformPath = collie.resolvePath("foundations", foundation, "platforms", platform);
+
       logger.progress("Choosing a predefined bundled kit.");
       const bundleToSetup = await promptKitBundleOption();
       logger.progress(`Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`);
@@ -67,7 +69,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         }
       }
 
-      bundleToSetup.beforeAppy();
+      logger.progress("Calling before-apply hook.");
+      bundleToSetup.beforeApply();
 
       for await (const [name, _] of allKits) {
         logger.progress(`  Applying kit ${name} to ${foundation} : ${platform}`);
@@ -76,7 +79,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         // TODO 4. Configure required variables for kit
       }
 
-      bundleToSetup.afterAppy();
+      logger.progress("Calling after-apply hook.");
+      bundleToSetup.afterApply(platformPath);
 
       const kitsToDeploy = [...allKits.entries()].filter( ([_, kitRepr]) => {
         return kitRepr.autoDeployOrder !== undefined;
@@ -89,7 +93,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       });
 
-      bundleToSetup.afterDeploy();
+      logger.progress("Calling after-deploy hook.");
+      bundleToSetup.afterDeploy(platformPath);
     });
 }
 
