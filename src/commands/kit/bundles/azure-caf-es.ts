@@ -13,7 +13,7 @@ export class AzureKitBundle extends KitBundle {
       ["bootstrap", new KitRepresentation(
         "https://github.com/meshcloud/landing-zone-construction-kit/archive/5ce27391f94ab2c9b6b93cfb554c43ba0628b97d.tar.gz",
         "/kit/azure/bootstrap-es",
-        ["param1", "param2"], //FIxME
+        ["Platform Engineer Email", "Storage Account Name", "Terraform State Location"],
         undefined,
         new KitDeployRepresentation(0, true, this.betweenDeployments, { raw: [] }))
       ],
@@ -32,7 +32,7 @@ export class AzureKitBundle extends KitBundle {
   beforeApply(_parametrization: Map<string,string>): void {    
   }
 
-  // TODO verify that this is idempotent
+  // FIXME this should work when called again with different parametrization, but this is hard to archive without maintaining some kind of history.
   afterApply(platformModuleDir: string, parametrization: Map<string,string>): void {
     
     const bootstrapTerragrunt = path.join(platformModuleDir, "bootstrap", "terragrunt.hcl");
@@ -68,14 +68,12 @@ export class AzureKitBundle extends KitBundle {
 
     const bootstrapConfigToken = '    # todo: specify inputs to terraform module';
 
-
-    //FIXME yeah well this holds specific variables that need to be replaced ofc
     const bootStrapInputs = '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}\n' +
                             '    platform_engineers_members = [\n' +
-                            '      "malhussan_meshcloud.io#EXT#@meshlandingzone.onmicrosoft.com",\n' +
+                            `      "${parametrization.get('Platform Engineer Email')}",\n` +
                             '    ]\n' +
-                            '    storage_account_name = "tfstaterandom52341"\n' +
-                            '    tfstate_location     = "germanywestcentral"\n';
+                            `    storage_account_name = "${parametrization.get('Storage Account Name')}"\n` +
+                            `    tfstate_location     = "${parametrization.get('Terraform State Location')}"\n`;
 
     const sharedConfigComment = "# define shared configuration here that's included by all terragrunt configurations in this platform"
     const addLocalsBlock = 'locals {\n' +    
@@ -104,7 +102,7 @@ export class AzureKitBundle extends KitBundle {
 
     // update platform.hcl
     text = Deno.readTextFileSync(platformHCL);    
-    text = text.replace(sharedConfigComment, `${sharedConfigComment}\n${addLocalsBlock}`); // <-- this is not idempotent!
+    text = text.replace(sharedConfigComment, `${addLocalsBlock}`);
     text = text.replace(remoteStateConfig, '');
     Deno.writeTextFileSync(platformHCL, text);
   }
