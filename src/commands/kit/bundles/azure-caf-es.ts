@@ -9,24 +9,31 @@ export class AzureKitBundle extends KitBundle {
 
   kitsAndSources(): Map<string, KitRepresentation> {
     return new Map<string, KitRepresentation>([
+
       ["bootstrap", new KitRepresentation(
         "https://github.com/meshcloud/landing-zone-construction-kit/archive/5ce27391f94ab2c9b6b93cfb554c43ba0628b97d.tar.gz",
         "/kit/azure/bootstrap-es",
         [],
         undefined,
-        0)
+        0,
+        true, 
+        this.betweenDeployments)
       ],
+      
       ["base", new KitRepresentation(
         "https://github.com/Azure/terraform-azurerm-caf-enterprise-scale/archive/refs/tags/v2.4.1.tar.gz",
          undefined,
          [],
          new KitMetadata("Azure CAF Enterprise Scale", "todo description goes here"),
+         undefined, 
+         false, 
          undefined)
-        ]
+      ]
+
     ]);
   }
 
-  beforeApply(parametrization: Map<string,string>): void {    
+  beforeApply(_parametrization: Map<string,string>): void {    
   }
 
   // TODO verify that this is idempotent
@@ -107,6 +114,9 @@ export class AzureKitBundle extends KitBundle {
     Deno.writeTextFileSync(platformHCL, text);
   }
 
-  afterDeploy(platformModuleDir: string, parametrization: Map<string,string>): void {
-  }  
+  afterDeploy(_platformModuleDir: string, _parametrization: Map<string,string>): void {
+  }
+
+  betweenDeployments(platformModuleDir: string, parametrization: Map<string,string>): void {
+  }
 }
