@@ -83,8 +83,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       logger.progress("Calling after-apply hook.");
       bundleToSetup.afterApply(platformPath, parametrization);
 
-      // TODO deploy needs to be called twice sometimes, with a hook in between. sync how we can archieve this
-
       const kitsToDeploy = [...allKits.entries()].filter( ([_, kitRepr]) => {
         return kitRepr.deployment
       }).sort(([_name1, kitRepr1], [_name2, kitRepr2]) => {
