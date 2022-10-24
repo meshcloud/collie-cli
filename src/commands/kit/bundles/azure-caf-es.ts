@@ -1,6 +1,7 @@
 import { KitBundle, KitMetadata, KitRepresentation } from "./kitbundle.ts";
 
 export class AzureKitBundle extends KitBundle {
+
   constructor(identifier: string, displayName: string) {
     super(identifier, displayName);
   }
@@ -23,4 +24,13 @@ export class AzureKitBundle extends KitBundle {
         ]
     ]);
   }
+
+  beforeAppy(): void {    
+  }
+
+  afterAppy(): void {
+  }
+
+  afterDeploy(): void {
+  }  
 }
