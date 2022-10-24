@@ -30,10 +30,11 @@ export class AzureKitBundle extends KitBundle {
   }
 
   afterApply(platformPath: string): void {
+    // TODO this is not need bc it resulted from a previous bug
     // delete if exists: top level terragrunt file in foundation
-    try {
-      Deno.removeSync(path.join(platformPath, "terragrunt.hcl"));
-    } catch(_) { /* ignore if file not there */ }
+    // try {
+    //   Deno.removeSync(path.join(platformPath, "terragrunt.hcl"));
+    // } catch(e) { console.log(e); /* ignore if file not there */ }
   }
 
   afterDeploy(platformPath: string): void {
