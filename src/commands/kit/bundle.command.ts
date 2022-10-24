@@ -100,6 +100,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         // TODO deployment is commented for now, some TODOs are open before this can be used.
         // await deployFoundation(collie, foundationRepo, mode, opts, logger);
         if (kitRepr.deployment?.needsDoubleDeploy) {
+          // TODO instead of passing an empty map, pass the actual arguments.
+          // kitRepr.deployment.betweenDoubleDeployments!(platformPath, new Map());
           // await deployFoundation(collie, foundationRepo, kitRepr.deployment.secondDeploymentArgs, opts, logger);
         }
       });
