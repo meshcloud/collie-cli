@@ -1,3 +1,4 @@
+import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
 import { KitBundle, KitMetadata, KitRepresentation } from "./kitbundle.ts";
 
 export class AzureKitBundle extends KitBundle {
@@ -25,12 +26,16 @@ export class AzureKitBundle extends KitBundle {
     ]);
   }
 
-  beforeAppy(): void {    
+  beforeApply(): void {    
   }
 
-  afterAppy(): void {
+  afterApply(platformPath: string): void {
+    // delete if exists: top level terragrunt file in foundation
+    try {
+      Deno.removeSync(path.join(platformPath, "terragrunt.hcl"));
+    } catch(_) { /* ignore if file not there */ }
   }
 
-  afterDeploy(): void {
+  afterDeploy(platformPath: string): void {
   }  
 }

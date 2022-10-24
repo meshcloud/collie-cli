@@ -15,13 +15,13 @@ export abstract class KitBundle {
   abstract kitsAndSources(): Map<string, KitRepresentation>;
 
   // callback to by applied before we apply the kits
-  abstract beforeAppy(): void;
+  abstract beforeApply(): void;
 
   // callback to by applied after we applied the kits
-  abstract afterAppy(): void;
+  abstract afterApply(platformPath: string): void;
 
   // callback to by applied after we did the auto-deploy of kits
-  abstract afterDeploy(): void;
+  abstract afterDeploy(platformPath: string): void;
 }
 
 export class KitRepresentation {
