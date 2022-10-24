@@ -17,7 +17,7 @@ export class AzureKitBundle extends KitBundle {
         undefined,
         new KitDeployRepresentation(0, true, this.betweenDeployments, { raw: [] }))
       ],
-      
+
       ["base", new KitRepresentation(
         "https://github.com/Azure/terraform-azurerm-caf-enterprise-scale/archive/refs/tags/v2.4.1.tar.gz",
          undefined,
@@ -29,12 +29,12 @@ export class AzureKitBundle extends KitBundle {
     ]);
   }
 
-  beforeApply(_parametrization: Map<string,string>): void {    
+  beforeApply(_parametrization: Map<string,string>): void {
   }
 
   // FIXME this should work when called again with different parametrization, but this is hard to archive without maintaining some kind of history.
   afterApply(platformModuleDir: string, parametrization: Map<string,string>): void {
-    
+
     const bootstrapTerragrunt = path.join(platformModuleDir, "bootstrap", "terragrunt.hcl");
     const platformHCL = path.join(platformModuleDir, "platform.hcl");
 
@@ -76,7 +76,7 @@ export class AzureKitBundle extends KitBundle {
                             `    tfstate_location     = "${parametrization.get('Terraform State Location')}"\n`;
 
     const sharedConfigComment = "# define shared configuration here that's included by all terragrunt configurations in this platform"
-    const addLocalsBlock = 'locals {\n' +    
+    const addLocalsBlock = 'locals {\n' +
                           '    platform = yamldecode(regex("^---([\\\\s\\\\S]*)\\\\n---\\\\n[\\\\s\\\\S]*$", file(".//README.md"))[0])\n' +
                           '}\n';
 
@@ -91,17 +91,17 @@ export class AzureKitBundle extends KitBundle {
                               '      # tip: use "my/path/${path_relative_to_include()}" to dynamically include the module id in a prefix\n' +
                               '    }\n' +
                               '  }';
-                        
+
 
     // update bootstrap/terragrunt.hcl
-    let text = Deno.readTextFileSync(bootstrapTerragrunt);    
+    let text = Deno.readTextFileSync(bootstrapTerragrunt);
     text = text.replace(existingProviderConfig, newProviderConfig);
     text = text.replace(bootstrapConfigToken, bootStrapInputs);
     text = text.replace('path = find_in_parent_folders("platform.hcl")', 'path = find_in_parent_folders("platform.hcl")\n    expose = true');
     Deno.writeTextFileSync(bootstrapTerragrunt, text);
 
     // update platform.hcl
-    text = Deno.readTextFileSync(platformHCL);    
+    text = Deno.readTextFileSync(platformHCL);
     text = text.replace(sharedConfigComment, `${addLocalsBlock}`);
     text = text.replace(remoteStateConfig, '');
     Deno.writeTextFileSync(platformHCL, text);
