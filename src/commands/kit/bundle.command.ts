@@ -13,6 +13,7 @@ import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
+import { Name } from "https://esm.sh/v96/ajv@8.11.0/dist/core.d.ts";
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
@@ -77,17 +78,16 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       bundleToSetup.afterAppy();
 
-      // TODO yeah, make it readable
-      [...allKits.entries()]
-        .filter( (v,_) => v[1].autoDeployOrder !== undefined )
-        .sort((a,b) => a[1].autoDeployOrder! - b[1].autoDeployOrder!)
-        .forEach(v => {
-          const name = v[0];
-          const kitRepr = v[1];
-          // TODO autoDeploy here instead of logging
-          logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
+      const kitsToDeploy = [...allKits.entries()].filter( ([_, kitRepr]) => {
+        return kitRepr.autoDeployOrder !== undefined;
+      }).sort(([_name1, kitRepr1], [_name2, kitRepr2]) => {
+        return kitRepr1.autoDeployOrder! - kitRepr2.autoDeployOrder!
+      });
+      kitsToDeploy.forEach(([name, kitRepr]) => {
+        // TODO autoDeploy here instead of logging
+        logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
 
-        });
+      });
 
       bundleToSetup.afterDeploy();
     });
