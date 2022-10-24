@@ -4,7 +4,7 @@ import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Select } from "../../deps.ts";
 import { emptyKitDirectoryCreation, generatePlatformConfiguration, generateTerragrunt } from "./kit-utilities.ts";
-import { KitBundle, KitMetadata, KitRepresentation, metadataKitFileName } from "./bundles/kitbundle.ts";
+import { KitBundle, KitMetadata, metadataKitFileName } from "./bundles/kitbundle.ts";
 import { kitDownload } from "./kit-download.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
 import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
@@ -13,7 +13,6 @@ import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
-import { Name } from "https://esm.sh/v96/ajv@8.11.0/dist/core.d.ts";
 import { deployFoundation } from "../foundation/deploy.command.ts";
 
 const availableKitBundles: KitBundle[] = [
