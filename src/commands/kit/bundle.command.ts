@@ -86,16 +86,20 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       // TODO deploy needs to be called twice sometimes, with a hook in between. sync how we can archieve this
 
       const kitsToDeploy = [...allKits.entries()].filter( ([_, kitRepr]) => {
-        return kitRepr.autoDeployOrder !== undefined;
+        return kitRepr.deployment
       }).sort(([_name1, kitRepr1], [_name2, kitRepr2]) => {
-        return kitRepr1.autoDeployOrder! - kitRepr2.autoDeployOrder!
+        return kitRepr1.deployment!.autoDeployOrder - kitRepr2.deployment!.autoDeployOrder
       });
 
+      // TODO is collieRepo different from collie?
       const collieRepo = await CollieRepository.load();
       const mode = { raw: ["plan"] };
 
+    
       kitsToDeploy.forEach(([name, kitRepr]) => {
-        logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
+        logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.deployment!.autoDeployOrder}`);
+        // HINT: for second deployment every info should be contained in kitRepr.deployment : KitDeployRepresentation
+        
         // commented for now, some TODOs are open before this can be used.
         // deployFoundation(collieRepo, foundationRepo, mode, opts, logger)
         // TODO single deploy is not sufficient for bootstrap modules: after the bucket is created, a second

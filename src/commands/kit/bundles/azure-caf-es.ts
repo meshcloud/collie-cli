@@ -1,5 +1,5 @@
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
-import { KitBundle, KitMetadata, KitRepresentation } from "./kitbundle.ts";
+import { KitBundle, KitDeployRepresentation, KitMetadata, KitRepresentation } from "./kitbundle.ts";
 
 export class AzureKitBundle extends KitBundle {
 
@@ -15,9 +15,7 @@ export class AzureKitBundle extends KitBundle {
         "/kit/azure/bootstrap-es",
         [],
         undefined,
-        0,
-        true, 
-        this.betweenDeployments)
+        new KitDeployRepresentation(0, true, this.betweenDeployments, { raw: [] }))
       ],
       
       ["base", new KitRepresentation(
@@ -25,8 +23,6 @@ export class AzureKitBundle extends KitBundle {
          undefined,
          [],
          new KitMetadata("Azure CAF Enterprise Scale", "todo description goes here"),
-         undefined, 
-         false, 
          undefined)
       ]
 
