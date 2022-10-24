@@ -68,7 +68,7 @@ export class AzureKitBundle extends KitBundle {
 
     const bootstrapConfigToken = '    # todo: specify inputs to terraform module';
 
-    const bootStrapInputs = '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}\n' +
+    const bootStrapInputs = '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
                             '    platform_engineers_members = [\n' +
                             `      "${parametrization.get('Platform Engineer Email')}",\n` +
                             '    ]\n' +
