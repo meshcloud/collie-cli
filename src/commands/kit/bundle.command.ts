@@ -69,18 +69,21 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         }
       }
 
+      // TODO this needs to be queried from console input!
+      const parametrization: Map<string,string> = new Map();
+
       logger.progress("Calling before-apply hook.");
-      bundleToSetup.beforeApply();
+      bundleToSetup.beforeApply(parametrization);
 
       for await (const [name, _] of allKits) {
         logger.progress(`  Applying kit ${name} to ${foundation} : ${platform}`);
         await applyKit(foundationRepo, platform, logger, path.join(prefix, name));
-
-        // TODO 4. Configure required variables for kit
       }
 
       logger.progress("Calling after-apply hook.");
-      bundleToSetup.afterApply(platformPath);
+      bundleToSetup.afterApply(platformPath, parametrization);
+
+      // TODO deploy needs to be called twice sometimes, with a hook in between. sync how we can archieve this
 
       const kitsToDeploy = [...allKits.entries()].filter( ([_, kitRepr]) => {
         return kitRepr.autoDeployOrder !== undefined;
@@ -94,7 +97,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       });
 
       logger.progress("Calling after-deploy hook.");
-      bundleToSetup.afterDeploy(platformPath);
+      bundleToSetup.afterDeploy(platformPath, parametrization);
     });
 }
 

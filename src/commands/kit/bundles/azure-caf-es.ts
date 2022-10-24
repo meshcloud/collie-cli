@@ -26,10 +26,11 @@ export class AzureKitBundle extends KitBundle {
     ]);
   }
 
-  beforeApply(): void {    
+  beforeApply(parametrization: Map<string,string>): void {    
   }
 
-  afterApply(platformModuleDir: string): void {
+  // TODO verify that this is idempotent
+  afterApply(platformModuleDir: string, parametrization: Map<string,string>): void {
     
     const bootstrapTerragrunt = path.join(platformModuleDir, "bootstrap", "terragrunt.hcl");
     const platformHCL = path.join(platformModuleDir, "platform.hcl");
@@ -45,41 +46,67 @@ export class AzureKitBundle extends KitBundle {
                                     '  EOF\n' +
                                     '  }\n';
 
-  const newProviderConfig = '  generate "provider" {\n' +
-                            '  path      = "provider.tf"\n' +
-                            '  if_exists = "overwrite"\n' +
-                            '  contents  = <<EOF\n' +
-                            'provider "azurerm" {\n' +
-                            '  features {}\n' +
-                            '  skip_provider_registration = false\n' +
-                            '  tenant_id                  = "\${include.platform.locals.platform.azure.aadTenantId}"\n' +
-                            '  subscription_id            = "\${include.platform.locals.platform.azure.subscriptionId}"\n' +
-                            '  storage_use_azuread        = true\n' +
-                            '}\n' +
-                            'provider "azuread" {\n' +
-                            '  tenant_id = "\${include.platform.locals.platform.azure.aadTenantId}"\n' +
-                            '}\n' +
-                            'EOF\n' +
-                            '}\n';
+    const newProviderConfig = '  generate "provider" {\n' +
+                              '  path      = "provider.tf"\n' +
+                              '  if_exists = "overwrite"\n' +
+                              '  contents  = <<EOF\n' +
+                              'provider "azurerm" {\n' +
+                              '  features {}\n' +
+                              '  skip_provider_registration = false\n' +
+                              '  tenant_id                  = "\${include.platform.locals.platform.azure.aadTenantId}"\n' +
+                              '  subscription_id            = "\${include.platform.locals.platform.azure.subscriptionId}"\n' +
+                              '  storage_use_azuread        = true\n' +
+                              '}\n' +
+                              'provider "azuread" {\n' +
+                              '  tenant_id = "\${include.platform.locals.platform.azure.aadTenantId}"\n' +
+                              '}\n' +
+                              'EOF\n' +
+                              '}\n';
 
-  const sharedConfigComment = "# define shared configuration here that's included by all terragrunt configurations in this platform"
-  const addLocalsBlock = 'locals {\n' +    
-                         '    platform = yamldecode(regex("^---([\\s\\S]*)\\n---\\n[\\s\\S]*$", file(".//README.md"))[0])\n' +
-                         '}\n';
+    const bootstrapConfigToken = '    # todo: specify inputs to terraform module';
+
+
+    //FIXME yeah well this holds specific variables that need to be replaced ofc
+    console.log(parametrization);
+    const bootStrapInputs = '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}\n' +
+                            '    platform_engineers_members = [\n' +
+                            '      "malhussan_meshcloud.io#EXT#@meshlandingzone.onmicrosoft.com",\n' +
+                            '    ]\n' +
+                            '    storage_account_name = "tfstaterandom52341"\n' +
+                            '    tfstate_location     = "germanywestcentral"\n';
+
+    const sharedConfigComment = "# define shared configuration here that's included by all terragrunt configurations in this platform"
+    const addLocalsBlock = 'locals {\n' +    
+                          '    platform = yamldecode(regex("^---([\\s\\S]*)\\n---\\n[\\s\\S]*$", file(".//README.md"))[0])\n' +
+                          '}\n';
+
+    const remoteStateConfig = '  # recommended: remote state configuration\n' +
+                              '  remote_state {\n' +
+                              '    backend = todo\n' +
+                              '    generate = {\n' +
+                              '      path      = "backend.tf"\n' +
+                              '      if_exists = "overwrite"\n' +
+                              '    }\n' +
+                              '    config = {\n' +
+                              '      # tip: use "my/path/${path_relative_to_include()}" to dynamically include the module id in a prefix\n' +
+                              '    }\n' +
+                              '  }';
+                        
 
     // update bootstrap/terragrunt.hcl
     let text = Deno.readTextFileSync(bootstrapTerragrunt);    
     text = text.replace(existingProviderConfig, newProviderConfig);
+    text = text.replace(bootstrapConfigToken, bootStrapInputs);
     text = text.replace('path = find_in_parent_folders("platform.hcl")', 'path = find_in_parent_folders("platform.hcl")\n    expose = true');
     Deno.writeTextFileSync(bootstrapTerragrunt, text);
 
     // update platform.hcl
     text = Deno.readTextFileSync(platformHCL);    
-    text = text.replace(sharedConfigComment, `${sharedConfigComment}\n${addLocalsBlock}`);
+    text = text.replace(sharedConfigComment, `${sharedConfigComment}\n${addLocalsBlock}`); // <-- this is not idempotent!
+    text = text.replace(remoteStateConfig, '');
     Deno.writeTextFileSync(platformHCL, text);
-
   }
 
-  afterDeploy(platformModuleDir: string): void {
+  afterDeploy(platformModuleDir: string, parametrization: Map<string,string>): void {
   }  
 }
