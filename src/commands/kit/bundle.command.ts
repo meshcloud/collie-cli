@@ -94,16 +94,23 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.deployment!.autoDeployOrder}`);
         // HINT: for second deployment every info should be contained in kitRepr.deployment : KitDeployRepresentation
 
+        // TODO this is a non-obvious and brittle way to determine if the module is a bootstrap module
+        const bootstrapOpts = {
+          bootstrap: kitRepr.deployment?.needsDoubleDeploy
+        };
+        const optsWithBootstrap = {...opts, ...bootstrapOpts};
         // TODO deployment is commented for now, some TODOs are open before this can be used.
-        // await deployFoundation(collie, foundationRepo, mode, opts, logger);
-        if (kitRepr.deployment?.needsDoubleDeploy) {
-          kitRepr.deployment.betweenDoubleDeployments!(platformPath, parametrization);
-          // await deployFoundation(collie, foundationRepo, kitRepr.deployment.secondDeploymentArgs, opts, logger);
-        }
+        // await deployFoundation(collie, foundationRepo, mode, optsWithBootstrap, logger);
+        // if (kitRepr.deployment?.needsDoubleDeploy) {
+        //   kitRepr.deployment.betweenDoubleDeployments!(platformPath, parametrization);
+        //   await deployFoundation(collie, foundationRepo, kitRepr.deployment.secondDeploymentArgs, opts, logger);
+        // }
       });
 
       logger.progress("Calling after-deploy hook.");
-      bundleToSetup.afterDeploy(platformPath, parametrization);
+      // TODO commented for now: as long as the deploy is commented, this should be commented as well,
+      // because there might be a dependency between the two.
+      // bundleToSetup.afterDeploy(platformPath, parametrization);
     });
 }
 
@@ -165,7 +172,7 @@ summary: |
   const existingText = Deno.readTextFileSync(fileToUpdate);
   if (existingText.startsWith("---")) {
     // TODO could be improved
-    // for idenpotency of this function, return early here
+    // for idempotency of this function, return early here
     return;
   }
 
@@ -177,7 +184,7 @@ async function requestKitBundleParametrization(parameters: string[], logger: Log
   logger.progress("\n  Please configure your kit bundle with the required arguments.");
   const answers = new Map<string, string>();
   const inputRegex = /^[a-z0-9_.-@]+$/;  //TODO validate that this is sufficient
-  
+
   for(let i=0; i<parameters.length; i++){
     const answer = await Input.prompt({
       message: `Define a value for parameter: ${parameters[i]}`,
