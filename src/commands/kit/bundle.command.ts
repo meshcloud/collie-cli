@@ -13,7 +13,6 @@ import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
-import { sleep } from "https://deno.land/x/sleep@v1.2.1/mod.ts";
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
@@ -79,7 +78,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         // TODO 4. Configure required variables for kit
       }
 
-      
+
       // TODO yeah, make it readable
       [...allKits.entries()]
         .filter( (v,_) => v[1].autoDeployOrder !== undefined )
@@ -90,7 +89,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
           // TODO autoDeploy here instead of logging
           logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
 
-        });  
+        });
     });
 }
 
@@ -140,8 +139,8 @@ async function applyKit(foundationRepo: FoundationRepository, platform: string, 
 }
 
 // TODO err handling missing
-function applyKitMetadataOverride(kitPath: string, metadata: KitMetadata) {  
-  const fileToUpdate = path.join(kitPath, metadataKitFileName);  
+function applyKitMetadataOverride(kitPath: string, metadata: KitMetadata) {
+  const fileToUpdate = path.join(kitPath, metadataKitFileName);
   const metadataHeader = `---
 name: ${metadata.name}
 summary: |
@@ -149,7 +148,7 @@ summary: |
 ---
   `;
 
-  const existingText = Deno.readTextFileSync(fileToUpdate);  
+  const existingText = Deno.readTextFileSync(fileToUpdate);
   if (existingText.startsWith("---")) {
     // TODO could be improved
     // for idenpotency of this function, return early here
