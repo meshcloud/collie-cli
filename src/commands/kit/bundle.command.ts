@@ -91,17 +91,14 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         return kitRepr1.deployment!.autoDeployOrder - kitRepr2.deployment!.autoDeployOrder
       });
 
-      // TODO is collieRepo different from collie?
-      const collieRepo = await CollieRepository.load();
       const mode = { raw: ["plan"] };
 
-    
       kitsToDeploy.forEach(([name, kitRepr]) => {
         logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.deployment!.autoDeployOrder}`);
         // HINT: for second deployment every info should be contained in kitRepr.deployment : KitDeployRepresentation
-        
+
         // commented for now, some TODOs are open before this can be used.
-        // deployFoundation(collieRepo, foundationRepo, mode, opts, logger)
+        // deployFoundation(collie, foundationRepo, mode, opts, logger)
         // TODO single deploy is not sufficient for bootstrap modules: after the bucket is created, a second
         // deploy is required which makes use of this bucket.
       });
