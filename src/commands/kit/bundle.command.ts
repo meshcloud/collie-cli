@@ -2,7 +2,7 @@ import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
-import { Select } from "../../deps.ts";
+import { Input, Select } from "../../deps.ts";
 import { emptyKitDirectoryCreation, generatePlatformConfiguration, generateTerragrunt } from "./kit-utilities.ts";
 import { KitBundle, KitMetadata, metadataKitFileName } from "./bundles/kitbundle.ts";
 import { kitDownload } from "./kit-download.ts";
@@ -69,8 +69,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         }
       }
 
-      // TODO this needs to be queried from console input!
-      const parametrization: Map<string,string> = new Map();
+      const parametrization = await requestKitBundleParametrization(bundleToSetup.requiredParameters(), logger);
 
       logger.progress("Calling before-apply hook.");
       bundleToSetup.beforeApply(parametrization);
@@ -171,4 +170,28 @@ summary: |
   }
 
   Deno.writeTextFileSync(fileToUpdate, `${metadataHeader}\n${existingText}`);
+}
+
+// TODO show confirmation dialog and ask user if ok or restart
+async function requestKitBundleParametrization(parameters: string[], logger: Logger): Promise<Map<string,string>> {
+  logger.progress("\n  Please configure your kit bundle with the required arguments.");
+  const answers = new Map<string, string>();
+  const inputRegex = /^[a-z0-9_.-]+$/;  //TODO validate that this is sufficient
+  
+  for(let i=0; i<parameters.length; i++){
+    const answer = await Input.prompt({
+      message: `Define a value for parameter: ${parameters[i]}`,
+      //hint: "", //TODO think about adding a hint to required parameters, would be way better UX!
+      validate: (s) => {
+        if (s.match(inputRegex)) {
+          return true;
+        }
+
+        return "only alphanumeric characters, '-', '_' and '.' are allowed";
+      },
+    });
+    answers.set(parameters[i], answer);
+  }
+
+  return answers
 }

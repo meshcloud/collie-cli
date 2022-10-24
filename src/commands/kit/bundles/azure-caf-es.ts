@@ -13,7 +13,7 @@ export class AzureKitBundle extends KitBundle {
       ["bootstrap", new KitRepresentation(
         "https://github.com/meshcloud/landing-zone-construction-kit/archive/5ce27391f94ab2c9b6b93cfb554c43ba0628b97d.tar.gz",
         "/kit/azure/bootstrap-es",
-        [],
+        ["param1", "param2"], //FIxME
         undefined,
         new KitDeployRepresentation(0, true, this.betweenDeployments, { raw: [] }))
       ],
@@ -21,7 +21,7 @@ export class AzureKitBundle extends KitBundle {
       ["base", new KitRepresentation(
         "https://github.com/Azure/terraform-azurerm-caf-enterprise-scale/archive/refs/tags/v2.4.1.tar.gz",
          undefined,
-         [],
+         ["param3"],  //FIxME
          new KitMetadata("Azure CAF Enterprise Scale", "todo description goes here"),
          undefined)
       ]
@@ -70,7 +70,6 @@ export class AzureKitBundle extends KitBundle {
 
 
     //FIXME yeah well this holds specific variables that need to be replaced ofc
-    console.log(parametrization);
     const bootStrapInputs = '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}\n' +
                             '    platform_engineers_members = [\n' +
                             '      "malhussan_meshcloud.io#EXT#@meshlandingzone.onmicrosoft.com",\n' +
