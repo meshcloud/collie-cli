@@ -1,3 +1,5 @@
+import { TerragruntArguments } from "../../../api/terragrunt/TerragruntCliFacade.ts";
+
 export abstract class KitBundle {
   identifier: string;
   displayName: string;
@@ -24,32 +26,19 @@ export abstract class KitBundle {
   abstract afterDeploy(platformModuleDir: string, parametrization: Map<string,string>): void;
 }
 
-type BetweenDeployFunc = ((platformModuleDir: string, parametrization: Map<string,string>) => void) | undefined;
-
 export class KitRepresentation {
   sourceUrl: string
   sourcePath: string | undefined
   requiredParameters: string[]
   metadataOverride: KitMetadata | undefined  
-  autoDeployOrder: number | undefined
-  needsDoubleDeploy: boolean
+  deployment: KitDeployRepresentation | undefined
 
-  // callback only needed for kits that need to be deployed twice with different parameters (e.g. any bootstrap module with state migration)
-  // this callback will only be executed, in case
-  betweenDoubleDeployments: BetweenDeployFunc
-
-  /**
-   * @param sourceUrl the URL to fetch the kit from
-   * @param sourcePath a sub-directory of the given sourceUrl, if only a sub-directory is relevant. Set to `undefined` if the entire directory is relevant.
-   */
-  constructor(sourceUrl: string, sourcePath: string | undefined, requiredParameters: string[], metadataOverride: KitMetadata | undefined, autoDeploy: number | undefined, needsDoubleDeploy: boolean, betweenDoubleDeployments: BetweenDeployFunc) {
+  constructor(sourceUrl: string, sourcePath: string | undefined, requiredParameters: string[], metadataOverride: KitMetadata | undefined, deployment: KitDeployRepresentation | undefined) {
     this.sourceUrl = sourceUrl;
     this.sourcePath = sourcePath;
     this.requiredParameters = requiredParameters;
     this.metadataOverride = metadataOverride;
-    this.autoDeployOrder = autoDeploy;
-    this.needsDoubleDeploy = needsDoubleDeploy;
-    this.betweenDoubleDeployments = betweenDoubleDeployments
+    this.deployment = deployment;
   }
 }
 
@@ -61,5 +50,24 @@ export class KitMetadata {
   constructor(name: string, description: string) {
     this.name = name;
     this.description = description;
+  }
+}
+
+export type BetweenDeployFunc = ((platformModuleDir: string, parametrization: Map<string,string>) => void) | undefined;
+
+export class KitDeployRepresentation {
+  autoDeployOrder: number
+  needsDoubleDeploy: boolean
+
+  // callback only needed for kits that need to be deployed twice with different parameters (e.g. any bootstrap module with state migration)
+  // this callback will only be executed, in case
+  betweenDoubleDeployments: BetweenDeployFunc
+  secondDeploymentArgs: TerragruntArguments
+
+  constructor(autoDeployOrder: number, needsDoubleDeploy: boolean, betweenDoubleDeployments: BetweenDeployFunc, secondDeploymentArgs: TerragruntArguments) {
+    this.autoDeployOrder = autoDeployOrder;
+    this.needsDoubleDeploy = needsDoubleDeploy;
+    this.betweenDoubleDeployments = betweenDoubleDeployments;
+    this.secondDeploymentArgs = secondDeploymentArgs;
   }
 }
