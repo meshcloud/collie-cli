@@ -14,6 +14,7 @@ import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
 import { Name } from "https://esm.sh/v96/ajv@8.11.0/dist/core.d.ts";
+import { deployFoundation } from "../foundation/deploy.command.ts";
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
@@ -90,10 +91,16 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       }).sort(([_name1, kitRepr1], [_name2, kitRepr2]) => {
         return kitRepr1.autoDeployOrder! - kitRepr2.autoDeployOrder!
       });
-      kitsToDeploy.forEach(([name, kitRepr]) => {
-        // TODO autoDeploy here instead of logging
-        logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
 
+      const collieRepo = await CollieRepository.load();
+      const mode = { raw: ["plan"] };
+
+      kitsToDeploy.forEach(([name, kitRepr]) => {
+        logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
+        // commented for now, some TODOs are open before this can be used.
+        // deployFoundation(collieRepo, foundationRepo, mode, opts, logger)
+        // TODO single deploy is not sufficient for bootstrap modules: after the bucket is created, a second
+        // deploy is required which makes use of this bucket.
       });
 
       logger.progress("Calling after-deploy hook.");

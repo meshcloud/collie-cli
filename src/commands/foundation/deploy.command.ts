@@ -101,7 +101,7 @@ export function registerDeployCmd(program: TopLevelCommand) {
     );
 }
 
-async function deployFoundation(
+export async function deployFoundation(
   repo: CollieRepository,
   foundation: FoundationRepository,
   mode: TerragruntArguments,
