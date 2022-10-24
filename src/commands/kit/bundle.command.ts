@@ -61,8 +61,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
        * 3. Apply kit to foundation + platform selection
        * 4. Configure required variables for kit
        */
-       allKits.forEach(async (kitRepr: KitRepresentation, name: string) => {
-
+      for await (const [name, kitRepr] of allKits) {
         const kitPath = collie.resolvePath("kit", prefix, name);
         logger.progress(`  Creating an new kit structure for ${name}`);
         emptyKitDirectoryCreation(kitPath, logger);
@@ -75,10 +74,10 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         }
 
         logger.progress(`  Applying kit ${name} to ${foundation} : ${platform}`);
-        applyKit(foundationRepo, platform, logger, name);
+        await applyKit(foundationRepo, platform, logger, name);
 
         // TODO 4. Configure required variables for kit
-      });
+      }
 
       
       // TODO yeah, make it readable
@@ -89,7 +88,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
           const name = v[0];
           const kitRepr = v[1];
           // TODO autoDeploy here instead of logging
-          console.log(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
+          logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
 
         });  
     });
@@ -140,7 +139,7 @@ async function applyKit(foundationRepo: FoundationRepository, platform: string, 
   await dir.write(platformModuleDir, "");
 }
 
-// FIXME err handling missing, seems not to work atm?
+// TODO err handling missing
 function applyKitMetadataOverride(kitPath: string, metadata: KitMetadata) {  
   const fileToUpdate = path.join(kitPath, metadataKitFileName);  
   const metadataHeader = `---
@@ -157,6 +156,5 @@ summary: |
     return;
   }
 
-  Deno.writeTextFileSync(fileToUpdate, metadataHeader);
-  Deno.writeTextFileSync(fileToUpdate, `\n${existingText}`, {append: true});
+  Deno.writeTextFileSync(fileToUpdate, `${metadataHeader}\n${existingText}`);
 }
