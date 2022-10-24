@@ -13,6 +13,16 @@ export abstract class KitBundle {
     return this.identifier === identifier;
   }
 
+  requiredParameters(): string[] {
+    const params: string[] = [];
+    const kits = this.kitsAndSources();
+    for (const [_, repr] of kits) {
+      params.push(...repr.requiredParameters); //TODO we don't check for duplicates here.
+    }
+
+    return params;
+  }
+
   // this defines the "contents" of this KitBundle in terms of which kits are contained
   abstract kitsAndSources(): Map<string, KitRepresentation>;
 
