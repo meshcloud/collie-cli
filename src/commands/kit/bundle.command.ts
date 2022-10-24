@@ -53,13 +53,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       const allKits = bundleToSetup.kitsAndSources();
 
-      /**
-       * For each kit of the bundle:
-       * 1. Create a kit folder
-       * 2. Download the kit sources from github (or other URL)
-       * 3. Apply kit to foundation + platform selection
-       * 4. Configure required variables for kit
-       */
       for await (const [name, kitRepr] of allKits) {
         const kitPath = collie.resolvePath("kit", prefix, name);
         logger.progress(`  Creating an new kit structure for ${name}`);
@@ -71,13 +64,18 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         if (kitRepr.metadataOverride) {
           applyKitMetadataOverride(kitPath, kitRepr.metadataOverride);
         }
+      }
 
+      bundleToSetup.beforeAppy();
+
+      for await (const [name, _] of allKits) {
         logger.progress(`  Applying kit ${name} to ${foundation} : ${platform}`);
         await applyKit(foundationRepo, platform, logger, name);
 
         // TODO 4. Configure required variables for kit
       }
 
+      bundleToSetup.afterAppy();
 
       // TODO yeah, make it readable
       [...allKits.entries()]
@@ -90,6 +88,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
           logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.autoDeployOrder}`);
 
         });
+
+      bundleToSetup.afterDeploy();
     });
 }
 
