@@ -79,7 +79,7 @@ export class AzureKitBundle extends KitBundle {
 
     const sharedConfigComment = "# define shared configuration here that's included by all terragrunt configurations in this platform"
     const addLocalsBlock = 'locals {\n' +    
-                          '    platform = yamldecode(regex("^---([\\s\\S]*)\\n---\\n[\\s\\S]*$", file(".//README.md"))[0])\n' +
+                          '    platform = yamldecode(regex("^---([\\\\s\\\\S]*)\\\\n---\\\\n[\\\\s\\\\S]*$", file(".//README.md"))[0])\n' +
                           '}\n';
 
     const remoteStateConfig = '  # recommended: remote state configuration\n' +
