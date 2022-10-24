@@ -91,16 +91,17 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         return kitRepr1.deployment!.autoDeployOrder - kitRepr2.deployment!.autoDeployOrder
       });
 
-      const mode = { raw: ["plan"] };
+      const mode = { raw: ["plan"] }; // FIXME we use plan instead of apply while we're still testing.
 
-      kitsToDeploy.forEach(([name, kitRepr]) => {
+      kitsToDeploy.forEach(async ([name, kitRepr]) => {
         logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.deployment!.autoDeployOrder}`);
         // HINT: for second deployment every info should be contained in kitRepr.deployment : KitDeployRepresentation
 
-        // commented for now, some TODOs are open before this can be used.
-        // deployFoundation(collie, foundationRepo, mode, opts, logger)
-        // TODO single deploy is not sufficient for bootstrap modules: after the bucket is created, a second
-        // deploy is required which makes use of this bucket.
+        // TODO deployment is commented for now, some TODOs are open before this can be used.
+        // await deployFoundation(collie, foundationRepo, mode, opts, logger);
+        if (kitRepr.deployment?.needsDoubleDeploy) {
+          // await deployFoundation(collie, foundationRepo, kitRepr.deployment.secondDeploymentArgs, opts, logger);
+        }
       });
 
       logger.progress("Calling after-deploy hook.");
