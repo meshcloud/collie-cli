@@ -74,7 +74,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       for await (const [name, _] of allKits) {
         logger.progress(`  Applying kit ${name} to ${foundation} : ${platform}`);
-        await applyKit(foundationRepo, platform, logger, name);
+        await applyKit(foundationRepo, platform, logger, path.join(prefix, name));
 
         // TODO 4. Configure required variables for kit
       }
