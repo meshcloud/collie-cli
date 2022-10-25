@@ -34,10 +34,7 @@ export class AzureKitBundle extends KitBundle {
       },
       {
         description: PARAM_TF_STATE_LOCATION,
-        validationRegex: /^[a-z0-9]+$/,
-        hint: "The Azure availability zone, formatted in lower case and without spaces, e.g. \"germanywestcentral\". " +
-          "For a full list of supported availability zones, see: https://learn.microsoft.com/en-us/azure/availability-zones/az-overview",
-        validationFailureMessage: 'Please enter a valid azure availability zone.',
+        options: azureLocationOptions,
       },
     ];
 
@@ -259,3 +256,59 @@ export class AzureKitBundle extends KitBundle {
     Deno.writeTextFileSync(platformHCL, text);
   }
 }
+
+// TODO instead of hardcoding all locations, we should fetch them via az cli: "az account list-locations"
+// For comparison, see AwsCliFacade.ts, which already includes the method listRegions. We need something
+// comparable, but for Azure.
+const azureLocationOptions = [
+  { name: "Germany North", value: "germanynorth" },
+  { name: "Germany West Central", value: "germanywestcentral" },
+  { name: "Australia Central", value: "australiacentral" },
+  { name: "Australia Central 2", value: "australiacentral2" },
+  { name: "Australia East", value: "australiaeast" },
+  { name: "Australia Southeast", value: "australiasoutheast" },
+  { name: "Brazil South", value: "brazilsouth" },
+  { name: "Brazil Southeast", value: "brazilsoutheast" },
+  { name: "Canada Central", value: "canadacentral" },
+  { name: "Canada East", value: "canadaeast" },
+  { name: "Central India", value: "centralindia" },
+  { name: "Central US", value: "centralus" },
+  { name: "Central US EUAP", value: "centraluseuap" },
+  { name: "East Asia", value: "eastasia" },
+  { name: "East US", value: "eastus" },
+  { name: "East US 2", value: "eastus2" },
+  { name: "East US 2 EUAP", value: "eastus2euap" },
+  { name: "East US STG", value: "eastusstg" },
+  { name: "France Central", value: "francecentral" },
+  { name: "France South", value: "francesouth" },
+  { name: "Japan East", value: "japaneast" },
+  { name: "Japan West", value: "japanwest" },
+  { name: "Jio India Central", value: "jioindiacentral" },
+  { name: "Jio India West", value: "jioindiawest" },
+  { name: "Korea Central", value: "koreacentral" },
+  { name: "Korea South", value: "koreasouth" },
+  { name: "North Central US", value: "northcentralus" },
+  { name: "North Europe", value: "northeurope" },
+  { name: "Norway East", value: "norwayeast" },
+  { name: "Norway West", value: "norwaywest" },
+  { name: "Qatar Central", value: "qatarcentral" },
+  { name: "South Africa North", value: "southafricanorth" },
+  { name: "South Africa West", value: "southafricawest" },
+  { name: "South Central US", value: "southcentralus" },
+  { name: "South Central US STG", value: "southcentralusstg" },
+  { name: "South India", value: "southindia" },
+  { name: "Southeast Asia", value: "southeastasia" },
+  { name: "Sweden Central", value: "swedencentral" },
+  { name: "Switzerland North", value: "switzerlandnorth" },
+  { name: "Switzerland West", value: "switzerlandwest" },
+  { name: "UAE Central", value: "uaecentral" },
+  { name: "UAE North", value: "uaenorth" },
+  { name: "UK South", value: "uksouth" },
+  { name: "UK West", value: "ukwest" },
+  { name: "West Central US", value: "westcentralus" },
+  { name: "West Europe", value: "westeurope" },
+  { name: "West India", value: "westindia" },
+  { name: "West US", value: "westus" },
+  { name: "West US 2", value: "westus2" },
+  { name: "West US 3", value: "westus3" }
+]

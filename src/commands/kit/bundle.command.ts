@@ -4,7 +4,7 @@ import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Input, Select } from "../../deps.ts";
 import { emptyKitDirectoryCreation, generatePlatformConfiguration, generateTerragrunt } from "./kit-utilities.ts";
-import { InputParameter, KitBundle, KitMetadata, metadataKitFileName } from "./bundles/kitbundle.ts";
+import { InputParameter, InputPromptParameter, InputSelectParameter, KitBundle, KitMetadata, metadataKitFileName } from "./bundles/kitbundle.ts";
 import { kitDownload } from "./kit-download.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
 import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
@@ -192,19 +192,34 @@ async function requestKitBundleParametrization(parameters: InputParameter[], log
   const answers = new Map<string, string>();
 
   for (const parameter of parameters) {
-    const answer = await Input.prompt({
-      message: `Define a value for parameter: ${parameter.description}`,
-      hint: parameter.hint,
-      validate: (s) => {
-        if (s.match(parameter.validationRegex)) {
-          return true;
-        }
-
-        return parameter.validationFailureMessage;
-      },
-    });
+    const answer = await promptUserInput(parameter);
     answers.set(parameter.description, answer);
   }
 
   return answers;
+}
+
+async function promptUserInput(inputParameter: InputParameter): Promise<string> {
+    const message = `Define a value for parameter: ${inputParameter.description}`;
+    if (isSelect(inputParameter)) {
+      return await Select.prompt({
+        message,
+        options: inputParameter.options,
+      });
+    } else {
+      return await Input.prompt({
+        message,
+        hint: inputParameter.hint,
+        validate: (s) => {
+          if (s.match(inputParameter.validationRegex)) {
+            return true;
+          }
+          return inputParameter.validationFailureMessage;
+        },
+      });
+    }
+}
+
+function isSelect(inputParameter: InputParameter): inputParameter is InputSelectParameter {
+  return (inputParameter as InputSelectParameter).options !== undefined;
 }
