@@ -30,23 +30,16 @@ export class AzureKitBundle extends KitBundle {
         validationFailureMessage: 'Please enter a valid azure availability zone.',
       },
     ];
-    const baseParams: InputParameter[] = [
-      {
-        description: 'param3', // FIXME
-        validationRegex: /.*/,
-        hint: undefined,
-        validationFailureMessage: 'Input rejected.'
-      },
-    ];
+    const baseParams: InputParameter[] = [];
 
     return new Map<string, KitRepresentation>([
 
       ["bootstrap", new KitRepresentation(
-        "https://github.com/meshcloud/landing-zone-construction-kit/archive/a2426aa85550941bc156d5a68965ca8f45bc7442.tar.gz",
+        "https://github.com/meshcloud/landing-zone-construction-kit/archive/014e8d3d9432b2d18af5cde1ea28bfbab50c7832.tar.gz",
         "/kit/azure/bootstrap-es",
         bootstrapParams,
         undefined,
-        new KitDeployRepresentation(0, true, this.betweenDeployments, { raw: [] }))
+        new KitDeployRepresentation(0, true, this.betweenDeployments, { raw: ["apply"] }))
       ],
 
       ["base", new KitRepresentation(
@@ -101,6 +94,7 @@ export class AzureKitBundle extends KitBundle {
     const bootstrapConfigToken = '    # todo: specify inputs to terraform module';
 
     const bootStrapInputs = '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
+                            `    foundation_name = "${parametrization.get('__foundation__')}"\n` +
                             '    platform_engineers_members = [\n' +
                             `      "${parametrization.get('Platform Engineer Email')}",\n` +
                             '    ]\n' +
