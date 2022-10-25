@@ -8,30 +8,34 @@ export class AzureKitBundle extends KitBundle {
   }
 
   kitsAndSources(): Map<string, KitRepresentation> {
-    const defaultRegex = /^[a-zA-Z0-9_.-@#]+$/;  //TODO validate that this is sufficient
     const bootstrapParams: InputParameter[] = [
       {
         description: "Platform Engineer Email",
-        validationRegex: defaultRegex,
+        // validating e-mails by regex is generally considered a futile attempt, so we accept everything.
+        validationRegex: /.*/,
         hint: undefined,
+        validationFailureMessage: 'Please enter a valid e-mail address.',
       },
       {
         description: "Storage Account Name",
-        validationRegex: defaultRegex,
+        validationRegex: /^[a-zA-Z0-9_.-@#]+$/,  //TODO validate that this is sufficient
         hint: undefined,
+        validationFailureMessage: 'Please enter a valid storage account name.',
       },
       {
         description: "Terraform State Location",
-        validationRegex: defaultRegex,
+        validationRegex: /^[a-z0-9]+$/,
         hint: "The Azure availability zone, formatted in lower case and without spaces, e.g. \"germanywestcentral\". " +
-          "See https://learn.microsoft.com/en-us/azure/availability-zones/az-overview for a full list of supported regions.",
+          "For a full list of supported availability zones, see: https://learn.microsoft.com/en-us/azure/availability-zones/az-overview",
+        validationFailureMessage: 'Please enter a valid azure availability zone.',
       },
     ];
     const baseParams: InputParameter[] = [
       {
         description: 'param3', // FIXME
-        validationRegex: defaultRegex,
-        hint: undefined
+        validationRegex: /.*/,
+        hint: undefined,
+        validationFailureMessage: 'Input rejected.'
       },
     ];
 

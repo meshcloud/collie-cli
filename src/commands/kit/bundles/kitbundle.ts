@@ -86,4 +86,5 @@ export interface InputParameter {
   description: string;
   validationRegex: RegExp;
   hint: string | undefined;
+  validationFailureMessage: string;
 }

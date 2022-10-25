@@ -203,7 +203,7 @@ async function requestKitBundleParametrization(parameters: InputParameter[], log
           return true;
         }
 
-        return "only alphanumeric characters, '-', '_' and '.' are allowed";
+        return parameter.validationFailureMessage;
       },
     });
     answers.set(parameter.description, answer);
