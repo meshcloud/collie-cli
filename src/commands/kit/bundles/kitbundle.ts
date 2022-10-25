@@ -72,13 +72,13 @@ export class KitDeployRepresentation {
   // callback only needed for kits that need to be deployed twice with different parameters (e.g. any bootstrap module with state migration)
   // this callback will only be executed, in case
   betweenDoubleDeployments: BetweenDeployFunc
-  secondDeploymentArgs: TerragruntArguments
+  deployMode: TerragruntArguments
 
-  constructor(autoDeployOrder: number, needsDoubleDeploy: boolean, betweenDoubleDeployments: BetweenDeployFunc, secondDeploymentArgs: TerragruntArguments) {
+  constructor(autoDeployOrder: number, needsDoubleDeploy: boolean, betweenDoubleDeployments: BetweenDeployFunc, deployMode: TerragruntArguments) {
     this.autoDeployOrder = autoDeployOrder;
     this.needsDoubleDeploy = needsDoubleDeploy;
     this.betweenDoubleDeployments = betweenDoubleDeployments;
-    this.secondDeploymentArgs = secondDeploymentArgs;
+    this.deployMode = deployMode;
   }
 }
 
