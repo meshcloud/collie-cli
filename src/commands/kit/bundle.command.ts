@@ -195,9 +195,9 @@ async function requestKitBundleParametrization(parameters: string[], logger: Log
   const answers = new Map<string, string>();
   const inputRegex = /^[a-zA-Z0-9_.-@#]+$/;  //TODO validate that this is sufficient
 
-  for(let i=0; i<parameters.length; i++){
+  for (const parameter of parameters) {
     const answer = await Input.prompt({
-      message: `Define a value for parameter: ${parameters[i]}`,
+      message: `Define a value for parameter: ${parameter}`,
       //hint: "", //TODO think about adding a hint to required parameters, would be way better UX!
       validate: (s) => {
         if (s.match(inputRegex)) {
@@ -207,7 +207,7 @@ async function requestKitBundleParametrization(parameters: string[], logger: Log
         return "only alphanumeric characters, '-', '_' and '.' are allowed";
       },
     });
-    answers.set(parameters[i], answer);
+    answers.set(parameter, answer);
   }
 
   return answers
