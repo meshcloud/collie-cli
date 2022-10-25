@@ -20,20 +20,20 @@ export class AzureKitBundle extends KitBundle {
   kitsAndSources(): Map<string, KitRepresentation> {
     const bootstrapKitParams: InputParameter[] = [
       {
-        description: this.PARAM_PE_EMAIL,
+        description: PARAM_PE_EMAIL,
         // validating e-mails by regex is generally considered a futile attempt, so we accept everything.
         validationRegex: /.*/,
         hint: undefined,
         validationFailureMessage: 'Please enter a valid e-mail address.',
       },
       {
-        description: this.PARAM_STORAGE_ACC_NAME,
+        description: PARAM_STORAGE_ACC_NAME,
         validationRegex: /^[a-zA-Z0-9_.-@#]+$/,  //TODO validate that this is sufficient
         hint: undefined,
         validationFailureMessage: 'Please enter a valid storage account name.',
       },
       {
-        description: this.PARAM_TF_STATE_LOCATION,
+        description: PARAM_TF_STATE_LOCATION,
         validationRegex: /^[a-z0-9]+$/,
         hint: "The Azure availability zone, formatted in lower case and without spaces, e.g. \"germanywestcentral\". " +
           "For a full list of supported availability zones, see: https://learn.microsoft.com/en-us/azure/availability-zones/az-overview",
@@ -44,19 +44,19 @@ export class AzureKitBundle extends KitBundle {
     // TODO improve on those
     const baseKitParams: InputParameter[] = [
       {
-        description: this.PARAM_ROOT_ID,
+        description: PARAM_ROOT_ID,
         validationRegex: /.*/,
         hint: undefined,
         validationFailureMessage: '',
       },
       {
-        description: this.PARAM_ROOT_NAME,
+        description: PARAM_ROOT_NAME,
         validationRegex: /.*/,
         hint: undefined,
         validationFailureMessage: '',
       },
       {
-        description: this.PARAM_DEFAULT_LOCATION,
+        description: PARAM_DEFAULT_LOCATION,
         validationRegex: /.*/,
         hint: undefined,
         validationFailureMessage: '',
