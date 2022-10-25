@@ -1,5 +1,5 @@
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
-import { KitBundle, KitDeployRepresentation, KitMetadata, KitRepresentation } from "./kitbundle.ts";
+import { InputParameter, KitBundle, KitDeployRepresentation, KitMetadata, KitRepresentation } from "./kitbundle.ts";
 
 export class AzureKitBundle extends KitBundle {
 
@@ -8,12 +8,39 @@ export class AzureKitBundle extends KitBundle {
   }
 
   kitsAndSources(): Map<string, KitRepresentation> {
+    const defaultRegex = /^[a-zA-Z0-9_.-@#]+$/;  //TODO validate that this is sufficient
+    const bootstrapParams: InputParameter[] = [
+      {
+        description: "Platform Engineer Email",
+        validationRegex: defaultRegex,
+        hint: undefined,
+      },
+      {
+        description: "Storage Account Name",
+        validationRegex: defaultRegex,
+        hint: undefined,
+      },
+      {
+        description: "Terraform State Location",
+        validationRegex: defaultRegex,
+        hint: "The Azure availability zone, formatted in lower case and without spaces, e.g. \"germanywestcentral\". " +
+          "See https://learn.microsoft.com/en-us/azure/availability-zones/az-overview for a full list of supported regions.",
+      },
+    ];
+    const baseParams: InputParameter[] = [
+      {
+        description: 'param3', // FIXME
+        validationRegex: defaultRegex,
+        hint: undefined
+      },
+    ];
+
     return new Map<string, KitRepresentation>([
 
       ["bootstrap", new KitRepresentation(
         "https://github.com/meshcloud/landing-zone-construction-kit/archive/a2426aa85550941bc156d5a68965ca8f45bc7442.tar.gz",
         "/kit/azure/bootstrap-es",
-        ["Platform Engineer Email", "Storage Account Name", "Terraform State Location"],
+        bootstrapParams,
         undefined,
         new KitDeployRepresentation(0, true, this.betweenDeployments, { raw: [] }))
       ],
@@ -21,7 +48,7 @@ export class AzureKitBundle extends KitBundle {
       ["base", new KitRepresentation(
         "https://github.com/Azure/terraform-azurerm-caf-enterprise-scale/archive/refs/tags/v2.4.1.tar.gz",
          undefined,
-         ["param3"],  //FIxME
+         baseParams,
          new KitMetadata("Azure CAF Enterprise Scale", "todo description goes here"),
          undefined)
       ]
