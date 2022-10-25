@@ -104,7 +104,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       kitsToDeploy.forEach(async ([name, kitRepr]) => {
         logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.deployment!.autoDeployOrder}`);
-        // HINT: for second deployment every info should be contained in kitRepr.deployment : KitDeployRepresentation
         // TODO this is a non-obvious and brittle way to determine if the module is a bootstrap module
         // >> yeah, but we want to know if the module needs to be deployed twice, not if it is a bootstrap module.
         // >> maybe other modules in the future need double-deployment, too.
@@ -112,7 +111,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
           bootstrap: kitRepr.deployment?.needsDoubleDeploy
         };
         const optsWithBootstrap = {...opts, ...bootstrapOpts};
-        // TODO deployment is commented for now, some TODOs are open before this can be used.
         logger.progress("Triggering deployment now.");
         await deployFoundation(collie, foundationRepo, mode, optsWithBootstrap, logger);
         if (kitRepr.deployment?.needsDoubleDeploy) {
