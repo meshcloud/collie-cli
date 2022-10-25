@@ -163,7 +163,7 @@ export class AzureKitBundle extends KitBundle {
   }
 
   afterApplyBase(platformModuleDir: string, parametrization: Map<string,string>): void {
-    const baseOutputTF = path.join(platformModuleDir, "base", "output.tf");
+    const baseOutputTF = path.join(platformModuleDir, "base", "outputs.tf");
     const moduleHCL = path.join(platformModuleDir, "module.hcl");
     const baseTerragrunt = path.join(platformModuleDir, "base", "terragrunt.hcl");
 
