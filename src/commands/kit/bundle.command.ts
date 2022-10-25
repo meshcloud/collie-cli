@@ -30,7 +30,12 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
     .option("-p, --platform <platform:platform>", "platform", {
       depends: ["foundation", "platform"],
     })
-    .description("Generate predefined bundled kits for your cloud foundation")
+    .description(
+      "Generate predefined bundled kits to initialize your cloud foundation. [EXPERIMENTAL]\n" +
+      "This command will kick off your cloud journey by setting up already ready-to-use kits.\n" +
+      "They will be applied directly to your fresh foundation and bootstrap functionality is deployed automatically.\n" +
+      "You will be asked for several required parameters in the process."
+    )
     .action(async (opts: GlobalCommandOptions & ApplyOptions, prefix: string) => {
       const collie = new CollieRepository("./");
       const logger = new Logger(collie, opts);
@@ -81,6 +86,11 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       logger.progress("Calling after-apply hook.");
       bundleToSetup.afterApply(platformPath, parametrization);
+
+      if (!await confirmCloudCosts()) {
+        logger.progress("Aborting here.");
+        return;
+      }
 
       const kitsToDeploy = [...allKits.entries()].filter( ([_, kitRepr]) => {
         return kitRepr.deployment
@@ -201,4 +211,13 @@ async function requestKitBundleParametrization(parameters: string[], logger: Log
   }
 
   return answers
+}
+
+async function confirmCloudCosts(): Promise<boolean> {
+  const answer = await Input.prompt({
+    message: `You are about to set up a minimum set of cloud resources. This could induce some costs at your cloud provider.\n Type "yes", if you agree.`,
+    validate: (_) => {return true},
+  });
+  const input = answer.toLocaleLowerCase();
+  return (input === 'yes' || input === 'y');
 }
