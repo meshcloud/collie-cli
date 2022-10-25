@@ -1,34 +1,39 @@
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
 import { InputParameter, KitBundle, KitDeployRepresentation, KitMetadata, KitRepresentation } from "./kitbundle.ts";
 
+  // Define Parameter names globally for easier change:
+  // bootstrap module
+  const PARAM_PE_EMAIL = "Platform Engineer Email";
+  const PARAM_STORAGE_ACC_NAME = "Storage Account Name";
+  const PARAM_TF_STATE_LOCATION = "Terraform State Location";
+  // base module
+  const PARAM_ROOT_ID = "Root Id";
+  const PARAM_ROOT_NAME = "Root Name";
+  const PARAM_DEFAULT_LOCATION = "Default Location";
+
 export class AzureKitBundle extends KitBundle {
 
   constructor(identifier: string, displayName: string) {
     super(identifier, displayName);
   }
 
-  // Define Parameter names globally for easier change:
-  const PARAM_ROOT_ID = "Root Id";
-  const PARAM_ROOT_NAME = "Root Name";
-  const PARAM_DEFAULT_LOCATION = "Default Location";
-
   kitsAndSources(): Map<string, KitRepresentation> {
     const bootstrapKitParams: InputParameter[] = [
       {
-        description: "Platform Engineer Email",
+        description: this.PARAM_PE_EMAIL,
         // validating e-mails by regex is generally considered a futile attempt, so we accept everything.
         validationRegex: /.*/,
         hint: undefined,
         validationFailureMessage: 'Please enter a valid e-mail address.',
       },
       {
-        description: "Storage Account Name",
+        description: this.PARAM_STORAGE_ACC_NAME,
         validationRegex: /^[a-zA-Z0-9_.-@#]+$/,  //TODO validate that this is sufficient
         hint: undefined,
         validationFailureMessage: 'Please enter a valid storage account name.',
       },
       {
-        description: "Terraform State Location",
+        description: this.PARAM_TF_STATE_LOCATION,
         validationRegex: /^[a-z0-9]+$/,
         hint: "The Azure availability zone, formatted in lower case and without spaces, e.g. \"germanywestcentral\". " +
           "For a full list of supported availability zones, see: https://learn.microsoft.com/en-us/azure/availability-zones/az-overview",
@@ -120,10 +125,10 @@ export class AzureKitBundle extends KitBundle {
     const bootStrapInputs = '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
                             `    foundation_name = "${parametrization.get('__foundation__')}"\n` +
                             '    platform_engineers_members = [\n' +
-                            `      "${parametrization.get('Platform Engineer Email')}",\n` +
+                            `      "${parametrization.get(PARAM_PE_EMAIL)}",\n` +
                             '    ]\n' +
-                            `    storage_account_name = "${parametrization.get('Storage Account Name')}"\n` +
-                            `    tfstate_location     = "${parametrization.get('Terraform State Location')}"\n`;
+                            `    storage_account_name = "${parametrization.get(PARAM_STORAGE_ACC_NAME)}"\n` +
+                            `    tfstate_location     = "${parametrization.get(PARAM_TF_STATE_LOCATION)}"\n`;
 
     const sharedConfigComment = "# define shared configuration here that's included by all terragrunt configurations in this platform"
     const addLocalsBlock = 'locals {\n' +
@@ -173,7 +178,7 @@ export class AzureKitBundle extends KitBundle {
                           '  }\n' +
                           '  description = "Returns the configuration data for all Log Analytics linked services created by this module."';
 
-    const oldProvidersBlock = '  provider "todo" {
+    const oldProvidersBlock = '  provider "todo" {\n' +
                               '    # tip: you can access collie configuration from the local above, e.g. "${local.platform.azure.aadTenantId}"\n' +
       	                      '    # tip: you can access bootstrap module output like secrets from the dependency above, e.g. "${dependency.bootstrap.outputs.client_secret}"\n' +
                               '  }';
@@ -194,9 +199,9 @@ export class AzureKitBundle extends KitBundle {
 
     const baseInputVariables = '\n' +
                                'root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
-                               `root_id        = "${parametrization.get(this.PARAM_ROOT_ID)}"\n` +
-                               `root_name      = "${parametrization.get(this.PARAM_ROOT_NAME)}"\n` +
-                               `default_location = "${parametrization.get(this.PARAM_DEFAULT_LOCATION)}"\n` +
+                               `root_id        = "${parametrization.get(PARAM_ROOT_ID)}"\n` +
+                               `root_name      = "${parametrization.get(PARAM_ROOT_NAME)}"\n` +
+                               `default_location = "${parametrization.get(PARAM_DEFAULT_LOCATION)}"\n` +
                                'deploy_corp_landing_zones = true\n' +
                                'deploy_online_landing_zones = true\n' +
                                '# Management resources\n' +
