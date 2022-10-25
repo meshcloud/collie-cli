@@ -75,6 +75,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       }
 
       const parametrization = await requestKitBundleParametrization(bundleToSetup.requiredParameters(), logger);
+      parametrization.set('__foundation__', foundation);
+      parametrization.set('__platform__', platform);
 
       logger.progress("Calling before-apply hook.");
       bundleToSetup.beforeApply(parametrization);
@@ -98,26 +100,29 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         return kitRepr1.deployment!.autoDeployOrder - kitRepr2.deployment!.autoDeployOrder
       });
 
-      const mode = { raw: ["plan"] }; // FIXME we use plan instead of apply while we're still testing.
+      const mode = { raw: ["apply"] };
 
       kitsToDeploy.forEach(async ([name, kitRepr]) => {
         logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.deployment!.autoDeployOrder}`);
         // HINT: for second deployment every info should be contained in kitRepr.deployment : KitDeployRepresentation
-
         // TODO this is a non-obvious and brittle way to determine if the module is a bootstrap module
+        // >> yeah, but we want to know if the module needs to be deployed twice, not if it is a bootstrap module.
+        // >> maybe other modules in the future need double-deployment, too.
         const bootstrapOpts = {
           bootstrap: kitRepr.deployment?.needsDoubleDeploy
         };
         const optsWithBootstrap = {...opts, ...bootstrapOpts};
         // TODO deployment is commented for now, some TODOs are open before this can be used.
+        logger.progress("Triggering deployment now.");
         await deployFoundation(collie, foundationRepo, mode, optsWithBootstrap, logger);
-        // if (kitRepr.deployment?.needsDoubleDeploy) {
-        //   kitRepr.deployment.betweenDoubleDeployments!(platformPath, parametrization);
-        //   await deployFoundation(collie, foundationRepo, kitRepr.deployment.secondDeploymentArgs, opts, logger);
-        // }
+        if (kitRepr.deployment?.needsDoubleDeploy) {
+          logger.progress("Calling between-deployments hook.");
+          kitRepr.deployment.betweenDoubleDeployments!(platformPath, parametrization);
+          logger.progress("Triggering second deployment now.");
+          await deployFoundation(collie, foundationRepo, kitRepr.deployment.secondDeploymentArgs, optsWithBootstrap, logger);
+        }
       });
 
-      logger.progress("Calling after-deploy hook.");
       // TODO commented for now: as long as the deploy is commented, this should be commented as well,
       // because there might be a dependency between the two.
       // bundleToSetup.afterDeploy(platformPath, parametrization);
