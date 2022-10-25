@@ -32,6 +32,7 @@ export class AzureKitBundle extends KitBundle {
         hint: undefined,
         validationFailureMessage: 'Please enter a valid storage account name.',
       },
+      //TODO validate max 24 alphanumeric chars:
       {
         description: PARAM_TF_STATE_LOCATION,
         options: azureLocationOptions,
