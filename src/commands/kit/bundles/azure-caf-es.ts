@@ -171,9 +171,20 @@ export class AzureKitBundle extends KitBundle {
 
     const outputReplacementBlockLS = '  value = {\n' +
       	                  '    management = azurerm_log_analytics_linked_service.management\n' +
-                          '    Sensitive = true\n' +
                           '  }\n' +
+                          '  sensitive = true\n' +
                           '  description = "Returns the configuration data for all Log Analytics linked services created by this module."';
+
+    const outputBlockAA = '  value = {\n' +
+                          '    management = azurerm_automation_account.management\n' +
+                          '  }\n' +
+                          '  description = "Returns the configuration data for all Automation Accounts created by this module."';
+
+    const outputReplacementBlockAA = '  value = {\n' +
+                          '    management = azurerm_automation_account.management\n' +
+                          '  }\n' +
+                          '  sensitive = true\n' +
+                          '  description = "Returns the configuration data for all Automation Accounts created by this module."';
 
     const oldProvidersBlock = '  provider "todo" {\n' +
                               '    # tip: you can access collie configuration from the local above, e.g. "${local.platform.azure.aadTenantId}"\n' +
@@ -183,14 +194,32 @@ export class AzureKitBundle extends KitBundle {
     const newProvidersBlock = '\n' +
                               'provider "azurerm" {\n' +
                               '  features {}\n' +
+                              '  skip_provider_registration = false\n' +
+                              '  tenant_id                  = "${local.platform.azure.aadTenantId}"\n' +
+                              '  subscription_id            = "${local.platform.azure.subscriptionId}"\n' +
+                              '  client_id                  = "${dependency.bootstrap.outputs.client_id}"\n' +
+                              '  client_secret              = "${dependency.bootstrap.outputs.client_secret}"\n' +
+                              '}\n' +
+                              'provider "azurerm" {\n' +
+                              '  features {}\n' +
                               '  alias                      = "connectivity"\n' +
                               '  subscription_id            = "${local.platform.azure.subscriptionId}"\n' +
+                              '  tenant_id                  = "${local.platform.azure.aadTenantId}"\n' +
+                              '  client_id                  = "${dependency.bootstrap.outputs.client_id}"\n' +
+                              '  client_secret              = "${dependency.bootstrap.outputs.client_secret}"\n' +
                               '}\n' +
                               'provider "azurerm" {\n' +
                               '  features {}\n' +
                               '  alias                      = "management"\n' +
                               '  subscription_id            = "${local.platform.azure.subscriptionId}"\n' +
+                              '  tenant_id                  = "${local.platform.azure.aadTenantId}"\n' +
+                              '  client_id                  = "${dependency.bootstrap.outputs.client_id}"\n' +
+                              '  client_secret              = "${dependency.bootstrap.outputs.client_secret}"\n' +
                               '}\n';
+
+    const baseIncludeOld = 'path = find_in_parent_folders("platform.hcl")';
+
+    const baseIncludeNew = 'path = find_in_parent_folders("platform.hcl")\n    expose = true';
 
     const baseInputToken = '# todo: specify inputs to terraform module';
 
@@ -208,6 +237,7 @@ export class AzureKitBundle extends KitBundle {
     // update base/output.tf
     let text = Deno.readTextFileSync(baseOutputTF);
     text = text.replace(outputBlockLS, outputReplacementBlockLS);
+    text = text.replace(outputBlockAA, outputReplacementBlockAA);
     Deno.writeTextFileSync(baseOutputTF, text);
 
     // update module.hcl
@@ -217,6 +247,7 @@ export class AzureKitBundle extends KitBundle {
 
     // update base/terragrunt.hcl
     text = Deno.readTextFileSync(baseTerragrunt);
+    text = text.replace(baseIncludeOld, baseIncludeNew);
     text = text.replace(baseInputToken, baseInputVariables);
     Deno.writeTextFileSync(baseTerragrunt, text);
   }
