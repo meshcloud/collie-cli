@@ -90,7 +90,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       logger.progress("Calling after-apply hook.");
       bundleToSetup.afterApply(platformPath, parametrization);
 
-      //return;
+      return;
 
       const kitsToDeploy = [...allKits.entries()].filter( ([_, kitRepr]) => {
         return kitRepr.deployment
