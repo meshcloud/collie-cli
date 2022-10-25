@@ -193,7 +193,7 @@ summary: |
 async function requestKitBundleParametrization(parameters: string[], logger: Logger): Promise<Map<string,string>> {
   logger.progress("\n  Please configure your kit bundle with the required arguments.");
   const answers = new Map<string, string>();
-  const inputRegex = /^[a-z0-9_.-@]+$/;  //TODO validate that this is sufficient
+  const inputRegex = /^[a-zA-Z0-9_.-@#]+$/;  //TODO validate that this is sufficient
 
   for(let i=0; i<parameters.length; i++){
     const answer = await Input.prompt({
