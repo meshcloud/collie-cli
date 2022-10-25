@@ -88,9 +88,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       }
 
       logger.progress("Calling after-apply hook.");
-      bundleToSetup.afterApply(platformPath, parametrization);
-
-      //return;
+      bundleToSetup.afterApply(platformPath, collie.resolvePath("kit", prefix), parametrization);
 
       const kitsToDeploy = [...allKits.entries()].filter( ([_, kitRepr]) => {
         return kitRepr.deployment

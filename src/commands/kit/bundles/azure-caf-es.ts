@@ -89,7 +89,7 @@ export class AzureKitBundle extends KitBundle {
   }
 
   // TODO this should work when called again with different parametrization, but this is hard to archive without maintaining some kind of history.
-  afterApplyBootstrap(platformModuleDir: string, parametrization: Map<string,string>): void {
+  afterApplyBootstrap(platformModuleDir: string,  _kitDir: string, parametrization: Map<string,string>): void {
     const bootstrapTerragrunt = path.join(platformModuleDir, "bootstrap", "terragrunt.hcl");
     const platformHCL = path.join(platformModuleDir, "platform.hcl");
 
@@ -162,8 +162,8 @@ export class AzureKitBundle extends KitBundle {
     Deno.writeTextFileSync(platformHCL, text);
   }
 
-  afterApplyBase(platformModuleDir: string, parametrization: Map<string,string>): void {
-    const baseOutputTF = path.join(platformModuleDir, "base", "outputs.tf");
+  afterApplyBase(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void {
+    const baseOutputTF = path.join(kitDir, "base", "outputs.tf");
     const moduleHCL = path.join(platformModuleDir, "module.hcl");
     const baseTerragrunt = path.join(platformModuleDir, "base", "terragrunt.hcl");
 
@@ -174,7 +174,7 @@ export class AzureKitBundle extends KitBundle {
 
     const outputReplacementBlockLS = '  value = {\n' +
       	                  '    management = azurerm_log_analytics_linked_service.management\n' +
-                          '    Sensitive = true\n'
+                          '    Sensitive = true\n' +
                           '  }\n' +
                           '  description = "Returns the configuration data for all Log Analytics linked services created by this module."';
 
@@ -198,15 +198,15 @@ export class AzureKitBundle extends KitBundle {
     const baseInputToken = '# todo: specify inputs to terraform module';
 
     const baseInputVariables = '\n' +
-                               'root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
-                               `root_id        = "${parametrization.get(PARAM_ROOT_ID)}"\n` +
-                               `root_name      = "${parametrization.get(PARAM_ROOT_NAME)}"\n` +
-                               `default_location = "${parametrization.get(PARAM_DEFAULT_LOCATION)}"\n` +
-                               'deploy_corp_landing_zones = true\n' +
-                               'deploy_online_landing_zones = true\n' +
-                               '# Management resources\n' +
-                               'deploy_management_resources = true\n' +
-                               'subscription_id_management  = "${include.platform.locals.platform.azure.subscriptionId}" # Subscription created manually as a prerequisite\n';
+                               '  root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
+                               `  root_id        = "${parametrization.get(PARAM_ROOT_ID)}"\n` +
+                               `  root_name      = "${parametrization.get(PARAM_ROOT_NAME)}"\n` +
+                               `  default_location = "${parametrization.get(PARAM_DEFAULT_LOCATION)}"\n` +
+                               '  deploy_corp_landing_zones = true\n' +
+                               '  deploy_online_landing_zones = true\n' +
+                               '  # Management resources\n' +
+                               '  deploy_management_resources = true\n' +
+                               '  subscription_id_management  = "${include.platform.locals.platform.azure.subscriptionId}" # Subscription created manually as a prerequisite\n';
 
     // update base/output.tf
     let text = Deno.readTextFileSync(baseOutputTF);
@@ -224,9 +224,9 @@ export class AzureKitBundle extends KitBundle {
     Deno.writeTextFileSync(baseTerragrunt, text);
   }
 
-  afterApply(platformModuleDir: string, parametrization: Map<string,string>): void {
-    this.afterApplyBootstrap(platformModuleDir, parametrization);
-    this.afterApplyBase(platformModuleDir, parametrization);
+  afterApply(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void {
+    this.afterApplyBootstrap(platformModuleDir, kitDir, parametrization);
+    this.afterApplyBase(platformModuleDir, kitDir, parametrization);
   }
 
   afterDeploy(_platformModuleDir: string, _parametrization: Map<string,string>): void {

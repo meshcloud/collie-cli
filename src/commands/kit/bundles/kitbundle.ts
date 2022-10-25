@@ -30,7 +30,7 @@ export abstract class KitBundle {
   abstract beforeApply(parametrization: Map<string,string>): void;
 
   // callback to by applied after we applied the kits
-  abstract afterApply(platformModuleDir: string, parametrization: Map<string,string>): void;
+  abstract afterApply(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void;
 
   // callback to by applied after we did the auto-deploy of kits
   abstract afterDeploy(platformModuleDir: string, parametrization: Map<string,string>): void;
