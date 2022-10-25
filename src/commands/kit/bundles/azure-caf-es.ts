@@ -1,4 +1,4 @@
-import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
+import * as path from "std/path";
 import { InputParameter, KitBundle, KitDeployRepresentation, KitMetadata, KitRepresentation } from "./kitbundle.ts";
 
   // Define Parameter names globally for easier change:
