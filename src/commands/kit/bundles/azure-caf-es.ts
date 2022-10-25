@@ -30,9 +30,10 @@ export class AzureKitBundle extends KitBundle {
   }
 
   beforeApply(_parametrization: Map<string,string>): void {
+    // nothing to be done here
   }
 
-  // FIXME this should work when called again with different parametrization, but this is hard to archive without maintaining some kind of history.
+  // TODO this should work when called again with different parametrization, but this is hard to archive without maintaining some kind of history.
   afterApply(platformModuleDir: string, parametrization: Map<string,string>): void {
 
     const bootstrapTerragrunt = path.join(platformModuleDir, "bootstrap", "terragrunt.hcl");
@@ -108,8 +109,32 @@ export class AzureKitBundle extends KitBundle {
   }
 
   afterDeploy(_platformModuleDir: string, _parametrization: Map<string,string>): void {
+    // nothing to be done here
   }
 
   betweenDeployments(platformModuleDir: string, parametrization: Map<string,string>): void {
+    const platformHCL = path.join(platformModuleDir, "platform.hcl");
+
+    const backendDef = '# recommended: remote state configuration\n' +
+                       'generate "backend" {\n' +
+                       '  path      = "backend.tf"\n' +
+                       '  if_exists = "overwrite"\n' +
+                       '  contents  = <<EOF\n' +
+                       'terraform {\n' +
+                       '  backend "azurerm" {\n' +
+                       '    tenant_id            = "${local.platform.azure.aadTenantId}"\n' +
+                       '    subscription_id      = "${local.platform.azure.subscriptionId}"\n' +
+                       '    resource_group_name  = "tfstate"\n' +
+                       `    storage_account_name = "${parametrization.get('Storage Account Name')}"\n` +
+                       '    container_name       = "tfstate"\n' +
+                       '    key                  = "${path_relative_to_include()}.tfstate"\n' +
+                       '  }\n' +
+                       '}\n' +
+                       'EOF\n' +
+                       '}\n';
+
+    let text = Deno.readTextFileSync(platformHCL);
+    text = text + "\n" + backendDef;
+    Deno.writeTextFileSync(platformHCL, text);
   }
 }
