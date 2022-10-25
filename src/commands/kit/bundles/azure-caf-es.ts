@@ -243,7 +243,7 @@ export class AzureKitBundle extends KitBundle {
                        '    tenant_id            = "${local.platform.azure.aadTenantId}"\n' +
                        '    subscription_id      = "${local.platform.azure.subscriptionId}"\n' +
                        '    resource_group_name  = "tfstate"\n' +
-                       `    storage_account_name = "${parametrization.get('Storage Account Name')}"\n` +
+                       `    storage_account_name = "${parametrization.get(PARAM_STORAGE_ACC_NAME)}"\n` +
                        '    container_name       = "tfstate"\n' +
                        '    key                  = "${path_relative_to_include()}.tfstate"\n' +
                        '  }\n' +
