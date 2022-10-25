@@ -27,13 +27,13 @@ export abstract class KitBundle {
   // this defines the "contents" of this KitBundle in terms of which kits are contained
   abstract kitsAndSources(): Map<string, KitRepresentation>;
 
-  // callback to by applied before we apply the kits
+  // callback to be applied before we apply the kits
   abstract beforeApply(parametrization: Map<string,string>): void;
 
-  // callback to by applied after we applied the kits
+  // callback to be applied after we applied the kits
   abstract afterApply(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void;
 
-  // callback to by applied after we did the auto-deploy of kits
+  // callback to be applied after we did the auto-deploy of kits
   abstract afterDeploy(platformModuleDir: string, parametrization: Map<string,string>): void;
 }
 
