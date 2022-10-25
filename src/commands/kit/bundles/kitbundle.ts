@@ -1,3 +1,4 @@
+import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
 import { TerragruntArguments } from "../../../api/terragrunt/TerragruntCliFacade.ts";
 
 export abstract class KitBundle {
@@ -82,9 +83,16 @@ export class KitDeployRepresentation {
   }
 }
 
-export interface InputParameter {
+export type InputParameter = InputPromptParameter | InputSelectParameter;
+
+export interface InputPromptParameter {
   description: string;
   validationRegex: RegExp;
   hint: string | undefined;
   validationFailureMessage: string;
+}
+
+export interface InputSelectParameter {
+  description: string;
+  options: SelectValueOptions;
 }
