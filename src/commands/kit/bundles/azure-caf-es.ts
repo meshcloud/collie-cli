@@ -11,7 +11,7 @@ export class AzureKitBundle extends KitBundle {
     return new Map<string, KitRepresentation>([
 
       ["bootstrap", new KitRepresentation(
-        "https://github.com/meshcloud/landing-zone-construction-kit/archive/5ce27391f94ab2c9b6b93cfb554c43ba0628b97d.tar.gz",
+        "https://github.com/meshcloud/landing-zone-construction-kit/archive/a2426aa85550941bc156d5a68965ca8f45bc7442.tar.gz",
         "/kit/azure/bootstrap-es",
         ["Platform Engineer Email", "Storage Account Name", "Terraform State Location"],
         undefined,
