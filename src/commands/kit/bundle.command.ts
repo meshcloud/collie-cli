@@ -19,9 +19,10 @@ const availableKitBundles: KitBundle[] = [
   new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
 ];
 
-interface ApplyOptions {
+interface BundleOptions {
   foundation?: string;
   platform?: string;
+  //TODO add support for autoapprove
 }
 export function registerBundledKitCmd(program: TopLevelCommand) {
   program
@@ -36,7 +37,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       "They will be applied directly to your fresh foundation and bootstrap functionality is deployed automatically.\n" +
       "You will be asked for several required parameters in the process."
     )
-    .action(async (opts: GlobalCommandOptions & ApplyOptions, prefix: string) => {
+    .action(async (opts: GlobalCommandOptions & BundleOptions, prefix: string) => {
       const collie = new CollieRepository("./");
       const logger = new Logger(collie, opts);
       const validator = new ModelValidator(logger);
@@ -61,10 +62,10 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       const allKits = bundleToSetup.kitsAndSources();
 
-      for await (const [name, kitRepr] of allKits) {
+      for (const [name, kitRepr] of allKits) {
         const kitPath = collie.resolvePath("kit", prefix, name);
         logger.progress(`  Creating an new kit structure for ${name}`);
-        emptyKitDirectoryCreation(kitPath, logger);
+        await emptyKitDirectoryCreation(kitPath, logger);
 
         logger.progress(`  Downloading kit from ${kitRepr.sourceUrl.length > 50 ? kitRepr.sourceUrl.substring(0, 47) + "..." : kitRepr.sourceUrl}`);
         await kitDownload(kitPath, kitRepr.sourceUrl, kitRepr.sourcePath);
@@ -81,7 +82,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       logger.progress("Calling before-apply hook.");
       bundleToSetup.beforeApply(parametrization);
 
-      for await (const [name, _] of allKits) {
+      for (const [name, _] of allKits) {
         logger.progress(`  Applying kit ${name} to ${foundation} : ${platform}`);
         await applyKit(foundationRepo, platform, logger, path.join(prefix, name));
       }
@@ -89,35 +90,28 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       logger.progress("Calling after-apply hook.");
       bundleToSetup.afterApply(platformPath, parametrization);
 
-      if (!await confirmCloudCosts()) {
-        logger.progress("Aborting here.");
-        return;
-      }
-
       const kitsToDeploy = [...allKits.entries()].filter( ([_, kitRepr]) => {
         return kitRepr.deployment
       }).sort(([_name1, kitRepr1], [_name2, kitRepr2]) => {
         return kitRepr1.deployment!.autoDeployOrder - kitRepr2.deployment!.autoDeployOrder
       });
 
-      const mode = { raw: ["apply"] };
-
       kitsToDeploy.forEach(async ([name, kitRepr]) => {
         logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.deployment!.autoDeployOrder}`);
         // TODO this is a non-obvious and brittle way to determine if the module is a bootstrap module
         // >> yeah, but we want to know if the module needs to be deployed twice, not if it is a bootstrap module.
         // >> maybe other modules in the future need double-deployment, too.
-        const bootstrapOpts = {
-          bootstrap: kitRepr.deployment?.needsDoubleDeploy
+        const moduleOpts = {
+          module: name
         };
-        const optsWithBootstrap = {...opts, ...bootstrapOpts};
+        const joinedOpts = {...opts, ...moduleOpts};
         logger.progress("Triggering deployment now.");
-        await deployFoundation(collie, foundationRepo, mode, optsWithBootstrap, logger);
+        await deployFoundation(collie, foundationRepo, kitRepr.deployment!.deployMode, joinedOpts, logger);
         if (kitRepr.deployment?.needsDoubleDeploy) {
           logger.progress("Calling between-deployments hook.");
           kitRepr.deployment.betweenDoubleDeployments!(platformPath, parametrization);
           logger.progress("Triggering second deployment now.");
-          await deployFoundation(collie, foundationRepo, kitRepr.deployment.secondDeploymentArgs, optsWithBootstrap, logger);
+          await deployFoundation(collie, foundationRepo, kitRepr.deployment.deployMode, joinedOpts, logger);
         }
       });
 
@@ -213,13 +207,4 @@ async function requestKitBundleParametrization(parameters: InputParameter[], log
   }
 
   return answers;
-}
-
-async function confirmCloudCosts(): Promise<boolean> {
-  const answer = await Input.prompt({
-    message: `You are about to set up a minimum set of cloud resources. This could induce some costs at your cloud provider.\n Type "yes", if you agree.`,
-    validate: (_) => {return true},
-  });
-  const input = answer.toLocaleLowerCase();
-  return (input === 'yes' || input === 'y');
 }

@@ -58,11 +58,9 @@ export class AzureKitBundle extends KitBundle {
   }
 
   // TODO this should work when called again with different parametrization, but this is hard to archive without maintaining some kind of history.
-  afterApply(platformModuleDir: string, parametrization: Map<string,string>): void {
-
+  afterApplyBootstrap(platformModuleDir: string, parametrization: Map<string,string>): void {
     const bootstrapTerragrunt = path.join(platformModuleDir, "bootstrap", "terragrunt.hcl");
     const platformHCL = path.join(platformModuleDir, "platform.hcl");
-
 
     const existingProviderConfig =  '  generate "provider" {\n' +
                                     '    path      = "provider.tf"\n' +
@@ -131,6 +129,15 @@ export class AzureKitBundle extends KitBundle {
     text = text.replace(sharedConfigComment, `${addLocalsBlock}`);
     text = text.replace(remoteStateConfig, '');
     Deno.writeTextFileSync(platformHCL, text);
+  }
+
+  afterApplyBase(_platformModuleDir: string, _parametrization: Map<string,string>): void {
+    //TODO
+  }
+
+  afterApply(platformModuleDir: string, parametrization: Map<string,string>): void {
+    this.afterApplyBootstrap(platformModuleDir, parametrization);
+    this.afterApplyBase(platformModuleDir, parametrization);
   }
 
   afterDeploy(_platformModuleDir: string, _parametrization: Map<string,string>): void {
