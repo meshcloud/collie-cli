@@ -13,8 +13,8 @@ export abstract class KitBundle {
     return this.identifier === identifier;
   }
 
-  requiredParameters(): string[] {
-    const params: string[] = [];
+  requiredParameters(): InputParameter[] {
+    const params: InputParameter[] = [];
     const kits = this.kitsAndSources();
     for (const [_, repr] of kits) {
       params.push(...repr.requiredParameters); //TODO we don't check for duplicates here.
@@ -39,11 +39,11 @@ export abstract class KitBundle {
 export class KitRepresentation {
   sourceUrl: string
   sourcePath: string | undefined
-  requiredParameters: string[]
-  metadataOverride: KitMetadata | undefined  
+  requiredParameters: InputParameter[]
+  metadataOverride: KitMetadata | undefined
   deployment: KitDeployRepresentation | undefined
 
-  constructor(sourceUrl: string, sourcePath: string | undefined, requiredParameters: string[], metadataOverride: KitMetadata | undefined, deployment: KitDeployRepresentation | undefined) {
+  constructor(sourceUrl: string, sourcePath: string | undefined, requiredParameters: InputParameter[], metadataOverride: KitMetadata | undefined, deployment: KitDeployRepresentation | undefined) {
     this.sourceUrl = sourceUrl;
     this.sourcePath = sourcePath;
     this.requiredParameters = requiredParameters;
@@ -80,4 +80,10 @@ export class KitDeployRepresentation {
     this.betweenDoubleDeployments = betweenDoubleDeployments;
     this.secondDeploymentArgs = secondDeploymentArgs;
   }
+}
+
+export interface InputParameter {
+  description: string;
+  validationRegex: RegExp;
+  hint: string | undefined;
 }

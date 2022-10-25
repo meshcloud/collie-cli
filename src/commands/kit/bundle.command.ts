@@ -4,7 +4,7 @@ import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Input, Select } from "../../deps.ts";
 import { emptyKitDirectoryCreation, generatePlatformConfiguration, generateTerragrunt } from "./kit-utilities.ts";
-import { KitBundle, KitMetadata, metadataKitFileName } from "./bundles/kitbundle.ts";
+import { InputParameter, KitBundle, KitMetadata, metadataKitFileName } from "./bundles/kitbundle.ts";
 import { kitDownload } from "./kit-download.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
 import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
@@ -110,7 +110,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         };
         const optsWithBootstrap = {...opts, ...bootstrapOpts};
         // TODO deployment is commented for now, some TODOs are open before this can be used.
-        // await deployFoundation(collie, foundationRepo, mode, optsWithBootstrap, logger);
+        await deployFoundation(collie, foundationRepo, mode, optsWithBootstrap, logger);
         // if (kitRepr.deployment?.needsDoubleDeploy) {
         //   kitRepr.deployment.betweenDoubleDeployments!(platformPath, parametrization);
         //   await deployFoundation(collie, foundationRepo, kitRepr.deployment.secondDeploymentArgs, opts, logger);
@@ -190,27 +190,26 @@ summary: |
 }
 
 // TODO show confirmation dialog and ask user if ok or restart
-async function requestKitBundleParametrization(parameters: string[], logger: Logger): Promise<Map<string,string>> {
+async function requestKitBundleParametrization(parameters: InputParameter[], logger: Logger): Promise<Map<string,string>> {
   logger.progress("\n  Please configure your kit bundle with the required arguments.");
   const answers = new Map<string, string>();
-  const inputRegex = /^[a-zA-Z0-9_.-@#]+$/;  //TODO validate that this is sufficient
 
   for (const parameter of parameters) {
     const answer = await Input.prompt({
-      message: `Define a value for parameter: ${parameter}`,
-      //hint: "", //TODO think about adding a hint to required parameters, would be way better UX!
+      message: `Define a value for parameter: ${parameter.description}`,
+      hint: parameter.hint,
       validate: (s) => {
-        if (s.match(inputRegex)) {
+        if (s.match(parameter.validationRegex)) {
           return true;
         }
 
         return "only alphanumeric characters, '-', '_' and '.' are allowed";
       },
     });
-    answers.set(parameter, answer);
+    answers.set(parameter.description, answer);
   }
 
-  return answers
+  return answers;
 }
 
 async function confirmCloudCosts(): Promise<boolean> {
