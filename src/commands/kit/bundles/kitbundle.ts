@@ -14,14 +14,17 @@ export abstract class KitBundle {
     return this.identifier === identifier;
   }
 
-  requiredParameters(): InputParameter[] {
-    const params: InputParameter[] = [];
+  requiredParameters(): Map<string,InputParameter[]> {
+    const r = new Map<string,InputParameter[]>();
     const kits = this.kitsAndSources();
-    for (const [_, repr] of kits) {
-      params.push(...repr.requiredParameters); //TODO we don't check for duplicates here.
+
+    for (const [kitName, repr] of kits) {
+      const params: InputParameter[] = [];
+      params.push(...repr.requiredParameters);
+      r.set(kitName, params);
     }
 
-    return params;
+    return r;
   }
 
   // this defines the "contents" of this KitBundle in terms of which kits are contained
@@ -94,5 +97,6 @@ export interface InputPromptParameter {
 
 export interface InputSelectParameter {
   description: string;
+  hint: string | undefined;
   options: SelectValueOptions;
 }

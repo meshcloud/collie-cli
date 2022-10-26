@@ -24,37 +24,38 @@ export class AzureKitBundle extends KitBundle {
         // validating e-mails by regex is generally considered a futile attempt,
         // so we accept everything that includes a @.
         validationRegex: /.+@.+/,
-        hint: undefined,
+        hint: "This is the email address of the Platform Engineer that should be the first initial member with access to the remote TF state. (Most probably yourself)",
         validationFailureMessage: 'Please enter a valid e-mail address.',
       },
       {
         description: PARAM_STORAGE_ACC_NAME,
-        validationRegex: /^[a-zA-Z0-9]{1,24}$/,
-        hint: undefined,
+        validationRegex: /^[a-zA-Z0-9]{2,24}$/,
+        hint: "Unique name of the Storage Account, where the remote TF state will be stored. (2-24 alphanumerics)",
         validationFailureMessage: 'Please enter a valid storage account name.',
       },
       {
         description: PARAM_TF_STATE_LOCATION,
+        hint: "Location of the Storage Account holding the remote TF state.",
         options: azureLocationOptions,
       },
     ];
 
-    // TODO improve on those
     const baseKitParams: InputParameter[] = [
       {
         description: PARAM_ROOT_ID,
         validationRegex: /.*/,
-        hint: undefined,
+        hint: "Identifier of the Root Management Group.",
         validationFailureMessage: '',
       },
       {
         description: PARAM_ROOT_NAME,
         validationRegex: /.*/,
-        hint: undefined,
+        hint: "Human readable name of the Root Management Group.",
         validationFailureMessage: '',
       },
       {
         description: PARAM_DEFAULT_LOCATION,
+        hint: "Target location for deploying your LZ resources to.",
         options: azureLocationOptions,
       },
     ];
