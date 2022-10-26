@@ -21,8 +21,9 @@ export class AzureKitBundle extends KitBundle {
     const bootstrapKitParams: InputParameter[] = [
       {
         description: PARAM_PE_EMAIL,
-        // validating e-mails by regex is generally considered a futile attempt, so we accept everything.
-        validationRegex: /.*/,
+        // validating e-mails by regex is generally considered a futile attempt,
+        // so we accept everything that includes a @.
+        validationRegex: /.+@.+/,
         hint: undefined,
         validationFailureMessage: 'Please enter a valid e-mail address.',
       },
