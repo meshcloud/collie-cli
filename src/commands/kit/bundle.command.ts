@@ -96,6 +96,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         return kitRepr1.deployment!.autoDeployOrder - kitRepr2.deployment!.autoDeployOrder
       });
 
+      return;
+
       kitsToDeploy.forEach(async ([name, kitRepr]) => {
         logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.deployment!.autoDeployOrder}`);
         // TODO this is a non-obvious and brittle way to determine if the module is a bootstrap module
@@ -176,14 +178,23 @@ summary: |
 ---
   `;
 
-  const existingText = Deno.readTextFileSync(fileToUpdate);
-  if (existingText.startsWith("---")) {
-    // TODO could be improved
-    // for idempotency of this function, return early here
-    return;
-  }
+  let fileExists = false;
+  try {
+    Deno.statSync(fileToUpdate);
+    fileExists = true;
+  } catch(_){ /**/ }
 
-  Deno.writeTextFileSync(fileToUpdate, `${metadataHeader}\n${existingText}`);
+  if (fileExists) {
+    const existingText = Deno.readTextFileSync(fileToUpdate);
+    if (existingText.startsWith("---")) {
+      // TODO could be improved
+      // for idempotency of this function, return early here
+      return;
+    }
+    Deno.writeTextFileSync(fileToUpdate, `${metadataHeader}\n${existingText}`);
+  } else {
+    Deno.writeTextFileSync(fileToUpdate, `${metadataHeader}\n`, { create: true });
+  }
 }
 
 // TODO show confirmation dialog and ask user if ok or restart

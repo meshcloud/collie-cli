@@ -11,7 +11,7 @@ import { InputParameter, KitBundle, KitDeployRepresentation, KitMetadata, KitRep
   const PARAM_ROOT_NAME = "Root Name";
   const PARAM_DEFAULT_LOCATION = "Default Location";
   // meshPlatform module
-  const PARAM_SP_NAME_SUFFIX = "service principal name suffix";
+  const PARAM_SP_NAME_SUFFIX = "Service Principal Name Suffix";
 
 export class AzureKitBundle extends KitBundle {
 
@@ -66,7 +66,7 @@ export class AzureKitBundle extends KitBundle {
       {
         description: PARAM_SP_NAME_SUFFIX,
         validationRegex: /.*/,
-        hint: undefined,
+        hint: "The suffix string that will be appended to the Service Principal's name for better searchability.",
         validationFailureMessage: '',
       },
     ];
@@ -270,9 +270,14 @@ export class AzureKitBundle extends KitBundle {
     Deno.writeTextFileSync(baseTerragrunt, text);
   }
 
+  afterApplyMeshPlatform(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void {
+
+  };
+
   afterApply(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void {
     this.afterApplyBootstrap(platformModuleDir, kitDir, parametrization);
     this.afterApplyBase(platformModuleDir, kitDir, parametrization);
+    this.afterApplyMeshPlatform(platformModuleDir, kitDir, parametrization);
   }
 
   afterDeploy(_platformModuleDir: string, _parametrization: Map<string,string>): void {
