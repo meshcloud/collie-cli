@@ -64,10 +64,10 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       for (const [name, kitRepr] of allKits) {
         const kitPath = collie.resolvePath("kit", prefix, name);
-        logger.progress(`  Creating an new kit structure for ${name}`);
+        logger.progress(`Creating an new kit structure for ${name}`);
         await emptyKitDirectoryCreation(kitPath, logger);
 
-        logger.progress(`  Downloading kit from ${kitRepr.sourceUrl.length > 50 ? kitRepr.sourceUrl.substring(0, 47) + "..." : kitRepr.sourceUrl}`);
+        logger.progress(`Downloading kit from ${kitRepr.sourceUrl.length > 50 ? kitRepr.sourceUrl.substring(0, 47) + "..." : kitRepr.sourceUrl}`);
         await kitDownload(kitPath, kitRepr.sourceUrl, kitRepr.sourcePath);
 
         if (kitRepr.metadataOverride) {
@@ -83,7 +83,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
       bundleToSetup.beforeApply(parametrization);
 
       for (const [name, _] of allKits) {
-        logger.progress(`  Applying kit ${name} to ${foundation} : ${platform}`);
+        logger.progress(`Applying kit ${name} to ${foundation} : ${platform}`);
         await applyKit(foundationRepo, platform, logger, path.join(prefix, name));
       }
 
@@ -187,13 +187,43 @@ summary: |
 }
 
 // TODO show confirmation dialog and ask user if ok or restart
-async function requestKitBundleParametrization(parameters: InputParameter[], logger: Logger): Promise<Map<string,string>> {
-  logger.progress("\n  Please configure your kit bundle with the required arguments.");
+async function requestKitBundleParametrization(parameters: Map<string,InputParameter[]>, logger: Logger): Promise<Map<string,string>> {
+  let retry = true;
   const answers = new Map<string, string>();
+  while(retry) {
+    retry = false;
+    logger.progress("\nPlease configure your kit bundle with the required arguments.");
+    const answers = new Map<string, string>();
+    for (const kitName of parameters.keys()) {
+      logger.progress(`Now configuring kit: ${kitName}`);
+      const params = parameters.get(kitName)!;
+      for (const parameter of params) {
+        const answer = await promptUserInput(parameter);
+        answers.set(parameter.description, answer);
+      }
+    }
 
-  for (const parameter of parameters) {
-    const answer = await promptUserInput(parameter);
-    answers.set(parameter.description, answer);
+    logger.progress("You configured the kit bundle as follows:");
+    for (const [k,v] of answers) {
+      logger.progress(`  ${k}: ${v}`);
+    }
+
+    const message = "Are the configured values correct?";
+    const confirmation = await Select.prompt({
+      message,
+      options: [
+        { name: "Yes", value: "y" },
+        { name: "Reiterate", value: "r" },
+        { name: "Quit", value: "q" },
+      ],
+    });
+    if (confirmation === 'q') {
+      Deno.exit(1);
+    }
+    else if (confirmation === 'r') {
+      retry = true;
+      answers.clear();
+    }
   }
 
   return answers;
@@ -204,6 +234,7 @@ async function promptUserInput(inputParameter: InputParameter): Promise<string> 
     if (isSelect(inputParameter)) {
       return await Select.prompt({
         message,
+        hint: inputParameter.hint,
         options: inputParameter.options,
       });
     } else {
