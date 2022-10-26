@@ -96,8 +96,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         return kitRepr1.deployment!.autoDeployOrder - kitRepr2.deployment!.autoDeployOrder
       });
 
-      return;
-
       kitsToDeploy.forEach(async ([name, kitRepr]) => {
         logger.progress(`Auto-deploying: ${name} with order: ${kitRepr.deployment!.autoDeployOrder}`);
         // TODO this is a non-obvious and brittle way to determine if the module is a bootstrap module

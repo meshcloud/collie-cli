@@ -270,9 +270,25 @@ export class AzureKitBundle extends KitBundle {
     Deno.writeTextFileSync(baseTerragrunt, text);
   }
 
-  afterApplyMeshPlatform(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void {
+  afterApplyMeshPlatform(platformModuleDir: string, _kitDir: string, parametrization: Map<string,string>): void {
+    const mpTerragrunt = path.join(platformModuleDir, "meshPlatform", "terragrunt.hcl");
 
-  };
+    const mpIncludeOld = 'path = find_in_parent_folders("platform.hcl")';
+
+    const mpIncludeNew = 'path = find_in_parent_folders("platform.hcl")\n    expose = true';
+
+    const mpInputToken = '# todo: specify inputs to terraform module';
+
+    const mpInputVariables = '\n' +
+                             `  service_principal_name_suffix = "${parametrization.get(PARAM_SP_NAME_SUFFIX)}"\n` +
+                             `  mgmt_group_name      = "${parametrization.get(PARAM_ROOT_NAME)}"\n`;
+
+    // update meshPlatform/terragrunt.hcl
+    let text = Deno.readTextFileSync(mpTerragrunt);
+    text = text.replace(mpIncludeOld, mpIncludeNew);
+    text = text.replace(mpInputToken, mpInputVariables);
+    Deno.writeTextFileSync(mpTerragrunt, text);
+  }
 
   afterApply(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void {
     this.afterApplyBootstrap(platformModuleDir, kitDir, parametrization);
