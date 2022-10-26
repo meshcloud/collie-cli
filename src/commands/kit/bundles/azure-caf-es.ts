@@ -29,11 +29,10 @@ export class AzureKitBundle extends KitBundle {
       },
       {
         description: PARAM_STORAGE_ACC_NAME,
-        validationRegex: /^[a-zA-Z0-9_.-@#]+$/,  //TODO validate that this is sufficient
+        validationRegex: /^[a-zA-Z0-9]{1,24}$/,
         hint: undefined,
         validationFailureMessage: 'Please enter a valid storage account name.',
       },
-      //TODO validate max 24 alphanumeric chars:
       {
         description: PARAM_TF_STATE_LOCATION,
         options: azureLocationOptions,
