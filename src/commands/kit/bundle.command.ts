@@ -193,7 +193,7 @@ async function requestKitBundleParametrization(parameters: Map<string,InputParam
   while(retry) {
     retry = false;
     logger.progress("\nPlease configure your kit bundle with the required arguments.");
-    const answers = new Map<string, string>();
+
     for (const kitName of parameters.keys()) {
       logger.progress(`Now configuring kit: ${kitName}`);
       const params = parameters.get(kitName)!;
