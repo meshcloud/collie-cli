@@ -55,9 +55,7 @@ export class AzureKitBundle extends KitBundle {
       },
       {
         description: PARAM_DEFAULT_LOCATION,
-        validationRegex: /.*/,
-        hint: undefined,
-        validationFailureMessage: '',
+        options: azureLocationOptions,
       },
     ];
 
