@@ -10,6 +10,8 @@ import { InputParameter, KitBundle, KitDeployRepresentation, KitMetadata, KitRep
   const PARAM_ROOT_ID = "Root Id";
   const PARAM_ROOT_NAME = "Root Name";
   const PARAM_DEFAULT_LOCATION = "Default Location";
+  // meshPlatform module
+  const PARAM_SP_NAME_SUFFIX = "service principal name suffix";
 
 export class AzureKitBundle extends KitBundle {
 
@@ -60,6 +62,15 @@ export class AzureKitBundle extends KitBundle {
       },
     ];
 
+    const meshPlatformKitParams: InputParameter[] = [
+      {
+        description: PARAM_SP_NAME_SUFFIX,
+        validationRegex: /.*/,
+        hint: undefined,
+        validationFailureMessage: '',
+      },
+    ];
+
     return new Map<string, KitRepresentation>([
 
       ["bootstrap", new KitRepresentation(
@@ -76,8 +87,15 @@ export class AzureKitBundle extends KitBundle {
          baseKitParams,
          new KitMetadata("Azure CAF Enterprise Scale", "todo description goes here"),
          undefined)
-      ]
+      ],
 
+      ["meshPlatform", new KitRepresentation(
+        "https://github.com/meshcloud/terraform-azure-meshplatform/archive/fa13447115c451f25496430b37fc560c650f1808.tar.gz",
+        "/examples/basic-azure-integration",
+        meshPlatformKitParams,
+        new KitMetadata("Azure meshPlatform Module", "Terraform module to integrate Azure as a meshPlatform into meshStack instance"),
+        undefined)
+      ]
     ]);
   }
 
