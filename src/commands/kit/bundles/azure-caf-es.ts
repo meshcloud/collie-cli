@@ -1,27 +1,49 @@
 import * as path from "std/path";
 import * as colors from "std/fmt/colors";
-import { InputParameter, KitBundle, KitDeployRepresentation, KitMetadata, KitRepresentation } from "./kitbundle.ts";
+import {
+  InputParameter,
+  KitBundle,
+  KitDeployRepresentation,
+  KitMetadata,
+  KitRepresentation,
+} from "./kitbundle.ts";
 
-  // Define Parameter names globally for easier change:
-  // bootstrap module
-  const PARAM_PE_EMAIL = "Platform Engineer Email";
-  const PARAM_STORAGE_ACC_NAME = "Storage Account Name";
-  const PARAM_TF_STATE_LOCATION = "Terraform State Location";
-  // base module
-  const PARAM_ROOT_ID = "Root Id";
-  const PARAM_ROOT_NAME = "Root Name";
-  const PARAM_DEFAULT_LOCATION = "Default Location";
+// Define Parameter names globally for easier change:
+// bootstrap module
+const PARAM_PE_EMAIL = "Platform Engineer Email";
+const PARAM_STORAGE_ACC_NAME = "Storage Account Name";
+const PARAM_TF_STATE_LOCATION = "Terraform State Location";
+// base module
+const PARAM_ROOT_ID = "Root Id";
+const PARAM_ROOT_NAME = "Root Name";
+const PARAM_DEFAULT_LOCATION = "Default Location";
 
 export class AzureKitBundle extends KitBundle {
-
   constructor() {
     const identifier = "azure-caf-es";
     const displayName = "Azure Enterprise Scale";
-    const description = `This KitBundle consists of two kits: bootstrap and base. It allows you to setup a Azure LZ in a few minutes only. ` +
-                        `The bootstrap kit will be deployed automatically and provides a setup with a remote Terraform state storage. ` +
-                        `The base kit will be automatically configured, but you need to deploy it manually with\n${colors.italic(colors.green('$ collie foundation deploy <foundation> --module base'))}\n` +
-                        `It contains resources of the standard Azure Enterprise Scale architecture:\n${colors.italic(colors.blue('https://github.com/Azure/terraform-azurerm-caf-enterprise-scale'))}\n` +
-                        `To have a quick glance on it's capabilities after setup consider a look on the Cloudfoundation Maturity Model here:\n${colors.italic(colors.blue('https://cloudfoundation.meshcloud.io/maturity-model/?selectedTool=collie-cli'))}`;
+    const description =
+      `This KitBundle consists of two kits: bootstrap and base. It allows you to setup a Azure LZ in a few minutes only. ` +
+      `The bootstrap kit will be deployed automatically and provides a setup with a remote Terraform state storage. ` +
+      `The base kit will be automatically configured, but you need to deploy it manually with\n${
+        colors.italic(
+          colors.green("$ collie foundation deploy <foundation> --module base"),
+        )
+      }\n` +
+      `It contains resources of the standard Azure Enterprise Scale architecture:\n${
+        colors.italic(
+          colors.blue(
+            "https://github.com/Azure/terraform-azurerm-caf-enterprise-scale",
+          ),
+        )
+      }\n` +
+      `To have a quick glance on it's capabilities after setup consider a look on the Cloudfoundation Maturity Model here:\n${
+        colors.italic(
+          colors.blue(
+            "https://cloudfoundation.meshcloud.io/maturity-model/?selectedTool=collie-cli",
+          ),
+        )
+      }`;
 
     super(identifier, displayName, description);
   }
@@ -33,14 +55,16 @@ export class AzureKitBundle extends KitBundle {
         // validating e-mails by regex is generally considered a futile attempt,
         // so we accept everything that includes a @.
         validationRegex: /.+@.+/,
-        hint: "This is the email address of the Platform Engineer that should be the first initial member with access to the remote TF state. (Most probably yourself)",
-        validationFailureMessage: 'Please enter a valid e-mail address.',
+        hint:
+          "This is the email address of the Platform Engineer that should be the first initial member with access to the remote TF state. (Most probably yourself)",
+        validationFailureMessage: "Please enter a valid e-mail address.",
       },
       {
         description: PARAM_STORAGE_ACC_NAME,
         validationRegex: /^[a-zA-Z0-9]{2,24}$/,
-        hint: "Unique name of the Storage Account, where the remote TF state will be stored. (2-24 alphanumerics)",
-        validationFailureMessage: 'Please enter a valid storage account name.',
+        hint:
+          "Unique name of the Storage Account, where the remote TF state will be stored. (2-24 alphanumerics)",
+        validationFailureMessage: "Please enter a valid storage account name.",
       },
       {
         description: PARAM_TF_STATE_LOCATION,
@@ -54,13 +78,13 @@ export class AzureKitBundle extends KitBundle {
         description: PARAM_ROOT_ID,
         validationRegex: /.*/,
         hint: "Identifier of the Root Management Group.",
-        validationFailureMessage: '',
+        validationFailureMessage: "",
       },
       {
         description: PARAM_ROOT_NAME,
         validationRegex: /.*/,
         hint: "Human readable name of the Root Management Group.",
-        validationFailureMessage: '',
+        validationFailureMessage: "",
       },
       {
         description: PARAM_DEFAULT_LOCATION,
@@ -70,178 +94,215 @@ export class AzureKitBundle extends KitBundle {
     ];
 
     return new Map<string, KitRepresentation>([
-
-      ["bootstrap", new KitRepresentation(
-        "https://github.com/meshcloud/landing-zone-construction-kit/archive/530675fd541e2d7209dd522e26ae031618354245.tar.gz",
-        "/kit/azure/bootstrap-es",
-        bootstrapKitParams,
-        undefined,
-        new KitDeployRepresentation(0, true, this.betweenDeployments, { raw: ["apply"] }))
+      [
+        "bootstrap",
+        new KitRepresentation(
+          "https://github.com/meshcloud/landing-zone-construction-kit/archive/530675fd541e2d7209dd522e26ae031618354245.tar.gz",
+          "/kit/azure/bootstrap-es",
+          bootstrapKitParams,
+          undefined,
+          new KitDeployRepresentation(0, true, this.betweenDeployments, {
+            raw: ["apply"],
+          }),
+        ),
       ],
 
-      ["base", new KitRepresentation(
-        "https://github.com/Azure/terraform-azurerm-caf-enterprise-scale/archive/refs/tags/v2.4.1.tar.gz",
-         undefined,
-         baseKitParams,
-         new KitMetadata("Azure CAF Enterprise Scale", "todo description goes here"),
-         undefined)
-      ]
-
+      [
+        "base",
+        new KitRepresentation(
+          "https://github.com/Azure/terraform-azurerm-caf-enterprise-scale/archive/refs/tags/v2.4.1.tar.gz",
+          undefined,
+          baseKitParams,
+          new KitMetadata(
+            "Azure CAF Enterprise Scale",
+            "todo description goes here",
+          ),
+          undefined,
+        ),
+      ],
     ]);
   }
 
-  beforeApply(_parametrization: Map<string,string>): void {
+  beforeApply(_parametrization: Map<string, string>): void {
     // nothing to be done here
   }
 
   // TODO this should work when called again with different parametrization, but this is hard to archive without maintaining some kind of history.
-  afterApplyBootstrap(platformModuleDir: string,  _kitDir: string, parametrization: Map<string,string>): void {
-    const bootstrapTerragrunt = path.join(platformModuleDir, "bootstrap", "terragrunt.hcl");
+  afterApplyBootstrap(
+    platformModuleDir: string,
+    _kitDir: string,
+    parametrization: Map<string, string>,
+  ): void {
+    const bootstrapTerragrunt = path.join(
+      platformModuleDir,
+      "bootstrap",
+      "terragrunt.hcl",
+    );
     const platformHCL = path.join(platformModuleDir, "platform.hcl");
 
-    const existingProviderConfig =  '  generate "provider" {\n' +
-                                    '    path      = "provider.tf"\n' +
-                                    '    if_exists = "overwrite"\n' +
-                                    '    contents  = <<EOF\n' +
-                                    '  provider "google|aws|azurerm" {\n' +
-                                    '    # todo\n' +
-                                    '  }\n' +
-                                    '  EOF\n' +
-                                    '  }\n';
+    const existingProviderConfig = '  generate "provider" {\n' +
+      '    path      = "provider.tf"\n' +
+      '    if_exists = "overwrite"\n' +
+      "    contents  = <<EOF\n" +
+      '  provider "google|aws|azurerm" {\n' +
+      "    # todo\n" +
+      "  }\n" +
+      "  EOF\n" +
+      "  }\n";
 
     const newProviderConfig = '  generate "provider" {\n' +
-                              '  path      = "provider.tf"\n' +
-                              '  if_exists = "overwrite"\n' +
-                              '  contents  = <<EOF\n' +
-                              'provider "azurerm" {\n' +
-                              '  features {}\n' +
-                              '  skip_provider_registration = false\n' +
-                              '  tenant_id                  = "\${include.platform.locals.platform.azure.aadTenantId}"\n' +
-                              '  subscription_id            = "\${include.platform.locals.platform.azure.subscriptionId}"\n' +
-                              '  storage_use_azuread        = true\n' +
-                              '}\n' +
-                              'provider "azuread" {\n' +
-                              '  tenant_id = "\${include.platform.locals.platform.azure.aadTenantId}"\n' +
-                              '}\n' +
-                              'EOF\n' +
-                              '}\n';
+      '  path      = "provider.tf"\n' +
+      '  if_exists = "overwrite"\n' +
+      "  contents  = <<EOF\n" +
+      'provider "azurerm" {\n' +
+      "  features {}\n" +
+      "  skip_provider_registration = false\n" +
+      '  tenant_id                  = "\${include.platform.locals.platform.azure.aadTenantId}"\n' +
+      '  subscription_id            = "\${include.platform.locals.platform.azure.subscriptionId}"\n' +
+      "  storage_use_azuread        = true\n" +
+      "}\n" +
+      'provider "azuread" {\n' +
+      '  tenant_id = "\${include.platform.locals.platform.azure.aadTenantId}"\n' +
+      "}\n" +
+      "EOF\n" +
+      "}\n";
 
-    const bootstrapConfigToken = '    # todo: specify inputs to terraform module';
+    const bootstrapConfigToken =
+      "    # todo: specify inputs to terraform module";
 
-    const bootStrapInputs = '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
-                            `    foundation_name = "${parametrization.get('__foundation__')}"\n` +
-                            '    platform_engineers_members = [\n' +
-                            `      "${parametrization.get(PARAM_PE_EMAIL)}",\n` +
-                            '    ]\n' +
-                            `    storage_account_name = "${parametrization.get(PARAM_STORAGE_ACC_NAME)}"\n` +
-                            `    tfstate_location     = "${parametrization.get(PARAM_TF_STATE_LOCATION)}"\n`;
+    const bootStrapInputs =
+      '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
+      `    foundation_name = "${parametrization.get("__foundation__")}"\n` +
+      "    platform_engineers_members = [\n" +
+      `      "${parametrization.get(PARAM_PE_EMAIL)}",\n` +
+      "    ]\n" +
+      `    storage_account_name = "${
+        parametrization.get(PARAM_STORAGE_ACC_NAME)
+      }"\n` +
+      `    tfstate_location     = "${
+        parametrization.get(PARAM_TF_STATE_LOCATION)
+      }"\n`;
 
-    const sharedConfigComment = "# define shared configuration here that's included by all terragrunt configurations in this platform"
-    const addLocalsBlock = 'locals {\n' +
-                          '    platform = yamldecode(regex("^---([\\\\s\\\\S]*)\\\\n---\\\\n[\\\\s\\\\S]*$", file(".//README.md"))[0])\n' +
-                          '}\n';
+    const sharedConfigComment =
+      "# define shared configuration here that's included by all terragrunt configurations in this platform";
+    const addLocalsBlock = "locals {\n" +
+      '    platform = yamldecode(regex("^---([\\\\s\\\\S]*)\\\\n---\\\\n[\\\\s\\\\S]*$", file(".//README.md"))[0])\n' +
+      "}\n";
 
-    const remoteStateConfig = '  # recommended: remote state configuration\n' +
-                              '  remote_state {\n' +
-                              '    backend = todo\n' +
-                              '    generate = {\n' +
-                              '      path      = "backend.tf"\n' +
-                              '      if_exists = "overwrite"\n' +
-                              '    }\n' +
-                              '    config = {\n' +
-                              '      # tip: use "my/path/${path_relative_to_include()}" to dynamically include the module id in a prefix\n' +
-                              '    }\n' +
-                              '  }';
-
+    const remoteStateConfig = "  # recommended: remote state configuration\n" +
+      "  remote_state {\n" +
+      "    backend = todo\n" +
+      "    generate = {\n" +
+      '      path      = "backend.tf"\n' +
+      '      if_exists = "overwrite"\n' +
+      "    }\n" +
+      "    config = {\n" +
+      '      # tip: use "my/path/${path_relative_to_include()}" to dynamically include the module id in a prefix\n' +
+      "    }\n" +
+      "  }";
 
     // update bootstrap/terragrunt.hcl
     let text = Deno.readTextFileSync(bootstrapTerragrunt);
     text = text.replace(existingProviderConfig, newProviderConfig);
     text = text.replace(bootstrapConfigToken, bootStrapInputs);
-    text = text.replace('path = find_in_parent_folders("platform.hcl")', 'path = find_in_parent_folders("platform.hcl")\n    expose = true');
+    text = text.replace(
+      'path = find_in_parent_folders("platform.hcl")',
+      'path = find_in_parent_folders("platform.hcl")\n    expose = true',
+    );
     Deno.writeTextFileSync(bootstrapTerragrunt, text);
 
     // update platform.hcl
     text = Deno.readTextFileSync(platformHCL);
     text = text.replace(sharedConfigComment, `${addLocalsBlock}`);
-    text = text.replace(remoteStateConfig, '');
+    text = text.replace(remoteStateConfig, "");
     Deno.writeTextFileSync(platformHCL, text);
   }
 
-  afterApplyBase(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void {
+  afterApplyBase(
+    platformModuleDir: string,
+    kitDir: string,
+    parametrization: Map<string, string>,
+  ): void {
     const baseOutputTF = path.join(kitDir, "base", "outputs.tf");
     const moduleHCL = path.join(platformModuleDir, "module.hcl");
-    const baseTerragrunt = path.join(platformModuleDir, "base", "terragrunt.hcl");
+    const baseTerragrunt = path.join(
+      platformModuleDir,
+      "base",
+      "terragrunt.hcl",
+    );
 
-    const outputBlockLS = '  value = {\n' +
-      	                  '    management = azurerm_log_analytics_linked_service.management\n' +
-                          '  }\n' +
-                          '  description = "Returns the configuration data for all Log Analytics linked services created by this module."';
+    const outputBlockLS = "  value = {\n" +
+      "    management = azurerm_log_analytics_linked_service.management\n" +
+      "  }\n" +
+      '  description = "Returns the configuration data for all Log Analytics linked services created by this module."';
 
-    const outputReplacementBlockLS = '  value = {\n' +
-      	                  '    management = azurerm_log_analytics_linked_service.management\n' +
-                          '  }\n' +
-                          '  sensitive = true\n' +
-                          '  description = "Returns the configuration data for all Log Analytics linked services created by this module."';
+    const outputReplacementBlockLS = "  value = {\n" +
+      "    management = azurerm_log_analytics_linked_service.management\n" +
+      "  }\n" +
+      "  sensitive = true\n" +
+      '  description = "Returns the configuration data for all Log Analytics linked services created by this module."';
 
-    const outputBlockAA = '  value = {\n' +
-                          '    management = azurerm_automation_account.management\n' +
-                          '  }\n' +
-                          '  description = "Returns the configuration data for all Automation Accounts created by this module."';
+    const outputBlockAA = "  value = {\n" +
+      "    management = azurerm_automation_account.management\n" +
+      "  }\n" +
+      '  description = "Returns the configuration data for all Automation Accounts created by this module."';
 
-    const outputReplacementBlockAA = '  value = {\n' +
-                          '    management = azurerm_automation_account.management\n' +
-                          '  }\n' +
-                          '  sensitive = true\n' +
-                          '  description = "Returns the configuration data for all Automation Accounts created by this module."';
+    const outputReplacementBlockAA = "  value = {\n" +
+      "    management = azurerm_automation_account.management\n" +
+      "  }\n" +
+      "  sensitive = true\n" +
+      '  description = "Returns the configuration data for all Automation Accounts created by this module."';
 
     const oldProvidersBlock = '  provider "todo" {\n' +
-                              '    # tip: you can access collie configuration from the local above, e.g. "${local.platform.azure.aadTenantId}"\n' +
-      	                      '    # tip: you can access bootstrap module output like secrets from the dependency above, e.g. "${dependency.bootstrap.outputs.client_secret}"\n' +
-                              '  }';
+      '    # tip: you can access collie configuration from the local above, e.g. "${local.platform.azure.aadTenantId}"\n' +
+      '    # tip: you can access bootstrap module output like secrets from the dependency above, e.g. "${dependency.bootstrap.outputs.client_secret}"\n' +
+      "  }";
 
-    const newProvidersBlock = '\n' +
-                              'provider "azurerm" {\n' +
-                              '  features {}\n' +
-                              '  skip_provider_registration = false\n' +
-                              '  tenant_id                  = "${local.platform.azure.aadTenantId}"\n' +
-                              '  subscription_id            = "${local.platform.azure.subscriptionId}"\n' +
-                              '  client_id                  = "${dependency.bootstrap.outputs.client_id}"\n' +
-                              '  client_secret              = "${dependency.bootstrap.outputs.client_secret}"\n' +
-                              '}\n' +
-                              'provider "azurerm" {\n' +
-                              '  features {}\n' +
-                              '  alias                      = "connectivity"\n' +
-                              '  subscription_id            = "${local.platform.azure.subscriptionId}"\n' +
-                              '  tenant_id                  = "${local.platform.azure.aadTenantId}"\n' +
-                              '  client_id                  = "${dependency.bootstrap.outputs.client_id}"\n' +
-                              '  client_secret              = "${dependency.bootstrap.outputs.client_secret}"\n' +
-                              '}\n' +
-                              'provider "azurerm" {\n' +
-                              '  features {}\n' +
-                              '  alias                      = "management"\n' +
-                              '  subscription_id            = "${local.platform.azure.subscriptionId}"\n' +
-                              '  tenant_id                  = "${local.platform.azure.aadTenantId}"\n' +
-                              '  client_id                  = "${dependency.bootstrap.outputs.client_id}"\n' +
-                              '  client_secret              = "${dependency.bootstrap.outputs.client_secret}"\n' +
-                              '}\n';
+    const newProvidersBlock = "\n" +
+      'provider "azurerm" {\n' +
+      "  features {}\n" +
+      "  skip_provider_registration = false\n" +
+      '  tenant_id                  = "${local.platform.azure.aadTenantId}"\n' +
+      '  subscription_id            = "${local.platform.azure.subscriptionId}"\n' +
+      '  client_id                  = "${dependency.bootstrap.outputs.client_id}"\n' +
+      '  client_secret              = "${dependency.bootstrap.outputs.client_secret}"\n' +
+      "}\n" +
+      'provider "azurerm" {\n' +
+      "  features {}\n" +
+      '  alias                      = "connectivity"\n' +
+      '  subscription_id            = "${local.platform.azure.subscriptionId}"\n' +
+      '  tenant_id                  = "${local.platform.azure.aadTenantId}"\n' +
+      '  client_id                  = "${dependency.bootstrap.outputs.client_id}"\n' +
+      '  client_secret              = "${dependency.bootstrap.outputs.client_secret}"\n' +
+      "}\n" +
+      'provider "azurerm" {\n' +
+      "  features {}\n" +
+      '  alias                      = "management"\n' +
+      '  subscription_id            = "${local.platform.azure.subscriptionId}"\n' +
+      '  tenant_id                  = "${local.platform.azure.aadTenantId}"\n' +
+      '  client_id                  = "${dependency.bootstrap.outputs.client_id}"\n' +
+      '  client_secret              = "${dependency.bootstrap.outputs.client_secret}"\n' +
+      "}\n";
 
     const baseIncludeOld = 'path = find_in_parent_folders("platform.hcl")';
 
-    const baseIncludeNew = 'path = find_in_parent_folders("platform.hcl")\n    expose = true';
+    const baseIncludeNew =
+      'path = find_in_parent_folders("platform.hcl")\n    expose = true';
 
-    const baseInputToken = '# todo: specify inputs to terraform module';
+    const baseInputToken = "# todo: specify inputs to terraform module";
 
-    const baseInputVariables = '\n' +
-                               '  root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
-                               `  root_id        = "${parametrization.get(PARAM_ROOT_ID)}"\n` +
-                               `  root_name      = "${parametrization.get(PARAM_ROOT_NAME)}"\n` +
-                               `  default_location = "${parametrization.get(PARAM_DEFAULT_LOCATION)}"\n` +
-                               '  deploy_corp_landing_zones = true\n' +
-                               '  deploy_online_landing_zones = true\n' +
-                               '  # Management resources\n' +
-                               '  deploy_management_resources = true\n' +
-                               '  subscription_id_management  = "${include.platform.locals.platform.azure.subscriptionId}" # Subscription created manually as a prerequisite\n';
+    const baseInputVariables = "\n" +
+      '  root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
+      `  root_id        = "${parametrization.get(PARAM_ROOT_ID)}"\n` +
+      `  root_name      = "${parametrization.get(PARAM_ROOT_NAME)}"\n` +
+      `  default_location = "${
+        parametrization.get(PARAM_DEFAULT_LOCATION)
+      }"\n` +
+      "  deploy_corp_landing_zones = true\n" +
+      "  deploy_online_landing_zones = true\n" +
+      "  # Management resources\n" +
+      "  deploy_management_resources = true\n" +
+      '  subscription_id_management  = "${include.platform.locals.platform.azure.subscriptionId}" # Subscription created manually as a prerequisite\n';
 
     // update base/output.tf
     let text = Deno.readTextFileSync(baseOutputTF);
@@ -261,35 +322,47 @@ export class AzureKitBundle extends KitBundle {
     Deno.writeTextFileSync(baseTerragrunt, text);
   }
 
-  afterApply(platformModuleDir: string, kitDir: string, parametrization: Map<string,string>): void {
+  afterApply(
+    platformModuleDir: string,
+    kitDir: string,
+    parametrization: Map<string, string>,
+  ): void {
     this.afterApplyBootstrap(platformModuleDir, kitDir, parametrization);
     this.afterApplyBase(platformModuleDir, kitDir, parametrization);
   }
 
-  afterDeploy(_platformModuleDir: string, _parametrization: Map<string,string>): void {
+  afterDeploy(
+    _platformModuleDir: string,
+    _parametrization: Map<string, string>,
+  ): void {
     // nothing to be done here
   }
 
-  betweenDeployments(platformModuleDir: string, parametrization: Map<string,string>): void {
+  betweenDeployments(
+    platformModuleDir: string,
+    parametrization: Map<string, string>,
+  ): void {
     const platformHCL = path.join(platformModuleDir, "platform.hcl");
 
-    const backendDef = '# recommended: remote state configuration\n' +
-                       'generate "backend" {\n' +
-                       '  path      = "backend.tf"\n' +
-                       '  if_exists = "overwrite"\n' +
-                       '  contents  = <<EOF\n' +
-                       'terraform {\n' +
-                       '  backend "azurerm" {\n' +
-                       '    tenant_id            = "${local.platform.azure.aadTenantId}"\n' +
-                       '    subscription_id      = "${local.platform.azure.subscriptionId}"\n' +
-                       '    resource_group_name  = "tfstate"\n' +
-                       `    storage_account_name = "${parametrization.get(PARAM_STORAGE_ACC_NAME)}"\n` +
-                       '    container_name       = "tfstate"\n' +
-                       '    key                  = "${path_relative_to_include()}.tfstate"\n' +
-                       '  }\n' +
-                       '}\n' +
-                       'EOF\n' +
-                       '}\n';
+    const backendDef = "# recommended: remote state configuration\n" +
+      'generate "backend" {\n' +
+      '  path      = "backend.tf"\n' +
+      '  if_exists = "overwrite"\n' +
+      "  contents  = <<EOF\n" +
+      "terraform {\n" +
+      '  backend "azurerm" {\n' +
+      '    tenant_id            = "${local.platform.azure.aadTenantId}"\n' +
+      '    subscription_id      = "${local.platform.azure.subscriptionId}"\n' +
+      '    resource_group_name  = "tfstate"\n' +
+      `    storage_account_name = "${
+        parametrization.get(PARAM_STORAGE_ACC_NAME)
+      }"\n` +
+      '    container_name       = "tfstate"\n' +
+      '    key                  = "${path_relative_to_include()}.tfstate"\n' +
+      "  }\n" +
+      "}\n" +
+      "EOF\n" +
+      "}\n";
 
     let text = Deno.readTextFileSync(platformHCL);
     text = text + "\n" + backendDef;
@@ -350,5 +423,5 @@ const azureLocationOptions = [
   { name: "West India", value: "westindia" },
   { name: "West US", value: "westus" },
   { name: "West US 2", value: "westus2" },
-  { name: "West US 3", value: "westus3" }
-]
+  { name: "West US 3", value: "westus3" },
+];

@@ -22,7 +22,7 @@ export function registerNewCmd(program: TopLevelCommand) {
             minLength: 1,
           }));
 
-        await newKitDirectoryCreation(modulePath, name, logger)
+        await newKitDirectoryCreation(modulePath, name, logger);
 
         logger.progress(
           "generated new kit module at " +
@@ -36,5 +36,3 @@ export function registerNewCmd(program: TopLevelCommand) {
       },
     );
 }
-
-

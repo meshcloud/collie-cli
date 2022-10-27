@@ -1,10 +1,18 @@
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
-import { DirectoryGenerator,WriteMode,Dir } from "../../cli/DirectoryGenerator.ts";
+import {
+  Dir,
+  DirectoryGenerator,
+  WriteMode,
+} from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { PlatformConfig } from "../../model/PlatformConfig.ts";
 
-export async function newKitDirectoryCreation(modulePath: string, name: string, logger: Logger) {
+export async function newKitDirectoryCreation(
+  modulePath: string,
+  name: string,
+  logger: Logger,
+) {
   const dir = new DirectoryGenerator(WriteMode.skip, logger);
   const d: Dir = {
     name: modulePath,
@@ -23,14 +31,17 @@ export async function newKitDirectoryCreation(modulePath: string, name: string, 
   await dir.write(d, "");
 }
 
-export async function emptyKitDirectoryCreation(modulePath: string, logger: Logger) {
-    const dir = new DirectoryGenerator(WriteMode.skip, logger);
-    const d: Dir = {
-      name: modulePath,
-      entries: [],
-    };
+export async function emptyKitDirectoryCreation(
+  modulePath: string,
+  logger: Logger,
+) {
+  const dir = new DirectoryGenerator(WriteMode.skip, logger);
+  const d: Dir = {
+    name: modulePath,
+    entries: [],
+  };
 
-    await dir.write(d, "");
+  await dir.write(d, "");
 }
 
 const mainTf = `# Place your module's terraform resources here as usual.
@@ -39,7 +50,7 @@ const mainTf = `# Place your module's terraform resources here as usual.
 `;
 
 function generateDocumentationTf() {
-    return `variable "output_md_file" {
+  return `variable "output_md_file" {
     type        = string
     description = "location of the file where this cloud foundation kit module generates its documentation output"
   }
@@ -66,10 +77,10 @@ function generateDocumentationTf() {
   EOF
   }
   `;
-  }
-  
- function generateReadmeMd(moduleName: string) {
-    return `---
+}
+
+function generateReadmeMd(moduleName: string) {
+  return `---
   name: ${moduleName}
   summary: |
     deploys new cloud foundation infrastructure.
@@ -81,15 +92,15 @@ function generateDocumentationTf() {
   
   This documentation is intended as a reference documentation for cloud foundation or platform engineers using this module.
     `;
-  }
+}
 
-  export function generatePlatformConfiguration(
-    foundationRepo: FoundationRepository,
-    platformConfig: PlatformConfig,
-    dir: DirectoryGenerator,
-  ) {
-    const platformHcl =
-      `# define shared configuration here that's included by all terragrunt configurations in this platform
+export function generatePlatformConfiguration(
+  foundationRepo: FoundationRepository,
+  platformConfig: PlatformConfig,
+  dir: DirectoryGenerator,
+) {
+  const platformHcl =
+    `# define shared configuration here that's included by all terragrunt configurations in this platform
   
   # recommended: remote state configuration
   remote_state {
@@ -108,9 +119,9 @@ function generateDocumentationTf() {
     output_md_file = "\${get_path_to_repo_root()}/../output.md"
   }
   `;
-  
-    const moduleHcl =
-      `# define shared configuration here that most non-bootstrap modules in this platform want to include
+
+  const moduleHcl =
+    `# define shared configuration here that most non-bootstrap modules in this platform want to include
   
   # optional: make collie's platform config available in terragrunt by parsing frontmatter
   locals {
@@ -134,38 +145,38 @@ function generateDocumentationTf() {
   EOF
   }
   `;
-    const platformDir = {
-      name: foundationRepo.resolvePlatformPath(platformConfig),
-      entries: [
-        {
-          name: "platform.hcl",
-          content: platformHcl,
-        },
-        {
-          name: "module.hcl",
-          content: moduleHcl,
-        },
-      ],
-    };
-    dir.write(platformDir, "");
-  }
+  const platformDir = {
+    name: foundationRepo.resolvePlatformPath(platformConfig),
+    entries: [
+      {
+        name: "platform.hcl",
+        content: platformHcl,
+      },
+      {
+        name: "module.hcl",
+        content: moduleHcl,
+      },
+    ],
+  };
+  dir.write(platformDir, "");
+}
 
-  export function generateTerragrunt(kitModulePath: string) {
-    const isBootstrap = kitModulePath.endsWith(`${path.SEP}bootstrap`);
-  
-    // terragrunt needs a posix style path
-    const posixKitModulePath = kitModulePath.replaceAll("\\", "/");
-  
-    const platformIncludeBlock = `include "platform" {
+export function generateTerragrunt(kitModulePath: string) {
+  const isBootstrap = kitModulePath.endsWith(`${path.SEP}bootstrap`);
+
+  // terragrunt needs a posix style path
+  const posixKitModulePath = kitModulePath.replaceAll("\\", "/");
+
+  const platformIncludeBlock = `include "platform" {
     path = find_in_parent_folders("platform.hcl") 
   }`;
-  
-    const moduleIncludeBlock = `include "module" {
+
+  const moduleIncludeBlock = `include "module" {
     path = find_in_parent_folders("module.hcl")
   }`;
-  
-    const bootstrapProviderBlock =
-      `# todo: this is a bootstrap module, you typically want to set up a provider
+
+  const bootstrapProviderBlock =
+    `# todo: this is a bootstrap module, you typically want to set up a provider
   # with user credentials (cloud CLI based authentication) here
   generate "provider" {
     path      = "provider.tf"
@@ -176,19 +187,19 @@ function generateDocumentationTf() {
   }
   EOF
   }`;
-  
-    const terraformBlock = `terraform {
+
+  const terraformBlock = `terraform {
     source = "\${get_repo_root()}//${posixKitModulePath}"
   }`;
-  
-    const inputsBlock = `inputs = {
+
+  const inputsBlock = `inputs = {
     # todo: specify inputs to terraform module
   }`;
-  
-    return [
-      platformIncludeBlock,
-      isBootstrap ? bootstrapProviderBlock : moduleIncludeBlock,
-      terraformBlock,
-      inputsBlock,
-    ].join("\n\n");
-  }
+
+  return [
+    platformIncludeBlock,
+    isBootstrap ? bootstrapProviderBlock : moduleIncludeBlock,
+    terraformBlock,
+    inputsBlock,
+  ].join("\n\n");
+}
