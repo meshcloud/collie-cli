@@ -17,7 +17,10 @@ import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CommandOptionError } from "../CommandOptionError.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { isWindows } from "../../os.ts";
-import { generatePlatformConfiguration, generateTerragrunt } from "./kit-utilities.ts";
+import {
+  generatePlatformConfiguration,
+  generateTerragrunt,
+} from "./kit-utilities.ts";
 
 interface ApplyOptions {
   foundation?: string;
