@@ -4,10 +4,12 @@ import { TerragruntArguments } from "../../../api/terragrunt/TerragruntCliFacade
 export abstract class KitBundle {
   identifier: string;
   displayName: string;
+  description: string;
 
-  constructor(identifier: string, displayName: string) {
+  constructor(identifier: string, displayName: string, description: string) {
     this.identifier = identifier;
     this.displayName = displayName;
+    this.description = description;
   }
 
   identifiedBy(identifier: string): boolean {
@@ -85,6 +87,8 @@ export class KitDeployRepresentation {
     this.deployMode = deployMode;
   }
 }
+
+// FIXME following seems not really related to a KitBundle, should be moved to some util file or so
 
 export type InputParameter = InputPromptParameter | InputSelectParameter;
 
