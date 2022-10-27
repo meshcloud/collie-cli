@@ -1,4 +1,5 @@
 import * as path from "std/path";
+import * as colors from "std/fmt/colors";
 import { InputParameter, KitBundle, KitDeployRepresentation, KitMetadata, KitRepresentation } from "./kitbundle.ts";
 
   // Define Parameter names globally for easier change:
@@ -13,8 +14,16 @@ import { InputParameter, KitBundle, KitDeployRepresentation, KitMetadata, KitRep
 
 export class AzureKitBundle extends KitBundle {
 
-  constructor(identifier: string, displayName: string) {
-    super(identifier, displayName);
+  constructor() {
+    const identifier = "azure-caf-es";
+    const displayName = "Azure Enterprise Scale";
+    const description = `This KitBundle consists of two kits: bootstrap and base. It allows you to setup a Azure LZ in a few minutes only. ` +
+                        `The bootstrap kit will be deployed automatically and provides a setup with a remote Terraform state storage. ` +
+                        `The base kit will be automatically configured, but you need to deploy it manually with\n${colors.italic(colors.green('$ collie foundation deploy <foundation> --module base'))}\n` +
+                        `It contains resources of the standard Azure Enterprise Scale architecture:\n${colors.italic(colors.blue('https://github.com/Azure/terraform-azurerm-caf-enterprise-scale'))}\n` +
+                        `To have a quick glance on it's capabilities after setup consider a look on the Cloudfoundation Maturity Model here:\n${colors.italic(colors.blue('https://cloudfoundation.meshcloud.io/maturity-model/?selectedTool=collie-cli'))}`;
+
+    super(identifier, displayName, description);
   }
 
   kitsAndSources(): Map<string, KitRepresentation> {

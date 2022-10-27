@@ -4,7 +4,7 @@ import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Input, Select } from "../../deps.ts";
 import { emptyKitDirectoryCreation, generatePlatformConfiguration, generateTerragrunt } from "./kit-utilities.ts";
-import { InputParameter, InputPromptParameter, InputSelectParameter, KitBundle, KitMetadata, metadataKitFileName } from "./bundles/kitbundle.ts";
+import { InputParameter, InputSelectParameter, KitBundle, KitMetadata, metadataKitFileName } from "./bundles/kitbundle.ts";
 import { kitDownload } from "./kit-download.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
 import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
@@ -14,9 +14,11 @@ import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { Dir, DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
 import { deployFoundation } from "../foundation/deploy.command.ts";
+import { Toggle } from "https://deno.land/x/cliffy@v0.25.1/prompt/mod.ts";
+import cliFormat from "https://raw.githubusercontent.com/zongwei007/cli-format-deno/v3.x/src/mod.ts"
 
 const availableKitBundles: KitBundle[] = [
-  new AzureKitBundle("azure-caf-es", "Azure Enterprise Scale")
+  new AzureKitBundle()
 ];
 
 interface BundleOptions {
@@ -56,11 +58,18 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
 
       const platformPath = collie.resolvePath("foundations", foundation, "platforms", platform);
 
-      logger.progress("Choosing a predefined bundled kit.");
-      const bundleToSetup = await promptKitBundleOption();
-      logger.progress(`Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`);
+      let confirm = false;
+      let bundleToSetup: KitBundle | undefined = undefined;
+      while(!confirm) {
+        logger.progress("Choosing a predefined bundled kit.");
+        bundleToSetup = await promptKitBundleOption();
+        logger.progress(`Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`);
+        console.log(cliFormat.wrap(bundleToSetup.description, { paddingLeft: "  "}))
+        confirm = await Toggle.prompt(`Continue?`);
+      }
 
-      const allKits = bundleToSetup.kitsAndSources();
+      bundleToSetup = bundleToSetup!;
+      const allKits = bundleToSetup!.kitsAndSources();
 
       for (const [name, kitRepr] of allKits) {
         const kitPath = collie.resolvePath("kit", prefix, name);
