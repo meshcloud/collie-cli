@@ -54,26 +54,26 @@ function generateDocumentationTf() {
     type        = string
     description = "location of the file where this cloud foundation kit module generates its documentation output"
   }
-  
+
   resource "local_file" "output_md" {
     filename = var.output_md_file
     content = <<EOF
   This documentation is intended as a summary of resources deployed and managed by this module for landing zone consumers
   and security auditors.
-  
+
   ### TODO
-  
+
   TODO: describe the deployed resources and its configuration in a human-friendly way.
-  
+
   ::: tip
   Here are some useful tips
-  
-  - This file is proper \`markdown\`. 
+
+  - This file is proper \`markdown\`.
   - Use h3 and h4 level headings to add sections to the kit module description
-  - You can use terraform variables, resources and outputs defined anywhere in this terraform module, to templatise it, 
+  - You can use terraform variables, resources and outputs defined anywhere in this terraform module, to templatise it,
     e.g. this is the location where this documentation comes from: \`\${var.output_md_file}\`
   - Leverage terraform's \`templatefile()\` function for more complex templates
-  ::: 
+  :::
   EOF
   }
   `;
@@ -87,9 +87,9 @@ function generateReadmeMd(moduleName: string) {
     Add a concise description of the module's purpose here.
   # optional: add additional metadata about implemented security controls
   ---
-  
+
   # ${moduleName}
-  
+
   This documentation is intended as a reference documentation for cloud foundation or platform engineers using this module.
     `;
 }
@@ -101,7 +101,7 @@ export function generatePlatformConfiguration(
 ) {
   const platformHcl =
     `# define shared configuration here that's included by all terragrunt configurations in this platform
-  
+
   # recommended: remote state configuration
   remote_state {
     backend = todo
@@ -113,7 +113,7 @@ export function generatePlatformConfiguration(
       # tip: use "my/path/\${path_relative_to_include()}" to dynamically include the module id in a prefix
     }
   }
-  
+
   # recommended: enable documentation generation for kit modules
   inputs = {
     output_md_file = "\${get_path_to_repo_root()}/../output.md"
@@ -122,17 +122,17 @@ export function generatePlatformConfiguration(
 
   const moduleHcl =
     `# define shared configuration here that most non-bootstrap modules in this platform want to include
-  
+
   # optional: make collie's platform config available in terragrunt by parsing frontmatter
   locals {
     platform = yamldecode(regex("^---([\\\\s\\\\S]*)\\\\n---\\\\n[\\\\s\\\\S]*$", file(".//README.md"))[0])
   }
-  
+
   # optional: reference the bootstrap module to access its outputs
   dependency "bootstrap" {
     config_path = "\${path_relative_from_include()}/bootstrap"
   }
-  
+
   # recommended: generate a default provider configuration
   generate "provider" {
     path      = "provider.tf"
@@ -168,7 +168,7 @@ export function generateTerragrunt(kitModulePath: string) {
   const posixKitModulePath = kitModulePath.replaceAll("\\", "/");
 
   const platformIncludeBlock = `include "platform" {
-    path = find_in_parent_folders("platform.hcl") 
+    path = find_in_parent_folders("platform.hcl")
   }`;
 
   const moduleIncludeBlock = `include "module" {
@@ -202,4 +202,31 @@ export function generateTerragrunt(kitModulePath: string) {
     terraformBlock,
     inputsBlock,
   ].join("\n\n");
+}
+
+/**
+ * This function will:
+ * - create a backup file only if none exists yet
+ * - override given file with it's backup, if a backup file exists
+ *
+ * This helps to ensure a certain consistent file content before accessing this file.
+ */
+export function ensureBackedUpFile(fileName: string, backupAppendix = "backup") {
+  const backUpFileName = `${fileName}.${backupAppendix}`;
+  let backUpExists = false;
+  try {
+    Deno.statSync(backUpFileName);
+    backUpExists = true;
+  } catch(_) { /* we assume the backUpFile does not exist, although error could have other reasons, such as permissions. */ }
+
+  if (backUpExists) {
+    // load content from backUp and write into original file:
+    const text = Deno.readTextFileSync(backUpFileName);
+    Deno.writeTextFileSync(fileName, text, { append: false })
+  } else {
+    // write backup
+    Deno.createSync(backUpFileName);
+    const text = Deno.readTextFileSync(fileName);
+    Deno.writeTextFileSync(backUpFileName, text, { append: false })
+  }
 }

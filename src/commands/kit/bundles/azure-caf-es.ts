@@ -7,6 +7,7 @@ import {
   KitMetadata,
   KitRepresentation,
 } from "./kitbundle.ts";
+import { ensureBackedUpFile } from "../kit-utilities.ts";
 
 // Define Parameter names globally for easier change:
 // bootstrap module
@@ -125,7 +126,6 @@ export class AzureKitBundle extends KitBundle {
     // nothing to be done here
   }
 
-  // TODO this should work when called again with different parametrization, but this is hard to archive without maintaining some kind of history.
   afterApplyBootstrap(
     platformModuleDir: string,
     _kitDir: string,
@@ -137,6 +137,9 @@ export class AzureKitBundle extends KitBundle {
       "terragrunt.hcl",
     );
     const platformHCL = path.join(platformModuleDir, "platform.hcl");
+
+    ensureBackedUpFile(platformHCL);
+    ensureBackedUpFile(bootstrapTerragrunt);
 
     const existingProviderConfig = '  generate "provider" {\n' +
       '    path      = "provider.tf"\n' +
@@ -228,6 +231,9 @@ export class AzureKitBundle extends KitBundle {
       "base",
       "terragrunt.hcl",
     );
+
+    ensureBackedUpFile(moduleHCL);
+    ensureBackedUpFile(baseTerragrunt);
 
     const outputBlockLS = "  value = {\n" +
       "    management = azurerm_log_analytics_linked_service.management\n" +
