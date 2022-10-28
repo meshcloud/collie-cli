@@ -15,7 +15,6 @@
     "std/testing/mock": "https://deno.land/std@0.155.0/testing/mock.ts",
     "x/json_tree": "https://deno.land/x/json_tree@latest/mod.ts",
     "x/compress": "https://deno.land/x/compress@v0.4.5/mod.ts",
-    "x/cli_format_deno": "https://raw.githubusercontent.com/zongwei007/cli-format-deno/v3.x/src/mod.ts",
     "/": "./",
     "./": "./"
   }
