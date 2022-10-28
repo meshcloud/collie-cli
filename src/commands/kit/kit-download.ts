@@ -102,7 +102,7 @@ async function extractTar(
     }
 
     ensureFileSync(targetFilepath);
-    const file = Deno.openSync(targetFilepath, { write: true });
+    const file = Deno.openSync(targetFilepath, { write: true, truncate: true });
     try {
       await copy(entry, file);
     } finally {
