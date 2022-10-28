@@ -38,7 +38,7 @@ export class AzureKitBundle extends KitBundle {
           ),
         )
       }\n` +
-      `To have a quick glance on it's capabilities after setup consider a look on the Cloudfoundation Maturity Model here:\n${
+      `To have a quick glance on its capabilities after setup consider a look on the Cloudfoundation Maturity Model here:\n${
         colors.italic(
           colors.blue(
             "https://cloudfoundation.meshcloud.io/maturity-model/?selectedTool=collie-cli",
