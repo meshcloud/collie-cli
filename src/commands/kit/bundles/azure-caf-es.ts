@@ -10,7 +10,7 @@ import {
 
 // Define Parameter names globally for easier change:
 // bootstrap module
-const PARAM_PE_EMAIL = "Platform Engineer Email";
+const PARAM_PE_UPN = "Platform Engineer UPN";
 const PARAM_STORAGE_ACC_NAME = "Storage Account Name";
 const PARAM_TF_STATE_LOCATION = "Terraform State Location";
 // base module
@@ -51,13 +51,11 @@ export class AzureKitBundle extends KitBundle {
   kitsAndSources(): Map<string, KitRepresentation> {
     const bootstrapKitParams: InputParameter[] = [
       {
-        description: PARAM_PE_EMAIL,
-        // validating e-mails by regex is generally considered a futile attempt,
-        // so we accept everything that includes a @.
-        validationRegex: /.+@.+/,
+        description: PARAM_PE_UPN,
+        validationRegex: /.*/,
         hint:
-          "This is the email address of the Platform Engineer that should be the first initial member with access to the remote TF state. (Most probably yourself)",
-        validationFailureMessage: "Please enter a valid e-mail address.",
+          "This is the UPN of the Platform Engineer that should be the first initial member with access to the remote TF state. (Most probably yourself)",
+        validationFailureMessage: "Please enter a valid UPN.",
       },
       {
         description: PARAM_STORAGE_ACC_NAME,
@@ -174,7 +172,7 @@ export class AzureKitBundle extends KitBundle {
       '    root_parent_id = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
       `    foundation_name = "${parametrization.get("__foundation__")}"\n` +
       "    platform_engineers_members = [\n" +
-      `      "${parametrization.get(PARAM_PE_EMAIL)}",\n` +
+      `      "${parametrization.get(PARAM_PE_UPN)}",\n` +
       "    ]\n" +
       `    storage_account_name = "${
         parametrization.get(PARAM_STORAGE_ACC_NAME)
