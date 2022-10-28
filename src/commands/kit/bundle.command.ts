@@ -207,7 +207,7 @@ async function promptKitBundleOption(): Promise<KitBundle> {
     options: bundleOptions,
   });
   if (selectedOption === "quit") {
-    Deno.exit(1);
+    Deno.exit();
   } else {
     return availableKitBundles.find((x) => x.identifiedBy(selectedOption))!;
   }
@@ -304,7 +304,7 @@ async function requestKitBundleParametrization(
       ],
     });
     if (confirmation === "q") {
-      Deno.exit(1);
+      Deno.exit();
     } else if (confirmation === "r") {
       retry = true;
       answers.clear();
