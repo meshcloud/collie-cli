@@ -1,5 +1,5 @@
-import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
 import { TerragruntArguments } from "../../../api/terragrunt/TerragruntCliFacade.ts";
+import { InputParameter } from "../../InputParameter.ts";
 
 export abstract class KitBundle {
   identifier: string;
@@ -17,16 +17,16 @@ export abstract class KitBundle {
   }
 
   requiredParameters(): Map<string, InputParameter[]> {
-    const r = new Map<string, InputParameter[]>();
+    const paramMap = new Map<string, InputParameter[]>();
     const kits = this.kitsAndSources();
 
     for (const [kitName, repr] of kits) {
       const params: InputParameter[] = [];
       params.push(...repr.requiredParameters);
-      r.set(kitName, params);
+      paramMap.set(kitName, params);
     }
 
-    return r;
+    return paramMap;
   }
 
   // this defines the "contents" of this KitBundle in terms of which kits are contained
@@ -106,21 +106,4 @@ export class KitDeployRepresentation {
     this.betweenDoubleDeployments = betweenDoubleDeployments;
     this.deployMode = deployMode;
   }
-}
-
-// FIXME following seems not really related to a KitBundle, should be moved to some util file or so
-
-export type InputParameter = InputPromptParameter | InputSelectParameter;
-
-export interface InputPromptParameter {
-  description: string;
-  validationRegex: RegExp;
-  hint: string | undefined;
-  validationFailureMessage: string;
-}
-
-export interface InputSelectParameter {
-  description: string;
-  hint: string | undefined;
-  options: SelectValueOptions;
 }
