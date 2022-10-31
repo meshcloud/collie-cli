@@ -370,7 +370,9 @@ export class AzureKitBundle extends KitBundle {
       '  backend "azurerm" {\n' +
       '    tenant_id            = "${local.platform.azure.aadTenantId}"\n' +
       '    subscription_id      = "${local.platform.azure.subscriptionId}"\n' +
-      '    resource_group_name  = "tfstate"\n' +
+      `    resource_group_name  = "${
+        parametrization.get(PARAM_STORAGE_ACC_RG_NAME)
+      }"\n` +
       `    storage_account_name = "${
         parametrization.get(PARAM_STORAGE_ACC_NAME)
       }"\n` +
