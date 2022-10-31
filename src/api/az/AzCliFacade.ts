@@ -1,5 +1,6 @@
 import {
   Account,
+  AzLocation,
   AzureMeshTag,
   Entity,
   RoleAssignment,
@@ -29,4 +30,6 @@ export interface AzCliFacade {
   ): Promise<SimpleCostManagementInfo[]>;
 
   getRoleAssignments(subscription: Subscription): Promise<RoleAssignment[]>;
+
+  listLocations(): Promise<AzLocation[]>;
 }

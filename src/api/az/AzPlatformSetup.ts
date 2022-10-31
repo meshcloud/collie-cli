@@ -13,7 +13,7 @@ export class AzPlatformSetup extends PlatformSetup<PlatformConfigAzure> {
   }
 
   async promptInteractively(): Promise<PlatformConfigAzure> {
-    // todo: shoudl this be id of the platform instead?
+    // todo: should this be id of the platform instead?
     // todo: AZURE_CONFIG_DIR?
     const { id, name } = await this.promptPlatformName();
 

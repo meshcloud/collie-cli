@@ -3,6 +3,7 @@ import { AzureErrorCode, MeshAzurePlatformError } from "/errors.ts";
 import { AzCliFacade, DynamicInstallValue } from "./AzCliFacade.ts";
 import {
   Account,
+  AzLocation,
   AzureMeshTag,
   Entity,
   RoleAssignment,
@@ -37,6 +38,12 @@ export class AutoInstallAzModuleAzCliDecorator implements AzCliFacade {
   async listSubscriptions(): Promise<Subscription[]> {
     return await this.wrapCallWithInstallInterception(() => {
       return this.azureFacade.listSubscriptions();
+    });
+  }
+
+  async listLocations(): Promise<AzLocation[]> {
+    return await this.wrapCallWithInstallInterception(() => {
+      return this.azureFacade.listLocations();
     });
   }
 

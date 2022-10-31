@@ -3,6 +3,7 @@ import { sleep } from "/promises.ts";
 import { AzCliFacade, DynamicInstallValue } from "./AzCliFacade.ts";
 import {
   Account,
+  AzLocation,
   AzureMeshTag,
   Entity,
   RoleAssignment,
@@ -30,6 +31,12 @@ export class RetryingAzCliDecorator implements AzCliFacade {
   async listSubscriptions(): Promise<Subscription[]> {
     return await this.retryable(async () => {
       return await this.wrapped.listSubscriptions();
+    });
+  }
+
+  async listLocations(): Promise<AzLocation[]> {
+    return await this.retryable(async () => {
+      return await this.wrapped.listLocations();
     });
   }
 
