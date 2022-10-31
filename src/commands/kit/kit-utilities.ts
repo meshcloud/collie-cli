@@ -211,22 +211,27 @@ export function generateTerragrunt(kitModulePath: string) {
  *
  * This helps to ensure a certain consistent file content before accessing this file.
  */
-export function ensureBackedUpFile(fileName: string, backupAppendix = "backup") {
+export function ensureBackedUpFile(
+  fileName: string,
+  backupAppendix = "backup",
+) {
   const backUpFileName = `${fileName}.${backupAppendix}`;
   let backUpExists = false;
   try {
     Deno.statSync(backUpFileName);
     backUpExists = true;
-  } catch(_) { /* we assume the backUpFile does not exist, although error could have other reasons, such as permissions. */ }
+  } catch (_) {
+    /* we assume the backUpFile does not exist, although error could have other reasons, such as permissions. */
+  }
 
   if (backUpExists) {
     // load content from backUp and write into original file:
     const text = Deno.readTextFileSync(backUpFileName);
-    Deno.writeTextFileSync(fileName, text, { append: false })
+    Deno.writeTextFileSync(fileName, text, { append: false });
   } else {
     // write backup
     Deno.createSync(backUpFileName);
     const text = Deno.readTextFileSync(fileName);
-    Deno.writeTextFileSync(backUpFileName, text, { append: false })
+    Deno.writeTextFileSync(backUpFileName, text, { append: false });
   }
 }
