@@ -73,7 +73,8 @@ export class AzureKitBundle extends KitBundle {
         validationRegex: /^[a-zA-Z0-9]{2,24}$/,
         hint:
           "Unique name of the Storage Account, where the remote TF state will be stored. (2-24 alphanumerics)",
-        validationFailureMessage: "Please enter a valid storage account name. (2-24 alphanumerics)",
+        validationFailureMessage:
+          "Please enter a valid storage account name. (2-24 alphanumerics)",
       },
       {
         description: PARAM_TF_STATE_LOCATION,
