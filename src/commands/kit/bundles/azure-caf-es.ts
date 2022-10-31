@@ -26,21 +26,21 @@ export class AzureKitBundle extends KitBundle {
     const identifier = "azure-caf-es";
     const displayName = "Azure Enterprise Scale";
     const description =
-      `This KitBundle consists of two kits: bootstrap and base. It allows you to setup a Azure LZ in a few minutes only. ` +
-      `The bootstrap kit will be deployed automatically and provides a setup with a remote Terraform state storage. ` +
-      `The base kit will be automatically configured, but you need to deploy it manually with\n${
+      `This KitBundle consists of two kits: bootstrap and base. It allows you to set up a Azure LZ in only a few minutes. ` +
+      `The bootstrap kit will be deployed automatically which provides a setup with remote Terraform state storage. ` +
+      `The base kit will be configured during the apply process, but as a follow-up step you need to deploy it manually with\n${
         colors.italic(
           colors.green("$ collie foundation deploy <foundation> --module base"),
         )
       }\n` +
-      `It contains resources of the standard Azure Enterprise Scale architecture:\n${
+      `It contains resources from the Azure landing zone Terraform module based on Enterprise Scale conceptual architecture:\n${
         colors.italic(
           colors.blue(
             "https://github.com/Azure/terraform-azurerm-caf-enterprise-scale",
           ),
         )
       }\n` +
-      `To have a quick glance on its capabilities after setup consider a look on the Cloudfoundation Maturity Model here:\n${
+      `To have a quick glance on its capabilities after setting it up, consider a look on the Cloudfoundation Maturity Model here:\n${
         colors.italic(
           colors.blue(
             "https://cloudfoundation.meshcloud.io/maturity-model/?selectedTool=Azure%20LZ%20Terraform%20module%20-%20ES",
