@@ -13,6 +13,8 @@ import { InputParameter } from "../../InputParameter.ts";
 // bootstrap module
 const PARAM_PE_UPN = "Platform Engineer UPN";
 const PARAM_STORAGE_ACC_NAME = "Storage Account Name";
+const PARAM_STORAGE_ACC_RG_NAME =
+  "Name of the Resource Group holding the Storage Account";
 const PARAM_TF_STATE_LOCATION = "Terraform State Location";
 // base module
 const PARAM_ROOT_ID = "Root Id";
@@ -41,7 +43,7 @@ export class AzureKitBundle extends KitBundle {
       `To have a quick glance on its capabilities after setup consider a look on the Cloudfoundation Maturity Model here:\n${
         colors.italic(
           colors.blue(
-            "https://cloudfoundation.meshcloud.io/maturity-model/?selectedTool=collie-cli",
+            "https://cloudfoundation.meshcloud.io/maturity-model/?selectedTool=Azure%20LZ%20Terraform%20module%20-%20ES",
           ),
         )
       }`;
@@ -57,6 +59,14 @@ export class AzureKitBundle extends KitBundle {
         hint:
           "This is the UPN of the Platform Engineer that should be the first initial member with access to the remote TF state. (Most probably yourself)",
         validationFailureMessage: "Please enter a valid UPN.",
+      },
+      {
+        description: PARAM_STORAGE_ACC_RG_NAME,
+        validationRegex: /^[a-zA-Z0-9]*$/,
+        hint:
+          "Name of the Resource Group that holds the remove Terraform State after the bootstrap process.",
+        validationFailureMessage:
+          "Please enter a valid resource group name (alphanumerics only).",
       },
       {
         description: PARAM_STORAGE_ACC_NAME,
@@ -96,7 +106,7 @@ export class AzureKitBundle extends KitBundle {
       [
         "bootstrap",
         new KitRepresentation(
-          "https://github.com/meshcloud/landing-zone-construction-kit/archive/530675fd541e2d7209dd522e26ae031618354245.tar.gz",
+          "https://github.com/meshcloud/landing-zone-construction-kit/archive/c8e08ecba445e529153ae9ef1892349f76fcbcb4.tar.gz",
           "/kit/azure/bootstrap-es",
           bootstrapKitParams,
           undefined,
@@ -180,6 +190,9 @@ export class AzureKitBundle extends KitBundle {
       `    storage_account_name = "${
         parametrization.get(PARAM_STORAGE_ACC_NAME)
       }"\n` +
+      `    storage_rg_name = "${
+        parametrization.get(PARAM_STORAGE_ACC_RG_NAME)
+      }"\n` +
       `    tfstate_location     = "${
         parametrization.get(PARAM_TF_STATE_LOCATION)
       }"\n`;
@@ -214,7 +227,7 @@ export class AzureKitBundle extends KitBundle {
 
     // update platform.hcl
     text = Deno.readTextFileSync(platformHCL);
-    text = text.replace(sharedConfigComment, `${addLocalsBlock}`);
+    text = text.replace(sharedConfigComment, addLocalsBlock);
     text = text.replace(remoteStateConfig, "");
     Deno.writeTextFileSync(platformHCL, text);
   }
