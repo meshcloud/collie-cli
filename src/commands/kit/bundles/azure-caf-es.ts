@@ -62,18 +62,18 @@ export class AzureKitBundle extends KitBundle {
       },
       {
         description: PARAM_STORAGE_ACC_RG_NAME,
-        validationRegex: /^[a-zA-Z0-9]*$/,
+        validationRegex: /^[a-zA-Z0-9-_]*$/,
         hint:
           "Name of the Resource Group that holds the remove Terraform State after the bootstrap process.",
         validationFailureMessage:
-          "Please enter a valid resource group name (alphanumerics only).",
+          "Please enter a valid resource group name (alphanumerics '-' and '_' only).",
       },
       {
         description: PARAM_STORAGE_ACC_NAME,
         validationRegex: /^[a-zA-Z0-9]{2,24}$/,
         hint:
           "Unique name of the Storage Account, where the remote TF state will be stored. (2-24 alphanumerics)",
-        validationFailureMessage: "Please enter a valid storage account name.",
+        validationFailureMessage: "Please enter a valid storage account name. (2-24 alphanumerics)",
       },
       {
         description: PARAM_TF_STATE_LOCATION,
