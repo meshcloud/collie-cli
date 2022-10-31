@@ -9,15 +9,13 @@ import {
   generateTerragrunt,
 } from "./kit-utilities.ts";
 import {
-  InputParameter,
-  InputSelectParameter,
   KitBundle,
   KitMetadata,
   metadataKitFileName,
 } from "./bundles/kitbundle.ts";
 import { kitDownload } from "./kit-download.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
-import { SelectValueOptions } from "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts";
+import { SelectValueOptions } from "x/cliffy/prompt";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
@@ -30,6 +28,7 @@ import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
 import { deployFoundation } from "../foundation/deploy.command.ts";
 import { Toggle } from "https://deno.land/x/cliffy@v0.25.1/prompt/mod.ts";
 import cliFormat from "https://raw.githubusercontent.com/zongwei007/cli-format-deno/v3.x/src/mod.ts";
+import { InputParameter, InputSelectParameter } from "../InputParameter.ts";
 
 const availableKitBundles: KitBundle[] = [
   new AzureKitBundle(),

@@ -1,13 +1,13 @@
 import * as path from "std/path";
 import * as colors from "std/fmt/colors";
 import {
-  InputParameter,
   KitBundle,
   KitDeployRepresentation,
   KitMetadata,
   KitRepresentation,
 } from "./kitbundle.ts";
 import { ensureBackedUpFile } from "../kit-utilities.ts";
+import { InputParameter } from "../../InputParameter.ts";
 
 // Define Parameter names globally for easier change:
 // bootstrap module
