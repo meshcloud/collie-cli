@@ -1,6 +1,7 @@
 import { AzCliFacade, DynamicInstallValue } from "./AzCliFacade.ts";
 import {
   Account,
+  AzLocation,
   AzureMeshTag,
   CostManagementInfo,
   Entity,
@@ -61,6 +62,16 @@ export class AzCli implements AzCliFacade {
 
   async listSubscriptions(): Promise<Subscription[]> {
     const result = await this.processRunner.run(["az", "account", "list"]);
+
+    return parseJsonWithLog(result.stdout);
+  }
+
+  async listLocations(): Promise<AzLocation[]> {
+    const result = await this.processRunner.run([
+      "az",
+      "account",
+      "list-locations",
+    ]);
 
     return parseJsonWithLog(result.stdout);
   }

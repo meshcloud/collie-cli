@@ -93,3 +93,15 @@ export interface RoleAssignment {
   // "/providers/Microsoft.Management/managementGroups/<mg-id>" -> meaning from a management group
   // "/subscriptions/<sub-id>" -> meaning directly assigned on a subscription.
 }
+
+export interface AzLocation {
+  displayName: string;
+  id: string;
+  name: string;
+  regionalDisplayName: string;
+  metadata: {
+    regionType: string;
+    geographyGroup: string | null;
+    physicalLocation: string | null;
+  };
+}

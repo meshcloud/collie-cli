@@ -29,10 +29,14 @@ import { deployFoundation } from "../foundation/deploy.command.ts";
 import { Toggle } from "https://deno.land/x/cliffy@v0.25.1/prompt/mod.ts";
 import cliFormat from "https://raw.githubusercontent.com/zongwei007/cli-format-deno/v3.x/src/mod.ts";
 import { InputParameter, InputSelectParameter } from "../InputParameter.ts";
+import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
+import { AzLocation } from "../../api/az/Model.ts";
 
-const availableKitBundles: KitBundle[] = [
-  new AzureKitBundle(),
-];
+function availableKitBundles(locations: AzLocation[]): KitBundle[] {
+  return [
+    new AzureKitBundle(locations),
+  ];
+}
 
 interface BundleOptions {
   foundation?: string;
@@ -58,6 +62,23 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         const logger = new Logger(collie, opts);
         const validator = new ModelValidator(logger);
 
+        const factory = new CliApiFacadeFactory(collie, logger);
+        const az = factory.buildAz();
+        const locations = (await az.listLocations())
+          // only physical regions  (like "germanywestcentral") should be selectable,
+          // but no logical regions (like "germany").
+          .filter((location: AzLocation) =>
+            location.metadata.regionType === "Physical"
+          )
+          .sort((location1, location2) => {
+            // this is effectively a "thenBy" sort, see https://stackoverflow.com/a/9175783/125407
+            // The intent is to have those locations that are used most frequently by our customers
+            // appear at the top, so the user won't have to scroll too far.
+            return cmpByGeographyGroup(location1, location2) ||
+              cmpByLocation(location1, location2) ||
+              cmp(location1.name, location2.name);
+          });
+
         const foundation = opts.foundation ||
           (await InteractivePrompts.selectFoundation(collie));
 
@@ -81,7 +102,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         let bundleToSetup: KitBundle | undefined = undefined;
         while (!confirm) {
           logger.progress("Choosing a predefined bundled kit.");
-          bundleToSetup = await promptKitBundleOption();
+          bundleToSetup = await promptKitBundleOption(locations);
           logger.progress(
             `Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`,
           );
@@ -194,8 +215,11 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
     );
 }
 
-async function promptKitBundleOption(): Promise<KitBundle> {
-  const bundleOptions: SelectValueOptions = availableKitBundles.map((x) => ({
+async function promptKitBundleOption(
+  locations: AzLocation[],
+): Promise<KitBundle> {
+  const kitBundles = availableKitBundles(locations);
+  const bundleOptions: SelectValueOptions = kitBundles.map((x) => ({
     name: x.displayName,
     value: x.identifier,
   }));
@@ -208,7 +232,7 @@ async function promptKitBundleOption(): Promise<KitBundle> {
   if (selectedOption === "quit") {
     Deno.exit();
   } else {
-    return availableKitBundles.find((x) => x.identifiedBy(selectedOption))!;
+    return kitBundles.find((x) => x.identifiedBy(selectedOption))!;
   }
 }
 
@@ -341,4 +365,55 @@ function isSelect(
   inputParameter: InputParameter,
 ): inputParameter is InputSelectParameter {
   return (inputParameter as InputSelectParameter).options !== undefined;
+}
+
+function cmpByGeographyGroup(a: AzLocation, b: AzLocation): number {
+  // The order should reflect the geography groups used most often by our customers, i.e., if A appears
+  // before B in this list, then we assume that A is used more often by our customers than B.
+  const geographyGroupsOrdered = [
+    "Europe",
+    "US",
+    "Canada",
+    "Asia Pacific",
+    "Middle East",
+    "South America",
+    "Africa",
+    null,
+  ];
+  return cmp(
+    indexOrInfinity(geographyGroupsOrdered, a.metadata.geographyGroup),
+    indexOrInfinity(geographyGroupsOrdered, b.metadata.geographyGroup),
+  );
+}
+
+function cmpByLocation(a: AzLocation, b: AzLocation): number {
+  // The order should reflect the locations used most often by our customers, i.e., if A appears
+  // before B in this list, then we assume that A is used more often by our customers than B.
+  const physicalLocationsOrdered = [
+    "Frankfurt",
+    "Berlin",
+    null,
+  ];
+  return cmp(
+    indexOrInfinity(physicalLocationsOrdered, a.metadata.physicalLocation),
+    indexOrInfinity(physicalLocationsOrdered, b.metadata.physicalLocation),
+  );
+}
+
+function indexOrInfinity<T>(items: T[], item: T): number {
+  const idx = items.indexOf(item);
+  // Returning Infinity so the result can be used for sorting: items that were not found
+  // should appear last if we sort in ascending order.
+  return idx === -1 ? Infinity : idx;
+}
+
+// deno-lint-ignore no-explicit-any
+function cmp(a: any, b: any): number {
+  if (a > b) {
+    return +1;
+  }
+  if (a < b) {
+    return -1;
+  }
+  return 0;
 }
