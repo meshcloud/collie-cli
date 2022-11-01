@@ -18,10 +18,13 @@ const PARAM_STORAGE_ACC_NAME = "Storage Account Name";
 const PARAM_STORAGE_ACC_RG_NAME =
   "Name of the Resource Group holding the Storage Account";
 const PARAM_TF_STATE_LOCATION = "Terraform State Location";
+
 // base module
 const PARAM_ROOT_ID = "Root Id";
 const PARAM_ROOT_NAME = "Root Name";
 const PARAM_DEFAULT_LOCATION = "Default Location";
+
+// meshPlatform module: currently user does not need to add any input
 
 export class AzureKitBundle extends KitBundle {
   locations: AzLocation[];
@@ -114,6 +117,8 @@ export class AzureKitBundle extends KitBundle {
       },
     ];
 
+    const meshPlatformKitParams: InputParameter[] = [];
+
     return new Map<string, KitRepresentation>([
       [
         "bootstrap",
@@ -137,6 +142,20 @@ export class AzureKitBundle extends KitBundle {
           new KitMetadata(
             "Azure CAF Enterprise Scale",
             "todo description goes here",
+          ),
+          undefined,
+        ),
+      ],
+
+      [
+        "meshPlatform",
+        new KitRepresentation(
+          "https://github.com/meshcloud/terraform-azure-meshplatform/archive/fa13447115c451f25496430b37fc560c650f1808.tar.gz",
+          undefined,
+          meshPlatformKitParams,
+          new KitMetadata(
+            "Azure meshPlatform Module",
+            "Terraform module to integrate Azure as a meshPlatform into meshStack instance",
           ),
           undefined,
         ),
@@ -351,6 +370,41 @@ export class AzureKitBundle extends KitBundle {
     Deno.writeTextFileSync(baseTerragrunt, text);
   }
 
+  afterApplyMeshPlatform(
+    platformModuleDir: string,
+    __kitDir: string,
+    parametrization: Map<string, string>,
+  ): void {
+    const meshPlatformTerragrunt = path.join(
+      platformModuleDir,
+      "meshPlatform",
+      "terragrunt.hcl",
+    );
+
+    const meshPlatformIncludeOld =
+      'path = find_in_parent_folders("platform.hcl")';
+
+    const meshPlatformIncludeNew =
+      'path = find_in_parent_folders("platform.hcl")\n    expose = true';
+
+    const meshPlatformInputToken = "# todo: specify inputs to terraform module";
+
+    const meshPlatformInputVariables = "\n" +
+      `    service_principal_name_suffix = "${
+        parametrization.get("__foundation__")
+      }"\n` +
+      '    mgmt_group_name    = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
+      "    replicator_enabled = true\n" +
+      "    kraken_enabled     = false\n" +
+      "    idplookup_enabled  = false\n";
+
+    // update meshPlatform/terragrunt.hcl
+    let text = Deno.readTextFileSync(meshPlatformTerragrunt);
+    text = text.replace(meshPlatformIncludeOld, meshPlatformIncludeNew);
+    text = text.replace(meshPlatformInputToken, meshPlatformInputVariables);
+    Deno.writeTextFileSync(meshPlatformTerragrunt, text);
+  }
+
   afterApply(
     platformModuleDir: string,
     kitDir: string,
@@ -358,6 +412,7 @@ export class AzureKitBundle extends KitBundle {
   ): void {
     this.afterApplyBootstrap(platformModuleDir, kitDir, parametrization);
     this.afterApplyBase(platformModuleDir, kitDir, parametrization);
+    this.afterApplyMeshPlatform(platformModuleDir, kitDir, parametrization);
   }
 
   afterDeploy(
