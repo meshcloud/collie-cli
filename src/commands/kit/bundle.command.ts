@@ -15,6 +15,7 @@ import {
 } from "./bundles/kitbundle.ts";
 import { kitDownload } from "./kit-download.ts";
 import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
+import { AzureKitMeshstackIntegrationBundle } from "./bundles/azure-caf-es-with-meshplatform.ts";
 import { SelectValueOptions } from "x/cliffy/prompt";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
@@ -35,6 +36,7 @@ import { AzLocation } from "../../api/az/Model.ts";
 function availableKitBundles(locations: AzLocation[]): KitBundle[] {
   return [
     new AzureKitBundle(locations),
+    new AzureKitMeshstackIntegrationBundle(locations),
   ];
 }
 
