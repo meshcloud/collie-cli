@@ -81,16 +81,16 @@ function generateDocumentationTf() {
 
 function generateReadmeMd(moduleName: string) {
   return `---
-  name: ${moduleName}
-  summary: |
-    deploys new cloud foundation infrastructure.
-    Add a concise description of the module's purpose here.
-  # optional: add additional metadata about implemented security controls
-  ---
+name: ${moduleName}
+summary: |
+  deploys new cloud foundation infrastructure.
+  Add a concise description of the module's purpose here.
+# optional: add additional metadata about implemented security controls
+---
 
-  # ${moduleName}
+# ${moduleName}
 
-  This documentation is intended as a reference documentation for cloud foundation or platform engineers using this module.
+This documentation is intended as a reference documentation for cloud foundation or platform engineers using this module.
     `;
 }
 
