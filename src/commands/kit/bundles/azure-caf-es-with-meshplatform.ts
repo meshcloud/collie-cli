@@ -403,7 +403,10 @@ export class AzureKitMeshstackIntegrationBundle extends KitBundle {
       '    mgmt_group_name    = "${include.platform.locals.platform.azure.aadTenantId}"\n' +
       "    replicator_enabled = true\n" +
       "    kraken_enabled     = false\n" +
-      "    idplookup_enabled  = false\n";
+      "    idplookup_enabled  = false\n" +
+      "    ## Note that additional permission is required to use pre-provisioned subscriptions option instead of enterprise enrollment.\n" +
+      "    ## Uncomment the `additional_permissions` input to allow the replicator service principal rename pre-provisioned subscriptions.\n" +
+      '    # additional_permissions = ["Microsoft.Subscription/rename/action"]\n';
 
     // update meshPlatform/terragrunt.hcl
     let text = Deno.readTextFileSync(meshPlatformTerragrunt);
