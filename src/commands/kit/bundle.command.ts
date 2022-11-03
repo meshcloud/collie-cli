@@ -178,9 +178,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
               kitRepr.deployment!.autoDeployOrder
             }`,
           );
-          // TODO this is a non-obvious and brittle way to determine if the module is a bootstrap module
-          // >> yeah, but we want to know if the module needs to be deployed twice, not if it is a bootstrap module.
-          // >> maybe other modules in the future need double-deployment, too.
           const moduleOpts = {
             module: name,
           };
