@@ -209,10 +209,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
             );
           }
         });
-
-        // TODO commented for now: as long as the deploy is commented, this should be commented as well,
-        // because there might be a dependency between the two.
-        // bundleToSetup.afterDeploy(platformPath, parametrization);
       },
     );
 }

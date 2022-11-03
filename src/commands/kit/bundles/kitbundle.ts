@@ -41,12 +41,6 @@ export abstract class KitBundle {
     kitDir: string,
     parametrization: Map<string, string>,
   ): void;
-
-  // callback to be applied after we did the auto-deploy of kits
-  abstract afterDeploy(
-    platformModuleDir: string,
-    parametrization: Map<string, string>,
-  ): void;
 }
 
 export class KitRepresentation {
