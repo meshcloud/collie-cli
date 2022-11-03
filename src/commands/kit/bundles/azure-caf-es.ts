@@ -361,13 +361,6 @@ export class AzureKitBundle extends KitBundle {
     this.afterApplyBase(platformModuleDir, kitDir, parametrization);
   }
 
-  afterDeploy(
-    _platformModuleDir: string,
-    _parametrization: Map<string, string>,
-  ): void {
-    // nothing to be done here
-  }
-
   betweenDeployments(
     platformModuleDir: string,
     parametrization: Map<string, string>,
