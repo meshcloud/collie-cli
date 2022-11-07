@@ -5,6 +5,7 @@ import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Input, Select } from "../../deps.ts";
 import {
   emptyKitDirectoryCreation,
+  generateDocumentationTf,
   generatePlatformConfiguration,
   generateTerragrunt,
 } from "./kit-utilities.ts";
@@ -32,6 +33,8 @@ import cliFormat from "https://raw.githubusercontent.com/zongwei007/cli-format-d
 import { InputParameter, InputSelectParameter } from "../InputParameter.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { AzLocation } from "../../api/az/Model.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
+
 
 function availableKitBundles(locations: AzLocation[]): KitBundle[] {
   return [
@@ -134,6 +137,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
           if (kitRepr.metadataOverride) {
             applyKitMetadataOverride(kitPath, kitRepr.metadataOverride);
           }
+
+          applyKitDocumentationTf(kitPath)
         }
 
         const parametrization = await requestKitBundleParametrization(
@@ -290,6 +295,16 @@ summary: |
   }
 
   Deno.writeTextFileSync(fileToUpdate, `${metadataHeader}\n${existingText}`);
+}
+
+function applyKitDocumentationTf(kitPath: string) {
+  if (existsSync(path.join(kitPath, "documentation.tf"))) {
+    return;
+  }
+  else {
+    Deno.writeTextFile(path.join(kitPath, "documentation.tf"), generateDocumentationTf())
+  }
+  
 }
 
 // TODO show confirmation dialog and ask user if ok or restart
