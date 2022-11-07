@@ -49,7 +49,7 @@ const mainTf = `# Place your module's terraform resources here as usual.
 # these will be provided by the platform implementations using this kit module.
 `;
 
-function generateDocumentationTf() {
+export function generateDocumentationTf() {
   return `variable "output_md_file" {
     type        = string
     description = "location of the file where this cloud foundation kit module generates its documentation output"
