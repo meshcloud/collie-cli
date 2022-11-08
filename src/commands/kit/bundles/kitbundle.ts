@@ -54,6 +54,7 @@ export class KitRepresentation {
   sourcePath: string | undefined;
   requiredParameters: InputParameter[];
   metadataOverride: KitMetadata | undefined;
+  documentationContent: string | undefined;
   deployment: KitDeployRepresentation | undefined;
 
   constructor(
@@ -61,12 +62,14 @@ export class KitRepresentation {
     sourcePath: string | undefined,
     requiredParameters: InputParameter[],
     metadataOverride: KitMetadata | undefined,
+    documentationContent: string | undefined,
     deployment: KitDeployRepresentation | undefined,
   ) {
     this.sourceUrl = sourceUrl;
     this.sourcePath = sourcePath;
     this.requiredParameters = requiredParameters;
     this.metadataOverride = metadataOverride;
+    this.documentationContent = documentationContent;
     this.deployment = deployment;
   }
 }
