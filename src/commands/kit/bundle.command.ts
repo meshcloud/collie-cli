@@ -136,7 +136,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
             applyKitMetadataOverride(kitPath, kitRepr.metadataOverride);
           }
 
-          applyKitDocumentationTf(kitPath);
+          applyKitDocumentationTf(kitPath, kitRepr.documentationContent);
         }
 
         const parametrization = await requestKitBundleParametrization(
@@ -295,15 +295,18 @@ summary: |
   Deno.writeTextFileSync(fileToUpdate, `${metadataHeader}\n${existingText}`);
 }
 
-async function applyKitDocumentationTf(kitPath: string) {
+async function applyKitDocumentationTf(
+  kitPath: string,
+  content: string | undefined,
+) {
   const documentationTfFile = path.join(kitPath, "documentation.tf");
   try {
     await Deno.stat(documentationTfFile);
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) {
-      Deno.writeTextFile(
+      Deno.writeTextFileSync(
         path.join(kitPath, "documentation.tf"),
-        generateDocumentationTf(),
+        generateDocumentationTf(content),
       );
     }
   }

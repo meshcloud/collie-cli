@@ -48,7 +48,7 @@ export class AzureKitBundle extends KitBundle {
       `To have a quick glance on its capabilities after setting it up, consider a look on the Cloudfoundation Maturity Model here:\n${
         colors.italic(
           colors.blue(
-            "https://cloudfoundation.meshcloud.io/maturity-model/?selectedTool=Azure%20LZ%20Terraform%20module%20-%20ES",
+            "https://cloudfoundation.org/maturity-model/?selectedTool=Azure%20LZ%20Terraform%20module%20-%20ES",
           ),
         )
       }`;
@@ -123,6 +123,7 @@ export class AzureKitBundle extends KitBundle {
           "/kit/azure/bootstrap-es",
           bootstrapKitParams,
           undefined,
+          undefined,
           new KitDeployRepresentation(0, true, this.betweenDeployments, {
             raw: ["apply"],
           }),
@@ -139,6 +140,7 @@ export class AzureKitBundle extends KitBundle {
             "Azure CAF Enterprise Scale",
             "todo description goes here",
           ),
+          undefined,
           undefined,
         ),
       ],
