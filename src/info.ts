@@ -1,5 +1,5 @@
 // see https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
-export const VERSION = "0.15.0";
+export const VERSION = "0.15.1";
 
 /**
  * The flags we want collie to be invoked with.
