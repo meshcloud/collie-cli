@@ -5,6 +5,7 @@ import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { Input, Select } from "../../deps.ts";
 import {
   emptyKitDirectoryCreation,
+  generateDocumentationTf,
   generatePlatformConfiguration,
   generateTerragrunt,
 } from "./kit-utilities.ts";
@@ -134,6 +135,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
           if (kitRepr.metadataOverride) {
             applyKitMetadataOverride(kitPath, kitRepr.metadataOverride);
           }
+
+          applyKitDocumentationTf(kitPath, kitRepr.documentationContent);
         }
 
         const parametrization = await requestKitBundleParametrization(
@@ -283,6 +286,23 @@ summary: |
   }
 
   Deno.writeTextFileSync(fileToUpdate, `${metadataHeader}\n${existingText}`);
+}
+
+async function applyKitDocumentationTf(
+  kitPath: string,
+  content: string | undefined,
+) {
+  const documentationTfFile = path.join(kitPath, "documentation.tf");
+  try {
+    await Deno.stat(documentationTfFile);
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      Deno.writeTextFileSync(
+        path.join(kitPath, "documentation.tf"),
+        generateDocumentationTf(content),
+      );
+    }
+  }
 }
 
 // TODO show confirmation dialog and ask user if ok or restart

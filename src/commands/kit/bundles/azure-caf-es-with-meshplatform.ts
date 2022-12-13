@@ -48,7 +48,7 @@ export class AzureKitMeshstackIntegrationBundle extends KitBundle {
       `To have a quick glance on its capabilities after setting it up, consider a look on the Cloudfoundation Maturity Model here:\n${
         colors.italic(
           colors.blue(
-            "https://cloudfoundation.meshcloud.io/maturity-model/?selectedTool=Azure%20LZ%20Terraform%20module%20-%20ES",
+            "https://cloudfoundation.org/maturity-model/?selectedTool=Azure%20LZ%20Terraform%20module%20-%20ES",
           ),
         )
       }\n` +
@@ -132,6 +132,7 @@ export class AzureKitMeshstackIntegrationBundle extends KitBundle {
           "/kit/azure/bootstrap-es",
           bootstrapKitParams,
           undefined,
+          undefined,
           new KitDeployRepresentation(0, true, this.betweenDeployments, {
             raw: ["apply"],
           }),
@@ -149,6 +150,7 @@ export class AzureKitMeshstackIntegrationBundle extends KitBundle {
             "todo description goes here",
           ),
           undefined,
+          undefined,
         ),
       ],
 
@@ -162,6 +164,14 @@ export class AzureKitMeshstackIntegrationBundle extends KitBundle {
             "Azure meshPlatform Module",
             "Terraform module to integrate Azure as a meshPlatform into meshStack instance",
           ),
+          `
+### Header1
+some content
+
+### Header 2
+some content
+
+`,
           undefined,
         ),
       ],
