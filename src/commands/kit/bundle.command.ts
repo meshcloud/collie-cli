@@ -181,9 +181,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
               kitRepr.deployment!.autoDeployOrder
             }`,
           );
-          // TODO this is a non-obvious and brittle way to determine if the module is a bootstrap module
-          // >> yeah, but we want to know if the module needs to be deployed twice, not if it is a bootstrap module.
-          // >> maybe other modules in the future need double-deployment, too.
           const moduleOpts = {
             module: name,
           };
@@ -212,10 +209,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
             );
           }
         });
-
-        // TODO commented for now: as long as the deploy is commented, this should be commented as well,
-        // because there might be a dependency between the two.
-        // bundleToSetup.afterDeploy(platformPath, parametrization);
       },
     );
 }
