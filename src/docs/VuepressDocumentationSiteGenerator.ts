@@ -75,7 +75,7 @@ function getMarkdownFiles(dir: string) {
       (x) => x.isFile() && !x.name.startsWith(".") && x.name.endsWith(".md")
     )
     .map((x) => "/" + path.relative("docs/", path.join(dir, x.name)))
-    .map((x) => x.replace(path.sep, '/')); //on windows, this needs to be done to cleanly define URL paths
+    .map((x) => x.replaceAll(path.sep, '/')); //on windows, this needs to be done to cleanly define URL paths
 
   return mdFiles;
 }
