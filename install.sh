@@ -3,17 +3,29 @@ set -o errexit
 set -o errtrace
 set -o pipefail
 set -o nounset
+
+#Check CPU architecture
+case $(uname -m) in
+    amd64|x86_64) arch=x86_64 ;;
+    arm64|aarch64) arch=aarch64 ;;
+    *) arch= ;;
+esac
+if [ -z "$arch" ]; then
+    echo "Architecture  $(uname -m) not supported." >&2
+    exit 1
+fi
+
 # Check if user has all required commands installed
 REQ_COMMANDS=(tar curl)
 for i in $REQ_COMMANDS
 do
   command -v "$i" >/dev/null && continue || { echo "$i command not found. You need to install if before running this script"; exit 1; }
 done
-# Download artifacts
+# Download artifacts based on CPU architecture and OS type
 case "$(uname -s)" in
    Darwin)
-     url=$(curl -s https://api.github.com/repos/meshcloud/collie-cli/releases/latest | grep "browser_download_url.*apple" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
-     name="collie-x86_64-apple-darwin"
+       url=$(curl -s https://api.github.com/repos/meshcloud/collie-cli/releases/latest | grep "browser_download_url.*$arch*apple" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
+       name="collie-$arch-apple-darwin"    
      ;;
    Linux)
      url=$(curl -s https://api.github.com/repos/meshcloud/collie-cli/releases/latest | grep "browser_download_url.*linux" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
