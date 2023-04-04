@@ -25,4 +25,5 @@ compile_windows(){
 
 compile_unix "x86_64-unknown-linux-gnu"
 compile_unix "x86_64-apple-darwin"
+compile_unix "aarch64-apple-darwin"
 compile_windows "x86_64-pc-windows-msvc"
