@@ -1,4 +1,4 @@
-import { assertEquals } from "../dev-deps.ts";
+import { assertEquals } from "std/testing/assert";
 import { KitModuleDependency } from "../kit/KitDependencyAnalyzer.ts";
 import { kitModuleSorter } from "./PlatformDocumentationGenerator.ts";
 

@@ -1,4 +1,4 @@
-import { assertEquals } from "../dev-deps.ts";
+import { assertEquals } from "std/testing/assert";
 import { MeshPlatforms } from "./MeshTenantModel.ts";
 
 Deno.test("get all platforms", () => {

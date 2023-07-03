@@ -1,4 +1,4 @@
-import { assertEquals } from "../../dev-deps.ts";
+import { assertEquals } from "std/testing/assert";
 import { PlatformModuleType } from "./PlatformModuleType.ts";
 
 Deno.test("parseModuleId parses simple ids", () => {
