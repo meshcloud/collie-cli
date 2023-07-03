@@ -1,5 +1,5 @@
 export interface ProcessResult {
-  status: Deno.ProcessStatus;
+  status: Deno.CommandStatus;
 }
 
 export interface ProcessResultWithOutput extends ProcessResult {
