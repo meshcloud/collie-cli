@@ -13,7 +13,6 @@ import { registerKitCommand } from "./commands/kit/kit.command.ts";
 import { registerFoundationCommand } from "./commands/foundation/foundation.command.ts";
 import { registerComplianceCommand } from "./commands/compliance/compliance.command.ts";
 import { registerVersionCommand } from "./commands/version.command.ts";
-import { registerInteractiveCommand } from "./commands/interactive/interactive.command.ts";
 import { FirstTimeExperience } from "./FirstTimeExperience.ts";
 import { CollieFoundationDoesNotExistError } from "./model/schemas/ModelValidator.ts";
 import { makeTopLevelCommand } from "./commands/TopLevelCommand.ts";
@@ -35,7 +34,6 @@ async function collie() {
   registerTenantCommand(program);
   registerKitCommand(program);
   registerComplianceCommand(program);
-  registerInteractiveCommand(program);
 
   registerUpgradeCommand(program);
   registerVersionCommand(program);
