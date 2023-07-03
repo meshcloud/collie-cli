@@ -1,5 +1,5 @@
 import * as colors from "std/fmt/colors";
-import { Table } from "../deps.ts";
+import { Table } from "x/cliffy/table";
 import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { MeshTenantRoleAssignment } from "../mesh/MeshIamModel.ts";
 import { TableGenerator } from "./mesh-table.ts";

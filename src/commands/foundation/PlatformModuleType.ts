@@ -1,6 +1,6 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
-import { StringType } from "../../deps.ts";
+import { StringType } from "x/cliffy/command";
 
 export class PlatformModuleType extends StringType {
   async complete(): Promise<string[]> {

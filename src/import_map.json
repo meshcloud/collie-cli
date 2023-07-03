@@ -15,7 +15,10 @@
     "std/testing/mock": "https://deno.land/std@0.155.0/testing/mock.ts",
     "x/json_tree": "https://deno.land/x/json_tree@latest/mod.ts",
     "x/compress": "https://deno.land/x/compress@v0.4.5/mod.ts",
-    "x/cliffy/prompt": "https://deno.land/x/cliffy@v0.25.1/prompt/select.ts",
+    "x/cliffy/command": "https://deno.land/x/cliffy@v0.25.1/command/mod.ts",
+    "x/cliffy/prompt": "https://deno.land/x/cliffy@v0.25.1/prompt/mod.ts",
+    "x/cliffy/table": "https://deno.land/x/cliffy@v0.25.1/table/mod.ts",
+    "x/cliffy/upgrade": "https://deno.land/x/cliffy@v0.25.1/command/upgrade/mod.ts",
     "/": "./",
     "./": "./"
   }

@@ -1,6 +1,6 @@
 import * as colors from "std/fmt/colors";
 
-import { Table } from "../deps.ts";
+import { Table } from "x/cliffy/table";
 import { MeshTable, TableGenerator } from "./mesh-table.ts";
 
 export class NoTtyMeshTable implements MeshTable {

@@ -1,4 +1,4 @@
-import { Input, Select } from "/deps.ts";
+import { Input, Select } from "x/cliffy/prompt";
 import { PlatformConfigAws } from "../../model/PlatformConfig.ts";
 import { AwsCliFacade } from "./AwsCliFacade.ts";
 import { MarkdownDocument } from "../../model/MarkdownDocument.ts";

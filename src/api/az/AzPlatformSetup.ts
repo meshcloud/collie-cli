@@ -1,4 +1,4 @@
-import { Select } from "/deps.ts";
+import { Select } from "x/cliffy/prompt";
 import { PlatformConfigAzure } from "../../model/PlatformConfig.ts";
 import { AzCliFacade } from "./AzCliFacade.ts";
 import { MarkdownDocument } from "../../model/MarkdownDocument.ts";

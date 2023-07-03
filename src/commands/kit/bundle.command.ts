@@ -2,7 +2,7 @@ import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
-import { Input, Select } from "../../deps.ts";
+import { Input, Select } from "x/cliffy/prompt";
 import {
   emptyKitDirectoryCreation,
   generateDocumentationTf,
@@ -70,16 +70,19 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         const locations = (await az.listLocations())
           // only physical regions  (like "germanywestcentral") should be selectable,
           // but no logical regions (like "germany").
-          .filter((location: AzLocation) =>
-            location.metadata.regionType === "Physical"
+          .filter(
+            (location: AzLocation) =>
+              location.metadata.regionType === "Physical",
           )
           .sort((location1, location2) => {
             // this is effectively a "thenBy" sort, see https://stackoverflow.com/a/9175783/125407
             // The intent is to have those locations that are used most frequently by our customers
             // appear at the top, so the user won't have to scroll too far.
-            return cmpByGeographyGroup(location1, location2) ||
+            return (
+              cmpByGeographyGroup(location1, location2) ||
               cmpByLocation(location1, location2) ||
-              cmp(location1.name, location2.name);
+              cmp(location1.name, location2.name)
+            );
           });
 
         const foundation = opts.foundation ||
@@ -168,12 +171,16 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
           parametrization,
         );
 
-        const kitsToDeploy = [...allKits.entries()].filter(([_, kitRepr]) => {
-          return kitRepr.deployment;
-        }).sort(([_name1, kitRepr1], [_name2, kitRepr2]) => {
-          return kitRepr1.deployment!.autoDeployOrder -
-            kitRepr2.deployment!.autoDeployOrder;
-        });
+        const kitsToDeploy = [...allKits.entries()]
+          .filter(([_, kitRepr]) => {
+            return kitRepr.deployment;
+          })
+          .sort(([_name1, kitRepr1], [_name2, kitRepr2]) => {
+            return (
+              kitRepr1.deployment!.autoDeployOrder -
+              kitRepr2.deployment!.autoDeployOrder
+            );
+          });
 
         kitsToDeploy.forEach(async ([name, kitRepr]) => {
           logger.progress(
@@ -252,9 +259,7 @@ async function applyKit(
     ...platformModuleId,
   );
 
-  const kitModulePath = collie.relativePath(
-    collie.resolvePath("kit", kitName),
-  );
+  const kitModulePath = collie.relativePath(collie.resolvePath("kit", kitName));
   const platformModuleDir: Dir = {
     name: targetPath,
     entries: [
@@ -404,11 +409,7 @@ function cmpByGeographyGroup(a: AzLocation, b: AzLocation): number {
 function cmpByLocation(a: AzLocation, b: AzLocation): number {
   // The order should reflect the locations used most often by our customers, i.e., if A appears
   // before B in this list, then we assume that A is used more often by our customers than B.
-  const physicalLocationsOrdered = [
-    "Frankfurt",
-    "Berlin",
-    null,
-  ];
+  const physicalLocationsOrdered = ["Frankfurt", "Berlin", null];
   return cmp(
     indexOrInfinity(physicalLocationsOrdered, a.metadata.physicalLocation),
     indexOrInfinity(physicalLocationsOrdered, b.metadata.physicalLocation),

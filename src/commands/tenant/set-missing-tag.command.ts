@@ -1,4 +1,5 @@
-import { clone, Input } from "../../deps.ts";
+import { clone } from "../../deps.ts";
+import { Input } from "x/cliffy/prompt";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CLI } from "/info.ts";
 import { MeshAdapter } from "../../mesh/MeshAdapter.ts";
@@ -11,9 +12,7 @@ import { TopLevelCommand } from "../TopLevelCommand.ts";
 export function registerSetMissingTagCommand(program: TopLevelCommand) {
   program
     .command("set-missing-tag <foundation:foundation> <tagKey>")
-    .description(
-      "Fix all tenants missing the given tag interactively",
-    )
+    .description("Fix all tenants missing the given tag interactively")
     .example(
       "Set a tag value for all tenants that are missing the given 'environment' tag",
       `${CLI} tenant set-missing-tag <foundation> environment`,

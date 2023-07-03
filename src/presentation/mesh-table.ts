@@ -1,6 +1,6 @@
 import { dim, yellow } from "std/fmt/colors";
 
-import { Table } from "../deps.ts";
+import { Table } from "x/cliffy/table";
 import { MeshTag } from "../mesh/MeshTenantModel.ts";
 
 export abstract class TableGenerator {

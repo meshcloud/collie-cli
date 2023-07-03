@@ -2,7 +2,7 @@ import { makeTopLevelCommand } from "../TopLevelCommand.ts";
 
 export type TenantCommand = ReturnType<typeof makeTenantCommand>;
 import { OutputFormat } from "/presentation/output-format.ts";
-import { EnumType } from "/deps.ts";
+import { EnumType } from "x/cliffy/command";
 
 export const OutputFormatType = new EnumType(Object.values(OutputFormat));
 
