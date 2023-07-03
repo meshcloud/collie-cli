@@ -24,10 +24,11 @@ done
 # Download artifacts based on CPU architecture and OS type
 case "$(uname -s)" in
    Darwin)
-       url=$(curl -s https://api.github.com/repos/meshcloud/collie-cli/releases/latest | grep "browser_download_url.*$arch*apple" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
-       name="collie-$arch-apple-darwin"    
+      url=$(curl -s https://api.github.com/repos/meshcloud/collie-cli/releases/latest | grep "browser_download_url.*$arch.*apple" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
+      name="collie-$arch-apple-darwin"    
      ;;
    Linux)
+    echo "detected Linux"
      url=$(curl -s https://api.github.com/repos/meshcloud/collie-cli/releases/latest | grep "browser_download_url.*linux" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
      name="collie-x86_64-unknown-linux-gnu"
      ;;
@@ -40,6 +41,7 @@ case "$(uname -s)" in
      exit 1
      ;;
 esac
+
 echo "Downloading the artifact... (${url})"
 curl "${url}" -L -o collie.tar.gz --silent
 # untar and movin the artifact
