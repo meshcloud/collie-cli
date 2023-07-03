@@ -26,13 +26,12 @@ import {
   DirectoryGenerator,
   WriteMode,
 } from "../../cli/DirectoryGenerator.ts";
-import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
 import { deployFoundation } from "../foundation/deploy.command.ts";
-import { Toggle } from "https://deno.land/x/cliffy@v0.25.1/prompt/mod.ts";
-import cliFormat from "https://raw.githubusercontent.com/zongwei007/cli-format-deno/v3.x/src/mod.ts";
 import { InputParameter, InputSelectParameter } from "../InputParameter.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { AzLocation } from "../../api/az/Model.ts";
+import * as path from "std/path";
+import { Toggle } from "x/cliffy/prompt";
 
 function availableKitBundles(locations: AzLocation[]): KitBundle[] {
   return [
@@ -65,26 +64,6 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         const logger = new Logger(collie, opts);
         const validator = new ModelValidator(logger);
 
-        const factory = new CliApiFacadeFactory(collie, logger);
-        const az = factory.buildAz();
-        const locations = (await az.listLocations())
-          // only physical regions  (like "germanywestcentral") should be selectable,
-          // but no logical regions (like "germany").
-          .filter(
-            (location: AzLocation) =>
-              location.metadata.regionType === "Physical",
-          )
-          .sort((location1, location2) => {
-            // this is effectively a "thenBy" sort, see https://stackoverflow.com/a/9175783/125407
-            // The intent is to have those locations that are used most frequently by our customers
-            // appear at the top, so the user won't have to scroll too far.
-            return (
-              cmpByGeographyGroup(location1, location2) ||
-              cmpByLocation(location1, location2) ||
-              cmp(location1.name, location2.name)
-            );
-          });
-
         const foundation = opts.foundation ||
           (await InteractivePrompts.selectFoundation(collie));
 
@@ -97,127 +76,165 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         const platform = opts.platform ||
           (await InteractivePrompts.selectPlatform(foundationRepo));
 
-        const platformPath = collie.resolvePath(
-          "foundations",
-          foundation,
-          "platforms",
-          platform,
-        );
-
-        let confirm = false;
-        let bundleToSetup: KitBundle | undefined = undefined;
-        while (!confirm) {
-          logger.progress("Choosing a predefined bundled kit.");
-          bundleToSetup = await promptKitBundleOption(locations);
-          logger.progress(
-            `Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`,
-          );
-          console.log(
-            cliFormat.wrap(bundleToSetup.description, { paddingLeft: "  " }),
-          );
-          confirm = await Toggle.prompt(`Continue?`);
-        }
-
-        bundleToSetup = bundleToSetup!;
-        const allKits = bundleToSetup!.kitsAndSources();
-
-        for (const [name, kitRepr] of allKits) {
-          const kitPath = collie.resolvePath("kit", prefix, name);
-          logger.progress(`Creating an new kit structure for ${name}`);
-          await emptyKitDirectoryCreation(kitPath, logger);
-
-          logger.progress(
-            `Downloading kit from ${
-              kitRepr.sourceUrl.length > 50
-                ? kitRepr.sourceUrl.substring(0, 47) + "..."
-                : kitRepr.sourceUrl
-            }`,
-          );
-          await kitDownload(kitPath, kitRepr.sourceUrl, kitRepr.sourcePath);
-
-          if (kitRepr.metadataOverride) {
-            applyKitMetadataOverride(kitPath, kitRepr.metadataOverride);
-          }
-
-          applyKitDocumentationTf(kitPath, kitRepr.documentationContent);
-        }
-
-        const parametrization = await requestKitBundleParametrization(
-          bundleToSetup.requiredParameters(),
+        await selectKitBundle(
+          collie,
           logger,
+          foundation,
+          platform,
+          prefix,
+          foundationRepo,
+          opts,
         );
-        parametrization.set("__foundation__", foundation);
-        parametrization.set("__platform__", platform);
-
-        logger.progress("Calling before-apply hook.");
-        bundleToSetup.beforeApply(parametrization);
-
-        for (const [name, _] of allKits) {
-          logger.progress(
-            `Applying kit ${name} to ${foundation} : ${platform}`,
-          );
-          await applyKit(
-            foundationRepo,
-            platform,
-            logger,
-            path.join(prefix, name),
-          );
-        }
-
-        logger.progress("Calling after-apply hook.");
-        bundleToSetup.afterApply(
-          platformPath,
-          collie.resolvePath("kit", prefix),
-          parametrization,
-        );
-
-        const kitsToDeploy = [...allKits.entries()]
-          .filter(([_, kitRepr]) => {
-            return kitRepr.deployment;
-          })
-          .sort(([_name1, kitRepr1], [_name2, kitRepr2]) => {
-            return (
-              kitRepr1.deployment!.autoDeployOrder -
-              kitRepr2.deployment!.autoDeployOrder
-            );
-          });
-
-        kitsToDeploy.forEach(async ([name, kitRepr]) => {
-          logger.progress(
-            `Auto-deploying: ${name} with order: ${
-              kitRepr.deployment!.autoDeployOrder
-            }`,
-          );
-          const moduleOpts = {
-            module: name,
-          };
-          const joinedOpts = { ...opts, ...moduleOpts };
-          logger.progress("Triggering deployment now.");
-          await deployFoundation(
-            collie,
-            foundationRepo,
-            kitRepr.deployment!.deployMode,
-            joinedOpts,
-            logger,
-          );
-          if (kitRepr.deployment?.needsDoubleDeploy) {
-            logger.progress("Calling between-deployments hook.");
-            kitRepr.deployment.betweenDoubleDeployments!(
-              platformPath,
-              parametrization,
-            );
-            logger.progress("Triggering second deployment now.");
-            await deployFoundation(
-              collie,
-              foundationRepo,
-              kitRepr.deployment.deployMode,
-              joinedOpts,
-              logger,
-            );
-          }
-        });
       },
     );
+}
+
+async function selectKitBundle(
+  collie: CollieRepository,
+  logger: Logger,
+  foundation: string,
+  platform: string,
+  prefix: string,
+  foundationRepo: FoundationRepository,
+  opts: GlobalCommandOptions & BundleOptions,
+) {
+  const factory = new CliApiFacadeFactory(collie, logger);
+  const az = factory.buildAz();
+  const locations = (await az.listLocations())
+    // only physical regions  (like "germanywestcentral") should be selectable,
+    // but no logical regions (like "germany").
+    .filter(
+      (location: AzLocation) => location.metadata.regionType === "Physical",
+    )
+    .sort((location1, location2) => {
+      // this is effectively a "thenBy" sort, see https://stackoverflow.com/a/9175783/125407
+      // The intent is to have those locations that are used most frequently by our customers
+      // appear at the top, so the user won't have to scroll too far.
+      return (
+        cmpByGeographyGroup(location1, location2) ||
+        cmpByLocation(location1, location2) ||
+        cmp(location1.name, location2.name)
+      );
+    });
+
+  const platformPath = collie.resolvePath(
+    "foundations",
+    foundation,
+    "platforms",
+    platform,
+  );
+
+  let confirm = false;
+  let bundleToSetup: KitBundle | undefined = undefined;
+
+  while (!confirm) {
+    logger.progress("Choosing a predefined bundled kit.");
+    bundleToSetup = await promptKitBundleOption(locations);
+    logger.progress(
+      `Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`,
+    );
+
+    const indented = bundleToSetup.description
+      .split("\n")
+      .map((x) => "  " + x)
+      .join("\n");
+
+    console.log(indented);
+
+    confirm = await Toggle.prompt(`Continue?`);
+  }
+
+  bundleToSetup = bundleToSetup!;
+  const allKits = bundleToSetup!.kitsAndSources();
+
+  for (const [name, kitRepr] of allKits) {
+    const kitPath = collie.resolvePath("kit", prefix, name);
+    logger.progress(`Creating an new kit structure for ${name}`);
+    await emptyKitDirectoryCreation(kitPath, logger);
+
+    logger.progress(
+      `Downloading kit from ${
+        kitRepr.sourceUrl.length > 50
+          ? kitRepr.sourceUrl.substring(0, 47) + "..."
+          : kitRepr.sourceUrl
+      }`,
+    );
+    await kitDownload(kitPath, kitRepr.sourceUrl, kitRepr.sourcePath);
+
+    if (kitRepr.metadataOverride) {
+      applyKitMetadataOverride(kitPath, kitRepr.metadataOverride);
+    }
+
+    applyKitDocumentationTf(kitPath, kitRepr.documentationContent);
+  }
+
+  const parametrization = await requestKitBundleParametrization(
+    bundleToSetup.requiredParameters(),
+    logger,
+  );
+  parametrization.set("__foundation__", foundation);
+  parametrization.set("__platform__", platform);
+
+  logger.progress("Calling before-apply hook.");
+  bundleToSetup.beforeApply(parametrization);
+
+  for (const [name, _] of allKits) {
+    logger.progress(`Applying kit ${name} to ${foundation} : ${platform}`);
+    await applyKit(foundationRepo, platform, logger, path.join(prefix, name));
+  }
+
+  logger.progress("Calling after-apply hook.");
+  bundleToSetup.afterApply(
+    platformPath,
+    collie.resolvePath("kit", prefix),
+    parametrization,
+  );
+
+  const kitsToDeploy = [...allKits.entries()]
+    .filter(([_, kitRepr]) => {
+      return kitRepr.deployment;
+    })
+    .sort(([_name1, kitRepr1], [_name2, kitRepr2]) => {
+      return (
+        kitRepr1.deployment!.autoDeployOrder -
+        kitRepr2.deployment!.autoDeployOrder
+      );
+    });
+
+  kitsToDeploy.forEach(async ([name, kitRepr]) => {
+    logger.progress(
+      `Auto-deploying: ${name} with order: ${
+        kitRepr.deployment!.autoDeployOrder
+      }`,
+    );
+    const moduleOpts = {
+      module: name,
+    };
+    const joinedOpts = { ...opts, ...moduleOpts };
+    logger.progress("Triggering deployment now.");
+    await deployFoundation(
+      collie,
+      foundationRepo,
+      kitRepr.deployment!.deployMode,
+      joinedOpts,
+      logger,
+    );
+    if (kitRepr.deployment?.needsDoubleDeploy) {
+      logger.progress("Calling between-deployments hook.");
+      kitRepr.deployment.betweenDoubleDeployments!(
+        platformPath,
+        parametrization,
+      );
+      logger.progress("Triggering second deployment now.");
+      await deployFoundation(
+        collie,
+        foundationRepo,
+        kitRepr.deployment.deployMode,
+        joinedOpts,
+        logger,
+      );
+    }
+  });
 }
 
 async function promptKitBundleOption(
