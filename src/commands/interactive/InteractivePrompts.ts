@@ -1,4 +1,4 @@
-import { Select } from "../../deps.ts";
+import { Select } from "x/cliffy/prompt";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 

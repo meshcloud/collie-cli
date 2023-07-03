@@ -1,4 +1,4 @@
-import { Input } from "../../deps.ts";
+import { Input } from "x/cliffy/prompt";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";

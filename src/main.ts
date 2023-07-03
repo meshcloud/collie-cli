@@ -1,6 +1,6 @@
 import * as colors from "std/fmt/colors";
 
-import { CompletionsCommand } from "./deps.ts";
+import { CompletionsCommand } from "x/cliffy/command";
 import { CommandOptionError } from "./commands/CommandOptionError.ts";
 import { MeshError } from "./errors.ts";
 import { printTip } from "./cli/Logger.ts";

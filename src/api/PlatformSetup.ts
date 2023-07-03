@@ -1,7 +1,7 @@
 import * as colors from "std/fmt/colors";
 
 import { Dir } from "/cli/DirectoryGenerator.ts";
-import { Input } from "../deps.ts";
+import { Input } from "x/cliffy/prompt";
 import { PlatformConfig } from "../model/PlatformConfig.ts";
 
 const platformIdRegex = /^[a-z0-9_.-]+$/;

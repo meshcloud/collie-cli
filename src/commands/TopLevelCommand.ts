@@ -1,4 +1,4 @@
-import { Command } from "../deps.ts";
+import { Command } from "x/cliffy/command";
 import { FoundationType } from "./FoundationType.ts";
 import { PlatformType } from "./PlatformType.ts";
 

@@ -1,6 +1,6 @@
 import * as path from "std/path";
 
-import { GithubProvider, UpgradeCommand } from "../deps.ts";
+import { GithubProvider, UpgradeCommand } from "x/cliffy/upgrade";
 import { FLAGS, GITHUB_REPO, VERSION } from "../info.ts";
 import { TopLevelCommand } from "./TopLevelCommand.ts";
 
@@ -31,9 +31,7 @@ export function registerUpgradeCommand(program: TopLevelCommand) {
       "upgrade",
       new UpgradeCommand({
         args: flagsWithImportMap.split(" "),
-        provider: [
-          new GithubProvider({ repository: GITHUB_REPO }),
-        ],
+        provider: [new GithubProvider({ repository: GITHUB_REPO })],
       }),
     );
   }

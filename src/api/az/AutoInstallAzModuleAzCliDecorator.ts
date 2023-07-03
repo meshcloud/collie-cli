@@ -1,4 +1,4 @@
-import { Confirm } from "/deps.ts";
+import { Confirm } from "x/cliffy/prompt";
 import { AzureErrorCode, MeshAzurePlatformError } from "/errors.ts";
 import { AzCliFacade, DynamicInstallValue } from "./AzCliFacade.ts";
 import {

@@ -1,4 +1,4 @@
-import { Select } from "/deps.ts";
+import { Select } from "x/cliffy/prompt";
 import { PlatformConfigGcp } from "../../model/PlatformConfig.ts";
 import { MarkdownDocument } from "../../model/MarkdownDocument.ts";
 import { Dir } from "../../cli/DirectoryGenerator.ts";

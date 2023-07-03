@@ -1,4 +1,4 @@
-import { ITypeInfo } from "../deps.ts";
+import { ITypeInfo } from "x/cliffy/command";
 import { CommandOptionError } from "./CommandOptionError.ts";
 
 export const dateRegex = /^\d\d\d\d-\d\d-\d\d$/;

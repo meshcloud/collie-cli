@@ -10,27 +10,6 @@
  * 3rd party deps
  */
 
-// cliffy
-export {
-  Command,
-  CompletionsCommand,
-  EnumType,
-  StringType,
-  Type,
-} from "https://deno.land/x/cliffy@v0.25.1/command/mod.ts";
-export type { ITypeInfo } from "https://deno.land/x/cliffy@v0.25.1/command/mod.ts";
-export { Table } from "https://deno.land/x/cliffy@v0.25.1/table/mod.ts";
-export {
-  Confirm,
-  Input,
-  prompt,
-  Select,
-} from "https://deno.land/x/cliffy@v0.25.1/prompt/mod.ts";
-export {
-  GithubProvider,
-  UpgradeCommand,
-} from "https://deno.land/x/cliffy@v0.25.1/command/upgrade/mod.ts";
-
 // other
 export { writeCSV } from "https://deno.land/x/csv@v0.5.1/mod.ts";
 export { moment } from "https://deno.land/x/deno_moment@v1.1.2/mod.ts";

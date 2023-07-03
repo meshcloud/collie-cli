@@ -1,7 +1,7 @@
 import * as colors from "std/fmt/colors";
 import * as path from "std/path";
 
-import { Select } from "../../deps.ts";
+import { Select } from "x/cliffy/prompt";
 import {
   Dir,
   DirectoryGenerator,

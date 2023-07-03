@@ -1,5 +1,5 @@
 import * as colors from "std/fmt/colors";
-import { prompt, Select } from "/deps.ts";
+import { prompt, Select } from "x/cliffy/prompt";
 import { Logger } from "../../cli/Logger.ts";
 import {
   Dir,
