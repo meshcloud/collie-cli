@@ -12,24 +12,32 @@ export class QuietProcessRunner
     commands: string[],
     options?: ProcessRunnerOptions,
   ): Promise<ProcessResultWithOutput> {
-    const p = Deno.run({
+    const args = ShellRunnerPolicy.shellCommands(commands);
+    const exec = args.shift();
+
+    if (!exec) {
+      throw new Error("Invalid argument: commands is empty");
+    }
+
+    const cmd = new Deno.Command(exec, {
       ...options,
-      cmd: ShellRunnerPolicy.shellCommands(commands),
+      args,
       stdout: "piped",
       stderr: "piped",
     });
 
-    const decoder = new TextDecoder();
-    const rawOutput = await p.output();
-    const rawError = await p.stderrOutput();
-    const status = await p.status();
+    const output = await cmd.output();
 
-    p.close();
+    const decoder = new TextDecoder();
 
     const result = {
-      status,
-      stderr: decoder.decode(rawError),
-      stdout: decoder.decode(rawOutput),
+      status: {
+        signal: output.signal,
+        code: output.code,
+        success: output.success,
+      },
+      stdout: decoder.decode(output.stdout),
+      stderr: decoder.decode(output.stderr),
     };
 
     return result;

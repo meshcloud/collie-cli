@@ -12,16 +12,22 @@ export class TransparentProcessRunner implements IProcessRunner<ProcessResult> {
     commands: string[],
     options?: ProcessRunnerOptions,
   ): Promise<ProcessResult> {
-    const p = Deno.run({
+    const args = ShellRunnerPolicy.shellCommands(commands);
+    const exec = args.shift();
+
+    if (!exec) {
+      throw new Error("Invalid argument: commands is empty");
+    }
+
+    const cmd = new Deno.Command(exec, {
       ...options,
-      cmd: ShellRunnerPolicy.shellCommands(commands),
+      args,
       stdout: "inherit",
       stderr: "inherit",
     });
 
-    const status = await p.status();
-
-    p.close();
+    const p = cmd.spawn();
+    const status = await p.status;
 
     const result: ProcessResult = {
       status,
