@@ -3,14 +3,10 @@
     "strict": true
   },
   "lint": {
-    "files": {
-      "include": ["src/"]
-    }
+    "include": ["src/"]
   },
   "fmt": {
-    "files": {
-      "include": ["src/"]
-    }
+    "include": ["src/"]
   },
   "tasks": {
     "run": "deno run $(deno run --quiet --no-check ./flags.ts) ./src/main.ts",
