@@ -1,4 +1,4 @@
-import { moment } from "../deps.ts";
+import { moment } from "x/deno_moment";
 
 export interface TimeWindow {
   from: Date;

@@ -8,7 +8,7 @@ import {
   Project,
 } from "./Model.ts";
 import { parseJsonWithLog } from "/json.ts";
-import { moment } from "/deps.ts";
+import { moment } from "x/deno_moment";
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 

@@ -9,7 +9,7 @@ import {
 import { Entity, Subscription, Tag } from "./Model.ts";
 import { AzCliFacade } from "./AzCliFacade.ts";
 import { MeshAdapter } from "/mesh/MeshAdapter.ts";
-import { moment } from "/deps.ts";
+import { moment } from "x/deno_moment";
 import { AzureErrorCode, MeshAzurePlatformError, MeshError } from "/errors.ts";
 import {
   MeshPrincipalType,

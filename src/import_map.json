@@ -19,6 +19,10 @@
     "x/cliffy/prompt": "https://deno.land/x/cliffy@v0.25.1/prompt/mod.ts",
     "x/cliffy/table": "https://deno.land/x/cliffy@v0.25.1/table/mod.ts",
     "x/cliffy/upgrade": "https://deno.land/x/cliffy@v0.25.1/command/upgrade/mod.ts",
+    "x/deno_moment": "https://deno.land/x/deno_moment@v1.1.2/mod.ts",
+    "x/csv": "https://deno.land/x/csv@v0.5.1/mod.ts",
+    "x/opener": "https://deno.land/x/opener@v1.0.1/mod.ts",
+    "x/clone": "https://deno.land/x/object_clone@1.1.0/mod.ts",
     "/": "./",
     "./": "./"
   }

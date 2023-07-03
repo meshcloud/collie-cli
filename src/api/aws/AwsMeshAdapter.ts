@@ -15,7 +15,7 @@ import {
   Root,
   User,
 } from "./Model.ts";
-import { moment } from "/deps.ts";
+import { moment } from "x/deno_moment";
 import { AwsErrorCode, MeshAwsPlatformError } from "/errors.ts";
 import {
   MeshPrincipalType,

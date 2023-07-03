@@ -1,6 +1,6 @@
 import { MeshTenant, MeshTenantCost } from "../mesh/MeshTenantModel.ts";
 import { TableGenerator } from "./mesh-table.ts";
-import { moment } from "../deps.ts";
+import { moment } from "x/deno_moment";
 
 type CostTableColumns = keyof MeshTenantCost | "relatedTenant" | "tags";
 

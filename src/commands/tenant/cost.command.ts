@@ -1,4 +1,4 @@
-import { moment } from "../../deps.ts";
+import { moment } from "x/deno_moment";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { dateType } from "../custom-types.ts";
 import { MeshError } from "../../errors.ts";

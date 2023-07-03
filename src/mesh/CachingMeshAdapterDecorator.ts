@@ -1,5 +1,5 @@
 import { Logger } from "../cli/Logger.ts";
-import { moment } from "../deps.ts";
+import { moment } from "x/deno_moment";
 import { MeshError } from "../errors.ts";
 import { CollieCacheConfig } from "../model/CollieCacheConfig.ts";
 import { MeshAdapter } from "./MeshAdapter.ts";
