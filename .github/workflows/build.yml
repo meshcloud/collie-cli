@@ -10,54 +10,36 @@ jobs:
   fmt-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: deno-fmt
         id: fmt
         uses: denoland/setup-deno@main
         with:
-          deno-version: "~1.25"
+          deno-version: "~1.34"
       - run: |
           deno fmt --check
-
-      - name: comment-pr
-        if: ${{  failure() }}
-        uses: actions/github-script@0.3.0
-        with: 
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-            github.issues.createComment({ issue_number, owner, repo, body: 'Error in `deno fmt`. Please check the Action logs.' });
 
   linting-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: check-linting
         id: lint
         uses: denoland/setup-deno@main
         with:
-          deno-version: "~1.25"
+          deno-version: "~1.34"
       - run: |
           deno lint
-
-      - name: comment-pr
-        if: ${{  failure() }}
-        uses: actions/github-script@0.3.0
-        with: 
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-            github.issues.createComment({ issue_number, owner, repo, body: 'Error in `deno lint`. Please check the Action logs.' });
 
   build:
     if: ${{ success() }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: denoland/setup-deno@main
         with:
-          deno-version: "~1.25"
-      - uses: actions/cache@v2
+          deno-version: "~1.34"
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/deno        # see https://deno.land/manual/linking_to_external_code
           key: ${{ runner.os }}-deno # it seems there's no particular cache keying required
@@ -70,7 +52,7 @@ jobs:
 
       - name: Archive production artifacts
         if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: collie
           path: |
