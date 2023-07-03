@@ -1,4 +1,4 @@
-import { writeCSV } from "../deps.ts";
+import { writeCSV } from "x/csv";
 import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import {
   CsvTenantPresenter,

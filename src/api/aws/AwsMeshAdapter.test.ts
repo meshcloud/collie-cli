@@ -1,4 +1,4 @@
-import { moment } from "/deps.ts";
+import { moment } from "x/deno_moment";
 import { MeshPlatform, MeshTenantCost } from "/mesh/MeshTenantModel.ts";
 import { AwsCliFacade } from "./AwsCliFacade.ts";
 import { AwsMeshAdapter } from "./AwsMeshAdapter.ts";

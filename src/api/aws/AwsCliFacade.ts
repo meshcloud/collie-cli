@@ -19,7 +19,7 @@ import {
   User,
   UserResponse,
 } from "/api/aws/Model.ts";
-import { moment } from "/deps.ts";
+import { moment } from "x/deno_moment";
 import { sleep } from "/promises.ts";
 import { parseJsonWithLog } from "/json.ts";
 

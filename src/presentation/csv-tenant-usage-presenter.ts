@@ -1,4 +1,5 @@
-import { moment, writeCSV } from "../deps.ts";
+import { moment } from "x/deno_moment";
+import { writeCSV } from "x/csv";
 import { MeshTenant, MeshTenantCost } from "../mesh/MeshTenantModel.ts";
 import {
   CsvTenantPresenter,
@@ -47,10 +48,7 @@ export class CsvTenantUsagePresenter extends CsvTenantPresenter {
     row.push(tenantCost.currency);
 
     // Add the tags here in the right order to the current row.
-    const tagValues = this.extractTagValues(
-      tagNames,
-      tenant.tags,
-    );
+    const tagValues = this.extractTagValues(tagNames, tenant.tags);
     tagValues.forEach((tv) => row.push(tv));
 
     return row;

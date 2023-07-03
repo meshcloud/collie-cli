@@ -16,7 +16,7 @@ import {
 } from "/mesh/MeshIamModel.ts";
 import { GcpErrorCode, MeshError, MeshGcpPlatformError } from "/errors.ts";
 import { TimeWindowCalculator } from "/mesh/TimeWindowCalculator.ts";
-import { moment } from "/deps.ts";
+import { moment } from "x/deno_moment";
 import { MeshTenantChangeDetector } from "/mesh/MeshTenantChangeDetector.ts";
 import { PlatformConfigGcp } from "../../model/PlatformConfig.ts";
 

@@ -1,4 +1,4 @@
-import { clone } from "../../deps.ts";
+import { clone } from "x/clone";
 import { Input } from "x/cliffy/prompt";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { CLI } from "/info.ts";

@@ -1,5 +1,5 @@
 import { TimeWindowCalculator } from "./TimeWindowCalculator.ts";
-import { moment } from "../deps.ts";
+import { moment } from "x/deno_moment";
 import { assertEquals } from "../dev-deps.ts";
 
 const sut = new TimeWindowCalculator();
