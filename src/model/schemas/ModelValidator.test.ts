@@ -3,7 +3,7 @@ import { OutputFormat } from "../../presentation/output-format.ts";
 import { CollieRepository } from "../CollieRepository.ts";
 import { ModelValidator } from "./ModelValidator.ts";
 
-import { assertEquals } from "/dev-deps.ts";
+import { assertEquals } from "std/testing/assert";
 
 Deno.test("can validate FoundationConfig", () => {
   const collie = new CollieRepository("./");

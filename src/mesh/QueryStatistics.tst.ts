@@ -1,4 +1,4 @@
-import { assert, delay } from "../dev-deps.ts";
+import { assert, delay } from "std/testing/assert";
 import { MeshPlatform } from "./MeshTenantModel.ts";
 import { QueryStatistics } from "./QueryStatistics.ts";
 

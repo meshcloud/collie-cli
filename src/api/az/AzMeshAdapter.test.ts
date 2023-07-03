@@ -2,7 +2,7 @@ import { AzCliFacade } from "./AzCliFacade.ts";
 import { AzMeshAdapter } from "./AzMeshAdapter.ts";
 import { RoleAssignment, Subscription } from "./Model.ts";
 import { MeshPlatform, MeshTenant } from "/mesh/MeshTenantModel.ts";
-import { assertEquals } from "/dev-deps.ts";
+import { assertEquals } from "std/testing/assert";
 import {
   MeshPrincipalType,
   MeshRoleAssignmentSource,
