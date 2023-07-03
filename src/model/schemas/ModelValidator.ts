@@ -1,7 +1,7 @@
 import schema from "./schema.json" assert { type: "json" };
 
-import Ajv, { ErrorObject } from "https://esm.sh/ajv@8.11.0";
-import addFormats from "https://esm.sh/ajv-formats@2.1.0";
+import Ajv, { ErrorObject } from "npm:ajv@8.12.0";
+import addFormats from "npm:ajv-formats@2.1.0";
 import {
   FoundationConfig,
   FoundationFrontmatter,
@@ -13,13 +13,14 @@ import { KitModule } from "../../kit/KitModule.ts";
 import { ComplianceControl } from "../../compliance/ComplianceControl.ts";
 
 export class ModelValidator {
-  private readonly ajv: Ajv;
+  private readonly ajv: Ajv.default;
   constructor(private readonly logger: Logger) {
-    this.ajv = new Ajv({ allErrors: true });
+    // sorry about the .default stuff here, there's probably a better way to do this
+    this.ajv = new Ajv.default({ allErrors: true });
 
     // something's wrong about the typings here
     // deno-lint-ignore no-explicit-any
-    addFormats(this.ajv as any);
+    addFormats.default(this.ajv as any);
 
     this.ajv.addSchema(schema);
   }
