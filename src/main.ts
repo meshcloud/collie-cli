@@ -7,9 +7,7 @@ import { printTip } from "./cli/Logger.ts";
 import { CLI, VERSION } from "./info.ts";
 import { isWindows } from "./os.ts";
 import { registerInitCommand } from "./commands/init.command.ts";
-import { registerFeedbackCommand } from "./commands/feedback.command.ts";
 import { registerTenantCommand } from "./commands/tenant/tenant.command.ts";
-import { registerCreateIssueCommand } from "./commands/create-issue.command.ts";
 import { registerUpgradeCommand } from "./commands/upgrade.command.ts";
 import { registerKitCommand } from "./commands/kit/kit.command.ts";
 import { registerFoundationCommand } from "./commands/foundation/foundation.command.ts";
@@ -39,8 +37,6 @@ async function collie() {
   registerComplianceCommand(program);
   registerInteractiveCommand(program);
 
-  registerCreateIssueCommand(program);
-  registerFeedbackCommand(program);
   registerUpgradeCommand(program);
   registerVersionCommand(program);
 
