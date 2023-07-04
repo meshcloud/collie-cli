@@ -11,6 +11,7 @@ pkgs.mkShell {
     
     # used for build scripts
     pkgs.unzip
+    pkgs.gnused
 
     # cloud provider clis
     pkgs.awscli2

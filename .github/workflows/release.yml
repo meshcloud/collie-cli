@@ -1,66 +1,57 @@
 name: release
 
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types: [published]
 
 jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: new-version
-        id: version
-        shell: bash
-        run: |
-          version=$(git describe --tags `git rev-list --tags --max-count=1` --always)
-          echo "::set-output name=old-version::$(echo "${version}")"
-          if [[ ! "$version" =~ ^v.*$ ]]
-          then
-            echo "::set-output name=version::$(echo "v0.1.0")"
-            exit 0
-          fi
-          breaking=$(echo ${version/v/''} | cut -d'.' -f1)
-          minor=$(echo ${version/v/''} | cut -d'.' -f2)
-          patch=$(echo ${version/v/''} | cut -d'.' -f3)
-          echo "::set-output name=version::$(echo "v${breaking}.${minor}.${patch}")"
-
-      - name: download-artifact
-        uses: dawidd6/action-download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: denoland/setup-deno@main
         with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          workflow: build.yml
-          workflow_conclusion: success
-          commit: ${{github.event.push.head.sha}} # note: by the time this workflow runs, we expect the tagged commit build has already succeeded
-          event: push
-          path: bin/
-
-      - name: preparing-artifacts
-        shell: bash
-        run: |
-          mkdir bin/artifacts
-          cd bin/collie/unix
-          tar -czvf ../../artifacts/collie-x86_64-apple-darwin.tar.gz collie-x86_64-apple-darwin
-          tar -czvf ../../artifacts/collie-x86_64-unknown-linux-gnu.tar.gz collie-x86_64-unknown-linux-gnu
-          cd ../../..
-          cp -a bin/collie/windows/. bin/artifacts
-
-      - name: build-changelog
-        id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@v1.8.2
+          deno-version: "~1.34"
+      - uses: actions/cache@v3
         with:
-          fromTag: ${{ steps.version.outputs.old-version }}
-          toTag: ${{ steps.version.outputs.version }}
+          path: ~/.cache/deno        # see https://deno.land/manual/linking_to_external_code
+          key: ${{ runner.os }}-deno # it seems there's no particular cache keying required
+          restore-keys: |
+            ${{ runner.os }}-deno
+      - run: ./build.sh
+      - name: upload x86_64-unknown-linux-gnu
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: create-release
-        uses: ncipollo/release-action@v1
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          artifacts: bin/artifacts/*
-          body: ${{ steps.github_release.outputs.changelog }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.version.outputs.version }}
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./bin/collie-x86_64-unknown-linux-gnu.tar.gz
+          asset_name: collie-x86_64-unknown-linux-gnu.tar.gz
+          asset_content_type: application/gzip
+      - name: upload x86_64-apple-darwin
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./bin/collie-x86_64-apple-darwin.tar.gz
+          asset_name: collie-x86_64-apple-darwin.tar.gz
+          asset_content_type: application/gzip
+      - name: upload aarch64-apple-darwin
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./bin/collie-aarch64-apple-darwin.tar.gz
+          asset_name: collie-aarch64-apple-darwin.tar.gz
+          asset_content_type: application/gzip
+      - name: upload x86_64-pc-windows-msvc
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./bin/collie-x86_64-pc-windows-msvc.exe
+          asset_name: collie-x86_64-pc-windows-msvc.exe
+          asset_content_type: application/vnd.microsoft.portable-executable 
