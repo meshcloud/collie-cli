@@ -1,7 +1,7 @@
 import { copy, readerFromStreamReader } from "std/streams/conversion";
 import * as path from "std/path";
 import { gunzipFile } from "x/compress";
-import { TarEntry, Untar } from "std/archive/tar";
+import { TarEntry, Untar } from "std/archive/untar";
 import { MeshError } from "../../errors.ts";
 import { ensureDirSync } from "std/fs/ensure_dir";
 import { ensureFileSync } from "std/fs/ensure_file";
@@ -118,6 +118,8 @@ function removeLeading(s: string, prefix: string): string {
 }
 
 function subdirectoryOf(tarEntry: TarEntry, directoryPrefix: string): boolean {
-  return tarEntry.fileName.length > directoryPrefix.length &&
-    tarEntry.fileName.startsWith(directoryPrefix);
+  return (
+    tarEntry.fileName.length > directoryPrefix.length &&
+    tarEntry.fileName.startsWith(directoryPrefix)
+  );
 }
