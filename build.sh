@@ -17,7 +17,7 @@ compile_unix(){
   target="$1"
 
   deno compile $deno_flags --target "$target" --output "./bin/$cli_name-$target" src/main.ts
-  tar -czvf "./bin/$cli_name-$target.tar.gz" "./bin/$cli_name-$target"
+  tar -C "./bin" -czvf "./bin/$cli_name-$target.tar.gz" "$cli_name-$target"
 }
 
 compile_windows(){
