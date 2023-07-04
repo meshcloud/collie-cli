@@ -45,15 +45,17 @@ jobs:
           key: ${{ runner.os }}-deno # it seems there's no particular cache keying required
           restore-keys: |
             ${{ runner.os }}-deno
-      - run: |
+      - name: deno info
+        run: |
           deno --version
           deno info
-          ./build.sh
-
-      - name: Archive production artifacts
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: collie
-          path: |
-            bin/**/collie-*
+      - name: check
+        run: |
+          deno task check
+      - name: test
+        run: |
+          deno task test
+      - name: cheap integration test
+        run: |
+          deno task run
+          
