@@ -46,7 +46,7 @@ export function registerDocsCmd(program: TopLevelCommand) {
         const factory = new CliApiFacadeFactory(repo, logger);
         // todo: instead of flags, maybe these should be subcommands?
         if (opts.update) {
-          await updateDocumentation(repo, foundationRepo, factory, logger);
+          await updateDocumentation(repo, foundationRepo, logger);
         }
 
         if (opts.preview) {
@@ -69,7 +69,6 @@ export function registerDocsCmd(program: TopLevelCommand) {
 async function updateDocumentation(
   repo: CollieRepository,
   foundation: FoundationRepository,
-  factory: CliApiFacadeFactory,
   logger: Logger,
 ) {
   const foundationProgress = new ProgressReporter(
@@ -81,7 +80,6 @@ async function updateDocumentation(
   const dir = new DirectoryGenerator(WriteMode.overwrite, logger);
   const siteGenerator = new VuepressDocumentationSiteGenerator(dir, foundation);
 
-  const tfDocs = factory.buildTerraformDocs();
   const validator = new ModelValidator(logger);
   const modules = await KitModuleRepository.load(repo, validator, logger);
   const controls = await ComplianceControlRepository.load(
@@ -93,7 +91,6 @@ async function updateDocumentation(
     repo,
     modules,
     controls,
-    tfDocs,
     logger,
   );
 
