@@ -1,12 +1,14 @@
-import * as fs from "std/fs";
 import * as path from "std/path";
 
-import { GitCliFacade } from "../../api/git/GitCliFacade.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
+import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
+import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
+import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { KitModuleHub } from "./KitModuleHub.ts";
 
 interface ImportOptions {
   clean?: boolean;
@@ -15,7 +17,7 @@ interface ImportOptions {
 
 export function registerImportCmd(program: TopLevelCommand) {
   program
-    .command("import <id>")
+    .command("import [id]")
     .option(
       "--force",
       "overwrite existing kit module files in the local collie repository",
@@ -27,7 +29,7 @@ export function registerImportCmd(program: TopLevelCommand) {
     .description(
       "Import a published kit module from the official Landing Zone Construction Kit hub at https://github.com/meshcloud/landing-zone-construction-kit",
     )
-    .action(async (opts: GlobalCommandOptions & ImportOptions, id: string) => {
+    .action(async (opts: GlobalCommandOptions & ImportOptions, id?: string) => {
       const collie = new CollieRepository("./");
       const logger = new Logger(collie, opts);
 
@@ -40,7 +42,11 @@ export function registerImportCmd(program: TopLevelCommand) {
         logger.progress("cleaning local cache of hub modules");
         await hub.cleanHubClone();
       }
+
       logger.progress("updating local cache of hub modules from " + hub.url);
+      const hubDir = await hub.updateHubClone();
+
+      id = id || (await promptForKitModuleId(logger, hubDir));
 
       const dstPath = collie.resolvePath("kit", id);
       try {
@@ -73,49 +79,15 @@ export function registerImportCmd(program: TopLevelCommand) {
     });
 }
 
-export class KitModuleHub {
-  constructor(
-    private readonly git: GitCliFacade,
-    private readonly repo: CollieRepository,
-  ) {}
-  private readonly hubCacheDirPath = [".collie", "hub"];
+async function promptForKitModuleId(logger: Logger, hubRepoDir: string) {
+  // note: the hub is a standard collie repository for the most part, so we can just parse it with the same code
+  const repo = new CollieRepository(hubRepoDir);
+  const validator = new ModelValidator(logger);
 
-  readonly url =
-    "https://github.com/meshcloud/landing-zone-construction-kit.git";
+  const moduleRepo = await KitModuleRepository.load(repo, validator, logger);
 
-  // IDEA: should we add a prompt for module id? we can parse modules from LZCK repo...
-  public async import(id: string, moduleDestDir: string, overwrite?: boolean) {
-    const hubDir = await this.updateHubClone();
-
-    const moduleSrcDir = path.resolve(hubDir, "kit", id);
-
-    await fs.copy(moduleSrcDir, moduleDestDir, { overwrite: overwrite });
-  }
-
-  private async updateHubClone() {
-    const hubCacheDir = this.repo.resolvePath(...this.hubCacheDirPath);
-
-    // we do keep a git clone of the repo locally because copying on the local FS is much faster than downloading and
-    // extracting a huge tarball
-    await fs.ensureDir(hubCacheDir);
-
-    const hubCacheGitDir = this.repo.resolvePath(
-      ...this.hubCacheDirPath,
-      ".git",
-    );
-    const hasAlreadyCloned = await this.git.isRepo(hubCacheGitDir);
-
-    if (hasAlreadyCloned) {
-      await this.git.pull(hubCacheDir);
-    } else {
-      await this.git.clone(hubCacheDir, this.url);
-    }
-
-    return hubCacheDir;
-  }
-
-  public async cleanHubClone() {
-    const hubCacheDir = this.repo.resolvePath(...this.hubCacheDirPath);
-    await Deno.remove(hubCacheDir, { recursive: true });
-  }
+  return await InteractivePrompts.selectModule(
+    moduleRepo,
+    "official hub modules",
+  );
 }
