@@ -1,3 +1,4 @@
+import * as fs from "std/fs";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
@@ -8,7 +9,6 @@ import { DocumentationGenerator } from "../../docs/DocumentationGenerator.ts";
 import { DocumentationRepository } from "../../docs/DocumentationRepository.ts";
 import { KitModuleDocumentationGenerator } from "../../docs/KitModuleDocumentationGenerator.ts";
 import { PlatformDocumentationGenerator } from "../../docs/PlatformDocumentationGenerator.ts";
-import { VuepressDocumentationSiteGenerator } from "../../docs/VuepressDocumentationSiteGenerator.ts";
 import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
@@ -78,7 +78,6 @@ async function updateDocumentation(
   );
 
   const dir = new DirectoryGenerator(WriteMode.overwrite, logger);
-  const siteGenerator = new VuepressDocumentationSiteGenerator(dir, foundation);
 
   const validator = new ModelValidator(logger);
   const modules = await KitModuleRepository.load(repo, validator, logger);
@@ -111,8 +110,9 @@ async function updateDocumentation(
 
   const docsRepo = new DocumentationRepository(foundation);
 
+  await prepareSiteTemplate(docsRepo, repo, logger);
+
   const generator = new DocumentationGenerator(
-    siteGenerator,
     moduleDocumentation,
     complianceDocumentation,
     platformDocumentation,
@@ -134,4 +134,35 @@ async function previewDocumentation(
 
   await npm.run(["install"], { cwd: dir });
   await npm.run(["run", "docs:dev"], { cwd: dir });
+}
+
+async function prepareSiteTemplate(
+  docsRepo: DocumentationRepository,
+  repo: CollieRepository,
+  logger: Logger,
+) {
+  // TODO: throw if it doesn't work
+  const srcDir = repo.resolvePath("kit", "foundation", "docs", "template");
+
+  try {
+    await fs.copy(srcDir, docsRepo.docsRootPath, { overwrite: true });
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      logger.error(
+        (fmt) =>
+          `could not find required kit module foundation/docs at ${
+            fmt.kitPath(
+              srcDir,
+            )
+          }`,
+      );
+
+      logger.tipCommand(
+        "To import this module run",
+        "kit import foundation/docs ",
+      );
+      Deno.exit(1);
+    }
+    throw e;
+  }
 }
