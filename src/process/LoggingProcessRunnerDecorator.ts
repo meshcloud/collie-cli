@@ -17,7 +17,7 @@ export class LoggingProcessRunnerDecorator<T extends ProcessRunnerResult>
     commands: string[],
     options: ProcessRunnerOptions,
   ): Promise<T> {
-    this.logVerbose(commands, options, () => "");
+    this.logVerbose(commands, options, () => " started");
 
     try {
       const result = await this.runner.run(commands, options);

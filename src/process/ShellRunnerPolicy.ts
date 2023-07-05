@@ -9,6 +9,6 @@ export class ShellRunnerPolicy {
 
     // on unix, don't run through the user's shell as that will incur cost of running shell setup (e.g. .bashrc)
     // for every new process that we spawn, and collie typcially spawns many
-    return commands;
+    return [...commands]; // always return a copy of commands so we can safely modify them
   }
 }
