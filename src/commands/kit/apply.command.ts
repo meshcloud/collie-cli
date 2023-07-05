@@ -1,7 +1,5 @@
-import * as colors from "std/fmt/colors";
 import * as path from "std/path";
 
-import { Select } from "x/cliffy/prompt";
 import {
   Dir,
   DirectoryGenerator,
@@ -16,7 +14,6 @@ import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CommandOptionError } from "../CommandOptionError.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
-import { isWindows } from "../../os.ts";
 import {
   generatePlatformConfiguration,
   generateTerragrunt,
