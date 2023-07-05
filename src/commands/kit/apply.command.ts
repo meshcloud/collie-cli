@@ -48,7 +48,8 @@ export function registerApplyCmd(program: TopLevelCommand) {
           logger,
         );
 
-        moduleId = moduleId || (await selectModule(moduleRepo));
+        moduleId = moduleId ||
+          (await InteractivePrompts.selectModule(moduleRepo));
         const module = moduleRepo.tryFindById(moduleId);
         if (!module) {
           throw new CommandOptionError(
@@ -111,18 +112,4 @@ export function registerApplyCmd(program: TopLevelCommand) {
         );
       },
     );
-}
-
-async function selectModule(moduleRepo: KitModuleRepository) {
-  const options = moduleRepo.all.map((x) => ({
-    value: x.id,
-    name: `${x.kitModule.name} ${colors.dim(x.id)}`,
-  }));
-
-  return await Select.prompt({
-    message: "Select a kit module from your repository",
-    options,
-    info: true,
-    search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264
-  });
 }
