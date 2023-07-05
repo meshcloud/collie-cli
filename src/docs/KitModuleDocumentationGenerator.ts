@@ -1,6 +1,5 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
-import { TerraformDocsCliFacade } from "../api/terraform-docs/TerraformDocsCliFacade.ts";
 
 import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "../cli/ProgressReporter.ts";
@@ -15,7 +14,6 @@ export class KitModuleDocumentationGenerator {
     private readonly collie: CollieRepository,
     private readonly kitModules: KitModuleRepository,
     private readonly controls: ComplianceControlRepository,
-    private readonly tfdocs: TerraformDocsCliFacade,
     private readonly logger: Logger,
   ) {}
 
@@ -34,7 +32,7 @@ export class KitModuleDocumentationGenerator {
 
       this.logger.verbose((fmt) => `generating ${fmt.kitPath(dest)}`);
 
-      const md = await this.generateModuleDocumentation(x, docsRepo);
+      const md = this.generateModuleDocumentation(x, docsRepo);
 
       await Deno.mkdir(path.dirname(dest), { recursive: true });
       await Deno.writeTextFile(dest, md);
@@ -57,12 +55,10 @@ export class KitModuleDocumentationGenerator {
     await fs.copy(source, dest, { overwrite: true });
   }
 
-  private async generateModuleDocumentation(
+  private generateModuleDocumentation(
     parsed: ParsedKitModule,
     docsRepo: DocumentationRepository,
   ) {
-    await this.tfdocs.updateReadme(parsed.kitModulePath);
-
     const complianceStatements = this.generateComplianceStatements(
       parsed,
       docsRepo,
