@@ -128,7 +128,7 @@ async function previewDocumentation(
   factory: CliApiFacadeFactory,
 ) {
   const docsRepo = new DocumentationRepository(foundation);
-  const dir = foundation.resolvePath(docsRepo.docsRootDir);
+  const dir = docsRepo.docsRootPath;
 
   const npm = factory.buildNpm();
 
@@ -150,7 +150,7 @@ async function prepareSiteTemplate(
     if (e instanceof Deno.errors.NotFound) {
       logger.error(
         (fmt) =>
-          `could not find required kit module foundation/docs at ${
+          `could not find kit module with template for documentation site at ${
             fmt.kitPath(
               srcDir,
             )
@@ -158,8 +158,8 @@ async function prepareSiteTemplate(
       );
 
       logger.tipCommand(
-        "To import this module run",
-        "kit import foundation/docs ",
+        "This module is essential for documentation generation. To import this module run",
+        "kit import foundation/docs",
       );
       Deno.exit(1);
     }
