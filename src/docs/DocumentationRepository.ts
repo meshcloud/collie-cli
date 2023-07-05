@@ -5,20 +5,23 @@ export class DocumentationRepository {
   // we use a "hidden" directory with a leading "." because terragrunt excludes hidden files and dirs
   // when building a terragrunt-cache folder, see  https://terragrunt.gruntwork.io/docs/reference/config-blocks-and-attributes/#terraform "include_in_copy"
   // >  By default, Terragrunt excludes hidden files and folders during the copy step.
-  public readonly docsRootDir = ".docs";
-  public readonly docsContentDir = "docs";
+  private readonly docsRootDir = ".docs";
+  private readonly docsContentDir = "docs";
 
   // these paths are the same in collie repository and docs content
   public readonly platformsDir = "platforms";
   public readonly complianceDir = "compliance";
   public readonly kitDir = "kit";
 
+  public readonly docsRootPath: string;
   public readonly docsContentPath: string;
   public readonly kitPath: string;
   public readonly compliancePath: string;
   public readonly platformsPath: string;
 
   constructor(foundation: FoundationRepository) {
+    this.docsRootPath = foundation.resolvePath(this.docsRootDir);
+
     this.docsContentPath = foundation.resolvePath(
       this.docsRootDir,
       this.docsContentDir,

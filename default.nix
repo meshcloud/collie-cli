@@ -23,5 +23,8 @@ pkgs.mkShell {
     pkgs.terragrunt
     pkgs.tflint
     pkgs.terraform-docs
+
+    # for collie foundation docs
+    pkgs.nodejs
   ];
 }
