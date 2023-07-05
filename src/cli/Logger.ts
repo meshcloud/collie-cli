@@ -58,6 +58,11 @@ export class Logger {
     console.error(colors.yellow(message));
   }
 
+  public error(msg: string | ((fmt: FormatUtils) => string)) {
+    const message = typeof msg === "string" ? msg : msg(this.fmtUtils);
+    console.error(colors.red(message));
+  }
+
   public tip(msg: string) {
     printTip(msg);
   }

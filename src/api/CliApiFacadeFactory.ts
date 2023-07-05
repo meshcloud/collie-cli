@@ -43,7 +43,7 @@ export class CliApiFacadeFactory {
   ) {}
 
   buildCliDetectors() {
-    const processRunner = this.buildProcessRunner();
+    const processRunner = this.buildQuietLoggingProcessRunner();
     return [
       new AwsCliDetector(processRunner),
       new AzCliDetector(processRunner),
@@ -57,11 +57,11 @@ export class CliApiFacadeFactory {
   }
 
   buildAws(env?: AwsCliEnv, cwd?: string) {
-    const processRunner = this.buildProcessRunner();
+    const processRunner = this.buildQuietLoggingProcessRunner();
     const detector = new AwsCliDetector(processRunner);
 
     const resultHandler = new AwsCliResultHandler(detector);
-    const facadeProcessRunner = this.buildFacadeProcessRunner(
+    const facadeProcessRunner = this.wrapFacadeProcessRunner(
       processRunner,
       resultHandler,
       env,
@@ -74,11 +74,11 @@ export class CliApiFacadeFactory {
   }
 
   buildGcloud(env?: GcloudCliEnv, cwd?: string) {
-    const processRunner = this.buildProcessRunner();
+    const processRunner = this.buildQuietLoggingProcessRunner();
     const detector = new GcloudCliDetector(processRunner);
 
     const resultHandler = new GcloudCliResultHandler(detector);
-    const facadeProcessRunner = this.buildFacadeProcessRunner(
+    const facadeProcessRunner = this.wrapFacadeProcessRunner(
       processRunner,
       resultHandler,
       env,
@@ -91,11 +91,11 @@ export class CliApiFacadeFactory {
   }
 
   buildAz(env?: AzCliEnv, cwd?: string) {
-    const processRunner = this.buildProcessRunner();
+    const processRunner = this.buildQuietLoggingProcessRunner();
     const detector = new AzCliDetector(processRunner);
 
     const resultHandler = new AzCliResultHandler(detector);
-    const facadeProcessRunner = this.buildFacadeProcessRunner(
+    const facadeProcessRunner = this.wrapFacadeProcessRunner(
       processRunner,
       resultHandler,
       env,
@@ -115,30 +115,33 @@ export class CliApiFacadeFactory {
   }
 
   public buildGit() {
-    const detectorRunner = this.buildProcessRunner();
+    const detectorRunner = this.buildQuietLoggingProcessRunner();
     const detector = new GitCliDetector(detectorRunner);
 
     const processRunner = this.buildTransparentProcessRunner(detector);
 
-    return new GitCliFacade(processRunner);
+    const resultHandler = new ProcessRunnerErrorResultHandler(detector);
+    const quietRunner = new ResultHandlerProcessRunnerDecorator(
+      new QuietProcessRunner(),
+      resultHandler,
+    );
+
+    return new GitCliFacade(processRunner, quietRunner);
   }
 
   public buildTerragrunt() {
-    const detectorRunner = this.buildProcessRunner();
+    const detectorRunner = this.buildQuietLoggingProcessRunner();
     const detector = new TerragruntCliDetector(detectorRunner);
 
     let processRunner = this.buildTransparentProcessRunner(detector);
 
-    processRunner = new DefaultsProcessRunnerDecorator(
-      processRunner,
-      {},
-    );
+    processRunner = new DefaultsProcessRunnerDecorator(processRunner, {});
 
     return new TerragruntCliFacade(processRunner);
   }
 
   public buildNpm() {
-    const detectorRunner = this.buildProcessRunner();
+    const detectorRunner = this.buildQuietLoggingProcessRunner();
     const detector = new NpmCliDetector(detectorRunner);
 
     const processRunner = this.buildTransparentProcessRunner(detector);
@@ -147,7 +150,7 @@ export class CliApiFacadeFactory {
   }
 
   public buildTerraformDocs() {
-    const detectorRunner = this.buildProcessRunner();
+    const detectorRunner = this.buildQuietLoggingProcessRunner();
     const detector = new TerraformDocsCliDetector(detectorRunner);
 
     const processRunner = this.buildTransparentProcessRunner(detector);
@@ -163,7 +166,7 @@ export class CliApiFacadeFactory {
   //
   // to achieve this we split up buildProcessRunner and buildFacadeProcessRunner methods
 
-  private buildProcessRunner() {
+  private buildQuietLoggingProcessRunner() {
     let processRunner: IProcessRunner<ProcessResultWithOutput> =
       new QuietProcessRunner();
 
@@ -189,10 +192,11 @@ export class CliApiFacadeFactory {
       processRunner,
       resultHandler,
     );
+
     return processRunner;
   }
 
-  private buildFacadeProcessRunner(
+  private wrapFacadeProcessRunner(
     facadeProcessRunner: IProcessRunner<ProcessResultWithOutput>,
     resultHandler: ProcessRunnerResultHandler,
     env?: Record<string, string>,
