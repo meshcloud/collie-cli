@@ -18,5 +18,10 @@ pkgs.mkShell {
     pkgs.azure-cli
     pkgs.google-cloud-sdk
 
+    # terraform
+    pkgs.terraform
+    pkgs.terragrunt
+    pkgs.tflint
+    pkgs.terraform-docs
   ];
 }
