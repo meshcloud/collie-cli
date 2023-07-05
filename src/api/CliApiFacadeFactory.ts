@@ -150,10 +150,13 @@ export class CliApiFacadeFactory {
   }
 
   public buildTerraformDocs() {
-    const detectorRunner = this.buildQuietLoggingProcessRunner();
-    const detector = new TerraformDocsCliDetector(detectorRunner);
+    const quietRunner = this.buildQuietLoggingProcessRunner();
+    const detector = new TerraformDocsCliDetector(quietRunner);
 
-    const processRunner = this.buildTransparentProcessRunner(detector);
+    const processRunner = this.wrapFacadeProcessRunner(
+      quietRunner,
+      new ProcessRunnerErrorResultHandler(detector),
+    );
 
     return new TerraformDocsCliFacade(this.repo, processRunner);
   }

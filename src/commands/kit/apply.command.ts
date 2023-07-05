@@ -18,6 +18,7 @@ import {
   generatePlatformConfiguration,
   generateTerragrunt,
 } from "./kit-utilities.ts";
+import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 
 interface ApplyOptions {
   foundation?: string;
@@ -71,6 +72,7 @@ export function registerApplyCmd(program: TopLevelCommand) {
 
         const dir = new DirectoryGenerator(WriteMode.skip, logger);
 
+        // tbd: should this come from a bootstrap module?
         generatePlatformConfiguration(foundationRepo, platformConfig, dir);
 
         const platformModuleId = moduleId.split("/").slice(1);
@@ -78,6 +80,9 @@ export function registerApplyCmd(program: TopLevelCommand) {
           platformConfig,
           ...platformModuleId,
         );
+
+        const factory = new CliApiFacadeFactory(collie, logger);
+        const tfDocs = factory.buildTerraformDocs();
 
         // todo: clarify definition of kitModuleId and ComplianceControlId - do they include kit/compliance prefix respectively?
         // must handle this consistently across all objects!
@@ -89,7 +94,7 @@ export function registerApplyCmd(program: TopLevelCommand) {
           entries: [
             {
               name: "terragrunt.hcl",
-              content: generateTerragrunt(kitModulePath),
+              content: await generateTerragrunt(kitModulePath, tfDocs),
             },
           ],
         };

@@ -32,6 +32,7 @@ import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { AzLocation } from "../../api/az/Model.ts";
 import * as path from "std/path";
 import { Toggle } from "x/cliffy/prompt";
+import { indent } from "../../cli/indent.ts";
 
 function availableKitBundles(locations: AzLocation[]): KitBundle[] {
   return [
@@ -134,11 +135,7 @@ async function selectKitBundle(
       `Bundle '${bundleToSetup.displayName}' ('${bundleToSetup.identifier}') chosen.`,
     );
 
-    const indented = bundleToSetup.description
-      .split("\n")
-      .map((x) => "  " + x)
-      .join("\n");
-
+    const indented = indent(bundleToSetup.description, 2);
     console.log(indented);
 
     confirm = await Toggle.prompt(`Continue?`);
@@ -276,13 +273,15 @@ async function applyKit(
     ...platformModuleId,
   );
 
+  const factory = new CliApiFacadeFactory(collie, logger);
+  const tfdocs = factory.buildTerraformDocs();
   const kitModulePath = collie.relativePath(collie.resolvePath("kit", kitName));
   const platformModuleDir: Dir = {
     name: targetPath,
     entries: [
       {
         name: "terragrunt.hcl",
-        content: generateTerragrunt(kitModulePath),
+        content: await generateTerragrunt(kitModulePath, tfdocs),
       },
     ],
   };
