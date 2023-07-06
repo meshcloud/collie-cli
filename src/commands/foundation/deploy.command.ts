@@ -94,6 +94,7 @@ export function registerDeployCmd(program: TopLevelCommand) {
           foundation,
           validator,
         );
+
         await deployFoundation(collieRepo, foundationRepo, mode, opts, logger);
 
         foundationProgress.done();
@@ -120,6 +121,14 @@ export async function deployFoundation(
   // to debug any errors for an operator. If we later decide to do this, we should try and see if we can offload this
   // challenge to tools that are already equipped to handle this in some sensible way (e.g. terragrunt with multiple --include-dir or gnu parallels etc.)
 
+  if (!platforms.length) {
+    logger.warn("Nothing to deploy, your foundation has no platforms yet");
+    logger.tipCommand(
+      "Add new platforms to your foundation by reinitializing it.\nThis will not overwrite existing configuration and platforms.",
+      "foundation new " + foundation.id,
+    );
+    Deno.exit(0);
+  }
   for (const platform of platforms) {
     const deployer = new PlatformDeployer(
       platform,
