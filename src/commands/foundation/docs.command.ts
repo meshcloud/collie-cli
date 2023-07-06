@@ -51,6 +51,10 @@ export function registerDocsCmd(program: TopLevelCommand) {
 
         if (opts.preview) {
           await previewDocumentation(foundationRepo, factory);
+        } else {
+          logger.tip(
+            "re-run with --preview flag to start a local webserver rendering a live preview of your docs",
+          );
         }
       },
     )
