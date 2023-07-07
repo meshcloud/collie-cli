@@ -14,10 +14,7 @@ import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CommandOptionError } from "../CommandOptionError.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
-import {
-  generatePlatformConfiguration,
-  generateTerragrunt,
-} from "./kit-utilities.ts";
+import { generateTerragrunt } from "./kit-utilities.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 
 interface ApplyOptions {
@@ -70,36 +67,12 @@ export function registerApplyCmd(program: TopLevelCommand) {
         // by convention, the module id looks like $platform/...
         const platformConfig = foundationRepo.findPlatform(platform);
 
-        const dir = new DirectoryGenerator(WriteMode.skip, logger);
-
-        // tbd: should this come from a bootstrap module?
-        generatePlatformConfiguration(foundationRepo, platformConfig, dir);
-
-        const platformModuleId = moduleId.split("/").slice(1);
-        const targetPath = foundationRepo.resolvePlatformPath(
-          platformConfig,
-          ...platformModuleId,
+        const { kitModulePath, targetPath } = await applyKitModule(
+          foundationRepo,
+          platformConfig.id,
+          logger,
+          moduleId,
         );
-
-        const factory = new CliApiFacadeFactory(collie, logger);
-        const tfDocs = factory.buildTerraformDocs();
-
-        // todo: clarify definition of kitModuleId and ComplianceControlId - do they include kit/compliance prefix respectively?
-        // must handle this consistently across all objects!
-        const kitModulePath = collie.relativePath(
-          collie.resolvePath("kit", moduleId),
-        );
-        const platformModuleDir: Dir = {
-          name: targetPath,
-          entries: [
-            {
-              name: "terragrunt.hcl",
-              content: await generateTerragrunt(kitModulePath, tfDocs),
-            },
-          ],
-        };
-
-        await dir.write(platformModuleDir, "");
 
         logger.progress(
           `applied module ${kitModulePath} to ${
@@ -114,4 +87,43 @@ export function registerApplyCmd(program: TopLevelCommand) {
         );
       },
     );
+}
+
+export async function applyKitModule(
+  foundationRepo: FoundationRepository,
+  platform: string,
+  logger: Logger,
+  moduleId: string,
+) {
+  const dir = new DirectoryGenerator(WriteMode.skip, logger);
+  const collie = new CollieRepository("./");
+  const platformConfig = foundationRepo.findPlatform(platform);
+
+  const platformModuleId = moduleId.split("/").slice(1);
+  const targetPath = foundationRepo.resolvePlatformPath(
+    platformConfig,
+    ...platformModuleId,
+  );
+
+  const factory = new CliApiFacadeFactory(collie, logger);
+  const tfdocs = factory.buildTerraformDocs();
+  const kitModulePath = collie.relativePath(
+    collie.resolvePath("kit", moduleId),
+  );
+  const platformModuleDir: Dir = {
+    name: targetPath,
+    entries: [
+      {
+        name: "terragrunt.hcl",
+        content: await generateTerragrunt(kitModulePath, tfdocs),
+      },
+    ],
+  };
+
+  await dir.write(platformModuleDir, "");
+
+  return {
+    kitModulePath,
+    targetPath,
+  };
 }

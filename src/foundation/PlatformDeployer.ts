@@ -10,7 +10,6 @@ import { PlatformConfig } from "/model/PlatformConfig.ts";
 import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "/cli/ProgressReporter.ts";
 import { CollieRepository } from "/model/CollieRepository.ts";
-import { toFileUrl } from "https://deno.land/std@0.170.0/path/win32.ts";
 
 export class PlatformDeployer<T extends PlatformConfig> {
   constructor(

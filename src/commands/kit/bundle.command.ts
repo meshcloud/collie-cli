@@ -6,8 +6,6 @@ import { Input, Select } from "x/cliffy/prompt";
 import {
   emptyKitDirectoryCreation,
   generateDocumentationTf,
-  generatePlatformConfiguration,
-  generateTerragrunt,
 } from "./kit-utilities.ts";
 import {
   KitBundle,
@@ -21,11 +19,6 @@ import { SelectValueOptions } from "x/cliffy/prompt";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
-import {
-  Dir,
-  DirectoryGenerator,
-  WriteMode,
-} from "../../cli/DirectoryGenerator.ts";
 import { deployFoundation } from "../foundation/deploy.command.ts";
 import { InputParameter, InputSelectParameter } from "../InputParameter.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
@@ -33,6 +26,7 @@ import { AzLocation } from "../../api/az/Model.ts";
 import * as path from "std/path";
 import { Toggle } from "x/cliffy/prompt";
 import { indent } from "../../cli/indent.ts";
+import { applyKitModule } from "./apply.command.ts";
 
 function availableKitBundles(locations: AzLocation[]): KitBundle[] {
   return [
@@ -177,7 +171,12 @@ async function selectKitBundle(
 
   for (const [name, _] of allKits) {
     logger.progress(`Applying kit ${name} to ${foundation} : ${platform}`);
-    await applyKit(foundationRepo, platform, logger, path.join(prefix, name));
+    await applyKitModule(
+      foundationRepo,
+      platform,
+      logger,
+      path.join(prefix, name),
+    );
   }
 
   logger.progress("Calling after-apply hook.");
@@ -253,40 +252,6 @@ async function promptKitBundleOption(
   } else {
     return kitBundles.find((x) => x.identifiedBy(selectedOption))!;
   }
-}
-
-async function applyKit(
-  foundationRepo: FoundationRepository,
-  platform: string,
-  logger: Logger,
-  kitName: string,
-) {
-  const dir = new DirectoryGenerator(WriteMode.skip, logger);
-  const collie = new CollieRepository("./");
-  const platformConfig = foundationRepo.findPlatform(platform);
-
-  generatePlatformConfiguration(foundationRepo, platformConfig, dir);
-
-  const platformModuleId = kitName.split("/").slice(1);
-  const targetPath = foundationRepo.resolvePlatformPath(
-    platformConfig,
-    ...platformModuleId,
-  );
-
-  const factory = new CliApiFacadeFactory(collie, logger);
-  const tfdocs = factory.buildTerraformDocs();
-  const kitModulePath = collie.relativePath(collie.resolvePath("kit", kitName));
-  const platformModuleDir: Dir = {
-    name: targetPath,
-    entries: [
-      {
-        name: "terragrunt.hcl",
-        content: await generateTerragrunt(kitModulePath, tfdocs),
-      },
-    ],
-  };
-
-  await dir.write(platformModuleDir, "");
 }
 
 // TODO err handling missing
