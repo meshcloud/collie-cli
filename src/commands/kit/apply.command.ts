@@ -112,8 +112,23 @@ export async function applyKitModule(
   );
 
   const platformPath = foundationRepo.resolvePlatformPath(platformConfig);
-  await tryCopyTemplateFiles(collie, moduleId, platformPath, logger);
 
+  await tryCopyTemplateFiles(
+    collie,
+    moduleId,
+    "platform",
+    platformPath,
+    logger,
+  );
+  await tryCopyTemplateFiles(
+    collie,
+    moduleId,
+    "platform-module",
+    targetPath,
+    logger,
+  );
+
+  // just try generating a terragrunt.hcl, it will not overwrite one that was explicitly provided by a template
   const platformModuleDir: Dir = {
     name: targetPath,
     entries: [
@@ -140,47 +155,49 @@ export async function applyKitModule(
 async function tryCopyTemplateFiles(
   collie: CollieRepository,
   moduleId: string,
-  platformPath: string,
+  templateId: string,
+  destinationDir: string,
   logger: Logger,
 ) {
   const platformTemplatePath = collie.resolvePath(
     "kit",
     moduleId,
     "template",
-    "platform",
+    templateId,
   );
 
+  // TODO: have not tested nested structures etc., not a concern right now
   for await (const f of fs.walk(platformTemplatePath)) {
-    // skip the root
-    if (f.name === "platform" && f.isDirectory) {
+    // the first walk entry is always the root of the walk, skip it
+    if (f.name === templateId && f.isDirectory) {
       continue;
     }
 
+    const destinationPath = path.join(destinationDir, f.name);
     try {
-      await fs.copy(f.path, path.join(platformPath, f.name));
+      await fs.ensureDir(destinationDir);
+      await fs.copy(f.path, destinationPath);
+      logger.verbose(
+        (fmt) =>
+          `applied template file ${fmt.kitPath(f.path)} to ${
+            fmt.kitPath(
+              destinationPath,
+            )
+          }`,
+      );
     } catch (e) {
       if (e instanceof Deno.errors.AlreadyExists) {
-        logger.debug(
+        logger.verbose(
           (fmt) =>
-            "skip applying template file " +
-            fmt.kitPath(f.path) +
-            ", destination file already exists",
+            `skip applying template file ${
+              fmt.kitPath(
+                f.path,
+              )
+            }, destination file ${fmt.kitPath(destinationPath)} already exists`,
         );
       } else {
         throw e;
       }
     }
   }
-  // try {
-  // } catch (e) {
-  //   if (e instanceof Deno.errors.NotFound) {
-  //     logger.debug(
-  //       (fmt) =>
-  //         "did not find any platform template files to copy from " +
-  //         fmt.kitPath(platformTemplatePath)
-  //     );
-  //   } else {
-  //     throw e;
-  //   }
-  // }
 }
