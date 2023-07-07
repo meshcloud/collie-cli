@@ -5,8 +5,6 @@ import {
   WriteMode,
 } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
-import { FoundationRepository } from "../../model/FoundationRepository.ts";
-import { PlatformConfig } from "../../model/PlatformConfig.ts";
 import { TerraformDocsCliFacade } from "../../api/terraform-docs/TerraformDocsCliFacade.ts";
 import { indent } from "../../cli/indent.ts";
 
@@ -97,73 +95,6 @@ summary: |
 
 This documentation is intended as a reference documentation for cloud foundation or platform engineers using this module.
     `;
-}
-
-export function generatePlatformConfiguration(
-  foundationRepo: FoundationRepository,
-  platformConfig: PlatformConfig,
-  dir: DirectoryGenerator,
-) {
-  const platformHcl =
-    `# define shared configuration here that's included by all terragrunt configurations in this platform
-
-# recommended: remote state configuration
-remote_state {
-  backend = todo
-  generate = {
-    path      = "backend.tf"
-    if_exists = "overwrite"
-  }
-  config = {
-    # tip: use "my/path/\${path_relative_to_include()}" to dynamically include the module id in a prefix
-  }
-}
-
-# recommended: enable documentation generation for kit modules
-inputs = {
-  output_md_file = "\${get_path_to_repo_root()}/../output.md"
-}
-  `;
-
-  const moduleHcl =
-    `# define shared configuration here that most non-bootstrap modules in this platform want to include
-
-# optional: make collie's platform config available in terragrunt by parsing frontmatter
-locals {
-  platform = yamldecode(regex("^---([\\\\s\\\\S]*)\\\\n---\\\\n[\\\\s\\\\S]*$", file(".//README.md"))[0])
-}
-
-# optional: reference the bootstrap module to access its outputs
-dependency "bootstrap" {
-  config_path = "\${path_relative_from_include()}/bootstrap"
-}
-
-# recommended: generate a default provider configuration
-generate "provider" {
-  path      = "provider.tf"
-  if_exists = "overwrite"
-  contents  = <<EOF
-provider "todo" {
-  # tip: you can access collie configuration from the local above, e.g. "\${local.platform.azure.aadTenantId}"
-  # tip: you can access bootstrap module output like secrets from the dependency above, e.g. "\${dependency.bootstrap.outputs.client_secret}"
-}
-EOF
-}
-  `;
-  const platformDir = {
-    name: foundationRepo.resolvePlatformPath(platformConfig),
-    entries: [
-      {
-        name: "platform.hcl",
-        content: platformHcl,
-      },
-      {
-        name: "module.hcl",
-        content: moduleHcl,
-      },
-    ],
-  };
-  dir.write(platformDir, "");
 }
 
 export async function generateTerragrunt(
