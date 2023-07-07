@@ -10,6 +10,7 @@ import { PlatformConfig } from "/model/PlatformConfig.ts";
 import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "/cli/ProgressReporter.ts";
 import { CollieRepository } from "/model/CollieRepository.ts";
+import { toFileUrl } from "https://deno.land/std@0.170.0/path/win32.ts";
 
 export class PlatformDeployer<T extends PlatformConfig> {
   constructor(
@@ -54,7 +55,32 @@ export class PlatformDeployer<T extends PlatformConfig> {
       this.repo.relativePath(modulePath),
     );
 
-    if (await this.isTerragruntStack(modulePath)) {
+    const tgfiles = await this.terragruntFiles(modulePath);
+    if (tgfiles.length === 0) {
+      this.logger.warn(
+        (fmt) =>
+          `detected no platform modules at ${
+            fmt.kitPath(
+              modulePath,
+            )
+          }, will skip invoking "terragrunt <cmd>"`,
+      );
+
+      this.logger.tipCommand(
+        "Apply a kit module to this platform to create a platform module using",
+        "kit apply",
+      );
+    } else if (tgfiles.length === 1) {
+      this.logger.debug(
+        (fmt) =>
+          `detected a single platform module at ${
+            fmt.kitPath(
+              modulePath,
+            )
+          }, will deploy with "terragrunt <cmd>"`,
+      );
+      await this.terragrunt.run(modulePath, mode, { autoApprove });
+    } else {
       this.logger.debug(
         (fmt) =>
           `detected a stack of platform modules at ${
@@ -68,22 +94,12 @@ export class PlatformDeployer<T extends PlatformConfig> {
         excludeDirs: [this.bootstrapModuleDir()],
         autoApprove,
       });
-    } else {
-      this.logger.debug(
-        (fmt) =>
-          `detected a single platform module at ${
-            fmt.kitPath(
-              modulePath,
-            )
-          }, will deploy with "terragrunt <cmd>"`,
-      );
-      await this.terragrunt.run(modulePath, mode, { autoApprove });
     }
 
     progress.done();
   }
 
-  private async isTerragruntStack(modulePath: string) {
+  private async terragruntFiles(modulePath: string) {
     const files = [];
 
     for await (
@@ -97,7 +113,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
     }
 
     // a terragrunt stack conists of multiple executable terragrunt files
-    return files.length > 1;
+    return files;
   }
 
   private buildProgressReporter(mode: TerragruntArguments, id: string) {
