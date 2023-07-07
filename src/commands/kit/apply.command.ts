@@ -1,5 +1,5 @@
 import * as path from "std/path";
-
+import * as fs from "std/fs";
 import {
   Dir,
   DirectoryGenerator,
@@ -110,6 +110,10 @@ export async function applyKitModule(
   const kitModulePath = collie.relativePath(
     collie.resolvePath("kit", moduleId),
   );
+
+  const platformPath = foundationRepo.resolvePlatformPath(platformConfig);
+  await tryCopyTemplateFiles(collie, moduleId, platformPath, logger);
+
   const platformModuleDir: Dir = {
     name: targetPath,
     entries: [
@@ -126,4 +130,57 @@ export async function applyKitModule(
     kitModulePath,
     targetPath,
   };
+}
+
+/**
+ * Try to copy template files supplied by a kit module.
+ * Right now the only use case for this is to provide a platform-level terragrunt DRY scaffold
+ * from a bootstrap module, so it's a rather naive hardcoded implementation.
+ */
+async function tryCopyTemplateFiles(
+  collie: CollieRepository,
+  moduleId: string,
+  platformPath: string,
+  logger: Logger,
+) {
+  const platformTemplatePath = collie.resolvePath(
+    "kit",
+    moduleId,
+    "template",
+    "platform",
+  );
+
+  for await (const f of fs.walk(platformTemplatePath)) {
+    // skip the root
+    if (f.name === "platform" && f.isDirectory) {
+      continue;
+    }
+
+    try {
+      await fs.copy(f.path, path.join(platformPath, f.name));
+    } catch (e) {
+      if (e instanceof Deno.errors.AlreadyExists) {
+        logger.debug(
+          (fmt) =>
+            "skip applying template file " +
+            fmt.kitPath(f.path) +
+            ", destination file already exists",
+        );
+      } else {
+        throw e;
+      }
+    }
+  }
+  // try {
+  // } catch (e) {
+  //   if (e instanceof Deno.errors.NotFound) {
+  //     logger.debug(
+  //       (fmt) =>
+  //         "did not find any platform template files to copy from " +
+  //         fmt.kitPath(platformTemplatePath)
+  //     );
+  //   } else {
+  //     throw e;
+  //   }
+  // }
 }
