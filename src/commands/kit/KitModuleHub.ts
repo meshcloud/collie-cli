@@ -10,8 +10,7 @@ export class KitModuleHub {
   private readonly hubCacheDirPath = [".collie", "hub"];
 
   // hardcoding this is ok for now
-  readonly url =
-    "https://github.com/meshcloud/landing-zone-construction-kit.git";
+  readonly url = "https://github.com/meshcloud/collie-hub.git";
 
   public async import(id: string, moduleDestDir: string, overwrite?: boolean) {
     const moduleSrcDir = this.repo.resolvePath(

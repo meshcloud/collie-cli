@@ -128,7 +128,7 @@ export class AzureKitMeshstackIntegrationBundle extends KitBundle {
       [
         "bootstrap",
         new KitRepresentation(
-          "https://github.com/meshcloud/landing-zone-construction-kit/archive/c8e08ecba445e529153ae9ef1892349f76fcbcb4.tar.gz",
+          "https://github.com/meshcloud/collie-hub/archive/c8e08ecba445e529153ae9ef1892349f76fcbcb4.tar.gz",
           "/kit/azure/bootstrap-es",
           bootstrapKitParams,
           undefined,

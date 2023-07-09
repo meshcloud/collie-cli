@@ -25,7 +25,7 @@ export function registerImportCmd(program: TopLevelCommand) {
       "clean the local cache of kit modules from the hub before importing instead of just refreshing it",
     )
     .description(
-      "Import a published kit module from the official Landing Zone Construction Kit hub at https://github.com/meshcloud/landing-zone-construction-kit",
+      "Import a published kit module from the official Collie Hub at https://github.com/meshcloud/collie-hub",
     )
     .action(async (opts: GlobalCommandOptions & ImportOptions, id?: string) => {
       const collie = new CollieRepository("./");
