@@ -167,37 +167,60 @@ async function tryCopyTemplateFiles(
   );
 
   // TODO: have not tested nested structures etc., not a concern right now
-  for await (const f of fs.walk(platformTemplatePath)) {
-    // the first walk entry is always the root of the walk, skip it
-    if (f.name === templateId && f.isDirectory) {
-      continue;
-    }
+  try {
+    for await (const f of fs.walk(platformTemplatePath)) {
+      // the first walk entry is always the root of the walk, skip it
+      if (f.name === templateId && f.isDirectory) {
+        continue;
+      }
 
-    const destinationPath = path.join(destinationDir, f.name);
-    try {
-      await fs.ensureDir(destinationDir);
-      await fs.copy(f.path, destinationPath);
+      await tryCopyTemplateFileEntry(destinationDir, f, logger);
+    }
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
       logger.verbose(
         (fmt) =>
-          `applied template file ${fmt.kitPath(f.path)} to ${
+          `skip applying template files as kit module has no templates at ${
             fmt.kitPath(
-              destinationPath,
+              platformTemplatePath,
             )
           }`,
       );
-    } catch (e) {
-      if (e instanceof Deno.errors.AlreadyExists) {
-        logger.verbose(
-          (fmt) =>
-            `skip applying template file ${
-              fmt.kitPath(
-                f.path,
-              )
-            }, destination file ${fmt.kitPath(destinationPath)} already exists`,
-        );
-      } else {
-        throw e;
-      }
+    } else {
+      throw e;
+    }
+  }
+}
+
+async function tryCopyTemplateFileEntry(
+  destinationDir: string,
+  file: fs.WalkEntry,
+  logger: Logger,
+) {
+  const destinationPath = path.join(destinationDir, file.name);
+  try {
+    await fs.ensureDir(destinationDir);
+    await fs.copy(file.path, destinationPath);
+    logger.verbose(
+      (fmt) =>
+        `applied template file ${fmt.kitPath(file.path)} to ${
+          fmt.kitPath(
+            destinationPath,
+          )
+        }`,
+    );
+  } catch (e) {
+    if (e instanceof Deno.errors.AlreadyExists) {
+      logger.verbose(
+        (fmt) =>
+          `skip applying template file ${
+            fmt.kitPath(
+              file.path,
+            )
+          }, destination file ${fmt.kitPath(destinationPath)} already exists`,
+      );
+    } else {
+      throw e;
     }
   }
 }
