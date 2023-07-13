@@ -98,7 +98,7 @@ collie kit apply "aws/my-imported-module"
 collie kit apply "my-foundation"
 ```
 
-Note that you can also easily develop your own modules:
+You can also easily develop your own modules:
 
 ```shell
 # Generate a new IaC module template
@@ -116,7 +116,7 @@ You can find more information about building and deploying landing zones with
 
 ## ☝️ Prerequisites<a name="prerequisites"></a>
 
-For each cloud platform you want to manage, you'll need the equivalent cloud CLI
+For each cloud platform you want to manage, you'll need the cloud CLI
 installed.
 
 - For AWS, this is the `aws` CLI. Install it
@@ -138,13 +138,11 @@ installed.
 - [terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/) to
   build and deploy terraform
 
-_Optional_: To be able to generate documentation of your landing zones, you will need:
+_Optional_: To generate documentation of your landing zones, you will need:
 
 - [terraform-docs](https://github.com/terraform-docs/terraform-docs/#installation)
   to generate terraform module documentation
 - [node.js](https://nodejs.org/en/) to generate and preview your cloud foundation documentation
-
-That's it! Let's get `collie` installed ⤵️
 
 ## 👋 Need help or have feedback?
 
