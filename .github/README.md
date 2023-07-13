@@ -32,9 +32,7 @@
     inspired by the cloud providers, such as Microsoft Azure Enterprise Scale.
 </p>
 
-<img align="center" src="/.github/collie-demo.gif">
-
-## Collie in a nutshell
+## 🥜 Collie in a nutshell
 
 Develop and deploy landing zones to provide a solid foundation for your teams to
 build on:
@@ -94,7 +92,7 @@ curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.
 irm https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.ps1 | iex
 ```
 
-# Docs
+## 📚 Docs
 
 Get started with the [Tutorial](https://collie.cloudfoundation.org/tutorial/).
 
