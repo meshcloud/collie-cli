@@ -37,11 +37,13 @@ export function registerInfoCommand(program: TopLevelCommand) {
 function formatInfo(r: CliDetectionResult) {
   switch (r.status) {
     case InstallationStatus.NotInstalled:
-      return `${r.cli} ${colors.italic("not installed")}`;
+      return `${colors.red("x")} ${r.cli} ${colors.italic("not installed")}`;
     case InstallationStatus.UnsupportedVersion:
-      return `${r.cli} ${r.version} ${colors.italic("unsupported version")}`;
+      return `${colors.red("x")} ${r.cli} ${r.version} ${
+        colors.italic("unsupported version")
+      }`;
     case InstallationStatus.Installed: {
-      return `${r.cli} ${r.version}`;
+      return `${colors.green("✔")} ${r.cli} ${r.version}`;
     }
   }
 }
