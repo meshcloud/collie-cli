@@ -130,14 +130,19 @@ export class CliApiFacadeFactory {
   }
 
   public buildTerragrunt() {
-    const detectorRunner = this.buildQuietLoggingProcessRunner();
-    const detector = new TerragruntCliDetector(detectorRunner);
+    const quietRunner = this.buildQuietLoggingProcessRunner();
+    const detector = new TerragruntCliDetector(quietRunner);
 
-    let processRunner = this.buildTransparentProcessRunner(detector);
+    const transparentFacadeRunner = this.buildTransparentProcessRunner(
+      detector,
+    );
 
-    processRunner = new DefaultsProcessRunnerDecorator(processRunner, {});
+    const quietFacadeRunner = this.wrapFacadeProcessRunner(
+      quietRunner,
+      new ProcessRunnerErrorResultHandler(detector),
+    );
 
-    return new TerragruntCliFacade(processRunner);
+    return new TerragruntCliFacade(transparentFacadeRunner, quietFacadeRunner);
   }
 
   public buildNpm() {
@@ -199,6 +204,8 @@ export class CliApiFacadeFactory {
     return processRunner;
   }
 
+  // TODO: this could possibly use a refactoring for clarity - instead of wrapping existing quiet+logging runners,
+  // it's probably easier to just construct a fresh chain of runner behavior for each Facade
   private wrapFacadeProcessRunner(
     facadeProcessRunner: IProcessRunner<ProcessResultWithOutput>,
     resultHandler: ProcessRunnerResultHandler,

@@ -1,6 +1,7 @@
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import {
   ProcessResult,
+  ProcessResultWithOutput,
   ProcessRunnerResult,
 } from "../../process/ProcessRunnerResult.ts";
 import { ProcessRunnerOptions } from "../../process/ProcessRunnerOptions.ts";
@@ -23,7 +24,10 @@ export function toVerb(args: TerragruntArguments) {
 }
 
 export class TerragruntCliFacade {
-  constructor(private runner: IProcessRunner<ProcessResult>) {}
+  constructor(
+    private runner: IProcessRunner<ProcessResult>,
+    private quietRunner: IProcessRunner<ProcessResultWithOutput>,
+  ) {}
 
   private async runTerragrunt(
     commands: string[],
@@ -44,11 +48,7 @@ export class TerragruntCliFacade {
         // by default, terragrunt and terraform prompt for all changes
       ];
 
-    const cmds = [
-      "terragrunt",
-      ...mode.raw,
-      ...autoApproveFlags,
-    ];
+    const cmds = ["terragrunt", ...mode.raw, ...autoApproveFlags];
 
     return await this.runTerragrunt(cmds, {
       cwd,
@@ -90,6 +90,20 @@ export class TerragruntCliFacade {
     // see https://terragrunt.gruntwork.io/docs/reference/cli-options/#run-all
 
     return await this.runTerragrunt(cmds, {
+      cwd,
+    });
+  }
+
+  async collectOutput(cwd: string, outputName: string) {
+    const cmds = [
+      "terragrunt",
+      "output",
+      "-raw",
+      outputName,
+      "--terragrunt-non-interactive", // disable terragrunt's own prompts, e.g. at the start of a terragrunt run-all run
+    ];
+
+    return await this.quietRunner.run(cmds, {
       cwd,
     });
   }
