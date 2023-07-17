@@ -9,77 +9,43 @@ export class DocumentationRepository {
   private readonly docsRootDir = ".docs";
   private readonly docsContentDir = "docs";
 
-  // these paths are the same in collie repository and docs content
-  public readonly platformsDir = "platforms";
-  public readonly complianceDir = "compliance";
-  public readonly kitDir = "kit";
+  constructor(private readonly foundation: FoundationRepository) {}
 
-  public readonly docsRootPath: string;
-  public readonly docsContentPath: string;
-  public readonly kitPath: string;
-  public readonly compliancePath: string;
-  public readonly platformsPath: string;
-
-  constructor(private readonly foundation: FoundationRepository) {
-    this.docsRootPath = foundation.resolvePath(this.docsRootDir);
-
-    this.docsContentPath = foundation.resolvePath(
-      this.docsRootDir,
-      this.docsContentDir,
-    );
-
-    this.kitPath = path.join(this.docsContentPath, this.kitDir);
-    this.compliancePath = path.join(this.docsContentPath, this.complianceDir);
-    this.platformsPath = path.join(this.docsContentPath, this.platformsDir);
+  resolvePath(...pathSegments: string[]) {
+    return this.foundation.resolvePath(this.docsRootDir, ...pathSegments);
   }
 
   kitModuleLink(from: string, moduleId: string) {
-    const kitModulePath = this.kitModulePath(moduleId);
+    const kitModulePath = this.resolveKitModulePath(moduleId);
 
     return path.relative(from, kitModulePath);
   }
 
-  kitModulePath(moduleId: string) {
-    return this.foundation.resolvePath(
-      this.docsRootDir,
-      this.docsContentDir,
-      this.kitDir,
-      moduleId + ".md",
-    );
+  resolveKitModulePath(moduleId: string) {
+    return this.resolvePath(this.docsContentDir, "kit", moduleId + ".md");
   }
 
   controlLink(from: string, controlId: string) {
-    const controlPath = this.controlPath(controlId);
+    const controlPath = this.resolveControlPath(controlId);
 
     return path.relative(from, controlPath);
   }
 
-  controlPath(controlId: string) {
-    return this.foundation.resolvePath(
-      this.docsRootDir,
-      this.docsContentDir,
-      this.complianceDir,
-      controlId + ".md",
-    );
+  resolveCompliancePath(...pathSegments: string[]) {
+    return this.resolvePath(this.docsContentDir, "compliance", ...pathSegments);
   }
 
-  platformPath(platformId: string) {
-    return this.foundation.resolvePath(
-      this.docsRootDir,
-      this.docsContentDir,
-      this.platformsDir,
-      platformId + ".md",
-    );
+  resolveControlPath(controlId: string) {
+    return this.resolveCompliancePath(controlId + ".md");
   }
 
-  platformModulePath(platformId: string, kitModuleId: string) {
+  resplvePlatformModulePath(platformId: string, kitModuleId: string) {
     // this might be a bit too naive
     const flattenedId = kitModuleId.replaceAll("/", "-");
 
-    return this.foundation.resolvePath(
-      this.docsRootDir,
+    return this.resolvePath(
       this.docsContentDir,
-      this.platformsDir,
+      "platforms",
       platformId,
       flattenedId + ".md",
     );

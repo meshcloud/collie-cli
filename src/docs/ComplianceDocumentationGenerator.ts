@@ -11,9 +11,9 @@ export class ComplianceDocumentationGenerator {
   ) {}
 
   public async generate(docsRepo: DocumentationRepository) {
-    const source = this.collie.resolvePath(docsRepo.complianceDir);
+    const source = this.collie.resolvePath("compliance");
 
-    const destinationDir = docsRepo.compliancePath;
+    const destinationDir = docsRepo.resolveCompliancePath();
     this.logger.verbose(
       (fmt) =>
         `copying (recursive) ${fmt.kitPath(source)} to ${

@@ -1,6 +1,5 @@
 import * as fs from "std/fs";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
-import { DirectoryGenerator, WriteMode } from "../../cli/DirectoryGenerator.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
 import { ComplianceControlRepository } from "../../compliance/ComplianceControlRepository.ts";
@@ -81,8 +80,6 @@ async function updateDocumentation(
     logger,
   );
 
-  const dir = new DirectoryGenerator(WriteMode.overwrite, logger);
-
   const validator = new ModelValidator(logger);
   const modules = await KitModuleRepository.load(repo, validator, logger);
   const controls = await ComplianceControlRepository.load(
@@ -109,9 +106,7 @@ async function updateDocumentation(
   const platformDocumentation = new PlatformDocumentationGenerator(
     repo,
     foundation,
-    controls,
     analyzer,
-    dir,
     logger,
     terragrunt,
   );
@@ -136,7 +131,7 @@ async function previewDocumentation(
   factory: CliApiFacadeFactory,
 ) {
   const docsRepo = new DocumentationRepository(foundation);
-  const dir = docsRepo.docsRootPath;
+  const dir = docsRepo.resolvePath();
 
   const npm = factory.buildNpm();
 
@@ -153,7 +148,7 @@ async function prepareSiteTemplate(
   const srcDir = repo.resolvePath("kit", "foundation", "docs", "template");
 
   try {
-    await fs.copy(srcDir, docsRepo.docsRootPath, { overwrite: true });
+    await fs.copy(srcDir, docsRepo.resolvePath(), { overwrite: true });
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) {
       logger.error(
