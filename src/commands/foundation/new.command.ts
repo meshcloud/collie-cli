@@ -39,7 +39,13 @@ export function registerNewCmd(program: TopLevelCommand) {
           { name: "README.md", content: generateReadmeMd(foundation) },
           {
             name: "platforms",
-            entries: platformEntries,
+            entries: [
+              {
+                name: "README.md",
+                content: generatePlatformsReadmeMd(foundation),
+              },
+              ...platformEntries,
+            ],
           },
         ],
       };
@@ -61,6 +67,15 @@ name: ${foundationName}
 
 Welcome to your cloud foundation. 
   `;
+}
+
+function generatePlatformsReadmeMd(foundationName: string) {
+  return `
+# Platforms in ${foundationName}
+
+Use this page to describe top level information about your cloud platforms.
+This page will be visible in generated documentation and serve as the home page for the "Platforms" link.
+`;
 }
 
 async function promptPlatformEntries(

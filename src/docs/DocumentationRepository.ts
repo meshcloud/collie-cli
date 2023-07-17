@@ -39,15 +39,14 @@ export class DocumentationRepository {
     return this.resolveCompliancePath(controlId + ".md");
   }
 
+  resolvePlatformsPath(...pathSegments: string[]) {
+    return this.resolvePath(this.docsContentDir, "platforms", ...pathSegments);
+  }
+
   resolvePlatformModulePath(platformId: string, kitModuleId: string) {
     // this might be a bit too naive
     const flattenedId = kitModuleId.replaceAll("/", "-");
 
-    return this.resolvePath(
-      this.docsContentDir,
-      "platforms",
-      platformId,
-      flattenedId + ".md",
-    );
+    return this.resolvePlatformsPath(platformId, flattenedId + ".md");
   }
 }
