@@ -39,16 +39,6 @@ export interface KitModuleDependency {
    * if available, the parsed kit module data
    */
   kitModule?: KitModule;
-
-  /**
-   * repository-relative path to the kit module output
-   */
-  kitModuleOutputPath: string;
-
-  /**
-   * If available, the output generated from the kit module execution.
-   */
-  kitModuleOutput?: string;
 }
 
 export class KitDependencyAnalyzer {
@@ -124,51 +114,12 @@ export class KitDependencyAnalyzer {
         `Could not find kit module with id ${kitModuleId} included from ${sourcePath}`;
       this.logger.warn(msg);
     }
-
-    const { kitModuleOutputPath, kitModuleOutput } = await this.readOutput(
-      terragruntFilePath,
-      sourcePath,
-    );
-
     return {
       sourcePath,
       kitModuleId,
       kitModulePath,
       kitModule,
-      kitModuleOutputPath,
-      kitModuleOutput,
     };
-  }
-
-  private async readOutput(terragruntFilePath: string, sourcePath: string) {
-    // by convention, we generate the output next to the terragrunt.hcl file
-    const absoluteKitModuleOutputPath = path.resolve(
-      terragruntFilePath,
-      "../output.md",
-    );
-    const kitModuleOutputPath = this.collie.relativePath(
-      absoluteKitModuleOutputPath,
-    );
-
-    const kitModuleOutput = await this.tryReadFile(absoluteKitModuleOutputPath);
-    if (!kitModuleOutput) {
-      this.logger.warn(
-        `platform module ${sourcePath} did not generate an output.md file at ${kitModuleOutputPath}`,
-      );
-    } else {
-      this.logger.verbose(
-        () => `read generated kit module output at ${kitModuleOutputPath}`,
-      );
-    }
-    return { kitModuleOutputPath, kitModuleOutput };
-  }
-
-  private async tryReadFile(path: string) {
-    try {
-      const kitModuleOutput = await Deno.readTextFile(path);
-      return kitModuleOutput;
-      // deno-lint-ignore no-unused-vars no-empty
-    } catch (error) {}
   }
 
   static parseTerraformSource(hcl: string): string | undefined {

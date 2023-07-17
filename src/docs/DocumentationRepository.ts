@@ -1,6 +1,7 @@
 import * as path from "std/path";
 import { FoundationRepository } from "../model/FoundationRepository.ts";
 
+// TODO: refactor this to consistently use resolvePath, have no public members for proper encapsulation
 export class DocumentationRepository {
   // we use a "hidden" directory with a leading "." because terragrunt excludes hidden files and dirs
   // when building a terragrunt-cache folder, see  https://terragrunt.gruntwork.io/docs/reference/config-blocks-and-attributes/#terraform "include_in_copy"
@@ -19,7 +20,7 @@ export class DocumentationRepository {
   public readonly compliancePath: string;
   public readonly platformsPath: string;
 
-  constructor(foundation: FoundationRepository) {
+  constructor(private readonly foundation: FoundationRepository) {
     this.docsRootPath = foundation.resolvePath(this.docsRootDir);
 
     this.docsContentPath = foundation.resolvePath(
@@ -39,7 +40,12 @@ export class DocumentationRepository {
   }
 
   kitModulePath(moduleId: string) {
-    return path.join(this.kitPath, moduleId + ".md");
+    return this.foundation.resolvePath(
+      this.docsRootDir,
+      this.docsContentDir,
+      this.kitDir,
+      moduleId + ".md",
+    );
   }
 
   controlLink(from: string, controlId: string) {
@@ -49,10 +55,33 @@ export class DocumentationRepository {
   }
 
   controlPath(controlId: string) {
-    return path.join(this.compliancePath, controlId + ".md");
+    return this.foundation.resolvePath(
+      this.docsRootDir,
+      this.docsContentDir,
+      this.complianceDir,
+      controlId + ".md",
+    );
   }
 
   platformPath(platformId: string) {
-    return path.join(this.platformsPath, platformId + ".md");
+    return this.foundation.resolvePath(
+      this.docsRootDir,
+      this.docsContentDir,
+      this.platformsDir,
+      platformId + ".md",
+    );
+  }
+
+  platformModulePath(platformId: string, kitModuleId: string) {
+    // this might be a bit too naive
+    const flattenedId = kitModuleId.replaceAll("/", "-");
+
+    return this.foundation.resolvePath(
+      this.docsRootDir,
+      this.docsContentDir,
+      this.platformsDir,
+      platformId,
+      flattenedId + ".md",
+    );
   }
 }

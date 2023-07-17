@@ -103,6 +103,9 @@ async function updateDocumentation(
   );
 
   const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
+
+  const factory = new CliApiFacadeFactory(repo, logger);
+  const terragrunt = factory.buildTerragrunt();
   const platformDocumentation = new PlatformDocumentationGenerator(
     repo,
     foundation,
@@ -110,6 +113,7 @@ async function updateDocumentation(
     analyzer,
     dir,
     logger,
+    terragrunt,
   );
 
   const docsRepo = new DocumentationRepository(foundation);
