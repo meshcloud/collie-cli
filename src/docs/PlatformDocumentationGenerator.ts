@@ -1,10 +1,8 @@
 import * as fs from "std/fs";
+import * as path from "std/path";
 import { TerragruntCliFacade } from "../api/terragrunt/TerragruntCliFacade.ts";
-import { Dir, DirectoryGenerator } from "../cli/DirectoryGenerator.ts";
 import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "../cli/ProgressReporter.ts";
-import { ComplianceControlRepository } from "../compliance/ComplianceControlRepository.ts";
-import { FLAGS } from "../info.ts";
 import {
   KitDependencyAnalyzer,
   KitModuleDependency,
@@ -13,12 +11,8 @@ import {
 import { CollieRepository } from "../model/CollieRepository.ts";
 
 import { FoundationRepository } from "../model/FoundationRepository.ts";
-import { MarkdownUtils } from "../model/MarkdownUtils.ts";
 import { PlatformConfig } from "../model/PlatformConfig.ts";
 import { DocumentationRepository } from "./DocumentationRepository.ts";
-import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
-
-const md = MarkdownUtils;
 
 export function kitModuleSorter(
   x: KitModuleDependency,
@@ -34,30 +28,12 @@ export class PlatformDocumentationGenerator {
   constructor(
     private readonly kit: CollieRepository,
     private readonly foundation: FoundationRepository,
-    private readonly controls: ComplianceControlRepository,
     private readonly kitDependencyAnalyzer: KitDependencyAnalyzer,
-    private readonly dir: DirectoryGenerator,
     private readonly logger: Logger,
     private readonly terragrunt: TerragruntCliFacade,
   ) {}
 
   async generate(docsRepo: DocumentationRepository) {
-    const d: Dir = {
-      name: "",
-      entries: [
-        { name: "README.md", content: this.generateFoundationReadme() },
-        {
-          name: docsRepo.platformsDir,
-          entries: [
-            { name: "README.md", content: this.generatePlatformsReadme() },
-            //...(await this.generatePlatformDocumentations(docsRepo)),
-          ],
-        },
-      ],
-    };
-
-    await this.dir.write(d, docsRepo.docsContentPath);
-
     await this.generatePlatformsDocumentation(docsRepo);
   }
 
@@ -137,6 +113,7 @@ This section describes the platforms.`;
     docsRepo: DocumentationRepository,
     platform: PlatformConfig,
   ) {
+    // TODO: what about compliance statements?
     const result = await this.terragrunt.collectOutput(
       path.dirname(x.sourcePath),
       "documentation_md",
@@ -153,7 +130,10 @@ This section describes the platforms.`;
       );
       this.logger.warn(result.stderr);
     } else {
-      const destPath = docsRepo.platformModulePath(platform.id, x.kitModuleId);
+      const destPath = docsRepo.resplvePlatformModulePath(
+        platform.id,
+        x.kitModuleId,
+      );
       await fs.ensureDir(path.dirname(destPath)); // todo: should we do nesting in the docs output or "flatten" module prefixes?
       await Deno.writeTextFile(destPath, result.stdout);
       this.logger.verbose(

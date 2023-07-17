@@ -18,8 +18,6 @@ export class KitModuleDocumentationGenerator {
   ) {}
 
   async generate(docsRepo: DocumentationRepository) {
-    const kitModulesDir = this.collie.resolvePath(docsRepo.kitDir);
-
     const progress = new ProgressReporter(
       "generating",
       "kit module documentation",
@@ -28,7 +26,7 @@ export class KitModuleDocumentationGenerator {
 
     // generate all kit module READMEs
     const tasks = this.kitModules.all.map(async (x) => {
-      const dest = docsRepo.kitModulePath(x.id);
+      const dest = docsRepo.resolveKitModulePath(x.id);
 
       this.logger.verbose((fmt) => `generating ${fmt.kitPath(dest)}`);
 
@@ -38,20 +36,17 @@ export class KitModuleDocumentationGenerator {
       await Deno.writeTextFile(dest, md);
     });
 
-    tasks.push(this.copyTopLevelKitReamde(kitModulesDir, docsRepo.kitPath));
+    tasks.push(this.copyTopLevelKitReamde(docsRepo));
 
     await Promise.all(tasks);
 
     progress.done();
   }
 
-  private async copyTopLevelKitReamde(
-    kitModulesDir: string,
-    docsKitDir: string,
-  ) {
-    const source = path.join(kitModulesDir, "README.md");
-    const dest = path.join(docsKitDir, "README.md");
-    await Deno.mkdir(path.dirname(dest), { recursive: true });
+  private async copyTopLevelKitReamde(docsRepo: DocumentationRepository) {
+    const source = this.collie.resolvePath("kit", "README.md");
+    const dest = docsRepo.resolveKitModulePath("README");
+    await fs.ensureDir(path.dirname(dest));
     await fs.copy(source, dest, { overwrite: true });
   }
 
@@ -97,7 +92,7 @@ ${x.statement}
 
 [${control.name}](${
         docsRepo.controlLink(
-          docsRepo.kitModulePath(parsed.id),
+          docsRepo.resolveKitModulePath(parsed.id),
           x.control,
         )
       })
