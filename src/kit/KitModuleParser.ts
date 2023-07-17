@@ -35,6 +35,7 @@ export class KitModuleParser {
         exclude: [
           "README.md", // exclude top-level readme
           "**/modules", // exclude sub-modules
+          "**/template", // exclude template files
         ],
         globstar: true,
       })
