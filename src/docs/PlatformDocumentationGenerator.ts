@@ -18,7 +18,7 @@ import { ComplianceControlRepository } from "../compliance/ComplianceControlRepo
 
 export class PlatformDocumentationGenerator {
   constructor(
-    private readonly kit: CollieRepository,
+    private readonly repo: CollieRepository,
     private readonly foundation: FoundationRepository,
     private readonly kitDependencyAnalyzer: KitDependencyAnalyzer,
     private readonly controls: ComplianceControlRepository,
@@ -27,7 +27,19 @@ export class PlatformDocumentationGenerator {
   ) {}
 
   async generate(docsRepo: DocumentationRepository) {
+    await this.copyTopLevelPlatformsReamde(docsRepo);
     await this.generatePlatformsDocumentation(docsRepo);
+  }
+
+  private async copyTopLevelPlatformsReamde(docsRepo: DocumentationRepository) {
+    const source = this.foundation.resolvePath("platforms", "README.md");
+    const dest = docsRepo.resolvePlatformsPath("README.md");
+
+    this.logger.verbose(
+      (fmt) => `Copying ${fmt.kitPath(source)} to ${fmt.kitPath(dest)}`,
+    );
+    await fs.ensureDir(path.dirname(dest));
+    await fs.copy(source, dest, { overwrite: true });
   }
 
   private async generatePlatformsDocumentation(
@@ -35,7 +47,7 @@ export class PlatformDocumentationGenerator {
   ) {
     const foundationProgress = new ProgressReporter(
       "generate documentation",
-      this.kit.relativePath(this.foundation.resolvePath()),
+      this.repo.relativePath(this.foundation.resolvePath()),
       this.logger,
     );
 
@@ -57,7 +69,7 @@ export class PlatformDocumentationGenerator {
   ) {
     const platformProgress = new ProgressReporter(
       "generate documentation",
-      this.kit.relativePath(
+      this.repo.relativePath(
         this.foundation.resolvePlatformPath(dependencies.platform),
       ),
       this.logger,
