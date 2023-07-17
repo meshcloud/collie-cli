@@ -39,7 +39,7 @@ export class DocumentationRepository {
     return this.resolveCompliancePath(controlId + ".md");
   }
 
-  resplvePlatformModulePath(platformId: string, kitModuleId: string) {
+  resolvePlatformModulePath(platformId: string, kitModuleId: string) {
     // this might be a bit too naive
     const flattenedId = kitModuleId.replaceAll("/", "-");
 

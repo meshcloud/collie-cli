@@ -107,8 +107,9 @@ async function updateDocumentation(
     repo,
     foundation,
     analyzer,
-    logger,
+    controls,
     terragrunt,
+    logger,
   );
 
   const docsRepo = new DocumentationRepository(foundation);

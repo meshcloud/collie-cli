@@ -13,44 +13,21 @@ import { CollieRepository } from "../model/CollieRepository.ts";
 import { FoundationRepository } from "../model/FoundationRepository.ts";
 import { PlatformConfig } from "../model/PlatformConfig.ts";
 import { DocumentationRepository } from "./DocumentationRepository.ts";
-
-export function kitModuleSorter(
-  x: KitModuleDependency,
-  y: KitModuleDependency,
-): number {
-  // bootstrap module always goes first, otherwise sort lexicpgraphically by path
-  return x.kitModulePath.endsWith("bootstrap")
-    ? -1
-    : x.kitModulePath.localeCompare(y.kitModulePath);
-}
+import { MarkdownUtils } from "../model/MarkdownUtils.ts";
+import { ComplianceControlRepository } from "../compliance/ComplianceControlRepository.ts";
 
 export class PlatformDocumentationGenerator {
   constructor(
     private readonly kit: CollieRepository,
     private readonly foundation: FoundationRepository,
     private readonly kitDependencyAnalyzer: KitDependencyAnalyzer,
-    private readonly logger: Logger,
+    private readonly controls: ComplianceControlRepository,
     private readonly terragrunt: TerragruntCliFacade,
+    private readonly logger: Logger,
   ) {}
 
   async generate(docsRepo: DocumentationRepository) {
     await this.generatePlatformsDocumentation(docsRepo);
-  }
-
-  private generateFoundationReadme() {
-    // TODO: replace this with an actual README.md file and then just append the platform links?
-    const platformLinks = this.foundation.platforms
-      .map((x) => `- [${x.id}](./platforms/${x.id}/README.md)`)
-      .join("\n");
-
-    const md = `# Cloud Foundation ${this.foundation.name}
-
-This foundation has the following platforms: 
-
-${platformLinks}
-`;
-
-    return md;
   }
 
   private async generatePlatformsDocumentation(
@@ -74,12 +51,6 @@ ${platformLinks}
     foundationProgress.done();
   }
 
-  private generatePlatformsReadme(): string {
-    return `# Introduction
-
-This section describes the platforms.`;
-  }
-
   private async generatePlatforDocumentation(
     dependencies: PlatformDependencies,
     docsRepo: DocumentationRepository,
@@ -92,16 +63,14 @@ This section describes the platforms.`;
       this.logger,
     );
 
-    const tasks = dependencies.modules
-      .sort(kitModuleSorter)
-      .map(
-        async (x) =>
-          await this.generatePlatformModuleDocumentation(
-            x,
-            docsRepo,
-            dependencies.platform,
-          ),
-      );
+    const tasks = dependencies.modules.map(
+      async (x) =>
+        await this.generatePlatformModuleDocumentation(
+          x,
+          docsRepo,
+          dependencies.platform,
+        ),
+    );
 
     await Promise.all(tasks);
 
@@ -109,13 +78,17 @@ This section describes the platforms.`;
   }
 
   private async generatePlatformModuleDocumentation(
-    x: KitModuleDependency,
+    dep: KitModuleDependency,
     docsRepo: DocumentationRepository,
     platform: PlatformConfig,
   ) {
-    // TODO: what about compliance statements?
+    const destPath = docsRepo.resolvePlatformModulePath(
+      platform.id,
+      dep.kitModuleId,
+    );
+
     const result = await this.terragrunt.collectOutput(
-      path.dirname(x.sourcePath),
+      path.dirname(dep.sourcePath),
       "documentation_md",
     );
 
@@ -124,26 +97,97 @@ This section describes the platforms.`;
         (fmt) =>
           `Failed to collect output "documentation_md" from platform module${
             fmt.kitPath(
-              x.sourcePath,
+              dep.sourcePath,
             )
           }`,
       );
       this.logger.warn(result.stderr);
     } else {
-      const destPath = docsRepo.resplvePlatformModulePath(
-        platform.id,
-        x.kitModuleId,
-      );
       await fs.ensureDir(path.dirname(destPath)); // todo: should we do nesting in the docs output or "flatten" module prefixes?
-      await Deno.writeTextFile(destPath, result.stdout);
+
+      const mdSections = [result.stdout];
+
+      const complianceStatementsBlock = this.generateComplianceStatementSection(
+        dep,
+        docsRepo,
+        destPath,
+      );
+      mdSections.push(complianceStatementsBlock);
+
+      const kitModuleSection = this.generateKitModuleSection(
+        dep,
+        docsRepo,
+        destPath,
+      );
+      mdSections.push(kitModuleSection);
+
+      await Deno.writeTextFile(destPath, mdSections.join("\n\n"));
+
       this.logger.verbose(
         (fmt) =>
           `Wrote output "documentation_md" from platform module ${
             fmt.kitPath(
-              x.sourcePath,
+              dep.sourcePath,
             )
           } to ${fmt.kitPath(destPath)}`,
       );
     }
+  }
+
+  private generateKitModuleSection(
+    dep: KitModuleDependency,
+    docsRepo: DocumentationRepository,
+    destPath: string,
+  ) {
+    if (!dep.kitModule) {
+      return MarkdownUtils.container(
+        "warning",
+        "Invalid Kit Module Dependency",
+        "Could not find kit module at " + MarkdownUtils.code(dep.kitModulePath),
+      );
+    }
+
+    const kitModuleLink = MarkdownUtils.link(
+      dep.kitModule.name + " kit module",
+      docsRepo.kitModuleLink(destPath, dep.kitModuleId),
+    );
+
+    const kitModuleSection = `::: tip Kit module
+This platform module is a deployment of kit module ${kitModuleLink}.
+:::`;
+    return kitModuleSection;
+  }
+
+  private generateComplianceStatementSection(
+    dep: KitModuleDependency,
+    docsRepo: DocumentationRepository,
+    destPath: string,
+  ) {
+    const complianceStatements = dep?.kitModule?.compliance
+      ?.map((x) => {
+        const control = this.controls.tryFindById(x.control);
+        if (!control) {
+          this.logger.warn(
+            `could not find compliance control ${x.control} referenced in a compliance statement in ${dep.kitModulePath}`,
+          );
+
+          return;
+        }
+
+        return `- [${control.name}](${
+          docsRepo.controlLink(
+            destPath,
+            x.control,
+          )
+        }): ${x.statement}`;
+      })
+      .filter((x): x is string => !!x);
+
+    const complianceStatementsBlock = !complianceStatements?.length
+      ? `<!-- kit module has no compliance statements -->`
+      : `## Compliance Statements
+
+${complianceStatements.join("\n")}`;
+    return complianceStatementsBlock;
   }
 }
