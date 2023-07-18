@@ -131,17 +131,10 @@ EOF
   source = "\${get_repo_root()}//${posixKitModulePath}"
 }`;
 
-  // The output_md_file variable must not be included in the generated code because it's being set on platform.hcl level
-  //  Setting output_md_file variable here leads to an error, because an empty path is used
-  // TODO Clean up once when reworking output paths
   const tfvars = await terraformDocs.generateTfvars(kitModulePath);
-  const tfvars_without_output_md = tfvars.replace(
-    /output_md_file\s*=\s*""\s*\n/,
-    "",
-  );
   const inputsBlock = `inputs = {
   # todo: set input variables
-${indent(tfvars_without_output_md, 2)}
+${indent(tfvars, 2)}
 }`;
 
   return [
