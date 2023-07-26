@@ -48,7 +48,7 @@ export class CollieRepository {
 
       if (!components.length) {
         throw new Error(
-          `${absolutePath} nor any of its parent directories seemse to be a collie repository`,
+          `${absolutePath} nor any of its parent directories seems to be a collie repository`,
         );
       }
     }
