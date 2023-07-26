@@ -27,6 +27,7 @@ import * as path from "std/path";
 import { Toggle } from "x/cliffy/prompt";
 import { indent } from "../../cli/indent.ts";
 import { applyKitModule } from "./apply.command.ts";
+import { CollieConfig } from "../../model/CollieConfig.ts";
 
 function availableKitBundles(locations: AzLocation[]): KitBundle[] {
   return [
@@ -60,7 +61,8 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         const validator = new ModelValidator(logger);
 
         const foundation = opts.foundation ||
-          (await InteractivePrompts.selectFoundation(collie));
+          CollieConfig.read_foundation(logger) ||
+          (await InteractivePrompts.selectFoundation(collie, logger));
 
         const foundationRepo = await FoundationRepository.load(
           collie,

@@ -15,6 +15,8 @@ import { PlatformModuleType } from "./PlatformModuleType.ts";
 import { CLI } from "../../info.ts";
 import { LiteralArgsParser } from "../LiteralArgsParser.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
+import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { CollieConfig } from "../../model/CollieConfig.ts";
 
 interface DeployOptions {
   platform?: string;
@@ -25,7 +27,7 @@ interface DeployOptions {
 
 export function registerDeployCmd(program: TopLevelCommand) {
   const cmd = program
-    .command("deploy <foundation:foundation>")
+    .command("deploy [foundation:foundation]")
     .description(
       "Deploy platform modules in your cloud foundations using terragrunt",
     )
@@ -69,7 +71,7 @@ export function registerDeployCmd(program: TopLevelCommand) {
     .action(
       async (
         opts: DeployOptions & GlobalCommandOptions,
-        foundation: string,
+        foundationArg: string|undefined,
       ) => {
         const literalArgs = LiteralArgsParser.parse(cmd.getRawArgs());
 
@@ -78,6 +80,10 @@ export function registerDeployCmd(program: TopLevelCommand) {
         const validator = new ModelValidator(logger);
 
         const mode = { raw: literalArgs.length ? literalArgs : ["apply"] };
+
+        const foundation = foundationArg || 
+          CollieConfig.read_foundation(logger) ||
+          (await InteractivePrompts.selectFoundation(collieRepo, logger));
 
         const foundationProgress = opts.platform
           ? new NullProgressReporter()
