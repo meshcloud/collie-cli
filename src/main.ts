@@ -17,6 +17,7 @@ import { FirstTimeExperience } from "./FirstTimeExperience.ts";
 import { CollieFoundationDoesNotExistError } from "./model/schemas/ModelValidator.ts";
 import { makeTopLevelCommand } from "./commands/TopLevelCommand.ts";
 import { registerInfoCommand } from "./commands/info.command.ts";
+import { registerConfigCommand } from "./commands/config/config.command.ts";
 
 async function collie() {
   const program = makeTopLevelCommand()
@@ -35,6 +36,8 @@ async function collie() {
   registerTenantCommand(program);
   registerKitCommand(program);
   registerComplianceCommand(program);
+
+  registerConfigCommand(program);
 
   registerInfoCommand(program);
   registerUpgradeCommand(program);
