@@ -5,12 +5,11 @@ const CONFIG_FILE_PATH = ".collie/config.json";
 
 export function registerSetCmd(program: TopLevelCommand) {
   program
-    .command("set <property> <value>")
-    .description("Set a collie CLI property.")
-    .action((_opts: GlobalCommandOptions, property: string, value: string) => {
+    .command("set-foundation <foundation:foundation>")
+    .description("Set the foundation config property.")
+    .action((_opts: GlobalCommandOptions, foundation: string) => {
       // this replaces the file as a whole (unsetting all other options)
       //TODO  read file and replace value
-      //TODO check if property is valid
-      //TODO auto-complete foundation
+      Deno.writeTextFile(CONFIG_FILE_PATH, JSON.stringify({ "foundation": foundation })); 
     })
 } 
