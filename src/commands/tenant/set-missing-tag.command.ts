@@ -8,10 +8,14 @@ import { MeshInvalidTagValueError } from "../../errors.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
+import { CollieConfig } from "../../model/CollieConfig.ts";
+import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { Logger } from "../../cli/Logger.ts";
+import { CollieRepository } from "../../model/CollieRepository.ts";
 
 export function registerSetMissingTagCommand(program: TopLevelCommand) {
   program
-    .command("set-missing-tag <foundation:foundation> <tagKey>")
+    .command("set-missing-tag [foundation:foundation] <tagKey>")
     .description("Fix all tenants missing the given tag interactively")
     .example(
       "Set a tag value for all tenants that are missing the given 'environment' tag",
@@ -22,9 +26,17 @@ export function registerSetMissingTagCommand(program: TopLevelCommand) {
 
 async function setMissingTagsAction(
   options: TenantCommandOptions & GlobalCommandOptions,
-  foundation: string,
+  foundationArg: string|undefined,
   tagKey: string,
 ) {
+
+  const repo = await CollieRepository.load();
+  const logger = new Logger(repo, options);
+  
+  const foundation = foundationArg || 
+    CollieConfig.read_foundation(logger) ||
+    (await InteractivePrompts.selectFoundation(repo, logger));
+
   const { meshAdapter } = await prepareTenantCommand(options, foundation);
 
   const allTenants = await meshAdapter.getMeshTenants();

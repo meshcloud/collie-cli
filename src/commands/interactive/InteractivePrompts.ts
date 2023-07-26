@@ -4,9 +4,14 @@ import { isWindows } from "../../os.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
+import { Logger } from "../../cli/Logger.ts";
 
 export class InteractivePrompts {
-  static async selectFoundation(kit: CollieRepository) {
+  static async selectFoundation(kit: CollieRepository, logger: Logger) {
+    logger.tipCommand(
+      `To set a default foundation run`,
+      `config set-foundation"`,
+    );
     return await Select.prompt({
       message: "Select a foundation",
       options: (

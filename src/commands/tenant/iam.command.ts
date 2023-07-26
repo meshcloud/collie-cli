@@ -7,6 +7,10 @@ import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { OutputFormat } from "../../presentation/output-format.ts";
 import { OutputOptions, TenantCommand } from "./TenantCommand.ts";
+import { CollieConfig } from "../../model/CollieConfig.ts";
+import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { Logger } from "../../cli/Logger.ts";
+import { CollieRepository } from "../../model/CollieRepository.ts";
 
 interface IamCommandOptions extends OutputOptions, GlobalCommandOptions {
   includeAncestors?: boolean;
@@ -17,7 +21,7 @@ interface IamCommandOptions extends OutputOptions, GlobalCommandOptions {
 
 export function registerIamCommand(program: TenantCommand) {
   program
-    .command("iam <foundation:foundation>")
+    .command("iam [foundation:foundation]")
     .description(
       "View all IAM assets applied per tenant. This includes users, groups and technical users that are directly assigned to the tenant.",
     )
@@ -34,15 +38,22 @@ export function registerIamCommand(program: TenantCommand) {
     )
     .example(
       "List all tenants who have the user john.doe@example.com assigned",
-      `${CLI} tenant iam <foundation:foundation> --filter.principal john.doe@example.com`,
+      `${CLI} tenant iam [foundation:foundation] --filter.principal john.doe@example.com`,
     )
     .action(listIamAction);
 }
 
 async function listIamAction(
   options: GlobalCommandOptions & TenantCommandOptions & IamCommandOptions,
-  foundation: string,
+  foundationArg: string|undefined,
 ) {
+  const repo = await CollieRepository.load();
+  const logger = new Logger(repo, options);
+  
+  const foundation = foundationArg || 
+    CollieConfig.read_foundation(logger) ||
+    (await InteractivePrompts.selectFoundation(repo, logger));
+
   const { meshAdapter, tableFactory } = await prepareTenantCommand(
     options,
     foundation,

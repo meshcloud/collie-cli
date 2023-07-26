@@ -7,6 +7,10 @@ import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { OutputFormat } from "../../presentation/output-format.ts";
 import { OutputOptions, TenantCommand } from "./TenantCommand.ts";
+import { CollieConfig } from "../../model/CollieConfig.ts";
+import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { Logger } from "../../cli/Logger.ts";
+import { CollieRepository } from "../../model/CollieRepository.ts";
 
 interface ListCostsCommandOptions extends GlobalCommandOptions, OutputOptions {
   from: string;
@@ -15,7 +19,7 @@ interface ListCostsCommandOptions extends GlobalCommandOptions, OutputOptions {
 
 export function registerCostCommand(program: TenantCommand) {
   program
-    .command("cost <foundation:foundation>")
+    .command("cost [foundation:foundation]")
     .description(
       "Gathers the costs of all tenants in a given time interval on a monthly basis. Includes tags as columns when outputting as CSV.",
     )
@@ -41,8 +45,17 @@ export async function listTenantsCostAction(
     & GlobalCommandOptions
     & TenantCommandOptions
     & ListCostsCommandOptions,
-  foundation: string,
+  foundationArg: string|undefined,
 ) {
+
+
+  const repo = await CollieRepository.load();
+  const logger = new Logger(repo, options);
+  
+  const foundation = foundationArg || 
+  CollieConfig.read_foundation(logger) ||
+    (await InteractivePrompts.selectFoundation(repo, logger));
+  
   const { meshAdapter, tableFactory, queryStatistics } =
     await prepareTenantCommand(options, foundation);
 

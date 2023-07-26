@@ -15,6 +15,8 @@ import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
+import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { CollieConfig } from "../../model/CollieConfig.ts";
 
 interface DocsCommandOptions {
   update?: boolean;
@@ -23,18 +25,22 @@ interface DocsCommandOptions {
 
 export function registerDocsCmd(program: TopLevelCommand) {
   program
-    .command("docs <foundation:foundation>")
+    .command("docs [foundation:foundation]")
     .description(
       "Generate end-user friendly documentation for your cloud foundation",
     )
     .action(
       async (
         opts: GlobalCommandOptions & DocsCommandOptions,
-        foundation: string,
+        foundationArg: string|undefined,
       ) => {
         const repo = await CollieRepository.load();
         const logger = new Logger(repo, opts);
         const validator = new ModelValidator(logger);
+
+        const foundation = foundationArg || 
+          CollieConfig.read_foundation(logger) ||
+          (await InteractivePrompts.selectFoundation(repo, logger));
 
         const foundationRepo = await FoundationRepository.load(
           repo,

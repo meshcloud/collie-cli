@@ -6,10 +6,14 @@ import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { TenantCommand } from "./TenantCommand.ts";
+import { CollieConfig } from "../../model/CollieConfig.ts";
+import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { Logger } from "../../cli/Logger.ts";
+import { CollieRepository } from "../../model/CollieRepository.ts";
 
 export function registerAnalyzeTagCommand(program: TenantCommand) {
   program
-    .command("analyze-tags <foundation:foundation>")
+    .command("analyze-tags [foundation:foundation]")
     .description(
       "Analyzes all available tags on tenants and returns the percentage of tenants that make use of this tag.",
     )
@@ -37,8 +41,16 @@ async function analyzeTagsAction(
     & GlobalCommandOptions
     & TenantCommandOptions
     & AnalyzeTagsCommandOptions,
-  foundation: string,
+  foundationArg: string|undefined,
 ) {
+
+  const repo = await CollieRepository.load();
+  const logger = new Logger(repo, options);
+  
+  const foundation = foundationArg || 
+  CollieConfig.read_foundation(logger) ||
+  (await InteractivePrompts.selectFoundation(repo, logger));
+
   const { meshAdapter } = await prepareTenantCommand(options, foundation);
 
   const allTenants = await meshAdapter.getMeshTenants();
