@@ -26,15 +26,14 @@ export function registerSetMissingTagCommand(program: TopLevelCommand) {
 
 async function setMissingTagsAction(
   options: TenantCommandOptions & GlobalCommandOptions,
-  foundationArg: string|undefined,
+  foundationArg: string | undefined,
   tagKey: string,
 ) {
-
   const repo = await CollieRepository.load();
   const logger = new Logger(repo, options);
-  
-  const foundation = foundationArg || 
-    CollieConfig.read_foundation(logger) ||
+
+  const foundation = foundationArg ||
+    CollieConfig.getFoundation(logger) ||
     (await InteractivePrompts.selectFoundation(repo, logger));
 
   const { meshAdapter } = await prepareTenantCommand(options, foundation);

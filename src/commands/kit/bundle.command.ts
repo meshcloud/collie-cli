@@ -61,7 +61,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
         const validator = new ModelValidator(logger);
 
         const foundation = opts.foundation ||
-          CollieConfig.read_foundation(logger) ||
+          CollieConfig.getFoundation(logger) ||
           (await InteractivePrompts.selectFoundation(collie, logger));
 
         const foundationRepo = await FoundationRepository.load(

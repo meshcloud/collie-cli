@@ -18,15 +18,15 @@ export function registerTreeCommand(program: TenantCommand) {
 
 export async function treeTenantAction(
   options: GlobalCommandOptions,
-  foundationArg: string|undefined,
+  foundationArg: string | undefined,
 ) {
   const repo = await CollieRepository.load();
   const logger = new Logger(repo, options);
-  
-  const foundation = foundationArg || 
-    CollieConfig.read_foundation(logger) ||
+
+  const foundation = foundationArg ||
+    CollieConfig.getFoundation(logger) ||
     (await InteractivePrompts.selectFoundation(repo, logger));
-  
+
   const { meshAdapter } = await prepareTenantCommand(options, foundation);
 
   const allTenants = await meshAdapter.getMeshTenants();
