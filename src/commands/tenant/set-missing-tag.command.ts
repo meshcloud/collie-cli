@@ -15,7 +15,7 @@ import { CollieRepository } from "../../model/CollieRepository.ts";
 
 export function registerSetMissingTagCommand(program: TopLevelCommand) {
   program
-    .command("set-missing-tag [foundation:foundation] <tagKey>")
+    .command("set-missing-tag <tagKey> [foundation:foundation]")
     .description("Fix all tenants missing the given tag interactively")
     .example(
       "Set a tag value for all tenants that are missing the given 'environment' tag",
@@ -26,8 +26,8 @@ export function registerSetMissingTagCommand(program: TopLevelCommand) {
 
 async function setMissingTagsAction(
   options: TenantCommandOptions & GlobalCommandOptions,
-  foundationArg: string | undefined,
   tagKey: string,
+  foundationArg: string | undefined,
 ) {
   const repo = await CollieRepository.load();
   const logger = new Logger(repo, options);
