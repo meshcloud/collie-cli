@@ -17,7 +17,7 @@ import { PlatformSetup } from "../../api/PlatformSetup.ts";
 import { MeshError } from "../../errors.ts";
 import { CLI } from "../../info.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
-import { setFoundation } from "../config/set.command.ts";
+import { CollieConfig } from "../../model/CollieConfig.ts";
 
 export function registerNewCmd(program: TopLevelCommand) {
   program
@@ -56,7 +56,7 @@ export function registerNewCmd(program: TopLevelCommand) {
       logger.progress(
         "generated new foundation at " + repo.relativePath(foundationPath),
       );
-      setFoundation(foundation, logger);
+      CollieConfig.setFoundation(foundation, logger);
     });
 }
 
