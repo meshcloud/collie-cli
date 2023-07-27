@@ -32,14 +32,14 @@ export function registerDocsCmd(program: TopLevelCommand) {
     .action(
       async (
         opts: GlobalCommandOptions & DocsCommandOptions,
-        foundationArg: string|undefined,
+        foundationArg: string | undefined,
       ) => {
         const repo = await CollieRepository.load();
         const logger = new Logger(repo, opts);
         const validator = new ModelValidator(logger);
 
-        const foundation = foundationArg || 
-          CollieConfig.read_foundation(logger) ||
+        const foundation = foundationArg ||
+          CollieConfig.getFoundation(logger) ||
           (await InteractivePrompts.selectFoundation(repo, logger));
 
         const foundationRepo = await FoundationRepository.load(

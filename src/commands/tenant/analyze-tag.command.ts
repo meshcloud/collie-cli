@@ -41,15 +41,14 @@ async function analyzeTagsAction(
     & GlobalCommandOptions
     & TenantCommandOptions
     & AnalyzeTagsCommandOptions,
-  foundationArg: string|undefined,
+  foundationArg: string | undefined,
 ) {
-
   const repo = await CollieRepository.load();
   const logger = new Logger(repo, options);
-  
-  const foundation = foundationArg || 
-  CollieConfig.read_foundation(logger) ||
-  (await InteractivePrompts.selectFoundation(repo, logger));
+
+  const foundation = foundationArg ||
+    CollieConfig.getFoundation(logger) ||
+    (await InteractivePrompts.selectFoundation(repo, logger));
 
   const { meshAdapter } = await prepareTenantCommand(options, foundation);
 

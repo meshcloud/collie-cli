@@ -71,7 +71,7 @@ export function registerDeployCmd(program: TopLevelCommand) {
     .action(
       async (
         opts: DeployOptions & GlobalCommandOptions,
-        foundationArg: string|undefined,
+        foundationArg: string | undefined,
       ) => {
         const literalArgs = LiteralArgsParser.parse(cmd.getRawArgs());
 
@@ -81,8 +81,8 @@ export function registerDeployCmd(program: TopLevelCommand) {
 
         const mode = { raw: literalArgs.length ? literalArgs : ["apply"] };
 
-        const foundation = foundationArg || 
-          CollieConfig.read_foundation(logger) ||
+        const foundation = foundationArg ||
+          CollieConfig.getFoundation(logger) ||
           (await InteractivePrompts.selectFoundation(collieRepo, logger));
 
         const foundationProgress = opts.platform

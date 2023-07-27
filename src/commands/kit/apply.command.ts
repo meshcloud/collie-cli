@@ -54,7 +54,7 @@ export function registerApplyCmd(program: TopLevelCommand) {
         }
 
         const foundation = opts.foundation ||
-          CollieConfig.read_foundation(logger) ||
+          CollieConfig.getFoundation(logger) ||
           (await InteractivePrompts.selectFoundation(collie, logger));
 
         const foundationRepo = await FoundationRepository.load(

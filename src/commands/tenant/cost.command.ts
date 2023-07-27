@@ -45,17 +45,15 @@ export async function listTenantsCostAction(
     & GlobalCommandOptions
     & TenantCommandOptions
     & ListCostsCommandOptions,
-  foundationArg: string|undefined,
+  foundationArg: string | undefined,
 ) {
-
-
   const repo = await CollieRepository.load();
   const logger = new Logger(repo, options);
-  
-  const foundation = foundationArg || 
-  CollieConfig.read_foundation(logger) ||
+
+  const foundation = foundationArg ||
+    CollieConfig.getFoundation(logger) ||
     (await InteractivePrompts.selectFoundation(repo, logger));
-  
+
   const { meshAdapter, tableFactory, queryStatistics } =
     await prepareTenantCommand(options, foundation);
 

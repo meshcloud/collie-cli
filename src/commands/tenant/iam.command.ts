@@ -45,13 +45,13 @@ export function registerIamCommand(program: TenantCommand) {
 
 async function listIamAction(
   options: GlobalCommandOptions & TenantCommandOptions & IamCommandOptions,
-  foundationArg: string|undefined,
+  foundationArg: string | undefined,
 ) {
   const repo = await CollieRepository.load();
   const logger = new Logger(repo, options);
-  
-  const foundation = foundationArg || 
-    CollieConfig.read_foundation(logger) ||
+
+  const foundation = foundationArg ||
+    CollieConfig.getFoundation(logger) ||
     (await InteractivePrompts.selectFoundation(repo, logger));
 
   const { meshAdapter, tableFactory } = await prepareTenantCommand(
