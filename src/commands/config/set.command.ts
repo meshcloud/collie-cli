@@ -8,7 +8,7 @@ import { CLI } from "../../info.ts";
 
 export function registerSetCmd(program: TopLevelCommand) {
   program
-    .command("set-foundation <foundation:foundation>")
+    .command("set-foundation [foundation:foundation]")
     .description("Set the foundation config property.")
     .example(
       "Set foundation `myfoundation` in repository config.",
