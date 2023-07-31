@@ -1,3 +1,4 @@
+import { Input } from "x/cliffy/prompt";
 import { Logger } from "../cli/Logger.ts";
 import {
   Dir,
@@ -11,49 +12,70 @@ import { TopLevelCommand } from "./TopLevelCommand.ts";
 
 export function registerInitCommand(program: TopLevelCommand) {
   program
-    .command("init")
-    .description("initialize a new collie repository in the current directory")
-    .action(async (opts: GlobalCommandOptions) => {
-      const kit = new CollieRepository("./");
-      const logger = new Logger(kit, opts);
+    .command("init [directory]")
+    .description("initialize a new collie repository in a new directory")
+    .action(
+      async (opts: GlobalCommandOptions, directoryArg: string | undefined) => {
+        const kit = new CollieRepository("./");
+        const logger = new Logger(kit, opts);
 
-      // ensure git is initialized
-      const cliFactory = new CliApiFacadeFactory(kit, logger);
-      const git = cliFactory.buildGit();
+        const dir = new DirectoryGenerator(WriteMode.skip, logger);
 
-      await git.init();
+        const directory: string = directoryArg ||
+          await Input.prompt(
+            `Choose a directory name for your new collie repository`,
+          );
+        const repo: Dir = {
+          name: directory,
+          entries: [],
+        };
 
-      const dir = new DirectoryGenerator(WriteMode.skip, logger);
-      const d: Dir = {
-        name: "",
-        entries: [
-          { name: "README.md", content: readmeMd },
-          { name: ".gitignore", content: gitignore },
-          {
-            name: "kit",
-            entries: [
-              { name: ".gitkeep", content: "" },
-              { name: "README.md", content: kitReadmeMd },
-            ],
-          },
-          { name: "compliance", entries: [{ name: ".gitkeep", content: "" }] },
-          { name: "foundations", entries: [{ name: ".gitkeep", content: "" }] },
-        ],
-      };
+        await dir.write(repo, "");
+        Deno.chdir(directory);
 
-      await dir.write(d, "");
+        // ensure git is initialized
+        const cliFactory = new CliApiFacadeFactory(kit, logger);
+        const git = cliFactory.buildGit();
 
-      // this is the only place where an absolute path is ok, to show the user unambigously where
-      // the repository is on their file system
-      logger.progress(
-        "generated new collie repository at " + kit.resolvePath(),
-      );
+        await git.init();
 
-      logger.tipCommand(
-        "add a foundation to configure your cloud platforms",
-        "foundation new",
-      );
-    });
+        const d: Dir = {
+          name: "",
+          entries: [
+            { name: "README.md", content: readmeMd },
+            { name: ".gitignore", content: gitignore },
+            {
+              name: "kit",
+              entries: [
+                { name: ".gitkeep", content: "" },
+                { name: "README.md", content: kitReadmeMd },
+              ],
+            },
+            {
+              name: "compliance",
+              entries: [{ name: ".gitkeep", content: "" }],
+            },
+            {
+              name: "foundations",
+              entries: [{ name: ".gitkeep", content: "" }],
+            },
+          ],
+        };
+
+        await dir.write(d, "");
+
+        // this is the only place where an absolute path is ok, to show the user unambigously where
+        // the repository is on their file system
+        logger.progress(
+          "generated new collie repository at " + kit.resolvePath(),
+        );
+
+        logger.tipCommand(
+          `change into the collie repository and add a foundation to configure your cloud platforms`,
+          "foundation new",
+        );
+      },
+    );
 }
 
 const readmeMd = `# Collie Repository
