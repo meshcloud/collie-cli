@@ -6,7 +6,7 @@ export class CollieConfig {
   static getFoundation(logger: Logger) {
     try {
       const config = JSON.parse(Deno.readTextFileSync(this.CONFIG_FILE_PATH));
-      const foundation = config["foundation"];
+      const foundation = config["foundation"] as string;
       logger.tip(`Foundation ${foundation} is set in ${this.CONFIG_FILE_PATH}`);
       return foundation;
     } catch (e) {
