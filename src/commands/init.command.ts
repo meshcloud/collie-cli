@@ -25,22 +25,15 @@ export function registerInitCommand(program: TopLevelCommand) {
           await Input.prompt(
             `Choose a directory name for your new collie repository`,
           );
-        const repo: Dir = {
-          name: directory,
-          entries: [],
-        };
-
-        await dir.write(repo, "");
-        Deno.chdir(directory);
 
         // ensure git is initialized
         const cliFactory = new CliApiFacadeFactory(kit, logger);
         const git = cliFactory.buildGit();
 
-        await git.init();
+        await git.init(directory);
 
         const d: Dir = {
-          name: "",
+          name: directory,
           entries: [
             { name: "README.md", content: readmeMd },
             { name: ".gitignore", content: gitignore },

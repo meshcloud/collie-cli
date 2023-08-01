@@ -8,11 +8,10 @@ export class GitCliFacade {
     private readonly quietRunner: QuietProcessRunner,
   ) {}
 
-  // todo: should we have a repoDir parameter like everywhere else? cwd is implicit here
-  async init() {
+  async init(repoDir: string) {
     // note: rerunning git init is safe
     // https://stackoverflow.com/questions/5149694/does-running-git-init-twice-initialize-a-repository-or-reinitialize-an-existing
-    await this.processRunner.run(["git", "init"]);
+    await this.processRunner.run(["git", "init", repoDir]);
   }
 
   async clone(destDir: string, repoUrl: string) {
