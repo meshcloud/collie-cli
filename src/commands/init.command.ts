@@ -19,8 +19,6 @@ export function registerInitCommand(program: TopLevelCommand) {
         const kit = new CollieRepository("./");
         const logger = new Logger(kit, opts);
 
-        const dir = new DirectoryGenerator(WriteMode.skip, logger);
-
         const directory: string = directoryArg ||
           await Input.prompt(
             `Choose a directory name for your new collie repository`,
@@ -31,6 +29,8 @@ export function registerInitCommand(program: TopLevelCommand) {
         const git = cliFactory.buildGit();
 
         await git.init(directory);
+
+        const dir = new DirectoryGenerator(WriteMode.skip, logger);
 
         const d: Dir = {
           name: directory,
