@@ -15,8 +15,7 @@ import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
-import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
-import { CollieConfig } from "../../model/CollieConfig.ts";
+import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";
 
 interface DocsCommandOptions {
   update?: boolean;
@@ -38,9 +37,11 @@ export function registerDocsCmd(program: TopLevelCommand) {
         const logger = new Logger(repo, opts);
         const validator = new ModelValidator(logger);
 
-        const foundation = foundationArg ||
-          CollieConfig.getFoundation(logger) ||
-          (await InteractivePrompts.selectFoundation(repo, logger));
+        const foundation = await getCurrentWorkingFoundation(
+          foundationArg,
+          logger,
+          repo,
+        );
 
         const foundationRepo = await FoundationRepository.load(
           repo,

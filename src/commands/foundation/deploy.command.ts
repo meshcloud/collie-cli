@@ -15,8 +15,7 @@ import { PlatformModuleType } from "./PlatformModuleType.ts";
 import { CLI } from "../../info.ts";
 import { LiteralArgsParser } from "../LiteralArgsParser.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
-import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
-import { CollieConfig } from "../../model/CollieConfig.ts";
+import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";
 
 interface DeployOptions {
   platform?: string;
@@ -81,9 +80,11 @@ export function registerDeployCmd(program: TopLevelCommand) {
 
         const mode = { raw: literalArgs.length ? literalArgs : ["apply"] };
 
-        const foundation = foundationArg ||
-          CollieConfig.getFoundation(logger) ||
-          (await InteractivePrompts.selectFoundation(collieRepo, logger));
+        const foundation = await getCurrentWorkingFoundation(
+          foundationArg,
+          logger,
+          collieRepo,
+        );
 
         const foundationProgress = opts.platform
           ? new NullProgressReporter()

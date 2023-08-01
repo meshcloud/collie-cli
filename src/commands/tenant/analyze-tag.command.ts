@@ -6,10 +6,9 @@ import { MeshTenant } from "../../mesh/MeshTenantModel.ts";
 import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { TenantCommand } from "./TenantCommand.ts";
-import { CollieConfig } from "../../model/CollieConfig.ts";
-import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
+import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";
 
 export function registerAnalyzeTagCommand(program: TenantCommand) {
   program
@@ -46,9 +45,11 @@ async function analyzeTagsAction(
   const repo = await CollieRepository.load();
   const logger = new Logger(repo, options);
 
-  const foundation = foundationArg ||
-    CollieConfig.getFoundation(logger) ||
-    (await InteractivePrompts.selectFoundation(repo, logger));
+  const foundation = await getCurrentWorkingFoundation(
+    foundationArg,
+    logger,
+    repo,
+  );
 
   const { meshAdapter } = await prepareTenantCommand(options, foundation);
 
