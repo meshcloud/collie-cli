@@ -10,7 +10,7 @@ export class InteractivePrompts {
   static async selectFoundation(kit: CollieRepository, logger: Logger) {
     logger.tipCommand(
       `To set a default foundation run`,
-      `config set-foundation"`,
+      `config set-foundation <foundation>"`,
     );
     return await Select.prompt({
       message: "Select a foundation",
