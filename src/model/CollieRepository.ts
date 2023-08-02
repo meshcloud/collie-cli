@@ -40,11 +40,9 @@ export class CollieRepository {
 
   static async load(searchDir = "./"): Promise<CollieRepository> {
     let absolutePath = path.resolve(searchDir);
-    console.log(path.dirname(absolutePath));
 
     // find parent directory containing the next best git repository
     while (!(await fs.exists(path.join(absolutePath, ".git")))) {
-      console.log(path.dirname(absolutePath));
       absolutePath = path.dirname(absolutePath);
 
       if (absolutePath == path.dirname(absolutePath)) {
