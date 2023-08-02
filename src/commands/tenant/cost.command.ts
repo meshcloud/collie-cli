@@ -7,8 +7,6 @@ import { TenantCommandOptions } from "./TenantCommandOptions.ts";
 import { prepareTenantCommand } from "./prepareTenantCommand.ts";
 import { OutputFormat } from "../../presentation/output-format.ts";
 import { OutputOptions, TenantCommand } from "./TenantCommand.ts";
-import { CollieConfig } from "../../model/CollieConfig.ts";
-import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";

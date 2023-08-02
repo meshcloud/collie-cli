@@ -27,7 +27,6 @@ import * as path from "std/path";
 import { Toggle } from "x/cliffy/prompt";
 import { indent } from "../../cli/indent.ts";
 import { applyKitModule } from "./apply.command.ts";
-import { CollieConfig } from "../../model/CollieConfig.ts";
 import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";
 
 function availableKitBundles(locations: AzLocation[]): KitBundle[] {
