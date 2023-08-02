@@ -18,7 +18,7 @@ export function registerTreeCmd(program: TopLevelCommand) {
     .command("tree")
     .description("show the foundation tree with module dependencies")
     .action(async (opts: GlobalCommandOptions) => {
-      const collie = new CollieRepository("./");
+      const collie = await CollieRepository.load();
       const logger = new Logger(collie, opts);
 
       const analyzeResults = await prepareAnalyzeCommand(collie, logger);

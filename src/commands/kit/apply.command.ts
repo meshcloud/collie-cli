@@ -100,7 +100,7 @@ export async function applyKitModule(
   moduleId: string,
 ) {
   const dir = new DirectoryGenerator(WriteMode.skip, logger);
-  const collie = new CollieRepository("./");
+  const collie = await CollieRepository.load();
   const platformConfig = foundationRepo.findPlatform(platform);
 
   const platformModuleId = moduleId.split("/").slice(1);

@@ -14,7 +14,7 @@ export function registerNewCmd(program: TopLevelCommand) {
     .description("generate a new compliance control")
     .action(
       async (opts: GlobalCommandOptions, module: string, name?: string) => {
-        const kit = new CollieRepository("./");
+        const kit = await CollieRepository.load();
         const logger = new Logger(kit, opts);
 
         const controlPath = kit.resolvePath("compliance", module + ".md");
