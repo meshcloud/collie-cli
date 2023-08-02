@@ -16,7 +16,7 @@ import { CommandOptionError } from "../CommandOptionError.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { generateTerragrunt } from "./kit-utilities.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
-import { CollieConfig } from "../../model/CollieConfig.ts";
+import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";
 
 interface ApplyOptions {
   foundation?: string;
@@ -34,7 +34,7 @@ export function registerApplyCmd(program: TopLevelCommand) {
     )
     .action(
       async (opts: GlobalCommandOptions & ApplyOptions, moduleId?: string) => {
-        const collie = new CollieRepository("./");
+        const collie = await CollieRepository.load();
         const logger = new Logger(collie, opts);
         const validator = new ModelValidator(logger);
 
@@ -53,9 +53,11 @@ export function registerApplyCmd(program: TopLevelCommand) {
           );
         }
 
-        const foundation = opts.foundation ||
-          CollieConfig.getFoundation(logger) ||
-          (await InteractivePrompts.selectFoundation(collie, logger));
+        const foundation = await getCurrentWorkingFoundation(
+          opts.foundation,
+          logger,
+          collie,
+        );
 
         const foundationRepo = await FoundationRepository.load(
           collie,

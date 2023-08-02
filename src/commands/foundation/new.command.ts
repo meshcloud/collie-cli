@@ -56,7 +56,9 @@ export function registerNewCmd(program: TopLevelCommand) {
       logger.progress(
         "generated new foundation at " + repo.relativePath(foundationPath),
       );
-      CollieConfig.setFoundation(foundation, logger);
+
+      const config = new CollieConfig(repo, logger);
+      config.setProperty("foundation", foundation);
     });
 }
 
