@@ -12,7 +12,7 @@ export function registerCompileCmd(program: TopLevelCommand) {
     .command("compile [module]")
     .description("Compile kit modules, updating their documentation")
     .action(async (opts: GlobalCommandOptions, module?: string) => {
-      const collie = new CollieRepository("./");
+      const collie = await CollieRepository.load();
       const logger = new Logger(collie, opts);
       const validator = new ModelValidator(logger);
       const moduleRepo = await KitModuleRepository.load(

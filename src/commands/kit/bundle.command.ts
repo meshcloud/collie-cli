@@ -56,7 +56,7 @@ export function registerBundledKitCmd(program: TopLevelCommand) {
     )
     .action(
       async (opts: GlobalCommandOptions & BundleOptions, prefix: string) => {
-        const collie = new CollieRepository("./");
+        const collie = await CollieRepository.load();
         const logger = new Logger(collie, opts);
         const validator = new ModelValidator(logger);
 

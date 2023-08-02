@@ -28,7 +28,7 @@ export function registerImportCmd(program: TopLevelCommand) {
       "Import a published kit module from the official Collie Hub at https://github.com/meshcloud/collie-hub",
     )
     .action(async (opts: GlobalCommandOptions & ImportOptions, id?: string) => {
-      const collie = new CollieRepository("./");
+      const collie = await CollieRepository.load();
       const logger = new Logger(collie, opts);
 
       const factory = new CliApiFacadeFactory(collie, logger);

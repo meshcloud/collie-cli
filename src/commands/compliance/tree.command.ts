@@ -22,7 +22,7 @@ export function registerTreeCmd(program: TopLevelCommand) {
     .command("tree")
     .description("show the compliance control tree with module implementations")
     .action(async (opts: GlobalCommandOptions) => {
-      const repo = new CollieRepository("./");
+      const repo = await CollieRepository.load();
       const logger = new Logger(repo, opts);
 
       const results = await prepareAnalyzeCommand(repo, logger);

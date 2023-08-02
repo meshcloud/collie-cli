@@ -15,7 +15,7 @@ export function registerTreeCmd(program: TopLevelCommand) {
     .command("tree")
     .description("Show kit modules their dependent platform modules")
     .action(async (opts: GlobalCommandOptions) => {
-      const collie = new CollieRepository("./");
+      const collie = await CollieRepository.load();
       const logger = new Logger(collie, opts);
 
       const analyzeResults = await prepareAnalyzeCommand(collie, logger);

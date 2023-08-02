@@ -11,7 +11,7 @@ export function registerNewCmd(program: TopLevelCommand) {
     .description("Generate a new kit module terraform template")
     .action(
       async (opts: GlobalCommandOptions, module: string, name?: string) => {
-        const collie = new CollieRepository("./");
+        const collie = await CollieRepository.load();
         const logger = new Logger(collie, opts);
 
         const modulePath = collie.resolvePath("kit", module);

@@ -18,7 +18,7 @@ export function registerInfoCommand(program: TopLevelCommand) {
       console.log(`Runtime:`);
       console.log(`deno ${Deno.version.deno} ${Deno.build.target}\n`);
 
-      const collie = new CollieRepository("./");
+      const collie = await CollieRepository.load();
       const logger = new Logger(collie, opts);
 
       const factory = new CliApiFacadeFactory(collie, logger);
