@@ -39,20 +39,21 @@ export class CollieRepository {
   }
 
   static async load(searchDir = "./"): Promise<CollieRepository> {
-    const absolutePath = path.resolve(searchDir);
-    const components = absolutePath.split(path.SEP);
+    let absolutePath = path.resolve(searchDir);
+    console.log(path.dirname(absolutePath));
 
     // find parent directory containing the next best git repository
-    while (!(await fs.exists(path.join(...components, ".git")))) {
-      components.pop();
+    while (!(await fs.exists(path.join(absolutePath, ".git")))) {
+      console.log(path.dirname(absolutePath));
+      absolutePath = path.dirname(absolutePath);
 
-      if (!components.length) {
+      if (absolutePath == path.dirname(absolutePath)) {
         throw new Error(
           `${absolutePath} nor any of its parent directories seems to be a collie repository`,
         );
       }
     }
 
-    return new CollieRepository(path.join(...components));
+    return new CollieRepository(absolutePath);
   }
 }
