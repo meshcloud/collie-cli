@@ -1,49 +1,66 @@
 import { Logger } from "../cli/Logger.ts";
+import { CollieRepository } from "./CollieRepository.ts";
+
+export interface CollieConfigProperties {
+  foundation?: string;
+}
 
 export class CollieConfig {
-  static CONFIG_FILE_PATH = ".collie/config.json";
+  constructor(
+    private readonly repo: CollieRepository,
+    private readonly logger: Logger,
+  ) {
+    this.configFilePath = this.repo.resolvePath(".collie/config.json");
+    this.properties = this.loadFromDisk();
+  }
 
-  static getFoundation(logger: Logger) {
+  private configFilePath: string;
+  private properties: CollieConfigProperties;
+
+  getProperty(property: string) {
+    const value = this.properties["foundation"];
+    if (value) {
+      this.logger.verbose(
+        () => `loaded ${property}="${value}" from ${this.configFilePath}`,
+      );
+    }
+    return value;
+  }
+
+  async setProperty(
+    property: "foundation",
+    value: string,
+  ) {
+    this.properties[property] = value;
+    await this.saveToDisk();
+    this.logger.progress(
+      `saved ${property}="${value}" to ${this.configFilePath}`,
+    );
+  }
+
+  private loadFromDisk(): CollieConfigProperties {
     try {
-      const config = JSON.parse(Deno.readTextFileSync(this.CONFIG_FILE_PATH));
-      const foundation = config["foundation"] as string;
-      logger.tip(`Foundation ${foundation} is set in ${this.CONFIG_FILE_PATH}`);
-      return foundation;
+      return JSON.parse(
+        Deno.readTextFileSync(this.configFilePath),
+      ) as CollieConfigProperties;
     } catch (e) {
-      if (e.name != "NotFound") {
-        console.log(e);
+      if (e.name == "NotFound") {
+        this.logger.verbose(
+          () => `No collie config file found under ${this.configFilePath}`,
+        );
+      } else {
+        this.logger.error(
+          `${this.configFilePath} is not a valid collie config file`,
+        );
       }
+      return { foundation: undefined };
     }
   }
 
-  /**
-   * This function sets the foundation property in CollieConfig.
-   * It does not preserve the order of the keys.
-   * @param foundation
-   * @param logger
-   */
-  static async setFoundation(
-    foundation: string,
-    logger: Logger,
-  ) {
-    let config;
-    try {
-      config = JSON.parse(await Deno.readTextFile(this.CONFIG_FILE_PATH));
-      config["foundation"] = foundation;
-    } catch (error) {
-      if (error.name != "NotFound") {
-        console.error(error);
-      }
-
-      config = { "foundation": foundation };
-    }
-
-    Deno.writeTextFile(
-      CollieConfig.CONFIG_FILE_PATH,
-      JSON.stringify(config),
-    );
-    logger.progress(
-      `set current foundation to ${foundation} in ${CollieConfig.CONFIG_FILE_PATH}`,
+  private async saveToDisk() {
+    await Deno.writeTextFile(
+      this.configFilePath,
+      JSON.stringify(this.properties),
     );
   }
 }

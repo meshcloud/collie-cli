@@ -11,17 +11,18 @@ export function registerSetCmd(program: TopLevelCommand) {
     .command("set-foundation [foundation:foundation]")
     .description("Set the foundation config property.")
     .example(
-      "Set foundation `myfoundation` in repository config.",
+      "Set foundation `myfoundation` in repository config",
       `${CLI} config set-foundation myfoundation`,
     )
     .action(
       async (opts: GlobalCommandOptions, foundationArg: string | undefined) => {
-        const collieRepo = await CollieRepository.load();
-        const logger = new Logger(collieRepo, opts);
+        const repo = await CollieRepository.load();
+        const logger = new Logger(repo, opts);
         const foundation = foundationArg ||
-          (await InteractivePrompts.selectFoundation(collieRepo, logger));
+          (await InteractivePrompts.selectFoundation(repo, logger));
 
-        CollieConfig.setFoundation(foundation, logger);
+        const config = new CollieConfig(repo, logger);
+        config.setProperty("foundation", foundation);
       },
     );
 }
