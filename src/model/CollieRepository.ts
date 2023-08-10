@@ -45,7 +45,8 @@ export class CollieRepository {
     while (!(await fs.exists(path.join(absolutePath, ".git")))) {
       absolutePath = path.dirname(absolutePath);
 
-      if (absolutePath == path.dirname(absolutePath)) {
+      const isAtRootOfFilesystem = absolutePath == path.dirname(absolutePath);
+      if (isAtRootOfFilesystem) {
         throw new Error(
           `${absolutePath} nor any of its parent directories seems to be a collie repository`,
         );
