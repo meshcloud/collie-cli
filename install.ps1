@@ -46,7 +46,7 @@ $Path = [Environment]::GetEnvironmentVariable('Path', $User)
 if (!(";$Path;".ToLower() -like "*;$BinDir;*".ToLower())) {
  
     # Ask user whether to add Collie to PATH
-    $userenv = $(Write-Host "Do you want to add Collie CLI to PATH? (y/n)" -NoNewLine -ForegroundColor Green; Read-Host)
+    $userenv = $(Write-Host "Could not find collie CLI on PATH. Do you want to add collie CLI to PATH? (y/n)" -NoNewLine -ForegroundColor Green; Read-Host)
     if ($userenv -like "y") {
         Write-Host "Adding $BinDir to PATH" -ForegroundColor Green
         [Environment]::SetEnvironmentVariable('Path', "$Path;$BinDir", $User)
