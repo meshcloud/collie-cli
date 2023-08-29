@@ -6,7 +6,7 @@ import { ModelValidator } from "./ModelValidator.ts";
 import { assertEquals } from "std/testing/assert";
 
 Deno.test("can validate FoundationConfig", () => {
-  const collie = new CollieRepository("./");
+  const collie = CollieRepository.uninitialized("./");
   const logger = new Logger(collie, {
     debug: false,
     verbose: false,

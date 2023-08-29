@@ -2,7 +2,13 @@ import * as fs from "std/fs";
 import * as path from "std/path";
 
 export class CollieRepository {
-  constructor(private readonly repoDir: string) {}
+  private constructor(private readonly repoDir: string) {
+    if (!path.isAbsolute(repoDir)) {
+      throw new Error(
+        `Tried to load CollieRepository with an invalid path. '${repoDir}' is not an absolute path.`,
+      );
+    }
+  }
 
   /**
    * Resolve a path relative to the kit repository
@@ -11,7 +17,10 @@ export class CollieRepository {
     return path.resolve(this.repoDir, ...pathSegments);
   }
 
-  /** */
+  /**
+   * Calculate a relative path between the repoDir
+   * @param toPath an absolute path
+   */
   relativePath(toPath: string) {
     return path.relative(this.repoDir, toPath);
   }
@@ -52,6 +61,12 @@ export class CollieRepository {
         );
       }
     }
+
+    return new CollieRepository(absolutePath);
+  }
+
+  static uninitialized(dir: string) {
+    const absolutePath = path.resolve(dir);
 
     return new CollieRepository(absolutePath);
   }

@@ -23,7 +23,7 @@ export function registerInitCommand(program: TopLevelCommand) {
 
         // we would like to create the CollieRepository after git has been initialized
         // but we need it to build git
-        const kit = new CollieRepository(directory);
+        const kit = CollieRepository.uninitialized(directory);
         const logger = new Logger(kit, opts);
 
         // ensure git is initialized
