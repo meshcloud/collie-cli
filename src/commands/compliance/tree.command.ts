@@ -50,12 +50,11 @@ export function registerTreeCmd(program: TopLevelCommand) {
       );
 
       if (!hasAnyApplicableStatements) {
-        logger.warn("no compliance control statement found in a kit module");
+        logger.warn("no compliance control statements found in an< kit module");
         logger.tip(
           `Add a compliance section to your kit module frontmatter like this\n` +
             statementExample,
         );
-        return;
       }
 
       await renderControlTree(repo, results, controls);
@@ -69,7 +68,11 @@ function renderControlTree(
 ) {
   const { dependencies } = results;
 
-  const builder = new ComplianceControlTreeBuilder(collie, controls);
+  const builder = new ComplianceControlTreeBuilder(
+    collie,
+    results.modules,
+    controls,
+  );
 
   const tree = builder.build(dependencies.map((x) => x.results));
 
