@@ -36,7 +36,6 @@ export function registerTreeCmd(program: TopLevelCommand) {
       if (!hasAppliedModules) {
         logger.warn("no kit modules applied to any platform");
         logger.tipCommand(`To apply a kit module run`, `kit apply "my-module"`);
-        return;
       }
 
       renderKitTree(collie, analyzeResults);
