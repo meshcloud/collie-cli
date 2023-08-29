@@ -42,7 +42,7 @@ export function registerImportCmd(program: TopLevelCommand) {
       logger.progress("updating local cache of collie hub from " + hub.url);
       const hubDir = await hub.updateHubClone();
 
-      id = id || (await promptForComplianceFrameworkId(logger, hubDir));
+      id = id || (await promptForComplianceFrameworkId(hubDir));
 
       const dstPath = collie.resolvePath("compliance", id);
       try {
@@ -72,10 +72,7 @@ export function registerImportCmd(program: TopLevelCommand) {
     });
 }
 
-async function promptForComplianceFrameworkId(
-  logger: Logger,
-  hubRepoDir: string,
-) {
+async function promptForComplianceFrameworkId(hubRepoDir: string) {
   // note: the hub is a standard collie repository for the most part, so we can just parse it with the same code
   const repo = await CollieRepository.load(hubRepoDir);
   const complianceDir = repo.resolvePath("compliance");
