@@ -79,7 +79,7 @@ export function registerImportCmd(program: TopLevelCommand) {
 
 async function promptForKitModuleId(logger: Logger, hubRepoDir: string) {
   // note: the hub is a standard collie repository for the most part, so we can just parse it with the same code
-  const repo = new CollieRepository(hubRepoDir);
+  const repo = await CollieRepository.load(hubRepoDir);
   const validator = new ModelValidator(logger);
 
   const moduleRepo = await KitModuleRepository.load(repo, validator, logger);
