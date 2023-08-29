@@ -40,16 +40,15 @@ export class ComplianceControlTreeBuilder {
     const tree: Tree<ComplianceControlInfo> = {};
 
     this.controls.all.forEach((control) => {
-      const label = this.collie.relativePath(
-        this.collie.relativePath(control.definitionPath),
-      );
+      const label = control.definitionPath;
       const labeledComponents = buildLabeledIdPath(control.id, label);
 
       const info = {
         name: control.control.name,
-        modules: this.kitModules.all.filter((m) =>
-          m.kitModule.compliance?.some((c) => c.control == control.id)
-        )
+        modules: this.kitModules.all
+          .filter((m) =>
+            m.kitModule.compliance?.some((c) => c.control == control.id)
+          )
           .map((m) => colors.green(this.collie.relativePath(m.kitModulePath))),
         platforms: dependeciesByPath[control.id]
           ?.map((p) => colors.blue(p.platform))
