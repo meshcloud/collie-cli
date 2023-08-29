@@ -1,8 +1,8 @@
 import * as fs from "std/fs";
-import { GitCliFacade } from "../../api/git/GitCliFacade.ts";
-import { CollieRepository } from "../../model/CollieRepository.ts";
+import { GitCliFacade } from "/api/git/GitCliFacade.ts";
+import { CollieRepository } from "/model/CollieRepository.ts";
 
-export class KitModuleHub {
+export class CollieHub {
   constructor(
     private readonly git: GitCliFacade,
     private readonly repo: CollieRepository,
@@ -12,14 +12,32 @@ export class KitModuleHub {
   // hardcoding this is ok for now
   readonly url = "https://github.com/meshcloud/collie-hub.git";
 
-  public async import(id: string, moduleDestDir: string, overwrite?: boolean) {
-    const moduleSrcDir = this.repo.resolvePath(
+  public async importKitModule(
+    id: string,
+    moduleDestDir: string,
+    overwrite?: boolean,
+  ) {
+    const srcDir = this.repo.resolvePath(
       ...this.hubCacheDirPath,
       "kit",
       id,
     );
 
-    await fs.copy(moduleSrcDir, moduleDestDir, { overwrite: overwrite });
+    await fs.copy(srcDir, moduleDestDir, { overwrite: overwrite });
+  }
+
+  public async importComplianceFramework(
+    id: string,
+    frameworkDestDir: string,
+    overwrite?: boolean,
+  ) {
+    const srcDir = this.repo.resolvePath(
+      ...this.hubCacheDirPath,
+      "compliance",
+      id,
+    );
+
+    await fs.copy(srcDir, frameworkDestDir, { overwrite: overwrite });
   }
 
   async updateHubClone() {
