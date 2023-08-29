@@ -1,11 +1,11 @@
 import * as colors from "std/fmt/colors";
 import { groupBy } from "std/collections/groupBy";
-import { distinct } from "std/collections/distinct";
 
 import { ComplianceControlRepository } from "./ComplianceControlRepository.ts";
 import { buildLabeledIdPath, insert, Tree } from "/model/tree.ts";
 import { FoundationDependencies } from "../kit/KitDependencyAnalyzer.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
+import { KitModuleRepository } from "../kit/KitModuleRepository.ts";
 
 export interface ComplianceControlInfo {
   name: string;
@@ -16,6 +16,7 @@ export interface ComplianceControlInfo {
 export class ComplianceControlTreeBuilder {
   constructor(
     private readonly collie: CollieRepository,
+    private readonly kitModules: KitModuleRepository,
     private readonly controls: ComplianceControlRepository,
   ) {}
 
@@ -38,17 +39,19 @@ export class ComplianceControlTreeBuilder {
 
     const tree: Tree<ComplianceControlInfo> = {};
 
-    this.controls.all.forEach((x) => {
+    this.controls.all.forEach((control) => {
       const label = this.collie.relativePath(
-        this.collie.relativePath(x.definitionPath),
+        this.collie.relativePath(control.definitionPath),
       );
-      const labeledComponents = buildLabeledIdPath(x.id, label);
+      const labeledComponents = buildLabeledIdPath(control.id, label);
 
       const info = {
-        name: x.control.name,
-        modules: distinct(dependeciesByPath[x.id]?.map((p) => p.module) || [])
-          .map((m) => colors.green(this.collie.relativePath(m))),
-        platforms: dependeciesByPath[x.id]
+        name: control.control.name,
+        modules: this.kitModules.all.filter((m) =>
+          m.kitModule.compliance?.some((c) => c.control == control.id)
+        )
+          .map((m) => colors.green(this.collie.relativePath(m.kitModulePath))),
+        platforms: dependeciesByPath[control.id]
           ?.map((p) => colors.blue(p.platform))
           .sort() || [],
       };
