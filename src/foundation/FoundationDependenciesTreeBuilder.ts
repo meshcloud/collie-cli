@@ -59,16 +59,20 @@ export class FoundationDependenciesTreeBuilder {
   private buildModuleTree(platform: PlatformDependencies): PlatformTree {
     const tree: PlatformTree = {};
 
-    const platformPath = this.foundation.resolvePlatformPath(platform.platform);
+    const resolvedPlatformPath = this.foundation.resolvePlatformPath(
+      platform.platform,
+    );
 
     platform.modules.forEach((m) => {
-      const moduleDir = path.relative(
-        platformPath,
-        path.resolve(m.sourcePath, "../"),
+      const resolvedPlatformModulePath = this.collie.resolvePath(
+        path.dirname(m.sourcePath),
       );
 
-      const label = this.collie.relativePath(m.sourcePath);
-      const labeledComponents = buildLabeledIdPath(moduleDir, label);
+      const relativePath = resolvedPlatformModulePath.substring(
+        resolvedPlatformPath.length + "/".length,
+      );
+      const label = m.sourcePath;
+      const labeledComponents = buildLabeledIdPath(relativePath, label);
 
       insert<ModuleNode>(tree, labeledComponents, {
         kitModule: colors.green(m.kitModuleId),

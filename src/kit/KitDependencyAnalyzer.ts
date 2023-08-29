@@ -105,7 +105,9 @@ export class KitDependencyAnalyzer {
     }
 
     const kitModuleId = kitModuleSource.replace("${get_repo_root()}//kit/", "");
-    const kitModulePath = this.kitModules.resolvePath(kitModuleId);
+    const kitModulePath = this.collie.relativePath(
+      this.kitModules.resolvePath(kitModuleId),
+    );
     const kitModule = this.kitModules.tryFindById(kitModuleId);
 
     if (!kitModule) {
