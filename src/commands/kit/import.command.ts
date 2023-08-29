@@ -6,7 +6,7 @@ import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
-import { KitModuleHub } from "./KitModuleHub.ts";
+import { CollieHub } from "../../model/CollieHub.ts";
 
 interface ImportOptions {
   clean?: boolean;
@@ -34,7 +34,7 @@ export function registerImportCmd(program: TopLevelCommand) {
       const factory = new CliApiFacadeFactory(collie, logger);
       const git = factory.buildGit();
 
-      const hub = new KitModuleHub(git, collie);
+      const hub = new CollieHub(git, collie);
 
       if (opts.clean) {
         logger.progress("cleaning local cache of hub modules");
@@ -48,7 +48,7 @@ export function registerImportCmd(program: TopLevelCommand) {
 
       const dstPath = collie.resolvePath("kit", id);
       try {
-        await hub.import(id, dstPath, opts.force);
+        await hub.importKitModule(id, dstPath, opts.force);
       } catch (e) {
         if (e instanceof Deno.errors.AlreadyExists) {
           logger.error(
@@ -86,6 +86,6 @@ async function promptForKitModuleId(logger: Logger, hubRepoDir: string) {
 
   return await InteractivePrompts.selectModule(
     moduleRepo,
-    "official hub modules",
+    "official collie hub modules",
   );
 }
