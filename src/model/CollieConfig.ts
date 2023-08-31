@@ -1,3 +1,4 @@
+import { dirname } from "https://deno.land/std@0.62.0/path/posix.ts";
 import { Logger } from "../cli/Logger.ts";
 import { CollieRepository } from "./CollieRepository.ts";
 
@@ -58,6 +59,13 @@ export class CollieConfig {
   }
 
   private async saveToDisk() {
+    // Create config directory if it doesn't exist
+    try {
+      await Deno.mkdir(dirname(this.configFilePath));
+    } catch {
+      // It's good if it already exists
+    }
+
     await Deno.writeTextFile(
       this.configFilePath,
       JSON.stringify(this.properties),
