@@ -36,6 +36,7 @@ export class KitModuleParser {
           "README.md", // exclude top-level readme
           "**/modules", // exclude sub-modules
           "**/template", // exclude template files
+          "**/.terraform", // exclude terraform dot-files (these can be left in kit/ from e.g. calling terraform validate)
         ],
         globstar: true,
       })
