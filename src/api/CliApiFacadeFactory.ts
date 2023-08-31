@@ -35,6 +35,7 @@ import { TerraformDocsCliFacade } from "./terraform-docs/TerraformDocsCliFacade.
 import { CollieRepository } from "../model/CollieRepository.ts";
 import { GitCliDetector } from "./git/GitCliDetector.ts";
 import { GitCliFacade } from "./git/GitCliFacade.ts";
+import { TerraformCliFacade } from "./terraform/TerraformCliFacade.ts";
 
 export class CliApiFacadeFactory {
   constructor(
@@ -164,6 +165,18 @@ export class CliApiFacadeFactory {
     );
 
     return new TerraformDocsCliFacade(this.repo, processRunner);
+  }
+
+  public buildTerraform() {
+    const quietRunner = this.buildQuietLoggingProcessRunner();
+    const detector = new TerraformCliDetector(quietRunner);
+
+    const processRunner = this.wrapFacadeProcessRunner(
+      quietRunner,
+      new ProcessRunnerErrorResultHandler(detector),
+    );
+
+    return new TerraformCliFacade(processRunner);
   }
 
   // DESIGN: we need to build up the ProcessRunner behavior in the following order (from outer to inner)

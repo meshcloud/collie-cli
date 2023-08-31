@@ -9,20 +9,29 @@ export class ProgressReporter {
     private readonly id: string,
     private readonly logger: Logger,
   ) {
-    this.reportProgress();
+    this.reportProgress("...");
   }
 
   done() {
     const end = performance.now();
     const elapsed = end - this.start;
 
-    this.reportProgress(elapsed);
+    const info = "DONE " + colors.gray(elapsed.toFixed(0) + "ms");
+    this.reportProgress(info);
   }
 
-  private reportProgress(elapsedMs?: number) {
-    const info = elapsedMs
-      ? "DONE " + colors.gray(elapsedMs.toFixed(0) + "ms")
-      : "...";
+  failed() {
+    const end = performance.now();
+    const elapsed = end - this.start;
+
+    const info = colors.bgRed(colors.white("FAILED")) +
+      " " +
+      colors.gray(elapsed.toFixed(0) + "ms");
+
+    this.reportProgress(info);
+  }
+
+  private reportProgress(info: string) {
     const msg = `${this.verb} ${this.id} ${info}`;
     this.logger.progress(msg);
   }
