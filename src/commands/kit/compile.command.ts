@@ -1,3 +1,5 @@
+import { pooledMap } from "std/async";
+
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { Logger } from "../../cli/Logger.ts";
@@ -6,6 +8,10 @@ import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
+import { MeshError, ProcessRunnerError } from "../../errors.ts";
+
+// limit concurrency
+const concurrencyLimit = navigator.hardwareConcurrency;
 
 export function registerCompileCmd(program: TopLevelCommand) {
   program
@@ -18,25 +24,66 @@ export function registerCompileCmd(program: TopLevelCommand) {
       const moduleRepo = await KitModuleRepository.load(
         collie,
         validator,
-        logger,
+        logger
       );
 
-      const progress = new ProgressReporter(
-        "compiling",
-        "kit modules",
-        logger,
-      );
+      const kitProgress = new ProgressReporter("compiling", "kit", logger);
 
       // todo: should compiling a kit module also run tflint and other stuff?
       const factory = new CliApiFacadeFactory(collie, logger);
+      const tf = factory.buildTerraform();
       const tfDocs = factory.buildTerraformDocs();
 
-      const tasks = moduleRepo.all
-        .filter((x) => !module || module == x.id)
-        .map(async (x) => await tfDocs.updateReadme(x.kitModulePath));
+      const modules = moduleRepo.all.filter((x) => !module || module == x.id);
 
-      await Promise.all(tasks);
+      // collect all errors
+      const errors: ProcessRunnerError[] = [];
 
-      progress.done();
+      const iterator = pooledMap(concurrencyLimit, modules, async (x) => {
+        const moduleProgress = new ProgressReporter(
+          "compiling",
+          x.kitModulePath,
+          logger
+        );
+
+        try {
+          await tfDocs.updateReadme(x.kitModulePath);
+
+          const resolvedKitModulePath = collie.resolvePath(x.kitModulePath);
+
+          // for checking we need to no locks (they only confuse tfdocs) and also no backend providers
+          await tf.init(resolvedKitModulePath, { backend: false });
+          await tf.validate(resolvedKitModulePath);
+        } catch (error) {
+          moduleProgress.failed();
+
+          if (error instanceof ProcessRunnerError) {
+            errors.push(error);
+            return;
+          } else {
+            throw error;
+          }
+        }
+
+        moduleProgress.done();
+      });
+
+      try {
+        for await (const _ of iterator) {
+          // consume iterator
+        }
+      } catch () {
+        // catch all is fine since the map function handles all errors
+      }
+
+      if (errors.length) {
+        errors.forEach((x) => {
+          logger.error(x.message);
+        });
+
+        throw new MeshError("validating kit modules failed");
+      }
+
+      kitProgress.done();
     });
 }
