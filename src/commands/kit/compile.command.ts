@@ -16,7 +16,9 @@ const concurrencyLimit = navigator.hardwareConcurrency;
 export function registerCompileCmd(program: TopLevelCommand) {
   program
     .command("compile [module]")
-    .description("Compile kit modules, updating their documentation")
+    .description(
+      "Compile kit modules, validating their terraform and updating documentation",
+    )
     .action(async (opts: GlobalCommandOptions, module?: string) => {
       const collie = await CollieRepository.load();
       const logger = new Logger(collie, opts);
@@ -24,7 +26,7 @@ export function registerCompileCmd(program: TopLevelCommand) {
       const moduleRepo = await KitModuleRepository.load(
         collie,
         validator,
-        logger
+        logger,
       );
 
       const kitProgress = new ProgressReporter("compiling", "kit", logger);
@@ -43,7 +45,7 @@ export function registerCompileCmd(program: TopLevelCommand) {
         const moduleProgress = new ProgressReporter(
           "compiling",
           x.kitModulePath,
-          logger
+          logger,
         );
 
         try {
@@ -72,8 +74,8 @@ export function registerCompileCmd(program: TopLevelCommand) {
         for await (const _ of iterator) {
           // consume iterator
         }
-      } catch () {
-        // catch all is fine since the map function handles all errors
+      } catch (_) {
+        // catch all is fine since the map function captures all errors
       }
 
       if (errors.length) {
