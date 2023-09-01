@@ -1,4 +1,5 @@
 import * as fs from "std/fs";
+import * as path from "std/path";
 
 import {
   TerragruntArguments,
@@ -44,23 +45,23 @@ export class PlatformDeployer<T extends PlatformConfig> {
     module: string | undefined,
     autoApprove: boolean,
   ) {
-    const modulePath = this.foundation.resolvePlatformPath(
+    const platformOrModulePath = this.foundation.resolvePlatformPath(
       this.platform,
       module || "",
     );
 
     const progress = this.buildProgressReporter(
       mode,
-      this.repo.relativePath(modulePath),
+      this.repo.relativePath(platformOrModulePath),
     );
 
-    const tgfiles = await this.terragruntFiles(modulePath);
+    const tgfiles = await this.terragruntFiles(platformOrModulePath);
     if (tgfiles.length === 0) {
       this.logger.warn(
         (fmt) =>
           `detected no platform modules at ${
             fmt.kitPath(
-              modulePath,
+              platformOrModulePath,
             )
           }, will skip invoking "terragrunt <cmd>"`,
       );
@@ -70,26 +71,30 @@ export class PlatformDeployer<T extends PlatformConfig> {
         "kit apply",
       );
     } else if (tgfiles.length === 1) {
+      // we can't run terragrunt in the platform dir, so we have to infer the platformModule path from
+      // the discovered terragrunt file
+      const singleModulePath = path.dirname(tgfiles[0].path);
+
       this.logger.debug(
         (fmt) =>
           `detected a single platform module at ${
             fmt.kitPath(
-              modulePath,
+              singleModulePath,
             )
           }, will deploy with "terragrunt <cmd>"`,
       );
-      await this.terragrunt.run(modulePath, mode, { autoApprove });
+      await this.terragrunt.run(singleModulePath, mode, { autoApprove });
     } else {
       this.logger.debug(
         (fmt) =>
           `detected a stack of platform modules at ${
             fmt.kitPath(
-              modulePath,
+              platformOrModulePath,
             )
           }, will deploy with "terragrunt run-all <cmd>"`,
       );
 
-      await this.terragrunt.runAll(modulePath, mode, {
+      await this.terragrunt.runAll(platformOrModulePath, mode, {
         excludeDirs: [this.bootstrapModuleDir()],
         autoApprove,
       });
