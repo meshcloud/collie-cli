@@ -8,7 +8,7 @@ import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
-import { MeshError, ProcessRunnerError } from "../../errors.ts";
+import { MeshError } from "../../errors.ts";
 
 // limit concurrency
 const concurrencyLimit = navigator.hardwareConcurrency;
@@ -38,9 +38,6 @@ export function registerCompileCmd(program: TopLevelCommand) {
 
       const modules = moduleRepo.all.filter((x) => !module || module == x.id);
 
-      // collect all errors
-      const errors: ProcessRunnerError[] = [];
-
       const iterator = pooledMap(concurrencyLimit, modules, async (x) => {
         const moduleProgress = new ProgressReporter(
           "compiling",
@@ -59,12 +56,14 @@ export function registerCompileCmd(program: TopLevelCommand) {
         } catch (error) {
           moduleProgress.failed();
 
-          if (error instanceof ProcessRunnerError) {
-            errors.push(error);
-            return;
-          } else {
-            throw error;
-          }
+          // log then throw is typically an anti-pattern, but its fine here
+          // since an error here will end up as an AggregateError later below
+          logger.error(
+            (_) =>
+              `encountered error compiling kit module ${x.kitModulePath}\n${error}`,
+          );
+
+          throw error;
         }
 
         moduleProgress.done();
@@ -74,16 +73,13 @@ export function registerCompileCmd(program: TopLevelCommand) {
         for await (const _ of iterator) {
           // consume iterator
         }
-      } catch (_) {
-        // catch all is fine since the map function captures all errors
-      }
+      } catch (ex) {
+        if (ex instanceof AggregateError) {
+          // exiting here is fine since the map function logs all erors
+          throw new MeshError("validating kit modules failed");
+        }
 
-      if (errors.length) {
-        errors.forEach((x) => {
-          logger.error(x.message);
-        });
-
-        throw new MeshError("validating kit modules failed");
+        throw ex;
       }
 
       kitProgress.done();
