@@ -23,47 +23,52 @@ export function registerNewCmd(program: TopLevelCommand) {
   program
     .command("new [foundation:foundation]")
     .description("generate a new cloud foundation")
-    .action(async (opts: GlobalCommandOptions, foundationArg: string) => {
-      const foundation: string = foundationArg ||
-        await Input.prompt(
-          `Choose a name for your new foundation`,
+    .action(
+      async (opts: GlobalCommandOptions, foundationArg: string | undefined) => {
+        const foundation: string = foundationArg ||
+          await Input.prompt(
+            `Choose a name for your new foundation`,
+          );
+        const repo = await CollieRepository.load();
+        const logger = new Logger(repo, opts);
+
+        const foundationPath = repo.resolvePath("foundations", foundation);
+
+        const factory = new CliApiFacadeFactory(repo, logger);
+
+        const platformEntries = await promptPlatformEntries(
+          foundation,
+          factory,
         );
-      const repo = await CollieRepository.load();
-      const logger = new Logger(repo, opts);
 
-      const foundationPath = repo.resolvePath("foundations", foundation);
+        const dir = new DirectoryGenerator(WriteMode.skip, logger);
+        const d: Dir = {
+          name: foundationPath,
+          entries: [
+            { name: "README.md", content: generateReadmeMd(foundation) },
+            {
+              name: "platforms",
+              entries: [
+                {
+                  name: "README.md",
+                  content: generatePlatformsReadmeMd(foundation),
+                },
+                ...platformEntries,
+              ],
+            },
+          ],
+        };
 
-      const factory = new CliApiFacadeFactory(repo, logger);
+        await dir.write(d, "");
 
-      const platformEntries = await promptPlatformEntries(foundation, factory);
+        logger.progress(
+          "generated new foundation at " + repo.relativePath(foundationPath),
+        );
 
-      const dir = new DirectoryGenerator(WriteMode.skip, logger);
-      const d: Dir = {
-        name: foundationPath,
-        entries: [
-          { name: "README.md", content: generateReadmeMd(foundation) },
-          {
-            name: "platforms",
-            entries: [
-              {
-                name: "README.md",
-                content: generatePlatformsReadmeMd(foundation),
-              },
-              ...platformEntries,
-            ],
-          },
-        ],
-      };
-
-      await dir.write(d, "");
-
-      logger.progress(
-        "generated new foundation at " + repo.relativePath(foundationPath),
-      );
-
-      const config = new CollieConfig(repo, logger);
-      config.setProperty("foundation", foundation);
-    });
+        const config = new CollieConfig(repo, logger);
+        config.setProperty("foundation", foundation);
+      },
+    );
 }
 
 function generateReadmeMd(foundationName: string) {
