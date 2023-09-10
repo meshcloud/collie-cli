@@ -1,5 +1,5 @@
 import * as colors from "std/fmt/colors";
-import { prompt, Select } from "x/cliffy/prompt";
+import { Input, prompt, Select } from "x/cliffy/prompt";
 import { Logger } from "../../cli/Logger.ts";
 import {
   Dir,
@@ -21,9 +21,13 @@ import { CollieConfig } from "../../model/CollieConfig.ts";
 
 export function registerNewCmd(program: TopLevelCommand) {
   program
-    .command("new <foundation:foundation>")
+    .command("new [foundation:foundation]")
     .description("generate a new cloud foundation")
-    .action(async (opts: GlobalCommandOptions, foundation: string) => {
+    .action(async (opts: GlobalCommandOptions, foundationArg: string) => {
+      const foundation: string = foundationArg ||
+        await Input.prompt(
+          `Choose a name for your new foundation`,
+        );
       const repo = await CollieRepository.load();
       const logger = new Logger(repo, opts);
 
