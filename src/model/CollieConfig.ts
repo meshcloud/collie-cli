@@ -1,3 +1,5 @@
+import * as path from "std/path";
+import * as fs from "std/fs";
 import { Logger } from "../cli/Logger.ts";
 import { CollieRepository } from "./CollieRepository.ts";
 
@@ -58,6 +60,8 @@ export class CollieConfig {
   }
 
   private async saveToDisk() {
+    await fs.ensureDir(path.dirname(this.configFilePath));
+
     await Deno.writeTextFile(
       this.configFilePath,
       JSON.stringify(this.properties),
