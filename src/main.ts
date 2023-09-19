@@ -45,6 +45,14 @@ async function collie() {
 
   program.command("completions", new CompletionsCommand());
 
+  // Shells usually send signals to the entire **process group**, which means that also all of collie's subprocesses
+  // will receive the same signal, see https://stackoverflow.com/questions/60193762/who-send-sigint-to-foreground-process-when-press-ctrlc-tty-driver-or-shell
+  // Since all of collie's commands are interactive (i.e. collie exits after running what it was doing) and all
+  // "long running" work is done by subprocesses anyway, there's nothing we need to do here but notifying the user
+  // that we wait for subprocesses to exit and then exiting ourselves.
+  Deno.addSignalListener("SIGINT", () => gracefulShutdown());
+  Deno.addSignalListener("SIGTERM", () => gracefulShutdown());
+
   // Run the main program with error handling.
   try {
     const hasArgs = Deno.args.length > 0;
@@ -82,4 +90,12 @@ async function collie() {
 
 if (import.meta.main) {
   collie();
+}
+
+function gracefulShutdown(): void {
+  console.log("\n\n");
+  console.log(
+    "Interrupt received.\nPlease wait for collie shut down or data loss may occur.\nGracefully shutting down...",
+  );
+  console.log("\n\n");
 }
