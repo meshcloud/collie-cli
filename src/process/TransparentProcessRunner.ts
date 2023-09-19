@@ -27,6 +27,12 @@ export class TransparentProcessRunner implements IProcessRunner<ProcessResult> {
     });
 
     const p = cmd.spawn();
+
+    // make sure Deno exits only after the process has exited as well.
+    // this is important for correct signal handling beahvior (e.g. SIGTERM cia Ctrl+C) so that collie waits for
+    // its subprocess to finish (and rendering all its output) before exiting itself
+    p.ref();
+
     const status = await p.status;
 
     const result: ProcessResult = {
