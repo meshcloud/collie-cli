@@ -39,6 +39,7 @@ export function registerInitCommand(program: TopLevelCommand) {
           entries: [
             { name: "README.md", content: readmeMd },
             { name: ".gitignore", content: gitignore },
+            { name: ".gitattributes", content: gitattributes },
             {
               name: "kit",
               entries: [
@@ -138,6 +139,14 @@ const gitignore = `# terraform/terragrunt caches
 # collie cache
 **.collie.json
 **.meta.json
+`;
+
+const gitattributes = `# Force LF file endings for all text files
+* text eol=lf
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary
 `;
 
 const kitReadmeMd = `# Your Collie Kit
