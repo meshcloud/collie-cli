@@ -21,15 +21,22 @@ for i in $REQ_COMMANDS
 do
   command -v "$i" >/dev/null && continue || { echo "$i command not found. You need to install if before running this script"; exit 1; }
 done
+
+COLLIE_VERSION=${COLLIE_VERSION:-}
+release_url="https://api.github.com/repos/meshcloud/collie-cli/releases/latest"
+if [ ! -z "${COLLIE_VERSION}" ]; then
+  release_url="https://api.github.com/repos/meshcloud/collie-cli/releases/tags/${COLLIE_VERSION}"
+fi
+
 # Download artifacts based on CPU architecture and OS type
 case "$(uname -s)" in
    Darwin)
-      url=$(curl -s https://api.github.com/repos/meshcloud/collie-cli/releases/latest | grep "browser_download_url.*$arch.*apple" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
+      artifact_url=$(curl -s "$release_url" | grep "browser_download_url.*$arch.*apple" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
       name="collie-$arch-apple-darwin"    
      ;;
    Linux)
     echo "detected Linux"
-     url=$(curl -s https://api.github.com/repos/meshcloud/collie-cli/releases/latest | grep "browser_download_url.*linux" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
+     artifact_url=$(curl -s "$release_url" | grep "browser_download_url.*linux" | cut -d : -f 2,3 | tr -d \" | tr -d \ )
      name="collie-x86_64-unknown-linux-gnu"
      ;;
    CYGWIN*|MINGW32*|MSYS*|MINGW*)
@@ -42,8 +49,8 @@ case "$(uname -s)" in
      ;;
 esac
 
-echo "Downloading the artifact... (${url})"
-curl "${url}" -L -o collie.tar.gz --silent
+echo "Downloading the artifact... (${artifact_url})"
+curl "${artifact_url}" -L -o collie.tar.gz --silent
 # untar and movin the artifact
 echo "Unpacking the artifact and copying the binary..."
 tar -zxf collie.tar.gz -C /usr/local/bin
