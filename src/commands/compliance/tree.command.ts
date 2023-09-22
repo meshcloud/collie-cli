@@ -50,7 +50,7 @@ export function registerTreeCmd(program: TopLevelCommand) {
       );
 
       if (!hasAnyApplicableStatements) {
-        logger.warn("no compliance control statements found in an< kit module");
+        logger.warn("no compliance control statements found in any kit module");
         logger.tip(
           `Add a compliance section to your kit module frontmatter like this\n` +
             statementExample,
