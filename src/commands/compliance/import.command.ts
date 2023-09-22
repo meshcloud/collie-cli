@@ -29,7 +29,7 @@ export function registerImportCmd(program: TopLevelCommand) {
       const collie = await CollieRepository.load();
       const logger = new Logger(collie, opts);
 
-      const factory = new CliApiFacadeFactory(collie, logger);
+      const factory = new CliApiFacadeFactory(logger);
       const git = factory.buildGit();
 
       const hub = new CollieHub(git, collie);

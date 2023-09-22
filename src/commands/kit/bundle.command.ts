@@ -97,7 +97,7 @@ async function selectKitBundle(
   foundationRepo: FoundationRepository,
   opts: GlobalCommandOptions & BundleOptions,
 ) {
-  const factory = new CliApiFacadeFactory(collie, logger);
+  const factory = new CliApiFacadeFactory(logger);
   const az = factory.buildAz();
   const locations = (await az.listLocations())
     // only physical regions  (like "germanywestcentral") should be selectable,

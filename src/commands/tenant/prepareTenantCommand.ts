@@ -13,21 +13,21 @@ export async function prepareTenantCommand(
   options: GlobalCommandOptions & TenantCommandOptions,
   foundation: string,
 ) {
-  const collieRepo = await CollieRepository.load();
+  const repo = await CollieRepository.load();
 
-  const logger = new Logger(collieRepo, options);
+  const logger = new Logger(repo, options);
 
   const validator = new ModelValidator(logger);
 
   const foundationRepo = await FoundationRepository.load(
-    collieRepo,
+    repo,
     foundation,
     validator,
   );
 
-  const facadeFactory = new CliApiFacadeFactory(collieRepo, logger);
+  const facadeFactory = new CliApiFacadeFactory(logger);
   const meshAdapterFactory = new MeshFoundationAdapterFactory(
-    collieRepo,
+    repo,
     foundationRepo,
     facadeFactory,
     logger,

@@ -39,7 +39,6 @@ import { TerraformCliFacade } from "./terraform/TerraformCliFacade.ts";
 
 export class CliApiFacadeFactory {
   constructor(
-    private readonly repo: CollieRepository,
     private readonly logger: Logger,
   ) {}
 
@@ -155,7 +154,7 @@ export class CliApiFacadeFactory {
     return new NpmCliFacade(processRunner);
   }
 
-  public buildTerraformDocs() {
+  public buildTerraformDocs(repo: CollieRepository) {
     const quietRunner = this.buildQuietLoggingProcessRunner();
     const detector = new TerraformDocsCliDetector(quietRunner);
 
@@ -164,7 +163,7 @@ export class CliApiFacadeFactory {
       new ProcessRunnerErrorResultHandler(detector),
     );
 
-    return new TerraformDocsCliFacade(this.repo, processRunner);
+    return new TerraformDocsCliFacade(repo, processRunner);
   }
 
   public buildTerraform() {

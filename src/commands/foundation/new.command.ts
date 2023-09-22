@@ -34,7 +34,7 @@ export function registerNewCmd(program: TopLevelCommand) {
 
         const foundationPath = repo.resolvePath("foundations", foundation);
 
-        const factory = new CliApiFacadeFactory(repo, logger);
+        const factory = new CliApiFacadeFactory(logger);
 
         const platformEntries = await promptPlatformEntries(
           foundation,

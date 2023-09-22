@@ -49,7 +49,7 @@ export function registerDocsCmd(program: TopLevelCommand) {
           validator,
         );
 
-        const factory = new CliApiFacadeFactory(repo, logger);
+        const factory = new CliApiFacadeFactory(logger);
         // todo: instead of flags, maybe these should be subcommands?
         if (opts.update) {
           await updateDocumentation(repo, foundationRepo, logger);
@@ -108,7 +108,7 @@ async function updateDocumentation(
 
   const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
 
-  const factory = new CliApiFacadeFactory(repo, logger);
+  const factory = new CliApiFacadeFactory(logger);
   const terragrunt = factory.buildTerragrunt();
   const platformDocumentation = new PlatformDocumentationGenerator(
     repo,

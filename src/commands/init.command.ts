@@ -23,11 +23,11 @@ export function registerInitCommand(program: TopLevelCommand) {
 
         // we would like to create the CollieRepository after git has been initialized
         // but we need it to build git
-        const kit = CollieRepository.uninitialized(directory);
-        const logger = new Logger(kit, opts);
+        const repo = CollieRepository.uninitialized(directory);
+        const logger = new Logger(repo, opts);
 
         // ensure git is initialized
-        const cliFactory = new CliApiFacadeFactory(kit, logger);
+        const cliFactory = new CliApiFacadeFactory(logger);
         const git = cliFactory.buildGit();
 
         await git.init(directory);
@@ -62,7 +62,7 @@ export function registerInitCommand(program: TopLevelCommand) {
         // this is the only place where an absolute path is ok, to show the user unambigously where
         // the repository is on their file system
         logger.progress(
-          "generated new collie repository at " + kit.resolvePath(),
+          "generated new collie repository at " + repo.resolvePath(),
         );
 
         logger.tipCommand(
