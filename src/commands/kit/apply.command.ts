@@ -109,8 +109,8 @@ export async function applyKitModule(
     ...platformModuleId,
   );
 
-  const factory = new CliApiFacadeFactory(collie, logger);
-  const tfdocs = factory.buildTerraformDocs();
+  const factory = new CliApiFacadeFactory(logger);
+  const tfdocs = factory.buildTerraformDocs(collie);
   const kitModulePath = collie.relativePath(
     collie.resolvePath("kit", moduleId),
   );

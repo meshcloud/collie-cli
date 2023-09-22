@@ -116,7 +116,7 @@ export async function deployFoundation(
   opts: GlobalCommandOptions & DeployOptions,
   logger: Logger,
 ) {
-  const factory = new CliApiFacadeFactory(repo, logger);
+  const factory = new CliApiFacadeFactory(logger);
 
   const terragrunt = factory.buildTerragrunt();
 

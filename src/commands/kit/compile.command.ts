@@ -32,9 +32,9 @@ export function registerCompileCmd(program: TopLevelCommand) {
       const kitProgress = new ProgressReporter("compiling", "kit", logger);
 
       // todo: should compiling a kit module also run tflint and other stuff?
-      const factory = new CliApiFacadeFactory(collie, logger);
+      const factory = new CliApiFacadeFactory(logger);
       const tf = factory.buildTerraform();
-      const tfDocs = factory.buildTerraformDocs();
+      const tfDocs = factory.buildTerraformDocs(collie);
 
       const modules = moduleRepo.all.filter((x) => !module || module == x.id);
 
