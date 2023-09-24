@@ -103,8 +103,16 @@ export async function generateTerragrunt(
   path = find_in_parent_folders("platform.hcl")
 }`;
 
-  const moduleIncludeBlock = `include "module" {
-  path = find_in_parent_folders("module.hcl")
+  const providerBlock =
+    `# todo: setup providers as needed by your kit module, typically referencing outputs of the bootstrap module
+# note: this block is generated as a fallback, since the kit module provided no explicit terragrunt.hcl template
+generate "provider" {
+  path      = "provider.tf"
+  if_exists = "overwrite"
+  contents  = <<EOF
+provider "google|aws|azurerm" {
+}
+EOF
 }`;
 
   const bootstrapProviderBlock =
@@ -132,7 +140,7 @@ ${indent(tfvars, 2)}
 
   return [
     platformIncludeBlock,
-    isBootstrap ? bootstrapProviderBlock : moduleIncludeBlock,
+    isBootstrap ? bootstrapProviderBlock : providerBlock,
     terraformBlock,
     inputsBlock,
   ].join("\n\n");
