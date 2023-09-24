@@ -2,6 +2,7 @@ import { parseJsonWithLog } from "../../json.ts";
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { CliDetector } from "../CliDetector.ts";
+import * as semver from "std/semver";
 
 export class AzCliDetector extends CliDetector {
   constructor(runner: IProcessRunner<ProcessResultWithOutput>) {
@@ -20,7 +21,6 @@ export class AzCliDetector extends CliDetector {
   }
 
   protected isSupportedVersion(version: string): boolean {
-    // a simple lexicographic comparison is sufficient for our needs
-    return version > "2.0.0";
+    return semver.satisfies(version, ">2.0.0");
   }
 }
