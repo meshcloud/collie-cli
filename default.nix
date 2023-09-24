@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs-unstable> { } }:
+{ pkgs ? import <nixpkgs> { }, unstable ? import <nixpkgs-unstable> { } }:
 
 pkgs.mkShell {
   NIX_SHELL = "collie-cli";
@@ -7,7 +7,7 @@ pkgs.mkShell {
   '';
 
   buildInputs = [
-    pkgs.deno
+    unstable.deno
     
     # used for build scripts
     pkgs.unzip
@@ -19,10 +19,10 @@ pkgs.mkShell {
     pkgs.google-cloud-sdk
 
     # terraform
-    pkgs.terraform
-    pkgs.terragrunt
-    pkgs.tflint
-    pkgs.terraform-docs
+    unstable.terraform
+    unstable.terragrunt
+    unstable.tflint
+    unstable.terraform-docs
 
     # for collie foundation docs
     pkgs.nodejs
