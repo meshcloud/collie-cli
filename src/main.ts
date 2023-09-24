@@ -51,7 +51,13 @@ async function collie() {
   // "long running" work is done by subprocesses anyway, there's nothing we need to do here but notifying the user
   // that we wait for subprocesses to exit and then exiting ourselves.
   Deno.addSignalListener("SIGINT", () => gracefulShutdown());
-  Deno.addSignalListener("SIGTERM", () => gracefulShutdown());
+
+  // not on windows
+  if (isWindows) {
+    Deno.addSignalListener("SIGBREAK", () => gracefulShutdown());
+  } else {
+    Deno.addSignalListener("SIGTERM", () => gracefulShutdown());
+  }
 
   // Run the main program with error handling.
   try {
