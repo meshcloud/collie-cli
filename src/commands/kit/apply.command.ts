@@ -143,7 +143,7 @@ export async function applyKitModule(
     ],
   };
 
-  await dir.write(platformModuleDir, "");
+  await dir.write(platformModuleDir);
 
   return {
     kitModulePath,
