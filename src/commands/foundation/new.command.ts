@@ -26,9 +26,7 @@ export function registerNewCmd(program: TopLevelCommand) {
     .action(
       async (opts: GlobalCommandOptions, foundationArg: string | undefined) => {
         const foundation: string = foundationArg ||
-          await Input.prompt(
-            `Choose a name for your new foundation`,
-          );
+          (await Input.prompt(`Choose a name for your new foundation`));
         const repo = await CollieRepository.load();
         const logger = new Logger(repo, opts);
 
@@ -36,10 +34,9 @@ export function registerNewCmd(program: TopLevelCommand) {
 
         const factory = new CliApiFacadeFactory(logger);
 
-        const platformEntries = await promptPlatformEntries(
-          foundation,
-          factory,
-        );
+        const platformEntries = Deno.isatty(Deno.stdout.rid)
+          ? await promptPlatformEntries(foundation, factory)
+          : [];
 
         const dir = new DirectoryGenerator(WriteMode.skip, logger);
         const d: Dir = {
