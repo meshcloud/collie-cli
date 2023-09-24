@@ -110,8 +110,7 @@ generate "provider" {
   path      = "provider.tf"
   if_exists = "overwrite"
   contents  = <<EOF
-provider "google|aws|azurerm" {
-}
+# todo: add provider {} blocks as needed
 EOF
 }`;
 
