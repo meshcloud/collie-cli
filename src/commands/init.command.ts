@@ -58,7 +58,7 @@ export function registerInitCommand(program: TopLevelCommand) {
           ],
         };
 
-        await dir.write(d, "");
+        await dir.write(d);
 
         // this is the only place where an absolute path is ok, to show the user unambigously where
         // the repository is on their file system

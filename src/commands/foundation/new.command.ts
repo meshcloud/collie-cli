@@ -59,7 +59,7 @@ export function registerNewCmd(program: TopLevelCommand) {
           ],
         };
 
-        await dir.write(d, "");
+        await dir.write(d);
 
         logger.progress(
           "generated new foundation at " + repo.relativePath(foundationPath),

@@ -37,9 +37,9 @@ export class DirectoryGenerator {
    * Note: maybe consider using Promise.all for speed
    *
    * @param currentDir
-   * @param basePath
+   * @param basePath optonal, when currentDir.name is an absolute path or you want to write relative to CWD
    */
-  public async write(currentDir: Dir, basePath: string) {
+  public async write(currentDir: Dir, basePath = "") {
     const currentPath = path.join(basePath, currentDir.name);
 
     // ensure dir exists, mkdir -p

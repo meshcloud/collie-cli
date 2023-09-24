@@ -28,7 +28,7 @@ export async function newKitDirectoryCreation(
     ],
   };
 
-  await dir.write(d, "");
+  await dir.write(d);
 }
 
 export async function emptyKitDirectoryCreation(
@@ -41,7 +41,7 @@ export async function emptyKitDirectoryCreation(
     entries: [],
   };
 
-  await dir.write(d, "");
+  await dir.write(d);
 }
 
 const mainTf = `# Place your module's terraform resources here as usual.
