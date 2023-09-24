@@ -20,6 +20,7 @@ import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions
 interface DocsCommandOptions {
   update?: boolean;
   preview?: boolean;
+  build?: boolean;
 }
 
 export function registerDocsCmd(program: TopLevelCommand) {
@@ -55,6 +56,10 @@ export function registerDocsCmd(program: TopLevelCommand) {
           await updateDocumentation(repo, foundationRepo, logger);
         }
 
+        if (opts.build) {
+          await buildDocumentation(foundationRepo, factory);
+        }
+
         if (opts.preview) {
           await previewDocumentation(foundationRepo, factory);
         } else {
@@ -64,12 +69,23 @@ export function registerDocsCmd(program: TopLevelCommand) {
         }
       },
     )
-    .option("--update [update:boolean]", "Update auto-generated docs.", {
-      default: true,
-    })
+    .option(
+      "--update [update:boolean]",
+      "Update markdown documentation for the selected foundation.",
+      {
+        default: true,
+      },
+    )
     .option(
       "--preview [preview:boolean]",
-      "Start a local web-server preview.",
+      "Render documentation to HTML using static site generator and start local web-server preview.",
+      {
+        default: false,
+      },
+    )
+    .option(
+      "--build [build:boolean]",
+      "Render documentation to HTML using static site generator.",
       {
         default: false,
       },
@@ -145,6 +161,19 @@ async function previewDocumentation(
 
   await npm.run(["install"], { cwd: dir });
   await npm.run(["run", "docs:dev"], { cwd: dir });
+}
+
+async function buildDocumentation(
+  foundation: FoundationRepository,
+  factory: CliApiFacadeFactory,
+) {
+  const docsRepo = new DocumentationRepository(foundation);
+  const dir = docsRepo.resolvePath();
+
+  const npm = factory.buildNpm();
+
+  await npm.run(["install"], { cwd: dir });
+  await npm.run(["run", "docs:build"], { cwd: dir });
 }
 
 async function prepareSiteTemplate(
