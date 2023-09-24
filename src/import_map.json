@@ -12,6 +12,7 @@
     "std/collections/distinct": "https://deno.land/std@0.170.0/collections/distinct.ts",
     "std/fmt/colors": "https://deno.land/std@0.170.0/fmt/colors.ts",
     "std/encoding/yaml": "https://deno.land/std@0.170.0/encoding/yaml.ts",
+    "std/semver": "https://deno.land/std@0.170.0/semver/mod.ts",
     "std/testing/assert": "https://deno.land/std@0.170.0/testing/asserts.ts",
     "std/testing/mock": "https://deno.land/std@0.170.0/testing/mock.ts",
     "x/json_tree": "https://deno.land/x/json_tree@latest/mod.ts",
