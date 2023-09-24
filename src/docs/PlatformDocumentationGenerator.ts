@@ -100,7 +100,7 @@ export class PlatformDocumentationGenerator {
     );
 
     const result = await this.terragrunt.collectOutput(
-      path.dirname(dep.sourcePath),
+      this.repo.resolvePath(path.dirname(dep.sourcePath)),
       "documentation_md",
     );
 
