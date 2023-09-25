@@ -39,6 +39,11 @@ export class ModelValidator {
   public validatePlatformConfig(data: Partial<PlatformConfig>) {
     const result = this.validate("PlatformConfig", data);
 
+    // this helps TS type check the result correctl
+    if (!result.errors) {
+      return result;
+    }
+
     // unforuntately AJV gives us errors for all branches of the oneOf
     // not just the one that has been selected. So we try to remove those misleading errors here
     const errorsWithoutIrrelevantOneOfBranches = result.errors?.filter(
