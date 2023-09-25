@@ -1,16 +1,14 @@
 name: e2e
 on:
-  # temporary, just for testing the workflow
-  push:
-    branches: [ feature/e2e-tests ]
   # run after the "release" workflow https://stackoverflow.com/a/64733705/125407
+  # as we need to wait for the assets to be available
   workflow_run:
     workflows: ["release"]
     branches: [main]
     types: 
       - completed
 
-# TODO: replace "feature/e2e-tests" with "main" before merging to main branch!
+# TODO: replace "main" with "main" before merging to main branch!
 
 jobs:
   # this test is super basic and just checks whether collie blows up
@@ -28,7 +26,7 @@ jobs:
         env: 
           COLLIE_VERSION: ${{ github.event.release.tag_name }}
         run: |
-          irm https://raw.githubusercontent.com/meshcloud/collie-cli/feature/e2e-tests/install.ps1 | iex
+          irm https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.ps1 | iex
           
           # github doesn't allow adding to PATH any other way, see https://stackoverflow.com/a/71579543/125407
           Add-Content $env:GITHUB_PATH "C:\Users\runneradmin\collie-cli"
