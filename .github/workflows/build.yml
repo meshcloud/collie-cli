@@ -15,7 +15,7 @@ jobs:
         id: fmt
         uses: denoland/setup-deno@main
         with:
-          deno-version: "~1.34"
+          deno-version: "~1.37"
       - run: |
           deno fmt --check
 
@@ -27,7 +27,7 @@ jobs:
         id: lint
         uses: denoland/setup-deno@main
         with:
-          deno-version: "~1.34"
+          deno-version: "~1.37"
       - run: |
           deno lint
 
