@@ -77,18 +77,14 @@ export function registerDocsCmd(program: TopLevelCommand) {
       },
     )
     .option(
-      "--preview [preview:boolean]",
+      "--preview",
       "Render documentation to HTML using static site generator and start local web-server preview.",
-      {
-        default: false,
-      },
+      { conflicts: ["build"] },
     )
     .option(
-      "--build [build:boolean]",
+      "--build",
       "Render documentation to HTML using static site generator.",
-      {
-        default: false,
-      },
+      { conflicts: ["preview"] },
     );
 }
 
