@@ -23,7 +23,7 @@ export function insert<T>(tree: Tree<T>, path: string[], module: T) {
 }
 
 export function buildLabeledIdPath(id: string, label: string) {
-  const components = id.split(path.sep);
+  const components = id.split("/");
   const lastComponent = components.pop();
   const labeledComponents = [
     ...components,

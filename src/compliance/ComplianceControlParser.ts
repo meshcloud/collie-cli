@@ -97,7 +97,11 @@ export class ComplianceControlParser {
   }
 
   private toId(relativeControlPath: string) {
-    const components = path.parse(relativeControlPath);
+    const posixPath = relativeControlPath.replaceAll("\\", "/");
+
+    const components = path.parse(posixPath);
+
+    // drop compliance/ prefix and .md extension
     return path.join(
       components.dir.substring("compliance/".length),
       components.name,
