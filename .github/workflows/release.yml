@@ -1,67 +1,65 @@
 name: release
 
 on:
-  push:
-    branches: ["feature/e2e-test-macos"]
   release:
     types: [prereleased]
 
 jobs:
-  # artifacts:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: denoland/setup-deno@main
-  #       with:
-  #         deno-version: "~1.37"
-  #     - uses: actions/cache@v3
-  #       with:
-  #         path: ~/.cache/deno        # see https://deno.land/manual/linking_to_external_code
-  #         key: ${{ runner.os }}-deno # it seems there's no particular cache keying required
-  #         restore-keys: |
-  #           ${{ runner.os }}-deno
-  #     - run: ./build.sh
-  #     - name: upload x86_64-unknown-linux-gnu
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ github.token }}
-  #       with:
-  #         upload_url: ${{ github.event.release.upload_url }}
-  #         asset_path: ./bin/collie-x86_64-unknown-linux-gnu.tar.gz
-  #         asset_name: collie-x86_64-unknown-linux-gnu.tar.gz
-  #         asset_content_type: application/gzip
-  #     - name: upload x86_64-apple-darwin
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ github.token }}
-  #       with:
-  #         upload_url: ${{ github.event.release.upload_url }}
-  #         asset_path: ./bin/collie-x86_64-apple-darwin.tar.gz
-  #         asset_name: collie-x86_64-apple-darwin.tar.gz
-  #         asset_content_type: application/gzip
-  #     - name: upload aarch64-apple-darwin
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ github.token }}
-  #       with:
-  #         upload_url: ${{ github.event.release.upload_url }}
-  #         asset_path: ./bin/collie-aarch64-apple-darwin.tar.gz
-  #         asset_name: collie-aarch64-apple-darwin.tar.gz
-  #         asset_content_type: application/gzip
-  #     - name: upload x86_64-pc-windows-msvc
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ github.token }}
-  #       with:
-  #         upload_url: ${{ github.event.release.upload_url }}
-  #         asset_path: ./bin/collie-x86_64-pc-windows-msvc.exe
-  #         asset_name: collie-x86_64-pc-windows-msvc.exe
-  #         asset_content_type: application/vnd.microsoft.portable-executable 
-  #
+  artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: denoland/setup-deno@main
+        with:
+          deno-version: "~1.37"
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/deno        # see https://deno.land/manual/linking_to_external_code
+          key: ${{ runner.os }}-deno # it seems there's no particular cache keying required
+          restore-keys: |
+            ${{ runner.os }}-deno
+      - run: ./build.sh
+      - name: upload x86_64-unknown-linux-gnu
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./bin/collie-x86_64-unknown-linux-gnu.tar.gz
+          asset_name: collie-x86_64-unknown-linux-gnu.tar.gz
+          asset_content_type: application/gzip
+      - name: upload x86_64-apple-darwin
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./bin/collie-x86_64-apple-darwin.tar.gz
+          asset_name: collie-x86_64-apple-darwin.tar.gz
+          asset_content_type: application/gzip
+      - name: upload aarch64-apple-darwin
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./bin/collie-aarch64-apple-darwin.tar.gz
+          asset_name: collie-aarch64-apple-darwin.tar.gz
+          asset_content_type: application/gzip
+      - name: upload x86_64-pc-windows-msvc
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./bin/collie-x86_64-pc-windows-msvc.exe
+          asset_name: collie-x86_64-pc-windows-msvc.exe
+          asset_content_type: application/vnd.microsoft.portable-executable 
+
   # these e2e tests are super basic and just checks whether collie blows up
   e2e-windows:
     runs-on: windows-latest
-      #needs: artifacts
+    needs: artifacts
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -87,7 +85,7 @@ jobs:
         run: .\test\e2e.ps1
   e2e-linux:
     runs-on: ubuntu-latest
-    # needs: artifacts
+    needs: artifacts
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies 
@@ -110,7 +108,7 @@ jobs:
           COLLIE_VERSION: ${{ github.event.release.tag_name }}
   e2e-macos:
     runs-on: macos-latest
-    # needs: artifacts
+    needs: artifacts
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies 
