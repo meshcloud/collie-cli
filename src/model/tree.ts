@@ -1,5 +1,4 @@
 import * as colors from "std/fmt/colors";
-import * as path from "std/path";
 
 export interface Tree<T> {
   [path: string]: Tree<T> | T;
