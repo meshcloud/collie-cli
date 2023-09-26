@@ -1,6 +1,8 @@
 name: release
 
 on:
+  push:
+    branches: ["feature/e2e-test-macos"]
   release:
     types: [prereleased]
 
@@ -92,25 +94,20 @@ jobs:
         # note: we forego default.nix and to be as close to a realistic user experience as possible
         # all the other dependencies are already present on the runner images, so we use those
         # and just install the missing ones via nix
-        uses: cachix/install-nix-action@v18
+        uses: cachix/install-nix-action@v22
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - uses: rrbutani/use-nix-shell-action@v1
+      - uses: workflow/nix-shell-action@v3.3.0
         with:
-          packages: terragrunt terraform-docs
-      - name: install collie
+          packages: terraform,terragrunt,terraform-docs
+          script: |
+            curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
+            collie info
+            ./test/e2e.sh
         env: 
           COLLIE_VERSION: ${{ github.event.release.tag_name }}
-        run: |
-          curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
-      - name: collie info
-        run: |
-          collie info
-      - name: test
-        run: |
-          ./test/e2e.sh
   e2e-macos:
     runs-on: macos-latest
     needs: artifacts
