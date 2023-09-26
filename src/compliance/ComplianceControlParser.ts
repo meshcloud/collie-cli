@@ -102,9 +102,9 @@ export class ComplianceControlParser {
     const components = path.parse(posixPath);
 
     // drop compliance/ prefix and .md extension
-    return path.join(
+    return [
       components.dir.substring("compliance/".length),
       components.name,
-    );
+    ].join("/");
   }
 }
