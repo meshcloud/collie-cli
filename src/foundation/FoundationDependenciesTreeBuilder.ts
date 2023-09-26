@@ -68,11 +68,12 @@ export class FoundationDependenciesTreeBuilder {
         path.dirname(m.sourcePath),
       );
 
-      const relativePath = resolvedPlatformModulePath.substring(
-        resolvedPlatformPath.length + "/".length,
-      );
+      const id = resolvedPlatformModulePath
+        .substring(resolvedPlatformPath.length + "/".length)
+        .replaceAll("\\", "/"); // convert to posix style path if required
+
       const label = m.sourcePath;
-      const labeledComponents = buildLabeledIdPath(relativePath, label);
+      const labeledComponents = buildLabeledIdPath(id, label);
 
       insert<ModuleNode>(tree, labeledComponents, {
         kitModule: colors.green(m.kitModuleId),
