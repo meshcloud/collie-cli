@@ -2,7 +2,7 @@
 
 // ATTENTION: DO NOT COMMIT CHANGES TO THIS VERSION STRING, it's replaced in build.sh when performing a release.
 // This should always have the value "v0.22.0"
-export const VERSION = "v0.22.0".substring(1);
+export const VERSION = "vDEVELOPMENT".substring(1);
 
 /**
  * The flags we want collie to be invoked with.
