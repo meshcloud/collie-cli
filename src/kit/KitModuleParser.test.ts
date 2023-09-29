@@ -67,13 +67,13 @@ markdown`,
 
     const expected = [
       {
-        definitionPath: "kit/valid/README.md",
+        definitionPath: path.join("kit", "valid", "README.md"),
         id: "valid",
         kitModule: {
           name: "test",
           summary: "it's cool",
         },
-        kitModulePath: "kit/valid",
+        kitModulePath: path.join("kit", "valid"),
         readme: "\n# some\nmarkdown",
       },
     ];
