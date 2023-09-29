@@ -86,8 +86,8 @@ Deno.test(
 Deno.test(
   "can write into relative dir",
   async () =>
-    await withRestoreCwd(async () => {
-      await withTempDir(async (tmp) => {
+    await withTempDir(async (tmp) => {
+      await withRestoreCwd(async () => {
         Deno.chdir(tmp);
 
         const sut = new DirectoryGenerator(WriteMode.overwrite, nullLogger);
