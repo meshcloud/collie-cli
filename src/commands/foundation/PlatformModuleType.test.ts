@@ -1,16 +1,36 @@
 import { assertEquals } from "std/testing/assert";
 import { PlatformModuleType } from "./PlatformModuleType.ts";
+import * as path from "std/path";
 
 Deno.test("parseModuleId parses simple ids", () => {
-  const path = "/Users/foundations/f/platforms/p/foo/terragrunt.hcl";
-  const result = PlatformModuleType.parseModuleId(path);
+  const modulePath = path.join(
+    "Users",
+    "foundations",
+    "f",
+    "platforms",
+    "p",
+    "foo",
+    "terragrunt.hcl",
+  );
+
+  const result = PlatformModuleType.parseModuleId(modulePath);
 
   assertEquals(result, "foo");
 });
 
 Deno.test("parseModuleId parses structured ids", () => {
-  const path = "/Users/foundations/f/platforms/p/foo/bar/terragrunt.hcl";
-  const result = PlatformModuleType.parseModuleId(path);
+  const modulePath = path.join(
+    "Users",
+    "foundations",
+    "f",
+    "platforms",
+    "p",
+    "foo",
+    "bar",
+    "terragrunt.hcl",
+  );
+
+  const result = PlatformModuleType.parseModuleId(modulePath);
 
   assertEquals(result, "foo/bar");
 });
