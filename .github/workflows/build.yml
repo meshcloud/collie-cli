@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    if: ${{ success() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -40,3 +39,24 @@ jobs:
       - name: cheap integration test
         run: |
           deno task run
+  # run tests on windows because that allows us testing path.SEP related issues in integraiton tests
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: denoland/setup-deno@main
+        with:
+          deno-version: "~1.37"
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/deno        # see https://deno.land/manual/linking_to_external_code
+          key: ${{ runner.os }}-deno # it seems there's no particular cache keying required
+          restore-keys: |
+            ${{ runner.os }}-deno
+      - name: deno info
+        run: |
+          deno --version
+          deno info
+      - name: test
+        run: |
+          deno task test
