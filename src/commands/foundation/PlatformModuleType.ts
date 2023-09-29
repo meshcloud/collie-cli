@@ -38,6 +38,6 @@ export class PlatformModuleType extends StringType {
       dropTerragruntHclComponent,
     );
 
-    return path.join(...moduleId);
+    return moduleId.join("/");
   }
 }
