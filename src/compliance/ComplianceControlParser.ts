@@ -21,26 +21,19 @@ export class ComplianceControlParser {
   ) {}
 
   public async load() {
-    const dir = this.repo.resolvePath("compliance");
-
     const progress = new ProgressReporter(
       "parsing",
       "compliance controls",
       this.logger,
     );
 
-    const q = [];
-    for await (
-      const file of fs.expandGlob("**/*.md", {
-        root: dir,
-        globstar: true,
-      })
-    ) {
-      const isControl = file.name !== "README.md"; // skip READMEs they're typically not controls but user-provided documentation
+    const q = await this.repo.processFilesGlob("compliance/**/*.md", (file) => {
+      // skip READMEs they're typically not controls but user-provided documentation
+      const isControl = file.name !== "README.md";
       if (isControl) {
-        q.push(this.parseComplianceControl(file.path));
+        return this.parseComplianceControl(file.path);
       }
-    }
+    });
 
     const modules = await Promise.all(q);
 

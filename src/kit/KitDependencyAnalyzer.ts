@@ -53,29 +53,23 @@ export class KitDependencyAnalyzer {
     const platforms: PlatformDependencies[] = [];
 
     for (const platform of foundation.platforms) {
+      const relativePlatformPath = this.collie.relativePath(
+        foundation.resolvePlatformPath(platform),
+      );
+
       const progress = new ProgressReporter(
         `parsing platform modules`,
-        this.collie.relativePath(foundation.resolvePlatformPath(platform)),
+        relativePlatformPath,
         this.logger,
       );
 
-      const dir = foundation.resolvePlatformPath(platform, "");
-
-      const q = [];
-      for await (
-        const file of fs.expandGlob("**/terragrunt.hcl", {
-          root: dir,
-          exclude: ["**/.terragrunt-cache"],
-          globstar: true,
-        })
-      ) {
-        // can't get the exclude option of fs.expandGlob to work correctly, so this is a KISS alternative
-        if (!file.path.includes(".terragrunt-cache/")) {
-          q.push(this.tryParseDependency(file.path));
-        }
-      }
+      const q = await this.collie.processFilesGlob(
+        `${relativePlatformPath}/**/terragrunt.hcl`,
+        (file) => this.tryParseDependency(file.path),
+      );
 
       const all = await Promise.all(q);
+
       platforms.push({
         platform: platform,
         modules: all.filter((x): x is KitModuleDependency => !!x),

@@ -153,45 +153,48 @@ export class FoundationRepository {
     foundationDir: string,
     validator: ModelValidator,
   ): Promise<PlatformConfig[]> {
-    const platforms: PlatformConfig[] = [];
+    const q = await collie.processFilesGlob(
+      `${foundationDir}/platforms/*/README.md`,
+      (file) => FoundationRepository.parseReadme(collie, file, validator),
+    );
 
-    for await (
-      const file of fs.expandGlob("platforms/*/README.md", {
-        root: foundationDir,
-      })
-    ) {
-      const text = await this.readPlatformReadme(collie, file.path);
-      const { parsed, error } = MarkdownDocument.parse<PlatformFrontmatter>(
-        text,
-      );
-      if (!parsed?.frontmatter) {
-        throw new MeshError(
-          "Failed to parse platform README frontmatter at " +
-            collie.relativePath(file.path),
-          error,
-        );
-      }
-
-      const id = path.basename(path.dirname(file.path));
-      const config = {
-        id,
-        name: id, // default the name to the id - unless frontmatter overrides this
-        ...parsed.frontmatter,
-      };
-
-      const { data, errors } = validator.validatePlatformConfig(config);
-
-      if (errors) {
-        throw new CollieModelValidationError(
-          "Invalid foundation at " + collie.relativePath(file.path),
-          errors,
-        );
-      }
-
-      platforms.push(data);
-    }
+    const platforms = await Promise.all(q);
 
     return platforms;
+  }
+
+  private static async parseReadme(
+    collie: CollieRepository,
+    file: fs.WalkEntry,
+    validator: ModelValidator,
+  ) {
+    const text = await this.readPlatformReadme(collie, file.path);
+    const { parsed, error } = MarkdownDocument.parse<PlatformFrontmatter>(text);
+    if (!parsed?.frontmatter) {
+      throw new MeshError(
+        "Failed to parse platform README frontmatter at " +
+          collie.relativePath(file.path),
+        error,
+      );
+    }
+
+    const id = path.basename(path.dirname(file.path));
+    const config = {
+      id,
+      name: id,
+      ...parsed.frontmatter,
+    };
+
+    const { data, errors } = validator.validatePlatformConfig(config);
+
+    if (errors) {
+      throw new CollieModelValidationError(
+        "Invalid foundation at " + collie.relativePath(file.path),
+        errors,
+      );
+    }
+
+    return data;
   }
 
   private static async readPlatformReadme(

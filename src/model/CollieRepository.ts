@@ -47,6 +47,37 @@ export class CollieRepository {
     }
   }
 
+  async processFilesGlob<T>(
+    pattern: string,
+    process: (file: fs.WalkEntry) => T | undefined,
+  ): Promise<T[]> {
+    const q: T[] = [];
+    for await (
+      const file of fs.expandGlob(pattern, {
+        root: this.repoDir,
+        globstar: true,
+
+        exclude: [
+          "README.md", // exclude top-level readme
+          "kit/README.md",
+          "compliance/README.md",
+
+          "**/.terragrunt-cache", // never scan terraform caches
+          "**/.terraform", // exclude terraform dot-files (these can be left in kit/ from e.g. calling terraform validate)
+          "kit/**/modules", // exclude sub-modules
+          "kit/**/template", // exclude template files
+        ],
+      })
+    ) {
+      const task = process(file);
+      if (task) {
+        q.push(task);
+      }
+    }
+
+    return q;
+  }
+
   static async load(searchDir = "./"): Promise<CollieRepository> {
     let absolutePath = path.resolve(searchDir);
 

@@ -50,12 +50,16 @@ export class PlatformDeployer<T extends PlatformConfig> {
       module || "",
     );
 
-    const progress = this.buildProgressReporter(
-      mode,
-      this.repo.relativePath(platformOrModulePath),
+    const relativePlatformOrModulePath = this.repo.relativePath(
+      platformOrModulePath,
     );
 
-    const tgfiles = await this.terragruntFiles(platformOrModulePath);
+    const progress = this.buildProgressReporter(
+      mode,
+      relativePlatformOrModulePath,
+    );
+
+    const tgfiles = await this.terragruntFiles(relativePlatformOrModulePath);
     if (tgfiles.length === 0) {
       this.logger.warn(
         (fmt) =>
@@ -103,18 +107,11 @@ export class PlatformDeployer<T extends PlatformConfig> {
     progress.done();
   }
 
-  private async terragruntFiles(modulePath: string) {
-    const files = [];
-
-    for await (
-      const file of fs.expandGlob("**/terragrunt.hcl", {
-        root: modulePath,
-        exclude: ["**/.terragrunt-cache"],
-        globstar: true,
-      })
-    ) {
-      files.push(file);
-    }
+  private async terragruntFiles(relativeModulePath: string) {
+    const files = await this.repo.processFilesGlob(
+      `${relativeModulePath}/**/terragrunt.hcl`,
+      (file) => file,
+    );
 
     // a terragrunt stack conists of multiple executable terragrunt files
     return files;
