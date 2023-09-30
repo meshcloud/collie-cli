@@ -1,4 +1,3 @@
-import * as fs from "std/fs";
 import * as path from "std/path";
 
 import {
