@@ -2,19 +2,15 @@ import * as fs from "std/fs";
 import * as path from "std/path";
 
 import { StringType } from "x/cliffy/command";
+import { CollieRepository } from "../model/CollieRepository.ts";
 
 export class PlatformType extends StringType {
   async complete(): Promise<string[]> {
-    const platforms = [];
-
-    for await (
-      const file of fs.expandGlob(
-        "foundations/*/platforms/*/README.md",
-      )
-    ) {
-      const id = path.basename(path.dirname(file.path));
-      platforms.push(id);
-    }
+    const repo = await CollieRepository.load();
+    const platforms = await repo.processFilesGlob(
+      "foundations/*/platforms/*/README.md",
+      (file) => path.basename(path.dirname(file.path)),
+    );
 
     // I don't know how we could get the foundation name passed to the arg to filter
     // only to the platforms in the already specified foundation
