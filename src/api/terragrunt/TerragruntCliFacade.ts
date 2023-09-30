@@ -61,11 +61,16 @@ export class TerragruntCliFacade {
     opts: TerragruntRunAllOpts,
   ) {
     // note: terragrunt docs say "This will only exclude the module, not its dependencies."
-    // this may be a problem because we want to exclude bootstrap modules AND their dependencies? needs more testing
-    const excludeDirFlags = (opts.excludeDirs || []).flatMap((x) => [
-      "--terragrunt-exclude-dir",
-      x,
-    ]);
+    // this is fine considering that if we e.g. bootstrap module (usual case), this is just a single module without
+    // further dependencies
+
+    // see https://github.com/gruntwork-io/terragrunt/issues/2737
+    const workaroundTerragruntOnWindowsScanningItsOwnCaches =
+      "**/.terragrunt-cache/**/*";
+
+    const excludeDirFlags = (opts.excludeDirs || [])
+      .concat([workaroundTerragruntOnWindowsScanningItsOwnCaches])
+      .flatMap((x) => ["--terragrunt-exclude-dir", x]);
 
     // By default, "terragrunt run-all" auto approves all individual applies, a notable difference to "terragrunt run"
     // which does interactive confirmation prompts by default.
