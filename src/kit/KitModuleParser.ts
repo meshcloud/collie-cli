@@ -20,29 +20,16 @@ export class KitModuleParser {
   ) {}
 
   public async load() {
-    const dir = this.repo.resolvePath("kit");
-
     const progress = new ProgressReporter(
       "parsing",
       "kit modules",
       this.logger,
     );
 
-    const q = [];
-    for await (
-      const file of fs.expandGlob("**/README.md", {
-        root: dir,
-        exclude: [
-          "README.md", // exclude top-level readme
-          "**/modules", // exclude sub-modules
-          "**/template", // exclude template files
-          "**/.terraform", // exclude terraform dot-files (these can be left in kit/ from e.g. calling terraform validate)
-        ],
-        globstar: true,
-      })
-    ) {
-      q.push(this.parseKitModule(file.path));
-    }
+    const q = await this.repo.processFilesGlob(
+      "kit/**/README.md",
+      (file) => this.parseKitModule(file.path),
+    );
 
     const modules = await Promise.all(q);
 
