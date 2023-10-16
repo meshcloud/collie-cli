@@ -100,6 +100,7 @@ jobs:
       - uses: rrbutani/use-nix-shell-action@v1
         env:
           NIXPKGS_ALLOW_UNFREE: 1 # terraform uses BSL license now, so we have to enable unfree
+        with:
           packages: terraform,terragrunt,terraform-docs
       - name: run test
         env:
@@ -125,6 +126,7 @@ jobs:
       - uses: rrbutani/use-nix-shell-action@v1
         env:
           NIXPKGS_ALLOW_UNFREE: 1 # terraform uses BSL license now, so we have to enable unfree
+        with:
           packages: terraform,terragrunt,terraform-docs
       - name: run test
         env:
