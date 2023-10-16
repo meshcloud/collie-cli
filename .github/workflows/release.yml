@@ -89,9 +89,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies 
-        # note: we forego default.nix and to be as close to a realistic user experience as possible
-        # all the other dependencies are already present on the runner images, so we use those
-        # and just install the missing ones via nix
+        # note: we forego default.nix and to be as close to a realistic user experience as possible.
+        # unfortunately ubuntu doesn't package terraform and related tools very well, so we use nix for those.
+        # All the other dependencies are already present on the runner images, so we use those.
         uses: cachix/install-nix-action@v22
         with:
           nix_path: nixpkgs=channel:nixos-unstable
@@ -114,20 +114,14 @@ jobs:
     needs: artifacts
     steps:
       - uses: actions/checkout@v4
-      - name: install dependencies 
         # note: we forego default.nix and to be as close to a realistic user experience as possible
         # all the other dependencies are already present on the runner images, so we use those
-        # and just install the missing ones via nix
-        uses: cachix/install-nix-action@v22
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - uses: rrbutani/use-nix-shell-action@v1
-        env:
-          NIXPKGS_ALLOW_UNFREE: 1 # terraform uses BSL license now, so we have to enable unfree
-        with:
-          packages: terraform,terragrunt,terraform-docs
+        # and just install the missing ones via nix, as these are not available in standard uubunt
+        # note: we forego default.nix and to be as close to a realistic user experience as possible
+        # and just install the missing ones via brew as many of our users would do
+        # all the other dependencies are already present on the runner images, so we use those
+      - name: install dependencies
+        run: brew install terraform terragrunt terraform-docs
       - name: run test
         env:
           COLLIE_VERSION: ${{ github.event.release.tag_name }}
