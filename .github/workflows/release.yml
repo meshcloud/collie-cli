@@ -97,16 +97,17 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - uses: workflow/nix-shell-action@v3.3.0
+      - uses: rrbutani/use-nix-shell-action@v1
         env:
           NIXPKGS_ALLOW_UNFREE: 1 # terraform uses BSL license now, so we have to enable unfree
-          COLLIE_VERSION: ${{ github.event.release.tag_name }}
-        with:
           packages: terraform,terragrunt,terraform-docs
-          script: |
-            curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
-            collie info
-            ./test/e2e.sh
+      - name: run test
+        env:
+          COLLIE_VERSION: ${{ github.event.release.tag_name }}
+        run: |
+          curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
+          collie info
+          ./test/e2e.sh
   e2e-macos:
     runs-on: macos-latest
     needs: artifacts
@@ -121,13 +122,14 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - uses: workflow/nix-shell-action@v3.3.0
-        env: 
-          COLLIE_VERSION: ${{ github.event.release.tag_name }}
+      - uses: rrbutani/use-nix-shell-action@v1
+        env:
           NIXPKGS_ALLOW_UNFREE: 1 # terraform uses BSL license now, so we have to enable unfree
-        with:
           packages: terraform,terragrunt,terraform-docs
-          script: |
-            curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
-            collie info
-            ./test/e2e.sh
+      - name: run test
+        env:
+          COLLIE_VERSION: ${{ github.event.release.tag_name }}
+        run: |
+          curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
+          collie info
+          ./test/e2e.sh
