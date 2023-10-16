@@ -93,6 +93,8 @@ jobs:
         # all the other dependencies are already present on the runner images, so we use those
         # and just install the missing ones via nix
         uses: cachix/install-nix-action@v22
+        env:
+          NIXPKGS_ALLOW_UNFREE: 1 # terraform uses BSL license now, so we have to enable unfree
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -116,6 +118,8 @@ jobs:
         # all the other dependencies are already present on the runner images, so we use those
         # and just install the missing ones via nix
         uses: cachix/install-nix-action@v22
+        env:
+          NIXPKGS_ALLOW_UNFREE: 1 # terraform uses BSL license now, so we have to enable unfree
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
