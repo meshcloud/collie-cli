@@ -65,7 +65,7 @@ export class ComplianceControlParser {
 
   private async tryParseComplianceControl(mdPath: string) {
     const relativeMdPath = this.repo.relativePath(mdPath);
-    const id = this.toId(relativeMdPath);
+    const id = ComplianceControlParser.toId(relativeMdPath);
 
     this.logger.verbose(
       () => `parsing compliance control ${id} via ${relativeMdPath}`,
@@ -88,7 +88,7 @@ export class ComplianceControlParser {
     };
   }
 
-  private toId(relativeControlPath: string) {
+  static toId(relativeControlPath: string) {
     const posixPath = relativeControlPath.replaceAll("\\", "/");
 
     const components = path.parse(posixPath);
