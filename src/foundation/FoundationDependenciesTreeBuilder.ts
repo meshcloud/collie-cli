@@ -8,6 +8,7 @@ import {
 } from "../kit/KitDependencyAnalyzer.ts";
 import { buildLabeledIdPath, insert } from "../model/tree.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
+import { convertToPosixPath } from "../path.ts";
 
 export interface FoundationsTree {
   [foundation: string]: FoundationTree;
@@ -68,9 +69,10 @@ export class FoundationDependenciesTreeBuilder {
         path.dirname(m.sourcePath),
       );
 
-      const id = resolvedPlatformModulePath
-        .substring(resolvedPlatformPath.length + "/".length)
-        .replaceAll("\\", "/"); // convert to posix style path if required
+      const relativePlatformModulePath = resolvedPlatformModulePath
+        .substring(resolvedPlatformPath.length + "/".length);
+
+      const id = convertToPosixPath(relativePlatformModulePath);
 
       const label = m.sourcePath;
       const labeledComponents = buildLabeledIdPath(id, label);

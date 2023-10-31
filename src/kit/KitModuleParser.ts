@@ -10,6 +10,7 @@ import {
 } from "../model/schemas/ModelValidator.ts";
 import { KitModule } from "./KitModule.ts";
 import { ParsedKitModule } from "./ParsedKitModule.ts";
+import { convertToPosixPath } from "../path.ts";
 
 export class KitModuleParser {
   constructor(
@@ -68,7 +69,7 @@ export class KitModuleParser {
       return;
     }
 
-    const posixRelativeModulePath = relativeModulePath.replaceAll("\\", "/");
+    const posixRelativeModulePath = convertToPosixPath(relativeModulePath);
 
     return {
       id: posixRelativeModulePath.substring("kit/".length),
