@@ -1,4 +1,3 @@
-import { path } from "https://deno.land/x/compress@v0.3.3/deps.ts";
 import {
   Dir,
   DirectoryGenerator,
@@ -7,6 +6,8 @@ import {
 import { Logger } from "../../cli/Logger.ts";
 import { TerraformDocsCliFacade } from "../../api/terraform-docs/TerraformDocsCliFacade.ts";
 import { indent } from "../../cli/indent.ts";
+import { convertToPosixPath } from "../../path.ts";
+import * as path from "std/path";
 
 export async function newKitDirectoryCreation(
   modulePath: string,
@@ -97,7 +98,7 @@ export async function generateTerragrunt(
   const isBootstrap = kitModulePath.endsWith(`${path.SEP}bootstrap`);
 
   // terragrunt needs a posix style path
-  const posixKitModulePath = kitModulePath.replaceAll("\\", "/");
+  const posixKitModulePath = convertToPosixPath(kitModulePath);
 
   const platformIncludeBlock = `include "platform" {
   path = find_in_parent_folders("platform.hcl")

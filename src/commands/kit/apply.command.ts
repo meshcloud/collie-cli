@@ -71,7 +71,7 @@ export function registerApplyCmd(program: TopLevelCommand) {
         // by convention, the module id looks like $platform/...
         const platformConfig = foundationRepo.findPlatform(platform);
 
-        const { kitModulePath, targetPath } = await applyKitModule(
+        const { relativeKitModulePath, targetPath } = await applyKitModule(
           foundationRepo,
           platformConfig.id,
           logger,
@@ -79,7 +79,7 @@ export function registerApplyCmd(program: TopLevelCommand) {
         );
 
         logger.progress(
-          `applied module ${kitModulePath} to ${
+          `applied module ${relativeKitModulePath} to ${
             collie.relativePath(
               targetPath,
             )
@@ -111,7 +111,7 @@ export async function applyKitModule(
 
   const factory = new CliApiFacadeFactory(logger);
   const tfdocs = factory.buildTerraformDocs(collie);
-  const kitModulePath = collie.relativePath(
+  const relativeKitModulePath = collie.relativePath(
     collie.resolvePath("kit", moduleId),
   );
 
@@ -138,7 +138,7 @@ export async function applyKitModule(
     entries: [
       {
         name: "terragrunt.hcl",
-        content: await generateTerragrunt(kitModulePath, tfdocs),
+        content: await generateTerragrunt(relativeKitModulePath, tfdocs),
       },
     ],
   };
@@ -146,7 +146,7 @@ export async function applyKitModule(
   await dir.write(platformModuleDir);
 
   return {
-    kitModulePath,
+    relativeKitModulePath,
     targetPath,
   };
 }

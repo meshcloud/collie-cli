@@ -9,6 +9,7 @@ import {
   ModelValidator,
 } from "../model/schemas/ModelValidator.ts";
 import { ComplianceControl } from "./ComplianceControl.ts";
+import { convertToPosixPath } from "../path.ts";
 
 // note: this is very much similar to KitModuleParser, maybe there's a common abstraction
 // behind that we should use - until then let's wait for rule of three
@@ -89,7 +90,7 @@ export class ComplianceControlParser {
   }
 
   static toId(relativeControlPath: string) {
-    const posixPath = relativeControlPath.replaceAll("\\", "/");
+    const posixPath = convertToPosixPath(relativeControlPath);
 
     const components = path.parse(posixPath);
 
