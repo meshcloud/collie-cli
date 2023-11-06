@@ -32,19 +32,6 @@ export async function newKitDirectoryCreation(
   await dir.write(d);
 }
 
-export async function emptyKitDirectoryCreation(
-  modulePath: string,
-  logger: Logger,
-) {
-  const dir = new DirectoryGenerator(WriteMode.skip, logger);
-  const d: Dir = {
-    name: modulePath,
-    entries: [],
-  };
-
-  await dir.write(d);
-}
-
 const mainTf = `# Place your module's terraform resources here as usual.
 # Note that you should typically not put a terraform{} block into cloud foundation kit modules,
 # these will be provided by the platform implementations using this kit module.
@@ -144,36 +131,4 @@ ${indent(tfvars, 2)}
     terraformBlock,
     inputsBlock,
   ].join("\n\n");
-}
-
-/**
- * This function will:
- * - create a backup file only if none exists yet
- * - override given file with it's backup, if a backup file exists
- *
- * This helps to ensure a certain consistent file content before accessing this file.
- */
-export function ensureBackedUpFile(
-  fileName: string,
-  backupAppendix = "backup",
-) {
-  const backUpFileName = `${fileName}.${backupAppendix}`;
-  let backUpExists = false;
-  try {
-    Deno.statSync(backUpFileName);
-    backUpExists = true;
-  } catch (_) {
-    /* we assume the backUpFile does not exist, although error could have other reasons, such as permissions. */
-  }
-
-  if (backUpExists) {
-    // load content from backUp and write into original file:
-    const text = Deno.readTextFileSync(backUpFileName);
-    Deno.writeTextFileSync(fileName, text, { append: false });
-  } else {
-    // write backup
-    Deno.createSync(backUpFileName);
-    const text = Deno.readTextFileSync(fileName);
-    Deno.writeTextFileSync(backUpFileName, text, { append: false });
-  }
 }

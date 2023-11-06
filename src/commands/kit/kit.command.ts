@@ -1,6 +1,5 @@
 import { makeTopLevelCommand, TopLevelCommand } from "../TopLevelCommand.ts";
 import { registerApplyCmd } from "./apply.command.ts";
-import { registerBundledKitCmd } from "./bundle.command.ts";
 import { registerCompileCmd } from "./compile.command.ts";
 import { registerImportCmd } from "./import.command.ts";
 import { registerNewCmd } from "./new.command.ts";
@@ -12,7 +11,6 @@ export function registerKitCommand(program: TopLevelCommand) {
   registerApplyCmd(kitCommands);
   registerImportCmd(kitCommands);
   registerTreeCmd(kitCommands);
-  registerBundledKitCmd(kitCommands);
   registerCompileCmd(kitCommands);
 
   program
