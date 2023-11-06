@@ -10,7 +10,7 @@ import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
-import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { InteractivePrompts } from "../../cli/InteractivePrompts.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CommandOptionError } from "../CommandOptionError.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";

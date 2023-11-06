@@ -1,10 +1,10 @@
 import * as colors from "std/fmt/colors";
 import { Select } from "x/cliffy/prompt";
-import { isWindows } from "../../os.ts";
-import { CollieRepository } from "../../model/CollieRepository.ts";
-import { FoundationRepository } from "../../model/FoundationRepository.ts";
-import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
-import { Logger } from "../../cli/Logger.ts";
+import { isWindows } from "../os.ts";
+import { CollieRepository } from "../model/CollieRepository.ts";
+import { FoundationRepository } from "../model/FoundationRepository.ts";
+import { KitModuleRepository } from "../kit/KitModuleRepository.ts";
+import { Logger } from "../cli/Logger.ts";
 
 export class InteractivePrompts {
   static async selectFoundation(kit: CollieRepository, logger: Logger) {
