@@ -3,7 +3,7 @@ import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { CollieConfig } from "../../model/CollieConfig.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
-import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { InteractivePrompts } from "../../cli/InteractivePrompts.ts";
 import { CLI } from "../../info.ts";
 
 export function registerSetCmd(program: TopLevelCommand) {

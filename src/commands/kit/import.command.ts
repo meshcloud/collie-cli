@@ -5,7 +5,7 @@ import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
-import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { InteractivePrompts } from "../../cli/InteractivePrompts.ts";
 import { CollieHub } from "../../model/CollieHub.ts";
 
 interface ImportOptions {

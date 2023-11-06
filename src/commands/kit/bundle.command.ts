@@ -17,7 +17,7 @@ import { AzureKitBundle } from "./bundles/azure-caf-es.ts";
 import { AzureKitMeshstackIntegrationBundle } from "./bundles/azure-caf-es-with-meshplatform.ts";
 import { SelectValueOptions } from "x/cliffy/prompt";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
-import { InteractivePrompts } from "../interactive/InteractivePrompts.ts";
+import { InteractivePrompts } from "../../cli/InteractivePrompts.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { deployFoundation } from "../foundation/deploy.command.ts";
 import { InputParameter, InputSelectParameter } from "../InputParameter.ts";

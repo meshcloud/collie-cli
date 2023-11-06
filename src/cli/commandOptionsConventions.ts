@@ -1,4 +1,4 @@
-import { InteractivePrompts } from "../commands/interactive/InteractivePrompts.ts";
+import { InteractivePrompts } from "./InteractivePrompts.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
 import { CollieConfig } from "../model/CollieConfig.ts";
 import { Logger } from "./Logger.ts";
