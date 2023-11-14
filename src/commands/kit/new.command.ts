@@ -4,13 +4,24 @@ import { CollieRepository } from "../../model/CollieRepository.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { newKitDirectoryCreation } from "./kit-utilities.ts";
+import { ValidationError } from "x/cliffy/command";
+import { validateIsPrefixedId } from "../../cli/validation.ts";
+
+const idValidationMessage =
+  "Kit module ids must contain a prefix for a platform like 'platform/module'";
 
 export function registerNewCmd(program: TopLevelCommand) {
   program
     .command("new <module> [name]")
-    .description("Generate a new kit module terraform template")
+    .description(
+      `Generate a new kit module terraform template.\n${idValidationMessage}`,
+    )
     .action(
       async (opts: GlobalCommandOptions, module: string, name?: string) => {
+        if (!validateIsPrefixedId(module)) {
+          throw new ValidationError(idValidationMessage);
+        }
+
         const collie = await CollieRepository.load();
         const logger = new Logger(collie, opts);
 

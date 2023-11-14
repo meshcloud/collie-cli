@@ -7,17 +7,33 @@ import { MarkdownDocument } from "../../model/MarkdownDocument.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { ComplianceControl } from "../../compliance/ComplianceControl.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
+import { validateIsPrefixedId } from "../../cli/validation.ts";
+import { ValidationError } from "x/cliffy/command";
+import { CLI } from "../../info.ts";
+
+const idValidationMessage =
+  "Control ids must contain a prefix for a control framework path like 'framework/control'.";
 
 export function registerNewCmd(program: TopLevelCommand) {
   program
     .command("new <control> [name]")
-    .description("generate a new compliance control")
+    .description(
+      `Gnerate a new compliance control with the specified id.\n${idValidationMessage}`,
+    )
+    .example(
+      "create a new control",
+      `${CLI} compliance new iso27001/8.2-privileged-access-rights`,
+    )
     .action(
-      async (opts: GlobalCommandOptions, module: string, name?: string) => {
+      async (opts: GlobalCommandOptions, control: string, name?: string) => {
+        if (!validateIsPrefixedId(control)) {
+          throw new ValidationError(idValidationMessage);
+        }
+
         const kit = await CollieRepository.load();
         const logger = new Logger(kit, opts);
 
-        const controlPath = kit.resolvePath("compliance", module + ".md");
+        const controlPath = kit.resolvePath("compliance", control + ".md");
         if (!name) {
           name = await Input.prompt({
             message: `Choose a human-friendly name for this control`,
