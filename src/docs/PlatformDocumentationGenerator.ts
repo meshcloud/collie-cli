@@ -1,5 +1,6 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
+import { pooledMap } from "std/async";
 import { TerragruntCliFacade } from "../api/terragrunt/TerragruntCliFacade.ts";
 import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "../cli/ProgressReporter.ts";
@@ -75,7 +76,9 @@ export class PlatformDocumentationGenerator {
       this.logger,
     );
 
-    const tasks = dependencies.modules.map(
+    const iterator = await pooledMap(
+      1,
+      dependencies.modules,
       async (x) =>
         await this.generatePlatformModuleDocumentation(
           x,
@@ -84,7 +87,9 @@ export class PlatformDocumentationGenerator {
         ),
     );
 
-    await Promise.all(tasks);
+    for await (const _ of iterator) {
+      // consume iterator
+    }
 
     platformProgress.done();
   }
