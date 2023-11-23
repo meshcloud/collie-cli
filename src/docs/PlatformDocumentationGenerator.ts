@@ -1,6 +1,5 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
-import { pooledMap } from "std/async";
 import { TerragruntCliFacade } from "../api/terragrunt/TerragruntCliFacade.ts";
 import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "../cli/ProgressReporter.ts";
