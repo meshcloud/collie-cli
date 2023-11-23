@@ -229,7 +229,7 @@ function findDependency(
 ): KitModuleDependency {
   const dependency = dependencies.modules.find((dep) => {
     const relativePlatformModuleDir = path.dirname(dep.sourcePath);
-    platformModulePath.endsWith(relativePlatformModuleDir);
+    return platformModulePath.endsWith(relativePlatformModuleDir);
   });
 
   if (!dependency) {
