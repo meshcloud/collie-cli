@@ -87,22 +87,23 @@ export class PlatformDocumentationGenerator {
     this.logger.verbose(
       (_) =>
         `generating documentation will process the following groups: ${
-          JSON.stringify(groups, null, 2)
+          JSON.stringify(
+            groups,
+            null,
+            2,
+          )
         }`,
     );
 
     for (const group of Object.values(groups)) {
-      // within one group, we can run concurrent terragrunt invocations
-      const tasks = group.map(
-        async (platformModulePath) =>
-          await this.generatePlatformModuleDocumentation(
-            findDependency(dependencies, platformModulePath),
-            docsRepo,
-            dependencies.platform,
-          ),
-      );
-
-      await Promise.all(tasks);
+      // within one group, we still have to go serially
+      for (const platformModulePath of group) {
+        await this.generatePlatformModuleDocumentation(
+          findDependency(dependencies, platformModulePath),
+          docsRepo,
+          dependencies.platform,
+        );
+      }
     }
 
     platformProgress.done();
