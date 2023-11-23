@@ -68,27 +68,42 @@ export class PlatformDocumentationGenerator {
     dependencies: PlatformDependencies,
     docsRepo: DocumentationRepository,
   ) {
+    const platformPath = this.foundation.resolvePlatformPath(
+      dependencies.platform,
+    );
     const platformProgress = new ProgressReporter(
       "generate documentation",
-      this.repo.relativePath(
-        this.foundation.resolvePlatformPath(dependencies.platform),
-      ),
+      this.repo.relativePath(platformPath),
       this.logger,
     );
 
-    const iterator = await pooledMap(
-      1,
-      dependencies.modules,
-      async (x) =>
-        await this.generatePlatformModuleDocumentation(
-          x,
-          docsRepo,
-          dependencies.platform,
-        ),
+    // sadly we can't use terragrunt run-all because we need to collect the output, so we re-implement a simple
+    // version of this here
+
+    // groups need to be processed serially or else concurrent terragrunt invocations will step over each other
+    // resulting in issues like https://github.com/meshcloud/collie-cli/issues/265
+
+    const groups = await this.terragrunt.moduleGroups(platformPath);
+
+    this.logger.verbose(
+      (_) =>
+        `generating documentation will process the following groups: ${
+          JSON.stringify(groups, null, 2)
+        }`,
     );
 
-    for await (const _ of iterator) {
-      // consume iterator
+    for (const group of Object.values(groups)) {
+      // within one group, we can run concurrent terragrunt invocations
+      const tasks = group.map(
+        async (platformModulePath) =>
+          await this.generatePlatformModuleDocumentation(
+            findDependency(dependencies, platformModulePath),
+            docsRepo,
+            dependencies.platform,
+          ),
+      );
+
+      await Promise.all(tasks);
     }
 
     platformProgress.done();
@@ -207,4 +222,22 @@ This platform module is a deployment of kit module ${kitModuleLink}.
 ${complianceStatements.join("\n")}`;
     return complianceStatementsBlock;
   }
+}
+
+function findDependency(
+  dependencies: PlatformDependencies,
+  platformModulePath: string,
+): KitModuleDependency {
+  const dependency = dependencies.modules.find((dep) => {
+    const relativePlatformModuleDir = path.dirname(dep.sourcePath);
+    platformModulePath.endsWith(relativePlatformModuleDir);
+  });
+
+  if (!dependency) {
+    throw new Error(
+      "Could not find platform module dependency for " + platformModulePath,
+    );
+  }
+
+  return dependency;
 }
