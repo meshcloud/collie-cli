@@ -15,6 +15,10 @@ import { PlatformConfig } from "../model/PlatformConfig.ts";
 import { DocumentationRepository } from "./DocumentationRepository.ts";
 import { MarkdownUtils } from "../model/MarkdownUtils.ts";
 import { ComplianceControlRepository } from "../compliance/ComplianceControlRepository.ts";
+import {
+  RunAllPlatformModuleOutputCollector,
+  RunIndividualPlatformModuleOutputCollector,
+} from "./PlatformModuleOutputCollector.ts";
 
 export class PlatformDocumentationGenerator {
   constructor(
@@ -76,41 +80,80 @@ export class PlatformDocumentationGenerator {
       this.logger,
     );
 
-    // sadly we can't use terragrunt run-all because we need to collect the output, so we re-implement a simple
-    // version of this here
+    const platformModuleDocumentation = await this
+      .buildPlatformModuleOutputCollector(dependencies.platform);
 
-    // groups need to be processed serially or else concurrent terragrunt invocations will step over each other
-    // resulting in issues like https://github.com/meshcloud/collie-cli/issues/265
+    // as a fallback process modules serially, unfortunately this is the only "safe" way to collect output
+    // see https://github.com/meshcloud/collie-cli/issues/265
+    for (const dep of dependencies.modules) {
+      const documentationMd = await platformModuleDocumentation.getOutput(dep);
 
-    const groups = await this.terragrunt.moduleGroups(platformPath);
-
-    this.logger.verbose(
-      (_) =>
-        `generating documentation will process the following groups: ${
-          JSON.stringify(
-            groups,
-            null,
-            2,
-          )
-        }`,
-    );
-
-    for (const group of Object.values(groups)) {
-      // within one group, we still have to go serially
-      for (const platformModulePath of group) {
-        await this.generatePlatformModuleDocumentation(
-          findDependency(dependencies, platformModulePath),
-          docsRepo,
-          dependencies.platform,
-        );
-      }
+      await this.generatePlatformModuleDocumentation(
+        dep,
+        documentationMd,
+        docsRepo,
+        dependencies.platform,
+      );
     }
 
     platformProgress.done();
   }
 
+  private async buildPlatformModuleOutputCollector(platform: PlatformConfig) {
+    const platformHclPath = this.foundation.resolvePlatformPath(
+      platform,
+      "platform.hcl",
+    );
+
+    const platformHcl = await Deno.readTextFile(platformHclPath);
+
+    const fastModeIdentifier =
+      "--- BEGIN COLLIE PLATFORM MODULE OUTPUT: ${path_relative_to_include()} ---";
+
+    this.logger.verbose(
+      (fmt) =>
+        `detecting if fast output collection is supported in ${
+          fmt.kitPath(
+            platformHclPath,
+          )
+        } by looking for a before_hook emitting "${fastModeIdentifier}"`,
+    );
+    const enableFastMode = platformHcl.includes(fastModeIdentifier);
+    this.logger.verbose(
+      (_) => "fast output collection is supported: " + enableFastMode,
+    );
+
+    if (enableFastMode) {
+      const platformPath = this.foundation.resolvePlatformPath(platform);
+      const collector = new RunAllPlatformModuleOutputCollector(
+        this.terragrunt,
+        this.logger,
+      );
+
+      await collector.initialize(platformPath);
+
+      return collector;
+    } else {
+      this.logger.tip(
+        (f) =>
+          `Enable fast output collection for collie in ${
+            f.kitPath(
+              platformHclPath,
+            )
+          }`,
+      );
+
+      return new RunIndividualPlatformModuleOutputCollector(
+        this.repo,
+        this.terragrunt,
+        this.logger,
+      );
+    }
+  }
+
   private async generatePlatformModuleDocumentation(
     dep: KitModuleDependency,
+    documentationMd: string,
     docsRepo: DocumentationRepository,
     platform: PlatformConfig,
   ) {
@@ -119,51 +162,34 @@ export class PlatformDocumentationGenerator {
       dep.kitModuleId,
     );
 
-    const result = await this.terragrunt.collectOutput(
-      this.repo.resolvePath(path.dirname(dep.sourcePath)),
-      "documentation_md",
+    await fs.ensureDir(path.dirname(destPath)); // todo: should we do nesting in the docs output or "flatten" module prefixes?
+
+    const mdSections = [documentationMd];
+
+    const complianceStatementsBlock = this.generateComplianceStatementSection(
+      dep,
+      docsRepo,
+      destPath,
     );
+    mdSections.push(complianceStatementsBlock);
 
-    if (!result.status.success) {
-      this.logger.warn(
-        (fmt) =>
-          `Failed to collect output "documentation_md" from platform module${
-            fmt.kitPath(
-              dep.sourcePath,
-            )
-          }`,
-      );
-      this.logger.warn(result.stderr);
-    } else {
-      await fs.ensureDir(path.dirname(destPath)); // todo: should we do nesting in the docs output or "flatten" module prefixes?
+    const kitModuleSection = this.generateKitModuleSection(
+      dep,
+      docsRepo,
+      destPath,
+    );
+    mdSections.push(kitModuleSection);
 
-      const mdSections = [result.stdout];
+    await Deno.writeTextFile(destPath, mdSections.join("\n\n"));
 
-      const complianceStatementsBlock = this.generateComplianceStatementSection(
-        dep,
-        docsRepo,
-        destPath,
-      );
-      mdSections.push(complianceStatementsBlock);
-
-      const kitModuleSection = this.generateKitModuleSection(
-        dep,
-        docsRepo,
-        destPath,
-      );
-      mdSections.push(kitModuleSection);
-
-      await Deno.writeTextFile(destPath, mdSections.join("\n\n"));
-
-      this.logger.verbose(
-        (fmt) =>
-          `Wrote output "documentation_md" from platform module ${
-            fmt.kitPath(
-              dep.sourcePath,
-            )
-          } to ${fmt.kitPath(destPath)}`,
-      );
-    }
+    this.logger.verbose(
+      (fmt) =>
+        `Wrote output "documentation_md" from platform module ${
+          fmt.kitPath(
+            dep.sourcePath,
+          )
+        } to ${fmt.kitPath(destPath)}`,
+    );
   }
 
   private generateKitModuleSection(
@@ -222,22 +248,4 @@ This platform module is a deployment of kit module ${kitModuleLink}.
 ${complianceStatements.join("\n")}`;
     return complianceStatementsBlock;
   }
-}
-
-function findDependency(
-  dependencies: PlatformDependencies,
-  platformModulePath: string,
-): KitModuleDependency {
-  const dependency = dependencies.modules.find((dep) => {
-    const relativePlatformModuleDir = path.dirname(dep.sourcePath);
-    return platformModulePath.endsWith(relativePlatformModuleDir);
-  });
-
-  if (!dependency) {
-    throw new Error(
-      "Could not find platform module dependency for " + platformModulePath,
-    );
-  }
-
-  return dependency;
 }

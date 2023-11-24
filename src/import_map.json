@@ -8,6 +8,7 @@
     "std/archive/tar": "https://deno.land/std@0.170.0/archive/tar.ts",
     "std/archive/untar": "https://deno.land/std@0.170.0/archive/untar.ts",
     "std/streams/conversion": "https://deno.land/std@0.170.0/streams/conversion.ts",
+    "std/collections/chunk": "https://deno.land/std@0.170.0/collections/chunk.ts",
     "std/collections/groupBy": "https://deno.land/std@0.170.0/collections/group_by.ts",
     "std/collections/distinct": "https://deno.land/std@0.170.0/collections/distinct.ts",
     "std/fmt/colors": "https://deno.land/std@0.170.0/fmt/colors.ts",
