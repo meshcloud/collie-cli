@@ -63,8 +63,10 @@ export class Logger {
     console.error(colors.red(message));
   }
 
-  public tip(msg: string) {
-    printTip(msg);
+  public tip(msg: string | ((fmt: FormatUtils) => string)) {
+    const message = typeof msg === "string" ? msg : msg(this.fmtUtils);
+
+    printTip(message);
   }
 
   public tipCommand(msg: string, command: string) {

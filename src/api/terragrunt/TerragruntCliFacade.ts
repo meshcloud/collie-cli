@@ -122,4 +122,19 @@ export class TerragruntCliFacade {
       cwd,
     });
   }
+
+  async collectOutputs(cwd: string, outputName: string) {
+    const cmds = [
+      "terragrunt",
+      "run-all",
+      "output",
+      "-raw",
+      outputName,
+      "--terragrunt-non-interactive", // disable terragrunt's own prompts, e.g. at the start of a terragrunt run-all run
+    ];
+
+    return await this.quietRunner.run(cmds, {
+      cwd,
+    });
+  }
 }
