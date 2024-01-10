@@ -102,17 +102,25 @@ export class KitDependencyAnalyzer {
     );
     const kitModule = this.kitModules.tryFindById(kitModuleId);
 
-    if (!kitModule) {
+    if (kitModuleId.includes("/tenants/")) {
+      return {
+        sourcePath,
+        kitModuleId: "tenant",
+        kitModulePath: sourcePath.replace("/terragrunt.hcl", ""),
+        kitModule,
+      };
+    } else if (!kitModule) {
       const msg =
         `Could not find kit module with id ${kitModuleId} included from ${sourcePath}`;
       this.logger.warn(msg);
+    } else {
+      return {
+        sourcePath,
+        kitModuleId,
+        kitModulePath,
+        kitModule,
+      };
     }
-    return {
-      sourcePath,
-      kitModuleId,
-      kitModulePath,
-      kitModule,
-    };
   }
 
   static parseTerraformSource(hcl: string): string | undefined {

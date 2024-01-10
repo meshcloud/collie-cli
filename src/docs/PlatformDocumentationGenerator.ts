@@ -9,7 +9,6 @@ import {
   PlatformDependencies,
 } from "../kit/KitDependencyAnalyzer.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
-
 import { FoundationRepository } from "../model/FoundationRepository.ts";
 import { PlatformConfig } from "../model/PlatformConfig.ts";
 import { DocumentationRepository } from "./DocumentationRepository.ts";
@@ -197,7 +196,12 @@ export class PlatformDocumentationGenerator {
     docsRepo: DocumentationRepository,
     destPath: string,
   ) {
-    if (!dep.kitModule) {
+    if (dep.kitModuleId == "tenant") {
+      const kitModuleSection = `::: tip Tenant module
+This is a tenant module.
+:::`;
+      return kitModuleSection;
+    } else if (!dep.kitModule) {
       return MarkdownUtils.container(
         "warning",
         "Invalid Kit Module Dependency",
