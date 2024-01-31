@@ -89,6 +89,7 @@ export async function generateTerragrunt(
 
   const platformIncludeBlock = `include "platform" {
   path = find_in_parent_folders("platform.hcl")
+  expose = true
 }`;
 
   const providerBlock =
