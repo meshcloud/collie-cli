@@ -5,17 +5,16 @@ import { CollieRepository } from "../model/CollieRepository.ts";
 import { Logger } from "../cli/Logger.ts";
 import { MeshError } from "../errors.ts";
 
-
 /**
- * Note: 
+ * Note:
  * For a great UX/DX it's important that running "collie foundation docs" is fast.
- * 
+ *
  * We have therefore tried speeding it up by collecting output from platform modules in parallel.
  * Unfortunately, it appears that terragrunt does not offer us a good way to reliably get all the outputs from all
  * platform modules, see https://github.com/meshcloud/collie-cli/issues/267
- * 
+ *
  * This "fast mode" detection also caused other bugs like https://github.com/meshcloud/collie-cli/issues/269
- * 
+ *
  * In the future, we should maybe investigate cachingas an alternative to parallelization, because usually an engineer
  * would re-run "collie foundation docs" only after changing a specific platform module
  */
