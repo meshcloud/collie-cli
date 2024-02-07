@@ -18,7 +18,7 @@ export function registerNewCmd(program: TopLevelCommand) {
   program
     .command("new <control> [name]")
     .description(
-      `Gnerate a new compliance control with the specified id.\n${idValidationMessage}`,
+      `Generate a new compliance control with the specified id.\n${idValidationMessage}`,
     )
     .example(
       "create a new control",
