@@ -54,7 +54,8 @@ export class CollieHub {
     const hasAlreadyCloned = await this.git.isRepo(hubCacheGitDir);
 
     if (hasAlreadyCloned) {
-      await this.git.checkout(hubCacheDir);
+      const tagValue = this.git.getTag(hubCacheDir).stdout;
+      await this.git.checkout(hubCacheDir, tagValue);
     } else {
       await this.git.clone(hubCacheDir, this.url);
     }
