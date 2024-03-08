@@ -1,10 +1,10 @@
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
-import { ProcessResult } from "../../process/ProcessRunnerResult.ts";
+import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { QuietProcessRunner } from "../../process/QuietProcessRunner.ts";
 
 export class GitCliFacade {
   constructor(
-    private readonly processRunner: IProcessRunner<ProcessResult>,
+    private readonly processRunner: IProcessRunner<ProcessResultWithOutput>,
     private readonly quietRunner: QuietProcessRunner,
   ) {}
 
@@ -24,12 +24,9 @@ export class GitCliFacade {
     await this.processRunner.run(["git", "pull"], { cwd: repoDir });
   }
 
-  async gitTag(repoDir: string) {
-    await this.processRunner.run(["git", "describe", "--tags", "--abbrev=0" ], { cwd: repoDir });
-  }
-
-  async checkout(repoDir: string, gitTag: string) {
-    await this.processRunner.run(["git", "checkout", gitTag], { cwd: repoDir });
+  async checkout(repoDir: string) {
+    const gitTagValue = await this.processRunner.run(["git", "describe", "--tags", "--abbrev=0"], { cwd: repoDir });
+    await this.processRunner.run(["git", "checkout", gitTagValue.stdout.trim()], { cwd: repoDir });
   }
   /**
    * Checks if the given dir is a .git repo dir.
