@@ -10,7 +10,7 @@ export class CollieHub {
   private readonly hubCacheDirPath = [".collie", "hub"];
 
   // hardcoding this is ok for now
-  readonly url = "https://github.com/meshcloud/collie-hub.git";
+  readonly url = "https://github.com/meshcloud/collie-hub.git/";
 
   public async importKitModule(
     id: string,
@@ -54,7 +54,8 @@ export class CollieHub {
     const hasAlreadyCloned = await this.git.isRepo(hubCacheGitDir);
 
     if (hasAlreadyCloned) {
-      await this.git.pull(hubCacheDir);
+      await this.git.gitTag(hubCacheDir);
+      await this.git.checkout(hubCacheDir, this.git.gitTag((hubCacheGitDir)));
     } else {
       await this.git.clone(hubCacheDir, this.url);
     }

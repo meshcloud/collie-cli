@@ -24,6 +24,13 @@ export class GitCliFacade {
     await this.processRunner.run(["git", "pull"], { cwd: repoDir });
   }
 
+  async gitTag(repoDir: string) {
+    await this.processRunner.run(["git", "describe", "--tags", "--abbrev=0" ], { cwd: repoDir });
+  }
+
+  async checkout(repoDir: string, gitTag: string) {
+    await this.processRunner.run(["git", "checkout", gitTag], { cwd: repoDir });
+  }
   /**
    * Checks if the given dir is a .git repo dir.
    * This method is using a QuietProcessRunner because we typcially don't want to output repo detection logic via
