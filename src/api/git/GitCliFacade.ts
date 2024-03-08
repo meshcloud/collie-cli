@@ -26,7 +26,8 @@ export class GitCliFacade {
 
   async checkout(repoDir: string) {
     const gitTagValue = await this.processRunner.run(["git", "describe", "--tags", "--abbrev=0"], { cwd: repoDir });
-    await this.processRunner.run(["git", "checkout", gitTagValue.stdout.trim()], { cwd: repoDir });
+    console.log(gitTagValue)
+    await this.processRunner.run(["git", "checkout", gitTagValue.stdout], { cwd: repoDir });
   }
   /**
    * Checks if the given dir is a .git repo dir.
