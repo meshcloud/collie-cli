@@ -5,6 +5,7 @@ import { CollieRepository } from "./CollieRepository.ts";
 
 export interface CollieConfigProperties {
   foundation?: string;
+  colliehubVersion?: string;
 }
 
 export class CollieConfig {
@@ -19,8 +20,8 @@ export class CollieConfig {
   private configFilePath: string;
   private properties: CollieConfigProperties;
 
-  getProperty(property: string) {
-    const value = this.properties["foundation"];
+  getProperty(property: keyof CollieConfigProperties) {
+    const value = this.properties[property];
     if (value) {
       this.logger.verbose(
         () => `loaded ${property}="${value}" from ${this.configFilePath}`,
@@ -30,7 +31,7 @@ export class CollieConfig {
   }
 
   async setProperty(
-    property: "foundation",
+    property: keyof CollieConfigProperties,
     value: string,
   ) {
     this.properties[property] = value;

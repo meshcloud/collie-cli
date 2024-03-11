@@ -24,8 +24,9 @@ export class GitCliFacade {
     await this.processRunner.run(["git", "pull"], { cwd: repoDir });
   }
 
-   getTag(repoDir: string): Promise<ProcessResultWithOutput> {
-    return this.processRunner.run(["git", "describe", "--tags", "--abbrev=0"], { cwd: repoDir });  
+   async getLatestTag(repoDir: string): Promise<string> {
+    const result = await this.processRunner.run(["git", "describe", "--tags", "--abbrev=0"], { cwd: repoDir });  
+    return result.stdout.trim(); 
   }
 
   async checkout(repoDir: string, tagValue: string) {
