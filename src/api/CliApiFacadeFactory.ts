@@ -118,7 +118,7 @@ export class CliApiFacadeFactory {
     const detectorRunner = this.buildQuietLoggingProcessRunner();
     const detector = new GitCliDetector(detectorRunner);
 
-    const processRunner = this.buildTransparentProcessRunner(detector);
+    const processRunner = this.buildQuietLoggingProcessRunner();
 
     const resultHandler = new ProcessRunnerErrorResultHandler(detector);
     const quietRunner = new ResultHandlerProcessRunnerDecorator(
