@@ -5,6 +5,7 @@ import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { CollieHub } from "../../model/CollieHub.ts";
+import { CollieConfig } from "../../model/CollieConfig.ts";
 
 interface ImportOptions {
   clean?: boolean;
@@ -31,8 +32,8 @@ export function registerImportCmd(program: TopLevelCommand) {
 
       const factory = new CliApiFacadeFactory(logger);
       const git = factory.buildGit();
-
-      const hub = new CollieHub(git, collie);
+      const config = new CollieConfig(collie, logger);
+      const hub = new CollieHub(git, collie, config);
 
       if (opts.clean) {
         logger.progress("cleaning local cache of collie hub");
@@ -40,7 +41,7 @@ export function registerImportCmd(program: TopLevelCommand) {
       }
 
       logger.progress("updating local cache of collie hub from " + hub.url);
-      const hubDir = await hub.updateHubClone();
+      const hubDir = await hub.cloneLatestHub();
 
       id = id || (await promptForComplianceFrameworkId(hubDir));
 
