@@ -56,27 +56,29 @@ export class CollieHub {
       ".git",
     );
     const hasAlreadyCloned = await this.git.isRepo(hubCacheGitDir);
-    const collieHubVersion = this.config.getProperty("colliehubVersion");
+    let collieHubVersion = this.config.getProperty("colliehubVersion");
 
     if (!hasAlreadyCloned) {
       await this.git.clone(hubCacheDir, this.url);
-    } 
-    if (!collieHubVersion) {
-      const latestTag = await this.git.getLatestTag(hubCacheDir);
-      await this.git.checkout(hubCacheDir, latestTag);
-      this.config.setProperty("colliehubVersion", latestTag);
-    } else if (collieHubVersion !== undefined) {
-      try {
-        const latestTag = await this.git.getLatestTag(hubCacheDir);
-        if (latestTag !== collieHubVersion) {
-          throw new Error(`version tag ${collieHubVersion} not exist`);
-        }
-      } catch (error) {
-        this.logger.error(`${error}`);
-        Deno.exit(1);
-      }
-      await this.git.checkout(hubCacheDir, collieHubVersion);
     }
+    if (!collieHubVersion) {
+      collieHubVersion = await this.git.getLatestTag(hubCacheDir);
+      await this.git.checkout(hubCacheDir, collieHubVersion);
+      this.config.setProperty("colliehubVersion", collieHubVersion!);
+    }
+    try {
+      const allTags = await this.git.getTags(hubCacheGitDir);
+      if (!allTags.includes(collieHubVersion)) {
+        throw new Error(
+          `version tag does not exist, possible are: ${allTags.split("\n")}`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(`${error}`);
+      Deno.exit(1);
+    }
+    //collie-hub version is set by the if block
+    await this.git.checkout(hubCacheDir, collieHubVersion!);
 
     return hubCacheDir;
   }
