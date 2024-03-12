@@ -137,8 +137,7 @@ const gitignore = `# terraform/terragrunt caches
 .docs
 
 # collie caches
-.collie
-**.collie.json
+.collie/hub
 **.meta.json
 `;
 
