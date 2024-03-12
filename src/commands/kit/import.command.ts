@@ -35,7 +35,7 @@ export function registerImportCmd(program: TopLevelCommand) {
       const factory = new CliApiFacadeFactory(logger);
       const git = factory.buildGit();
       const config = new CollieConfig(collie, logger);
-      const hub = new CollieHub(git, collie, config);
+      const hub = new CollieHub(git, collie, logger, config);
 
       if (opts.clean) {
         logger.progress("cleaning local cache of hub modules");
