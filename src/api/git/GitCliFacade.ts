@@ -24,13 +24,20 @@ export class GitCliFacade {
     await this.processRunner.run(["git", "pull"], { cwd: repoDir });
   }
 
-   async getLatestTag(repoDir: string): Promise<string> {
-    const result = await this.processRunner.run(["git", "describe", "--tags", "--abbrev=0"], { cwd: repoDir });  
-    return result.stdout.trim(); 
+  async getLatestTag(repoDir: string): Promise<string> {
+    const result = await this.processRunner.run([
+      "git",
+      "describe",
+      "--tags",
+      "--abbrev=0",
+    ], { cwd: repoDir });
+    return result.stdout.trim();
   }
 
   async checkout(repoDir: string, tagValue: string) {
-    await this.processRunner.run(["git", "checkout", tagValue], { cwd: repoDir });
+    await this.processRunner.run(["git", "checkout", tagValue], {
+      cwd: repoDir,
+    });
   }
   /**
    * Checks if the given dir is a .git repo dir.
