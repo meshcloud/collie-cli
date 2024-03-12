@@ -58,14 +58,15 @@ export class CollieHub {
     const hasAlreadyCloned = await this.git.isRepo(hubCacheGitDir);
     const collieHubVersion = this.config.getProperty("colliehubVersion");
 
-    if (!hasAlreadyCloned && !collieHubVersion) {
+    if (!hasAlreadyCloned) {
       await this.git.clone(hubCacheDir, this.url);
+    } 
+    if (!collieHubVersion) {
       const latestTag = await this.git.getLatestTag(hubCacheDir);
       await this.git.checkout(hubCacheDir, latestTag);
       this.config.setProperty("colliehubVersion", latestTag);
     } else if (collieHubVersion !== undefined) {
       try {
-        await this.git.clone(hubCacheDir, this.url);
         const latestTag = await this.git.getLatestTag(hubCacheDir);
         if (latestTag !== collieHubVersion) {
           throw new Error(`version tag ${collieHubVersion} not exist`);
