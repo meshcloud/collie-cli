@@ -44,7 +44,7 @@ export class CollieHub {
     await fs.copy(srcDir, frameworkDestDir, { overwrite: overwrite });
   }
 
-  async cloneLatestHub() {
+  async cloneHub() {
     const hubCacheDir = this.repo.resolvePath(...this.hubCacheDirPath);
 
     // we do keep a git clone of the repo locally because copying on the local FS is much faster than downloading and

@@ -43,7 +43,7 @@ export function registerImportCmd(program: TopLevelCommand) {
       }
 
       logger.progress("updating local cache of hub modules from " + hub.url);
-      const hubDir = await hub.cloneLatestHub();
+      const hubDir = await hub.cloneHub();
 
       id = id || (await promptForKitModuleId(logger, hubDir));
 
