@@ -41,7 +41,7 @@ export function registerImportCmd(program: TopLevelCommand) {
       }
 
       logger.progress("updating local cache of collie hub from " + hub.url);
-      const hubDir = await hub.cloneLatestHub();
+      const hubDir = await hub.cloneHub();
 
       id = id || (await promptForComplianceFrameworkId(hubDir));
 
