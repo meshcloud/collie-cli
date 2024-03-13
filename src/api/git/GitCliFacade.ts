@@ -36,7 +36,7 @@ export class GitCliFacade {
       "git",
       "tag",
     ], { cwd: repoDir });
-
+    
     return result.stdout.trim();
   }
 
