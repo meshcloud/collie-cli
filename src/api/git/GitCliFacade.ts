@@ -27,6 +27,7 @@ export class GitCliFacade {
       "--tags",
       "--abbrev=0",
     ], { cwd: repoDir });
+
     return result.stdout.trim();
   }
 
@@ -35,6 +36,7 @@ export class GitCliFacade {
       "git",
       "tag",
     ], { cwd: repoDir });
+
     return result.stdout.trim();
   }
 

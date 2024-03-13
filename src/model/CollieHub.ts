@@ -66,17 +66,14 @@ export class CollieHub {
       await this.git.checkout(hubCacheDir, collieHubVersion);
       this.config.setProperty("colliehubVersion", collieHubVersion!);
     }
-    try {
-      const allTags = await this.git.getTags(hubCacheGitDir);
-      if (!allTags.includes(collieHubVersion)) {
-        throw new Error(
-          `version tag does not exist, possible are: ${allTags.split("\n")}`,
-        );
-      }
-    } catch (error) {
-      this.logger.error(`${error}`);
+    const allTags = await this.git.getTags(hubCacheGitDir);
+    if (!allTags.includes(collieHubVersion)) {
+      this.logger.error(
+        `version tag does not exist, possible are: ${allTags.split("\n")}`,
+      );
       Deno.exit(1);
     }
+
     //collie-hub version is set by the if block
     await this.git.checkout(hubCacheDir, collieHubVersion!);
 

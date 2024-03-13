@@ -117,16 +117,13 @@ export class CliApiFacadeFactory {
   public buildGit() {
     const detectorRunner = this.buildQuietLoggingProcessRunner();
     const detector = new GitCliDetector(detectorRunner);
-
-    const processRunner = this.buildQuietLoggingProcessRunner();
-
     const resultHandler = new ProcessRunnerErrorResultHandler(detector);
     const quietRunner = new ResultHandlerProcessRunnerDecorator(
       new QuietProcessRunner(),
       resultHandler,
     );
 
-    return new GitCliFacade(processRunner, quietRunner);
+    return new GitCliFacade(detectorRunner, quietRunner);
   }
 
   public buildTerragrunt() {
