@@ -9,9 +9,7 @@ import { FoundationRepository } from "/model/FoundationRepository.ts";
 import { PlatformConfig } from "/model/PlatformConfig.ts";
 import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "/cli/ProgressReporter.ts";
-import { CollieRepository } from "/model/CollieRepository.ts";
-
-const TEST_MODULE_GLOB = "**/*.test";
+import { CollieRepository, TEST_MODULE_GLOB } from "/model/CollieRepository.ts";
 
 export class PlatformDeployer<T extends PlatformConfig> {
   constructor(
@@ -67,9 +65,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
       this.logger.warn(
         (fmt) =>
           `detected no platform modules at ${
-            fmt.kitPath(
-              platformOrModulePath,
-            )
+            fmt.kitPath(platformOrModulePath)
           }, will skip invoking "terragrunt <cmd>"`,
       );
 
@@ -85,9 +81,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
       this.logger.debug(
         (fmt) =>
           `detected a single platform module at ${
-            fmt.kitPath(
-              singleModulePath,
-            )
+            fmt.kitPath(singleModulePath)
           }, will deploy with "terragrunt <cmd>"`,
       );
       await this.terragrunt.run(singleModulePath, mode, { autoApprove });
@@ -114,7 +108,6 @@ export class PlatformDeployer<T extends PlatformConfig> {
     const files = await this.repo.processFilesGlob(
       `${relativeModulePath}/**/terragrunt.hcl`,
       (file) => file,
-      [`foundations/${TEST_MODULE_GLOB}`],
     );
 
     // a terragrunt stack conists of multiple executable terragrunt files
@@ -143,9 +136,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
       this.logger.warn(
         (fmt) =>
           `detected no test modules at ${
-            fmt.kitPath(
-              platformOrModulePath,
-            )
+            fmt.kitPath(platformOrModulePath)
           }, will skip invoking "terragrunt <cmd>"`,
       );
     } else if (tgfiles.length === 1) {
@@ -156,9 +147,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
       this.logger.debug(
         (fmt) =>
           `detected a single test module at ${
-            fmt.kitPath(
-              singleModulePath,
-            )
+            fmt.kitPath(singleModulePath)
           }, will deploy with "terragrunt <cmd>"`,
       );
       await this.terragrunt.run(singleModulePath, mode, {});
@@ -184,6 +173,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
     const files = await this.repo.processFilesGlob(
       `${relativeModulePath}/${TEST_MODULE_GLOB}/terragrunt.hcl`,
       (file) => file,
+      false,
     );
 
     // a terragrunt stack conists of multiple executable terragrunt files
