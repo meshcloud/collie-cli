@@ -170,10 +170,15 @@ export class PlatformDeployer<T extends PlatformConfig> {
   }
 
   private async testModuleTerragruntFiles(relativeModulePath: string) {
+    const excludes = {
+      testModules: false,
+      tenantModules: true,
+    };
+
     const files = await this.repo.processFilesGlob(
       `${relativeModulePath}/${TEST_MODULE_GLOB}/terragrunt.hcl`,
       (file) => file,
-      false,
+      excludes,
     );
 
     // a terragrunt stack conists of multiple executable terragrunt files

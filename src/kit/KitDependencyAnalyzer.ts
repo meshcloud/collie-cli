@@ -61,9 +61,14 @@ export class KitDependencyAnalyzer {
         this.logger,
       );
 
+      const excludes = {
+        tenantModules: true,
+        testModules: true,
+      };
       const q = await this.collie.processFilesGlob(
         `${relativePlatformPath}/**/terragrunt.hcl`,
         (file) => this.tryParseDependency(file.path),
+        excludes,
       );
 
       const all = await Promise.all(q);
