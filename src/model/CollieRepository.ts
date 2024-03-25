@@ -1,6 +1,8 @@
 import * as fs from "std/fs";
 import * as path from "std/path";
 
+export const TEST_MODULE_GLOB = "**/*.test";
+
 export class CollieRepository {
   private constructor(private readonly repoDir: string) {
     if (!path.isAbsolute(repoDir)) {
@@ -50,7 +52,7 @@ export class CollieRepository {
   async processFilesGlob<T>(
     pattern: string,
     process: (file: fs.WalkEntry) => T | undefined,
-    additionalExcludes: string[] = [],
+    excludeTestModules = true,
   ): Promise<T[]> {
     const q: T[] = [];
     for await (
@@ -68,7 +70,7 @@ export class CollieRepository {
           "kit/**/modules", // exclude sub-modules
           "kit/**/template", // exclude template files
 
-          ...additionalExcludes,
+          ...(excludeTestModules ? [TEST_MODULE_GLOB] : []),
         ],
       })
     ) {
