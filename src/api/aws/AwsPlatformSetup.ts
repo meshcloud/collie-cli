@@ -20,7 +20,7 @@ export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
 
     const profiles = await this.aws.listProfiles();
 
-    const profile = await Select.prompt({
+    const profile = await Select.prompt<string>({
       message: "Select an AWS CLI Profile",
       options: profiles,
       search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264,
@@ -52,7 +52,7 @@ export class AwsPlatformSetup extends PlatformSetup<PlatformConfigAws> {
     this.progress("detecting aws regions");
 
     const regions = await this.aws.listRegions(profile);
-    region = await Select.prompt({
+    region = await Select.prompt<string>({
       message: `Choose the default AWS region for collie commands`,
       default: region,
       options: regions.Regions.map((x) => x.RegionName),

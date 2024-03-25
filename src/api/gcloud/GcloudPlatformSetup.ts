@@ -21,7 +21,7 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
 
     const configurations = await this.gcloud.configurationsList();
 
-    const configurationName = await Select.prompt({
+    const configurationName = await Select.prompt<string>({
       message: "Select a gcloud CLI configuration",
       options: configurations.map((x) => x.name),
       search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264
@@ -41,7 +41,7 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
     this.progress("detecting available GCP organizations");
     const organizations = await this.gcloud.listOrganizations();
 
-    const organizationResult = await Select.prompt({
+    const organizationName = await Select.prompt<string>({
       message: "Select a GCP organization",
       options: organizations.map((x) => ({
         name: x.displayName,
@@ -50,8 +50,6 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
       search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264,
       info: true,
     });
-
-    const organizationName = organizationResult.value;
 
     const organization = organizations.find((x) => x.name === organizationName);
     if (!organization) {
