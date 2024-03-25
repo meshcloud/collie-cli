@@ -16,6 +16,7 @@ import { CLI } from "../../info.ts";
 import { LiteralArgsParser } from "../LiteralArgsParser.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";
+import { NullProgressReporter } from "../../cli/NullProgressReporter.ts";
 
 interface DeployOptions {
   platform?: string;
@@ -120,22 +121,8 @@ export async function deployFoundation(
 
   const terragrunt = factory.buildTerragrunt();
 
-  const platforms = opts.platform
-    ? [foundation.findPlatform(opts.platform)]
-    : foundation.platforms;
+  const platforms = findPlatforms(opts.platform, foundation, logger);
 
-  // we do not parallelize deploying platforms - although this would be technically possible, it's very difficult
-  // to debug any errors for an operator. If we later decide to do this, we should try and see if we can offload this
-  // challenge to tools that are already equipped to handle this in some sensible way (e.g. terragrunt with multiple --include-dir or gnu parallels etc.)
-
-  if (!platforms.length) {
-    logger.warn("Nothing to deploy, your foundation has no platforms yet");
-    logger.tipCommand(
-      "Add new platforms to your foundation by reinitializing it.\nThis will not overwrite existing configuration and platforms.",
-      "foundation new " + foundation.id,
-    );
-    Deno.exit(0);
-  }
   for (const platform of platforms) {
     const deployer = new PlatformDeployer(
       platform,
@@ -157,9 +144,26 @@ export async function deployFoundation(
   }
 }
 
-/**
- * A null object that allows us to skip reporting for foundation/platform progress when those are not needed
- */
-class NullProgressReporter {
-  done(): void {}
+export function findPlatforms(
+  platformOpt: string | undefined,
+  foundation: FoundationRepository,
+  logger: Logger,
+) {
+  const platforms = platformOpt
+    ? [foundation.findPlatform(platformOpt)]
+    : foundation.platforms;
+
+  // we do not parallelize deploying platforms - although this would be technically possible, it's very difficult
+  // to debug any errors for an operator. If we later decide to do this, we should try and see if we can offload this
+  // challenge to tools that are already equipped to handle this in some sensible way (e.g. terragrunt with multiple --include-dir or gnu parallels etc.)
+  if (!platforms.length) {
+    logger.warn("Nothing to deploy, your foundation has no platforms yet");
+    logger.tipCommand(
+      "Add new platforms to your foundation by reinitializing it.\nThis will not overwrite existing configuration and platforms.",
+      "foundation new " + foundation.id,
+    );
+    Deno.exit(0);
+  }
+
+  return platforms;
 }

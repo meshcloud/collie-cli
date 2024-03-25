@@ -11,6 +11,7 @@ export type TerragruntArguments = {
 };
 
 export interface TerragruntRunAllOpts {
+  includeDirs?: string[];
   excludeDirs?: string[];
   autoApprove?: boolean;
 }
@@ -72,6 +73,15 @@ export class TerragruntCliFacade {
       .concat([workaroundTerragruntOnWindowsScanningItsOwnCaches])
       .flatMap((x) => ["--terragrunt-exclude-dir", x]);
 
+    const includeDirFlags = (opts.includeDirs || []).flatMap((
+      x,
+    ) => ["--terragrunt-include-dir", x]);
+
+    // if we have explicit includes, turn on strict mode so that only includesd files will run
+    if (includeDirFlags.length) {
+      includeDirFlags.push("--terragrunt-strict-include");
+    }
+
     // By default, "terragrunt run-all" auto approves all individual applies, a notable difference to "terragrunt run"
     // which does interactive confirmation prompts by default.
     // This is undesirable for collie beause it unexpectedly changes the behavior when running a single vs. multi-module
@@ -87,6 +97,7 @@ export class TerragruntCliFacade {
       "terragrunt",
       "run-all",
       ...mode.raw,
+      ...includeDirFlags,
       ...excludeDirFlags,
       ...autoApproveFlags,
     ];

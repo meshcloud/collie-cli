@@ -11,6 +11,8 @@ import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "/cli/ProgressReporter.ts";
 import { CollieRepository } from "/model/CollieRepository.ts";
 
+const TEST_MODULE_GLOB = "**/*.test";
+
 export class PlatformDeployer<T extends PlatformConfig> {
   constructor(
     protected readonly platform: T,
@@ -58,7 +60,9 @@ export class PlatformDeployer<T extends PlatformConfig> {
       relativePlatformOrModulePath,
     );
 
-    const tgfiles = await this.terragruntFiles(relativePlatformOrModulePath);
+    const tgfiles = await this.platformModuleTerragruntFiles(
+      relativePlatformOrModulePath,
+    );
     if (tgfiles.length === 0) {
       this.logger.warn(
         (fmt) =>
@@ -98,7 +102,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
       );
 
       await this.terragrunt.runAll(platformOrModulePath, mode, {
-        excludeDirs: [this.bootstrapModuleDir()],
+        excludeDirs: [this.bootstrapModuleDir(), TEST_MODULE_GLOB], // if we let terragrunt run a run-all, need to explicitly exclude test modules
         autoApprove,
       });
     }
@@ -106,9 +110,79 @@ export class PlatformDeployer<T extends PlatformConfig> {
     progress.done();
   }
 
-  private async terragruntFiles(relativeModulePath: string) {
+  private async platformModuleTerragruntFiles(relativeModulePath: string) {
     const files = await this.repo.processFilesGlob(
       `${relativeModulePath}/**/terragrunt.hcl`,
+      (file) => file,
+      [`foundations/${TEST_MODULE_GLOB}`],
+    );
+
+    // a terragrunt stack conists of multiple executable terragrunt files
+    return files;
+  }
+
+  async runTestModules(mode: TerragruntArguments, module: string | undefined) {
+    const platformOrModulePath = this.foundation.resolvePlatformPath(
+      this.platform,
+      module || "",
+    );
+
+    const relativePlatformOrModulePath = this.repo.relativePath(
+      platformOrModulePath,
+    );
+
+    const progress = this.buildProgressReporter(
+      mode,
+      relativePlatformOrModulePath,
+    );
+
+    const tgfiles = await this.testModuleTerragruntFiles(
+      relativePlatformOrModulePath,
+    );
+    if (tgfiles.length === 0) {
+      this.logger.warn(
+        (fmt) =>
+          `detected no test modules at ${
+            fmt.kitPath(
+              platformOrModulePath,
+            )
+          }, will skip invoking "terragrunt <cmd>"`,
+      );
+    } else if (tgfiles.length === 1) {
+      // we can't run terragrunt in the platform dir, so we have to infer the platformModule path from
+      // the discovered terragrunt file
+      const singleModulePath = path.dirname(tgfiles[0].path);
+
+      this.logger.debug(
+        (fmt) =>
+          `detected a single test module at ${
+            fmt.kitPath(
+              singleModulePath,
+            )
+          }, will deploy with "terragrunt <cmd>"`,
+      );
+      await this.terragrunt.run(singleModulePath, mode, {});
+    } else {
+      this.logger.debug(
+        (fmt) =>
+          `detected a stack of test modules at ${
+            fmt.kitPath(
+              platformOrModulePath,
+            )
+          }, will deploy with "terragrunt run-all <cmd>"`,
+      );
+
+      await this.terragrunt.runAll(platformOrModulePath, mode, {
+        includeDirs: [TEST_MODULE_GLOB],
+      });
+    }
+
+    progress.done();
+  }
+
+  private async testModuleTerragruntFiles(relativeModulePath: string) {
+    const files = await this.repo.processFilesGlob(
+      `${relativeModulePath}/${TEST_MODULE_GLOB}/terragrunt.hcl`,
       (file) => file,
     );
 
