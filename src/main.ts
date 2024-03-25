@@ -19,6 +19,8 @@ import { makeTopLevelCommand } from "./commands/TopLevelCommand.ts";
 import { registerInfoCommand } from "./commands/info.command.ts";
 import { registerConfigCommand } from "./commands/config/config.command.ts";
 
+let shutdownRequested = 0;
+
 async function collie() {
   const program = makeTopLevelCommand()
     .name(CLI)
@@ -99,9 +101,22 @@ if (import.meta.main) {
 }
 
 function gracefulShutdown(): void {
+  shutdownRequested += 1;
+
+  if (shutdownRequested == 1) {
+    logWithBanner(
+      "Interrupt received.\nPlease wait for collie shut down or data loss may occur.\nGracefully shutting down...",
+    );
+  } else {
+    logWithBanner(
+      "Two interrupts received, collie will now exit. Data loss may occur.",
+    );
+    Deno.exit(143);
+  }
+}
+
+function logWithBanner(msg: string) {
   console.log("\n\n");
-  console.log(
-    "Interrupt received.\nPlease wait for collie shut down or data loss may occur.\nGracefully shutting down...",
-  );
+  console.log(msg);
   console.log("\n\n");
 }
