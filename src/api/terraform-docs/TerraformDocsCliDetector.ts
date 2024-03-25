@@ -1,7 +1,6 @@
 import { IProcessRunner } from "../../process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { CliDetector } from "../CliDetector.ts";
-import * as semver from "std/semver";
 
 export class TerraformDocsCliDetector extends CliDetector {
   constructor(runner: IProcessRunner<ProcessResultWithOutput>) {
@@ -13,6 +12,6 @@ export class TerraformDocsCliDetector extends CliDetector {
   }
 
   protected isSupportedVersion(version: string): boolean {
-    return semver.satisfies(version, ">=0.10.0");
+    return CliDetector.testSemverSatisfiesRange(version, ">=0.10.0");
   }
 }

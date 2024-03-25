@@ -34,7 +34,7 @@ export function registerNewCmd(program: TopLevelCommand) {
 
         const factory = new CliApiFacadeFactory(logger);
 
-        const platformEntries = Deno.isatty(Deno.stdout.rid)
+        const platformEntries = Deno.stdout.isTerminal()
           ? await promptPlatformEntries(foundation, factory)
           : [];
 

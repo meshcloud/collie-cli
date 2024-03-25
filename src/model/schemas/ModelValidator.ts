@@ -1,4 +1,4 @@
-import schema from "./schema.json" assert { type: "json" };
+import schema from "./schema.json" with { type: "json" };
 
 import Ajv, { ErrorObject } from "npm:ajv@8.12.0";
 import addFormats from "npm:ajv-formats@2.1.0";

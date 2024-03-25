@@ -1,4 +1,4 @@
-import { assertEquals } from "std/testing/assert";
+import { assertEquals } from "std/assert";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
 import { InstallationStatus } from "../CliInstallationStatus.ts";
 import { AzCliDetector } from "./AzCliDetector.ts";

@@ -82,7 +82,7 @@ export async function generateTerragrunt(
   kitModulePath: string,
   terraformDocs: TerraformDocsCliFacade,
 ) {
-  const isBootstrap = kitModulePath.endsWith(`${path.SEP}bootstrap`);
+  const isBootstrap = kitModulePath.endsWith(`${path.SEPARATOR}bootstrap`);
 
   // terragrunt needs a posix style path
   const posixKitModulePath = convertToPosixPath(kitModulePath);

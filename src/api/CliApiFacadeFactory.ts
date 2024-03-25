@@ -105,7 +105,7 @@ export class CliApiFacadeFactory {
     let azure: AzCliFacade = new AzCli(facadeProcessRunner);
 
     // We can only ask the user if we are in a tty terminal.
-    if (Deno.isatty(Deno.stdout.rid)) {
+    if (Deno.stdout.isTerminal()) {
       azure = new AutoInstallAzModuleAzCliDecorator(azure);
     }
 

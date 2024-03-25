@@ -1,5 +1,5 @@
 import { validateIsPrefixedId } from "./validation.ts";
-import { assertEquals } from "std/testing/assert";
+import { assertEquals } from "std/assert";
 
 Deno.test("non-prefixed ids fail", () => {
   const result = validateIsPrefixedId("abc");

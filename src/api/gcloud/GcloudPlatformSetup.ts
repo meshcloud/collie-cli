@@ -28,8 +28,8 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
       info: true,
     });
 
-    const configuration = configurations.find(
-      (x) => x.name === configurationName,
+    const configuration = configurations.find((x) =>
+      x.name === configurationName
     );
 
     if (!configuration) {
@@ -41,7 +41,7 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
     this.progress("detecting available GCP organizations");
     const organizations = await this.gcloud.listOrganizations();
 
-    const organizationName = await Select.prompt({
+    const organizationResult = await Select.prompt({
       message: "Select a GCP organization",
       options: organizations.map((x) => ({
         name: x.displayName,
@@ -50,6 +50,8 @@ export class GcloudPlatformSetup extends PlatformSetup<PlatformConfigGcp> {
       search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264,
       info: true,
     });
+
+    const organizationName = organizationResult.value;
 
     const organization = organizations.find((x) => x.name === organizationName);
     if (!organization) {

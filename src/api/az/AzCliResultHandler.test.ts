@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "std/testing/assert";
+import { assertEquals, assertRejects } from "std/assert";
 
 import { ProcessResultWithOutput } from "../../process/ProcessRunnerResult.ts";
 import { AzCliResultHandler } from "./AzCliResultHandler.ts";

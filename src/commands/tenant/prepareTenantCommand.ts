@@ -44,7 +44,7 @@ export async function prepareTenantCommand(
     !!options.refresh,
   );
 
-  const isatty = Deno.isatty(Deno.stdout.rid);
+  const isatty = Deno.stdout.isTerminal();
   const tableFactory = new MeshTableFactory(isatty);
 
   return { meshAdapter, tableFactory, queryStatistics };

@@ -1,5 +1,5 @@
 import { MeshTag } from "./MeshTenantModel.ts";
-import { assertEquals } from "std/testing/assert";
+import { assertEquals } from "std/assert";
 import { MeshTenantChangeDetector } from "./MeshTenantChangeDetector.ts";
 
 Deno.test("MeshTenantChangeDetector can see which tags have changed compared to the original", () => {

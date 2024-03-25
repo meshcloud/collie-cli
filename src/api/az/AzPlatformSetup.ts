@@ -21,7 +21,7 @@ export class AzPlatformSetup extends PlatformSetup<PlatformConfigAzure> {
 
     const subscriptions = await this.az.listSubscriptions();
 
-    const subscriptionId = await Select.prompt({
+    const subscriptionResult = await Select.prompt({
       message:
         "Select an account to configure AAD Tenant Id and default Subscription id",
       options: subscriptions.map((x) => ({
@@ -31,6 +31,8 @@ export class AzPlatformSetup extends PlatformSetup<PlatformConfigAzure> {
       search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264
       info: true,
     });
+
+    const subscriptionId = subscriptionResult.value;
 
     const subscription = subscriptions.find((x) => x.id === subscriptionId);
     if (!subscription) {

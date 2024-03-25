@@ -1,4 +1,4 @@
-import { stringify } from "std/encoding/yaml";
+import { stringify } from "std/yaml";
 import { Presenter } from "./presenter.ts";
 
 export class YamlPresenter<T> implements Presenter {

@@ -1,5 +1,4 @@
 import * as colors from "std/fmt/colors";
-import { groupBy } from "std/collections/groupBy";
 
 import { ComplianceControlRepository } from "./ComplianceControlRepository.ts";
 import { buildLabeledIdPath, insert, Tree } from "/model/tree.ts";
@@ -35,7 +34,7 @@ export class ComplianceControlTreeBuilder {
       )
     );
 
-    const dependeciesByPath = groupBy(entries, (x) => x?.control);
+    const dependeciesByPath = Object.groupBy(entries, (x) => x?.control);
 
     const tree: Tree<ComplianceControlInfo> = {};
 

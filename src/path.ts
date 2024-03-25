@@ -1,4 +1,5 @@
 import * as path from "std/path";
+import * as posix from "std/path/posix";
 
 /**
  * Converts a relative path with windows or POSIX path separators to a relative path with POSIX separators
@@ -7,5 +8,5 @@ import * as path from "std/path";
  * @returns
  */
 export function convertToPosixPath(relativePath: string) {
-  return relativePath.split(path.sep).join(path.posix.sep);
+  return relativePath.split(path.SEPARATOR).join(posix.SEPARATOR);
 }
