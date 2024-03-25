@@ -110,34 +110,9 @@ export class TerragruntCliFacade {
     });
   }
 
-  async moduleGroups(cwd: string): Promise<Record<string, string[]>> {
-    const cmds = ["terragrunt", "output-module-groups"];
-
-    const result = await this.quietRunner.run(cmds, {
-      cwd,
-    });
-
-    return JSON.parse(result.stdout);
-  }
-
   async collectOutput(cwd: string, outputName: string) {
     const cmds = [
       "terragrunt",
-      "output",
-      "-raw",
-      outputName,
-      "--terragrunt-non-interactive", // disable terragrunt's own prompts, e.g. at the start of a terragrunt run-all run
-    ];
-
-    return await this.quietRunner.run(cmds, {
-      cwd,
-    });
-  }
-
-  async collectOutputs(cwd: string, outputName: string) {
-    const cmds = [
-      "terragrunt",
-      "run-all",
       "output",
       "-raw",
       outputName,
