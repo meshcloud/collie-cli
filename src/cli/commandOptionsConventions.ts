@@ -12,12 +12,20 @@ export async function getCurrentWorkingFoundation(
   logger: Logger,
   repo: CollieRepository,
 ): Promise<string> {
+  // user explicitly set the foundation to use
   if (foundation) {
     return foundation;
-  } else {
-    const config = new CollieConfig(repo, logger);
-
-    return config.getProperty("foundation") ||
-      (await InteractivePrompts.selectFoundation(repo, logger));
   }
+
+  // the repo only contains a single foundation anyway, no need to select one
+  const foundations = await repo.listFoundations();
+  if (foundations.length === 1) {
+    return foundations[0];
+  }
+
+  // check if a foundation was set in config, otherwise prompt interactively
+  const config = new CollieConfig(repo, logger);
+
+  return config.getProperty("foundation") ||
+    (await InteractivePrompts.selectFoundation(repo, logger));
 }
