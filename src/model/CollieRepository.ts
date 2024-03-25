@@ -50,6 +50,7 @@ export class CollieRepository {
   async processFilesGlob<T>(
     pattern: string,
     process: (file: fs.WalkEntry) => T | undefined,
+    additionalExcludes: string[] = [],
   ): Promise<T[]> {
     const q: T[] = [];
     for await (
@@ -66,6 +67,8 @@ export class CollieRepository {
           "**/.terraform", // exclude terraform dot-files (these can be left in kit/ from e.g. calling terraform validate)
           "kit/**/modules", // exclude sub-modules
           "kit/**/template", // exclude template files
+
+          ...additionalExcludes,
         ],
       })
     ) {

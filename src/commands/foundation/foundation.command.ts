@@ -1,4 +1,5 @@
 import { registerDeployCmd } from "./deploy.command.ts";
+import { registerTestCmd } from "./test.command.ts";
 import { registerConfigCmd } from "./config.command.ts";
 import { registerNewCmd } from "./new.command.ts";
 import { registerTreeCmd } from "./tree.command.ts";
@@ -11,6 +12,7 @@ export function registerFoundationCommand(program: TopLevelCommand) {
   registerConfigCmd(foundationCommands);
   registerTreeCmd(foundationCommands);
   registerDeployCmd(foundationCommands);
+  registerTestCmd(foundationCommands);
   registerDocsCmd(foundationCommands);
 
   program
