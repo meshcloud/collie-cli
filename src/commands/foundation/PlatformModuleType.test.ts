@@ -1,4 +1,4 @@
-import { assertEquals } from "std/testing/assert";
+import { assertEquals } from "std/assert";
 import { PlatformModuleType } from "./PlatformModuleType.ts";
 import * as path from "std/path";
 

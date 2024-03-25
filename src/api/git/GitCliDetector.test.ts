@@ -1,6 +1,6 @@
 import { GitCliDetector } from "./GitCliDetector.ts";
 import { StubProcessRunner } from "../../process/StubProcessRunner.ts";
-import { assertEquals } from "std/testing/assert";
+import { assertEquals } from "std/assert";
 
 Deno.test(
   "can parse version numbers",

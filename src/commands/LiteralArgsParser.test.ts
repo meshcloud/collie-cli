@@ -1,4 +1,4 @@
-import { assertEquals } from "std/testing/assert";
+import { assertEquals } from "std/assert";
 import { LiteralArgsParser } from "./LiteralArgsParser.ts";
 
 Deno.test("ignores all positional args", () => {

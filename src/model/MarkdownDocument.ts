@@ -1,4 +1,4 @@
-import * as yaml from "std/encoding/yaml";
+import * as yaml from "std/yaml";
 
 export type ParseResult<T> =
   | { parsed: MarkdownDocument<Partial<T>>; error: undefined }

@@ -1,5 +1,4 @@
 import * as colors from "std/fmt/colors";
-import { groupBy } from "std/collections/groupBy";
 
 import { FoundationDependencies } from "./KitDependencyAnalyzer.ts";
 import { KitModuleRepository } from "./KitModuleRepository.ts";
@@ -28,7 +27,7 @@ export class KitModuleTreeBuilder {
       )
     );
 
-    const dependeciesByPath = groupBy(entries, (x) => x.module);
+    const dependeciesByPath = Object.groupBy(entries, (x) => x.module);
 
     const tree: Tree<KitModuleInfo> = {};
 
@@ -38,9 +37,9 @@ export class KitModuleTreeBuilder {
 
       const info = {
         name: m.kitModule.name,
-        platforms: dependeciesByPath[m.id]
-          ?.map((p) => colors.green(p.platform))
-          .sort() || [],
+        platforms: dependeciesByPath[m.id]?.map((p) =>
+          colors.green(p.platform)
+        ).sort() || [],
         controls: m.kitModule?.compliance?.map((x) => colors.blue(x.control)) ||
           [],
       };

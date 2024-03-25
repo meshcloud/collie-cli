@@ -1,4 +1,4 @@
-import { assertEquals, assertNotEquals } from "std/testing/assert";
+import { assertEquals, assertNotEquals } from "std/assert";
 import { CollieRepository } from "./CollieRepository.ts";
 
 Deno.test("relativePath calculates paths relative to repository root", () => {

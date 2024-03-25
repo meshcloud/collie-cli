@@ -12,7 +12,8 @@ export class InteractivePrompts {
       `To set a default foundation run`,
       `config set-foundation <foundation>"`,
     );
-    return await Select.prompt({
+
+    const result = await Select.prompt({
       message: "Select a foundation",
       options: (
         await kit.listFoundations()
@@ -21,29 +22,35 @@ export class InteractivePrompts {
         value: x,
       })),
     });
+
+    return result.value;
   }
 
   static async selectPlatform(repo: FoundationRepository): Promise<string> {
-    return await Select.prompt({
+    const result = await Select.prompt({
       message: "Select a platform",
       options: (await repo.platforms).map((x) => ({ name: x.id, value: x.id })),
     });
+
+    return result.value;
   }
 
   static async selectModule(
     moduleRepo: KitModuleRepository,
     fromWhereDescription = "your repository",
-  ) {
+  ): Promise<string> {
     const options = moduleRepo.all.map((x) => ({
       value: x.id,
       name: `${x.kitModule.name} ${colors.dim(x.id)}`,
     }));
 
-    return await Select.prompt({
+    const result = await Select.prompt({
       message: "Select a kit module from " + fromWhereDescription,
       options,
       info: true,
       search: !isWindows, // see https://github.com/c4spar/deno-cliffy/issues/272#issuecomment-1262197264
     });
+
+    return result.value;
   }
 }

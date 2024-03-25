@@ -85,8 +85,10 @@ async function promptForComplianceFrameworkId(hubRepoDir: string) {
     }
   }
 
-  return await Select.prompt({
+  const result = await Select.prompt({
     message: "Select available collie hub compliance control framework",
     options: dirs.map((x) => ({ name: x, value: x })),
   });
+
+  return result.value;
 }

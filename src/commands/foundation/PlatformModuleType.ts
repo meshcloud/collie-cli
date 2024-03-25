@@ -19,7 +19,7 @@ export class PlatformModuleType extends StringType {
   }
 
   static parseModuleId(matchedPath: string) {
-    const components = matchedPath.split(path.SEP);
+    const components = matchedPath.split(path.SEPARATOR);
     const platformIndex = components.lastIndexOf("platforms");
 
     const dropTerragruntHclComponent = -1;

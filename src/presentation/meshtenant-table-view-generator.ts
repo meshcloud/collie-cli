@@ -1,5 +1,3 @@
-import { groupBy } from "std/collections/groupBy";
-
 import { MeshTenant } from "../mesh/MeshTenantModel.ts";
 import { TableGenerator } from "./mesh-table.ts";
 
@@ -33,7 +31,7 @@ export class MeshTenantTableViewGenerator extends TableGenerator {
   }
 
   getInfo(): string {
-    const counts = groupBy(this.meshTenants, (x) => x.platformId);
+    const counts = Object.groupBy(this.meshTenants, (x) => x.platformId);
     const stats = Object.entries(counts).map(([k, v]) => `${k}: ${v?.length}`);
 
     return stats.join(", ");

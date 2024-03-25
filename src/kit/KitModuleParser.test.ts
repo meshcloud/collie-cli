@@ -1,4 +1,4 @@
-import { assertEquals } from "std/testing/assert";
+import { assertEquals } from "std/assert";
 import * as path from "std/path";
 import { withTempDir } from "../cli/test-util.ts";
 import { Logger } from "../cli/Logger.ts";

@@ -1,3 +1,5 @@
+import * as semver from "std/semver";
+
 import { CliInstallationStatusError } from "../errors.ts";
 import { IProcessRunner } from "../process/IProcessRunner.ts";
 import { ProcessResultWithOutput } from "../process/ProcessRunnerResult.ts";
@@ -72,4 +74,14 @@ export abstract class CliDetector {
 
   protected abstract parseVersion(versionCmdOutput: string): string;
   protected abstract isSupportedVersion(version: string): boolean;
+
+  protected static testSemverSatisfiesRange(
+    version: string,
+    range: string,
+  ): boolean {
+    const sversion = semver.parse(version);
+    const srange = semver.parseRange(range);
+
+    return semver.testRange(sversion, srange);
+  }
 }

@@ -1,4 +1,4 @@
-import { assertEquals } from "std/testing/assert";
+import { assertEquals } from "std/assert";
 import { ComplianceControlParser } from "./ComplianceControlParser.ts";
 import { isWindows } from "../os.ts";
 
