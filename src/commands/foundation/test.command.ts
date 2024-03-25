@@ -11,13 +11,13 @@ import { ProgressReporter } from "../../cli/ProgressReporter.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { PlatformDeployer } from "../../foundation/PlatformDeployer.ts";
-import { PlatformModuleType } from "./PlatformModuleType.ts";
 import { CLI } from "../../info.ts";
 import { LiteralArgsParser } from "../LiteralArgsParser.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";
 import { findPlatforms } from "./deploy.command.ts";
 import { NullProgressReporter } from "../../cli/NullProgressReporter.ts";
+import { TestModuleType } from "./TestModuleType.ts";
 
 interface TestOptions {
   platform?: string;
@@ -30,7 +30,7 @@ export function registerTestCmd(program: TopLevelCommand) {
     .description(
       "Run platform test modules in your cloud foundations using terragrunt",
     )
-    .type("module", new PlatformModuleType())
+    .type("module", new TestModuleType())
     .option(
       "-p, --platform <platform:platform>", // todo: make optional -> deploy all platforms!
       "the platform to test",
