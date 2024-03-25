@@ -11,7 +11,7 @@ export async function getCurrentWorkingFoundation(
   foundation: string | undefined,
   logger: Logger,
   repo: CollieRepository,
-) {
+): Promise<string> {
   if (foundation) {
     return foundation;
   } else {
