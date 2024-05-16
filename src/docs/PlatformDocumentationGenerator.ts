@@ -102,18 +102,38 @@ export class PlatformDocumentationGenerator {
     platformProgress.done();
   }
 
-  private async generatePlatformModuleDocumentation(
-    dep: KitModuleDependency,
-    documentationMd: string,
-    docsRepo: DocumentationRepository,
-    platform: PlatformConfig,
-  ) {
-    const destPath = docsRepo.resolvePlatformModulePath(
-      platform.id,
-      dep.kitModuleId,
-    );
 
-    await fs.ensureDir(path.dirname(destPath)); // todo: should we do nesting in the docs output or "flatten" module prefixes?
+private async generatePlatformModuleDocumentation(
+  dep: KitModuleDependency,
+  documentationMd: string,
+  docsRepo: DocumentationRepository,
+  platform: PlatformConfig,
+) {
+  const destPath = docsRepo.resolvePlatformModulePath(
+    platform.id,
+    dep.kitModuleId,
+  );
+
+  const parentDirOfPlatforms = path.resolve(path.dirname(destPath), '..', '..');
+  const buildingBlocksPath = path.join(
+    parentDirOfPlatforms,
+    "buildingblocks",
+    path.basename(destPath),
+  );
+
+  if (dep.kitModuleId.includes("buildingblocks")) {
+    await fs.ensureDir(path.dirname(buildingBlocksPath));
+    await Deno.writeTextFile(buildingBlocksPath, documentationMd);
+
+    // Create README.md in the buildingblocks directory
+    const readmePath = path.join(parentDirOfPlatforms, 'buildingblocks', 'README.md');
+    if (!await fs.exists(readmePath)) {
+      await Deno.writeTextFile(readmePath, 
+      '# Building Blocks\nBuilding blocks provide you a simple yet powerful way to build a secure cloud landscape for use cases in your organizations. They can stack on top of a tenant and other standardized building blocks to shape landing zones for applications..');
+    }
+  } else {
+    await fs.ensureDir(path.dirname(destPath));
+    await Deno.writeTextFile(destPath, documentationMd);
 
     const mdSections = [documentationMd];
 
@@ -142,6 +162,8 @@ export class PlatformDocumentationGenerator {
         } to ${fmt.kitPath(destPath)}`,
     );
   }
+}
+
 
   private generateKitModuleSection(
     dep: KitModuleDependency,
