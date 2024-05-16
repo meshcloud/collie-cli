@@ -115,8 +115,6 @@ export class PlatformDocumentationGenerator {
 
     const parentDirOfPlatforms = path.resolve(
       path.dirname(destPath),
-      "..",
-      "..",
     );
     const buildingBlocksPath = path.join(
       parentDirOfPlatforms,
@@ -137,7 +135,7 @@ export class PlatformDocumentationGenerator {
       if (!await fs.exists(readmePath)) {
         await Deno.writeTextFile(
           readmePath,
-          "# Building Blocks\nBuilding blocks provide you a simple yet powerful way to build a secure cloud landscape for use cases in your organizations. They can stack on top of a tenant and other standardized building blocks to shape landing zones for applications..",
+          "# What are Building Blocks\nBuilding Blocks provide you a simple yet powerful way to build a secure cloud landscape for use cases in your organizations. They can stack on top of a tenant and other standardized building blocks to shape landing zones for applications.",
         );
       }
     } else {
