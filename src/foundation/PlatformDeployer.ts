@@ -175,13 +175,8 @@ export class PlatformDeployer<T extends PlatformConfig> {
       tenantModules: true,
     };
 
-    // if we specifiy a single module and not a prefix path, pick a single file
-    const glob = relativeModulePath.endsWith(".test")
-      ? `${relativeModulePath}/terragrunt.hcl`
-      : `${relativeModulePath}/${TEST_MODULE_GLOB}/terragrunt.hcl`;
-
     const files = await this.repo.processFilesGlob(
-      glob,
+      `${relativeModulePath}/${TEST_MODULE_GLOB}/terragrunt.hcl`,
       (file) => file,
       excludes,
     );
