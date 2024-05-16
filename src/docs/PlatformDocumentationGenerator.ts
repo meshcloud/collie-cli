@@ -113,34 +113,62 @@ export class PlatformDocumentationGenerator {
       dep.kitModuleId,
     );
 
-    await fs.ensureDir(path.dirname(destPath)); // todo: should we do nesting in the docs output or "flatten" module prefixes?
-
-    const mdSections = [documentationMd];
-
-    const complianceStatementsBlock = this.generateComplianceStatementSection(
-      dep,
-      docsRepo,
-      destPath,
+    const parentDirOfPlatforms = path.resolve(
+      path.dirname(destPath),
     );
-    mdSections.push(complianceStatementsBlock);
-
-    const kitModuleSection = this.generateKitModuleSection(
-      dep,
-      docsRepo,
-      destPath,
+    const buildingBlocksPath = path.join(
+      parentDirOfPlatforms,
+      "buildingblocks",
+      path.basename(destPath),
     );
-    mdSections.push(kitModuleSection);
 
-    await Deno.writeTextFile(destPath, mdSections.join("\n\n"));
+    if (dep.kitModuleId.includes("buildingblocks")) {
+      await fs.ensureDir(path.dirname(buildingBlocksPath));
+      await Deno.writeTextFile(buildingBlocksPath, documentationMd);
 
-    this.logger.verbose(
-      (fmt) =>
-        `Wrote output "documentation_md" from platform module ${
-          fmt.kitPath(
-            dep.sourcePath,
-          )
-        } to ${fmt.kitPath(destPath)}`,
-    );
+      // Create README.md in the buildingblocks directory
+      const readmePath = path.join(
+        parentDirOfPlatforms,
+        "buildingblocks",
+        "README.md",
+      );
+      if (!await fs.exists(readmePath)) {
+        await Deno.writeTextFile(
+          readmePath,
+          "# What are Building Blocks\nBuilding Blocks provide you a simple yet powerful way to build a secure cloud landscape for use cases in your organizations. They can stack on top of a tenant and other standardized building blocks to shape landing zones for applications.",
+        );
+      }
+    } else {
+      await fs.ensureDir(path.dirname(destPath));
+      await Deno.writeTextFile(destPath, documentationMd);
+
+      const mdSections = [documentationMd];
+
+      const complianceStatementsBlock = this.generateComplianceStatementSection(
+        dep,
+        docsRepo,
+        destPath,
+      );
+      mdSections.push(complianceStatementsBlock);
+
+      const kitModuleSection = this.generateKitModuleSection(
+        dep,
+        docsRepo,
+        destPath,
+      );
+      mdSections.push(kitModuleSection);
+
+      await Deno.writeTextFile(destPath, mdSections.join("\n\n"));
+
+      this.logger.verbose(
+        (fmt) =>
+          `Wrote output "documentation_md" from platform module ${
+            fmt.kitPath(
+              dep.sourcePath,
+            )
+          } to ${fmt.kitPath(destPath)}`,
+      );
+    }
   }
 
   private generateKitModuleSection(
