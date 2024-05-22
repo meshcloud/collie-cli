@@ -9,6 +9,7 @@ export class TestModuleType extends StringType {
     const excludes = {
       testModules: false,
       tenantModules: true,
+      platformModules: false,
     };
 
     const modules = await repo.processFilesGlob(

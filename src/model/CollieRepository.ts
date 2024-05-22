@@ -3,7 +3,7 @@ import * as path from "std/path";
 
 export const TEST_MODULE_GLOB = "**/*.test";
 export const TENANT_MODULE_GLOB = "**/tenants";
-
+export const PLATFORM_MODULE_GLOB = "**/platforms";
 export class CollieRepository {
   private constructor(private readonly repoDir: string) {
     if (!path.isAbsolute(repoDir)) {
@@ -56,9 +56,11 @@ export class CollieRepository {
     excludes: {
       testModules: boolean;
       tenantModules: boolean;
+      platformModules: boolean;
     } = {
       testModules: true,
       tenantModules: false,
+      platformModules: false,
     },
   ): Promise<T[]> {
     const q: T[] = [];
@@ -79,6 +81,7 @@ export class CollieRepository {
 
           ...(excludes.testModules ? [TEST_MODULE_GLOB] : []),
           ...(excludes.tenantModules ? [TENANT_MODULE_GLOB] : []),
+          ...(excludes.platformModules ? [PLATFORM_MODULE_GLOB] : []),
         ],
       })
     ) {
