@@ -17,6 +17,7 @@ import { LiteralArgsParser } from "../LiteralArgsParser.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";
 import { NullProgressReporter } from "../../cli/NullProgressReporter.ts";
+import { FoundationDeployer } from "../../foundation/FoundationDeployer.ts";
 
 interface DeployOptions {
   platform?: string;
@@ -29,7 +30,7 @@ export function registerDeployCmd(program: TopLevelCommand) {
   const cmd = program
     .command("deploy [foundation:foundation]")
     .description(
-      "Deploy platform modules in your cloud foundations using terragrunt",
+      "Deploy foundation and platform modules in your cloud foundations using terragrunt",
     )
     .type("module", new PlatformModuleType())
     .option(
@@ -120,6 +121,27 @@ export async function deployFoundation(
   const factory = new CliApiFacadeFactory(logger);
 
   const terragrunt = factory.buildTerragrunt();
+
+  // unless targeting a specific platform, always deploy foundation modules
+  if (!opts.platform) {
+    const deployer = new FoundationDeployer(
+      repo,
+      foundation,
+      terragrunt,
+      logger,
+    );
+
+    await deployer.deployFoundationModules(
+      mode,
+      opts.module,
+      !!opts.autoApprove,
+    );
+
+    // if all we had to do was deploy a specific foundation module, we are done and can exit
+    if (opts.module) {
+      return;
+    }
+  }
 
   const platforms = findPlatforms(opts.platform, foundation, logger);
 

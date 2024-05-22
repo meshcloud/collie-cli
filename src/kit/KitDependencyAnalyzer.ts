@@ -64,6 +64,7 @@ export class KitDependencyAnalyzer {
       const excludes = {
         tenantModules: true,
         testModules: true,
+        platformModules: false,
       };
       const q = await this.collie.processFilesGlob(
         `${relativePlatformPath}/**/terragrunt.hcl`,

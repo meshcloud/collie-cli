@@ -173,6 +173,7 @@ export class PlatformDeployer<T extends PlatformConfig> {
     const excludes = {
       testModules: false,
       tenantModules: true,
+      platformModules: false,
     };
 
     const files = await this.repo.processFilesGlob(
