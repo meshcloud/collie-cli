@@ -31,7 +31,9 @@ export abstract class PlatformSetup<T extends PlatformConfig> {
       default: id,
     });
 
-    return { id, name };
+    const type = "custom"
+
+    return { id, name, type };
   }
 
   abstract promptInteractively(): Promise<T>;
