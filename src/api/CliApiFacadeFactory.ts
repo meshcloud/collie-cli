@@ -114,6 +114,30 @@ export class CliApiFacadeFactory {
     return azure;
   }
 
+  buildCustom(env?: AzCliEnv, cwd?: string) {
+    const processRunner = this.buildQuietLoggingProcessRunner();
+    const detector = new AzCliDetector(processRunner);
+
+    const resultHandler = new AzCliResultHandler(detector);
+    const facadeProcessRunner = this.wrapFacadeProcessRunner(
+      processRunner,
+      resultHandler,
+      env,
+      cwd,
+    );
+
+    let custom: AzCliFacade = new AzCli(facadeProcessRunner);
+
+    // We can only ask the user if we are in a tty terminal.
+    if (Deno.stdout.isTerminal()) {
+      custom = new AutoInstallAzModuleAzCliDecorator(custom);
+    }
+
+    custom = new RetryingAzCliDecorator(custom);
+
+    return custom;
+  }
+
   public buildGit() {
     const detectorRunner = this.buildQuietLoggingProcessRunner();
     const detector = new GitCliDetector(detectorRunner);

@@ -41,10 +41,19 @@ type AzureConfig = {
 };
 export type PlatformConfigAzure = PlatformConfigBase & AzureConfig;
 
+type CustomConfig = {
+  custom: {
+    aadTenantId: string;
+    subscriptionId: string;
+  };
+};
+export type PlatformConfigCustom = PlatformConfigBase & CustomConfig;
+
 export type PlatformConfig =
   | PlatformConfigAws
   | PlatformConfigGcp
-  | PlatformConfigAzure;
+  | PlatformConfigAzure
+  | PlatformConfigCustom;
 
 /**
  * The frontmatter stored in a foundation/x/platforms/y/README.md file

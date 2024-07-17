@@ -12,6 +12,7 @@ import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { PlatformConfig } from "../../model/PlatformConfig.ts";
 import { AwsPlatformSetup } from "../../api/aws/AwsPlatformSetup.ts";
 import { AzPlatformSetup } from "../../api/az/AzPlatformSetup.ts";
+import { CustomPlatformSetup } from "../../api/custom/CustomPlatformSetup.ts";
 import { GcloudPlatformSetup } from "../../api/gcloud/GcloudPlatformSetup.ts";
 import { PlatformSetup } from "../../api/PlatformSetup.ts";
 import { MeshError } from "../../errors.ts";
@@ -101,6 +102,7 @@ async function promptPlatformEntries(
     aws: new AwsPlatformSetup(factory.buildAws()),
     azure: new AzPlatformSetup(factory.buildAz()),
     gcp: new GcloudPlatformSetup(factory.buildGcloud()),
+    custom: new CustomPlatformSetup(factory.buildCustom()),
   };
 
   await prompt([
@@ -141,6 +143,7 @@ async function promptPlatformEntries(
         { value: "aws", name: "AWS" },
         { value: "azure", name: "Azure" },
         { value: "gcp", name: "GCP" },
+        { value: "custom", name: "Custom" },
       ],
       after: async ({ cloud }, next) => {
         if (!cloud) {
@@ -169,6 +172,9 @@ async function promptPlatformEntries(
       return setup.azure.preparePlatformDir(x);
     } else if ("gcp" in x) {
       return setup.gcp.preparePlatformDir(x);
+    }
+      else if ("custom" in x) {
+      return setup.custom.preparePlatformDir(x);
     }
 
     throw new MeshError("Unsupported platform configuration");
