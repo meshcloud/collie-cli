@@ -1,5 +1,5 @@
 import { Logger } from "../cli/Logger.ts";
-import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
+import { AwsCliEnv, AzCliEnv, GcloudCliEnv, CustomCliEnv } from "../model/CliToolEnv.ts";
 import { DefaultsProcessRunnerDecorator } from "../process/DefaultsProcessRunnerDecorator.ts";
 import { IProcessRunner } from "../process/IProcessRunner.ts";
 import { QuietProcessRunner } from "../process/QuietProcessRunner.ts";
@@ -19,6 +19,7 @@ import { GcloudCliResultHandler } from "./gcloud/GcloudCliResultHandler.ts";
 import { ResultHandlerProcessRunnerDecorator } from "../process/ResultHandlerProcessRunnerDecorator.ts";
 import { AzCliResultHandler } from "./az/AzCliResultHandler.ts";
 import { AzCliDetector } from "./az/AzCliDetector.ts";
+import { CustomCliDetector } from "./custom/CustomCliDetector.ts";
 import { ProcessRunnerResultHandler } from "../process/ProcessRunnerResultHandler.ts";
 import { AwsCliResultHandler } from "./aws/AwsCliResultHandler.ts";
 import { AwsCliDetector } from "./aws/AwsCliDetector.ts";
@@ -114,9 +115,9 @@ export class CliApiFacadeFactory {
     return azure;
   }
 
-  buildCustom(env?: AzCliEnv, cwd?: string) {
+  buildCustom(env?: CustomCliEnv, cwd?: string) {
     const processRunner = this.buildQuietLoggingProcessRunner();
-    const detector = new AzCliDetector(processRunner);
+    const detector = new CustomCliDetector(processRunner);
 
     const resultHandler = new AzCliResultHandler(detector);
     const facadeProcessRunner = this.wrapFacadeProcessRunner(

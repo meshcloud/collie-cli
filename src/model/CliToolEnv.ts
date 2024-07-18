@@ -17,8 +17,13 @@ export type AwsCliEnv = {
   AWS_REGION?: string;
 };
 
+export type CustomCliEnv = {
+  CUSTOM_CONFIG_FILE?: string;
+};
+
 export interface CliToolEnv {
   az?: AzCliEnv;
   aws?: AwsCliEnv;
   gcloud?: GcloudCliEnv;
+  custom?: CustomCliEnv;
 }
