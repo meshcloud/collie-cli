@@ -18,6 +18,11 @@ export enum AwsErrorCode {
   AWS_UNAUTHORIZED = "AWS_UNAUTHORIZED",
 }
 
+export enum CustomErrorCode {
+  CUSTOM_CLI_GENERAL = "AWS_CLI_GENERAL",
+  CUSTOM_UNAUTHORIZED = "AWS_UNAUTHORIZED",
+}
+
 export enum AzureErrorCode {
   NOT_LOGGED_IN = "NOT_LOGGED_IN",
   AZURE_UNAUTHORIZED = "AZURE_UNAUTHORIZED",
@@ -130,6 +135,20 @@ export class MeshAwsPlatformError extends MeshError {
   // deno-lint-ignore no-explicit-any
   static isInstanceWithErrorCode(e: any, errCode: AwsErrorCode): boolean {
     return e instanceof MeshAwsPlatformError && e.errorCode === errCode;
+  }
+}
+
+export class MeshCustomPlatformError extends MeshError {
+  constructor(
+    public readonly errorCode: CustomErrorCode,
+    public readonly message: string,
+  ) {
+    super(`MeshCustomPlatformError: ${message}`);
+  }
+
+  // deno-lint-ignore no-explicit-any
+  static isInstanceWithErrorCode(e: any, errCode: CustomErrorCode): boolean {
+    return e instanceof MeshCustomPlatformError && e.errorCode === errCode;
   }
 }
 
