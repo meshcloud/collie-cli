@@ -10,6 +10,7 @@ import {
 } from "../process/ProcessRunnerResult.ts";
 import { AwsCliFacade } from "./aws/AwsCliFacade.ts";
 import { AzCliFacade } from "./az/AzCliFacade.ts";
+import { CustomCliFacade } from "./custom/CustomCliFacade.ts";
 import { GcloudCliFacade } from "./gcloud/GcloudCliFacade.ts";
 import { AutoInstallAzModuleAzCliDecorator } from "./az/AutoInstallAzModuleAzCliDecorator.ts";
 import { AzCli } from "./az/AzCli.ts";
@@ -116,27 +117,20 @@ export class CliApiFacadeFactory {
   }
 
   buildCustom(env?: CustomCliEnv, cwd?: string) {
-    const processRunner = this.buildQuietLoggingProcessRunner();
-    const detector = new CustomCliDetector(processRunner);
+   const processRunner = this.buildQuietLoggingProcessRunner();
+   const detector = new CustomCliDetector(processRunner);
 
-    const resultHandler = new AzCliResultHandler(detector);
-    const facadeProcessRunner = this.wrapFacadeProcessRunner(
-      processRunner,
-      resultHandler,
-      env,
-      cwd,
-    );
+   const resultHandler = new AwsCliResultHandler(detector); // TO-DO!
+   const facadeProcessRunner = this.wrapFacadeProcessRunner(
+     processRunner,
+     resultHandler,
+     env,
+     cwd,
+   );
 
-    let custom: AzCliFacade = new AzCli(facadeProcessRunner);
+   const facade = new CustomCliFacade(facadeProcessRunner);
 
-    // We can only ask the user if we are in a tty terminal.
-    if (Deno.stdout.isTerminal()) {
-      custom = new AutoInstallAzModuleAzCliDecorator(custom);
-    }
-
-    custom = new RetryingAzCliDecorator(custom);
-
-    return custom;
+   return facade;
   }
 
   public buildGit() {
