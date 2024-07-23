@@ -54,6 +54,9 @@
         },
         {
           "$ref": "#/definitions/PlatformConfigAzure"
+        },
+        {
+          "$ref": "#/definitions/PlatformConfigCustom"
         }
       ]
     },
@@ -95,6 +98,9 @@
         },
         "gcloud": {
           "$ref": "#/definitions/GcloudCliEnv"
+        },
+        "custom": {
+          "$ref": "#/definitions/CustomCliEnv"
         }
       }
     },
@@ -126,6 +132,12 @@
         }
       },
       "required": ["CLOUDSDK_ACTIVE_CONFIG_NAME"]
+    },
+    "CustomCliEnv": {
+      "type": "object",
+      "CUSTOM_CONFIG_FILE": {
+          "type": "string"
+        }
     },
     "PlatformConfigGcp": {
       "type": "object",
