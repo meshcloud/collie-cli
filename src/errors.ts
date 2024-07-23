@@ -19,8 +19,8 @@ export enum AwsErrorCode {
 }
 
 export enum CustomErrorCode {
-  CUSTOM_CLI_GENERAL = "AWS_CLI_GENERAL",
-  CUSTOM_UNAUTHORIZED = "AWS_UNAUTHORIZED",
+  CUSTOM_CLI_GENERAL = "CUSTOM_CLI_GENERAL",
+  CUSTOM_UNAUTHORIZED = "CUSTOM_UNAUTHORIZED",
 }
 
 export enum AzureErrorCode {

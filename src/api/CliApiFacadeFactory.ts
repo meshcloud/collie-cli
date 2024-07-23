@@ -23,6 +23,7 @@ import { AzCliDetector } from "./az/AzCliDetector.ts";
 import { CustomCliDetector } from "./custom/CustomCliDetector.ts";
 import { ProcessRunnerResultHandler } from "../process/ProcessRunnerResultHandler.ts";
 import { AwsCliResultHandler } from "./aws/AwsCliResultHandler.ts";
+import { CustomCliResultHandler } from "./custom/CustomCliResultHandler.ts";
 import { AwsCliDetector } from "./aws/AwsCliDetector.ts";
 import { TerraformDocsCliDetector } from "./terraform-docs/TerraformDocsCliDetector.ts";
 import { TerraformCliDetector } from "./terraform/TerraformCliDetector.ts";
@@ -120,7 +121,7 @@ export class CliApiFacadeFactory {
    const processRunner = this.buildQuietLoggingProcessRunner();
    const detector = new CustomCliDetector(processRunner);
 
-   const resultHandler = new AwsCliResultHandler(detector); // TO-DO!
+   const resultHandler = new CustomCliResultHandler(detector);
    const facadeProcessRunner = this.wrapFacadeProcessRunner(
      processRunner,
      resultHandler,
