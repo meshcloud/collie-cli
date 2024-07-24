@@ -98,9 +98,6 @@
         },
         "gcloud": {
           "$ref": "#/definitions/GcloudCliEnv"
-        },
-        "custom": {
-          "$ref": "#/definitions/CustomCliEnv"
         }
       }
     },
@@ -132,12 +129,6 @@
         }
       },
       "required": ["CLOUDSDK_ACTIVE_CONFIG_NAME"]
-    },
-    "CustomCliEnv": {
-      "type": "object",
-      "CUSTOM_CONFIG_FILE": {
-          "type": "string"
-        }
     },
     "PlatformConfigGcp": {
       "type": "object",
@@ -208,6 +199,21 @@
       },
       "required": ["azure", "name"]
     },
+    "PlatformConfigCustom": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cli": {
+          "$ref": "#/definitions/CliToolEnv"
+        },
+        "collie": {
+          "$ref": "#/definitions/CollieConfig"
+        },
+        "azure": {}
+      }
+   },
     "CollieConfig": {
       "type": "object",
       "properties": {
