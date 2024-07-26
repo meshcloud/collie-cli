@@ -102,7 +102,7 @@ async function promptPlatformEntries(
     aws: new AwsPlatformSetup(factory.buildAws()),
     azure: new AzPlatformSetup(factory.buildAz()),
     gcp: new GcloudPlatformSetup(factory.buildGcloud()),
-    custom: new CustomPlatformSetup(factory.buildCustom()),
+    custom: new CustomPlatformSetup(),
   };
 
   await prompt([
@@ -172,8 +172,7 @@ async function promptPlatformEntries(
       return setup.azure.preparePlatformDir(x);
     } else if ("gcp" in x) {
       return setup.gcp.preparePlatformDir(x);
-    }
-      else if ("custom" in x) {
+    } else if ("type" in x) { // Should be a variable for whatever custom platform you choose
       return setup.custom.preparePlatformDir(x);
     }
 

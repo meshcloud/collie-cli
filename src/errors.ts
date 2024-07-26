@@ -19,7 +19,6 @@ export enum AwsErrorCode {
 }
 
 export enum CustomErrorCode {
-  CUSTOM_CLI_GENERAL = "CUSTOM_CLI_GENERAL",
   CUSTOM_UNAUTHORIZED = "CUSTOM_UNAUTHORIZED",
 }
 
