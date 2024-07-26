@@ -42,11 +42,9 @@ type AzureConfig = {
 export type PlatformConfigAzure = PlatformConfigBase & AzureConfig;
 
 type CustomConfig = {
-  custom: {
-    aadTenantId: string;
-    subscriptionId: string;
-  };
+   type: "custom";
 };
+
 export type PlatformConfigCustom = PlatformConfigBase & CustomConfig;
 
 export type PlatformConfig =

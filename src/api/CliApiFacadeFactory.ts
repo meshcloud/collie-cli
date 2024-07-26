@@ -1,5 +1,5 @@
 import { Logger } from "../cli/Logger.ts";
-import { AwsCliEnv, AzCliEnv, GcloudCliEnv, CustomCliEnv } from "../model/CliToolEnv.ts";
+import { AwsCliEnv, AzCliEnv, GcloudCliEnv } from "../model/CliToolEnv.ts";
 import { DefaultsProcessRunnerDecorator } from "../process/DefaultsProcessRunnerDecorator.ts";
 import { IProcessRunner } from "../process/IProcessRunner.ts";
 import { QuietProcessRunner } from "../process/QuietProcessRunner.ts";
@@ -10,7 +10,6 @@ import {
 } from "../process/ProcessRunnerResult.ts";
 import { AwsCliFacade } from "./aws/AwsCliFacade.ts";
 import { AzCliFacade } from "./az/AzCliFacade.ts";
-import { CustomCliFacade } from "./custom/CustomCliFacade.ts";
 import { GcloudCliFacade } from "./gcloud/GcloudCliFacade.ts";
 import { AutoInstallAzModuleAzCliDecorator } from "./az/AutoInstallAzModuleAzCliDecorator.ts";
 import { AzCli } from "./az/AzCli.ts";
@@ -20,10 +19,8 @@ import { GcloudCliResultHandler } from "./gcloud/GcloudCliResultHandler.ts";
 import { ResultHandlerProcessRunnerDecorator } from "../process/ResultHandlerProcessRunnerDecorator.ts";
 import { AzCliResultHandler } from "./az/AzCliResultHandler.ts";
 import { AzCliDetector } from "./az/AzCliDetector.ts";
-import { CustomCliDetector } from "./custom/CustomCliDetector.ts";
 import { ProcessRunnerResultHandler } from "../process/ProcessRunnerResultHandler.ts";
 import { AwsCliResultHandler } from "./aws/AwsCliResultHandler.ts";
-import { CustomCliResultHandler } from "./custom/CustomCliResultHandler.ts";
 import { AwsCliDetector } from "./aws/AwsCliDetector.ts";
 import { TerraformDocsCliDetector } from "./terraform-docs/TerraformDocsCliDetector.ts";
 import { TerraformCliDetector } from "./terraform/TerraformCliDetector.ts";
@@ -117,22 +114,8 @@ export class CliApiFacadeFactory {
     return azure;
   }
 
-  buildCustom(env?: CustomCliEnv, cwd?: string) {
-   const processRunner = this.buildQuietLoggingProcessRunner();
-   const detector = new CustomCliDetector(processRunner);
-
-   const resultHandler = new CustomCliResultHandler(detector);
-   const facadeProcessRunner = this.wrapFacadeProcessRunner(
-     processRunner,
-     resultHandler,
-     env,
-     cwd,
-   );
-
-   const facade = new CustomCliFacade(facadeProcessRunner);
-
-   return facade;
-  }
+//   buildCustom() {
+//   }
 
   public buildGit() {
     const detectorRunner = this.buildQuietLoggingProcessRunner();

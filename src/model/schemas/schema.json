@@ -210,8 +210,7 @@
         },
         "collie": {
           "$ref": "#/definitions/CollieConfig"
-        },
-        "azure": {}
+        }
       }
    },
     "CollieConfig": {
