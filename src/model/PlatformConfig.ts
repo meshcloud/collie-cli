@@ -42,7 +42,7 @@ type AzureConfig = {
 export type PlatformConfigAzure = PlatformConfigBase & AzureConfig;
 
 type CustomConfig = {
-  type: "custom";
+  type: string;
 };
 
 export type PlatformConfigCustom = PlatformConfigBase & CustomConfig;
