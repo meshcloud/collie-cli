@@ -114,8 +114,8 @@ export class CliApiFacadeFactory {
     return azure;
   }
 
-//   buildCustom() {
-//   }
+  //   buildCustom() {
+  //   }
 
   public buildGit() {
     const detectorRunner = this.buildQuietLoggingProcessRunner();
