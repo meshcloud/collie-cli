@@ -210,7 +210,7 @@
         }
       },
       "required": ["name", "type"]
-   },
+    },
     "CollieConfig": {
       "type": "object",
       "properties": {
