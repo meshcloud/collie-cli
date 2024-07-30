@@ -31,7 +31,11 @@ export abstract class PlatformSetup<T extends PlatformConfig> {
       default: id,
     });
 
-    const type = "custom"
+    const type = await Input.prompt({
+      message: "Define a type",
+      hint: "The type will be displayed in the Readme file",
+      default: id,
+    })
 
     return { id, name, type };
   }
