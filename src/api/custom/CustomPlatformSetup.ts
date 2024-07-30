@@ -4,7 +4,7 @@ import { Dir } from "../../cli/DirectoryGenerator.ts";
 import { PlatformSetup } from "../PlatformSetup.ts";
 
 export class CustomPlatformSetup extends PlatformSetup<PlatformConfigCustom> {
-   constructor(private readonly) {
+   constructor() {
       super();
    }
 

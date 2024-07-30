@@ -205,13 +205,11 @@
         "name": {
           "type": "string"
         },
-        "cli": {
-          "$ref": "#/definitions/CliToolEnv"
-        },
         "collie": {
           "$ref": "#/definitions/CollieConfig"
         }
-      }
+      },
+      "required": ["name", "type"]
    },
     "CollieConfig": {
       "type": "object",
