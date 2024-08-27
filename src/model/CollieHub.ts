@@ -3,6 +3,7 @@ import { GitCliFacade } from "/api/git/GitCliFacade.ts";
 import { CollieRepository } from "/model/CollieRepository.ts";
 import { CollieConfig } from "./CollieConfig.ts";
 import { Logger } from "../cli/Logger.ts";
+import { rimraf } from "../path.ts";
 
 export class CollieHub {
   constructor(
@@ -82,6 +83,6 @@ export class CollieHub {
 
   public async cleanHubClone() {
     const hubCacheDir = this.repo.resolvePath(...this.hubCacheDirPath);
-    await Deno.remove(hubCacheDir, { recursive: true });
+    await rimraf(hubCacheDir);
   }
 }

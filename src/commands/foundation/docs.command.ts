@@ -1,21 +1,14 @@
-import * as fs from "std/fs";
 import { CliApiFacadeFactory } from "../../api/CliApiFacadeFactory.ts";
 import { Logger } from "../../cli/Logger.ts";
 import { ProgressReporter } from "../../cli/ProgressReporter.ts";
-import { ComplianceControlRepository } from "../../compliance/ComplianceControlRepository.ts";
-import { ComplianceDocumentationGenerator } from "../../docs/ComplianceDocumentationGenerator.ts";
-import { DocumentationGenerator } from "../../docs/DocumentationGenerator.ts";
 import { DocumentationRepository } from "../../docs/DocumentationRepository.ts";
-import { KitModuleDocumentationGenerator } from "../../docs/KitModuleDocumentationGenerator.ts";
-import { PlatformDocumentationGenerator } from "../../docs/PlatformDocumentationGenerator.ts";
-import { KitDependencyAnalyzer } from "../../kit/KitDependencyAnalyzer.ts";
-import { KitModuleRepository } from "../../kit/KitModuleRepository.ts";
 import { CollieRepository } from "../../model/CollieRepository.ts";
 import { FoundationRepository } from "../../model/FoundationRepository.ts";
 import { ModelValidator } from "../../model/schemas/ModelValidator.ts";
 import { GlobalCommandOptions } from "../GlobalCommandOptions.ts";
 import { TopLevelCommand } from "../TopLevelCommand.ts";
 import { getCurrentWorkingFoundation } from "../../cli/commandOptionsConventions.ts";
+import { exists } from "std/fs";
 
 interface DocsCommandOptions {
   update?: boolean;
@@ -89,59 +82,34 @@ export function registerDocsCmd(program: TopLevelCommand) {
 }
 
 async function updateDocumentation(
-  repo: CollieRepository,
+  _repo: CollieRepository,
   foundation: FoundationRepository,
   logger: Logger,
 ) {
+  const docsModulePath = foundation.resolvePath("docs");
+
+  if (!await exists(docsModulePath)) {
+    logger.error(
+      `Foundation-level docs module at "${docsModulePath}" does not exist.`,
+    );
+    logger.tip(
+      "Import a starter docs module using 'collie kit import docs' command.",
+    );
+    return;
+  }
+
   const foundationProgress = new ProgressReporter(
     "generating docs",
     `foundation "${foundation.name}"`,
     logger,
   );
 
-  const validator = new ModelValidator(logger);
-  const modules = await KitModuleRepository.load(repo, validator, logger);
-  const controls = await ComplianceControlRepository.load(
-    repo,
-    validator,
-    logger,
-  );
-  const moduleDocumentation = new KitModuleDocumentationGenerator(
-    repo,
-    modules,
-    controls,
-    logger,
-  );
-
-  const complianceDocumentation = new ComplianceDocumentationGenerator(
-    repo,
-    logger,
-  );
-
-  const analyzer = new KitDependencyAnalyzer(repo, modules, logger);
-
   const factory = new CliApiFacadeFactory(logger);
   const terragrunt = factory.buildTerragrunt();
-  const platformDocumentation = new PlatformDocumentationGenerator(
-    repo,
-    foundation,
-    analyzer,
-    controls,
-    terragrunt,
-    logger,
-  );
 
-  const docsRepo = new DocumentationRepository(foundation);
-
-  await prepareSiteTemplate(docsRepo, repo, logger);
-
-  const generator = new DocumentationGenerator(
-    moduleDocumentation,
-    complianceDocumentation,
-    platformDocumentation,
-  );
-
-  await generator.generateFoundationDocumentation(docsRepo);
+  await terragrunt.run(docsModulePath, { raw: ["apply"] }, {
+    autoApprove: true,
+  });
 
   foundationProgress.done();
 }
@@ -170,35 +138,4 @@ async function buildDocumentation(
 
   await npm.run(["install"], { cwd: dir });
   await npm.run(["run", "docs:build"], { cwd: dir });
-}
-
-async function prepareSiteTemplate(
-  docsRepo: DocumentationRepository,
-  repo: CollieRepository,
-  logger: Logger,
-) {
-  // TODO: throw if it doesn't work
-  const srcDir = repo.resolvePath("kit", "foundation", "docs", "template");
-
-  try {
-    await fs.copy(srcDir, docsRepo.resolvePath(), { overwrite: true });
-  } catch (e) {
-    if (e instanceof Deno.errors.NotFound) {
-      logger.error(
-        (fmt) =>
-          `could not find kit module with template for documentation site at ${
-            fmt.kitPath(
-              srcDir,
-            )
-          }`,
-      );
-
-      logger.tipCommand(
-        "This module is essential for documentation generation. To import this module run",
-        "kit import foundation/docs",
-      );
-      Deno.exit(1);
-    }
-    throw e;
-  }
 }
