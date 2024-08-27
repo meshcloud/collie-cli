@@ -2,13 +2,14 @@
 
 ## Development
 
-### nix-shell
+### nix develop shell
 
-You can use the provided `default.nix` file to stand up a
-[nix-shell](https://nixos.org/manual/nix/stable/command-ref/nix-shell.html)
-containing all dependencies required for developing collie, including the cloud
-CLIs (aws, az, gcloud). Using the nix-shell is _optional_, you can of course use
-it as a recipe for installing depencies with your package manager of choice.
+You can use the provided `flake.nix` file to stand up a
+[nix-develop](https://nix.dev/manual/nix/2.18/command-ref/new-cli/nix3-develop)
+shell containing all dependencies required for developing collie, including the
+cloud CLIs (aws, az, gcloud). Using the nix develop shell is _optional_, you can
+of course use it as a recipe for installing depencies with your package manager
+of choice.
 
 ### Git Hooks
 
