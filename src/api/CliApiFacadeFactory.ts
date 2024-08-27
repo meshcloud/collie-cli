@@ -114,9 +114,6 @@ export class CliApiFacadeFactory {
     return azure;
   }
 
-  //   buildCustom() {
-  //   }
-
   public buildGit() {
     const detectorRunner = this.buildQuietLoggingProcessRunner();
     const detector = new GitCliDetector(detectorRunner);
@@ -164,18 +161,6 @@ export class CliApiFacadeFactory {
     );
 
     return new TerraformDocsCliFacade(repo, processRunner);
-  }
-
-  public buildTerraform() {
-    const quietRunner = this.buildQuietLoggingProcessRunner();
-    const detector = new TerraformCliDetector(quietRunner);
-
-    const processRunner = this.wrapFacadeProcessRunner(
-      quietRunner,
-      new ProcessRunnerErrorResultHandler(detector),
-    );
-
-    return new TerraformCliFacade(processRunner);
   }
 
   // DESIGN: we need to build up the ProcessRunner behavior in the following order (from outer to inner)
