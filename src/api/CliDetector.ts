@@ -19,7 +19,12 @@ export type CliDetectionResult =
     info: string;
   };
 
-export abstract class CliDetector {
+export interface ICliDetector {
+  tryRaiseInstallationStatusError(): Promise<void>;
+  detect(): Promise<CliDetectionResult>;
+}
+
+export abstract class CliDetector implements ICliDetector {
   constructor(
     protected readonly cli: string,
     protected readonly runner: IProcessRunner<ProcessResultWithOutput>,

@@ -35,7 +35,8 @@ import { TerraformDocsCliFacade } from "./terraform-docs/TerraformDocsCliFacade.
 import { CollieRepository } from "../model/CollieRepository.ts";
 import { GitCliDetector } from "./git/GitCliDetector.ts";
 import { GitCliFacade } from "./git/GitCliFacade.ts";
-import { TerraformCliFacade } from "./terraform/TerraformCliFacade.ts";
+import { TofuOrTerraformCliDetector } from "./terraform/TofuOrTerraformCliDetector.ts";
+import { OpenTofuCliDetector } from "./terraform/OpenTofuCliDetector.ts";
 
 export class CliApiFacadeFactory {
   constructor(
@@ -49,7 +50,10 @@ export class CliApiFacadeFactory {
       new AzCliDetector(processRunner),
       new GcloudCliDetector(processRunner),
       new GitCliDetector(processRunner),
-      new TerraformCliDetector(processRunner),
+      new TofuOrTerraformCliDetector(
+        new OpenTofuCliDetector(processRunner),
+        new TerraformCliDetector(processRunner),
+      ),
       new TerragruntCliDetector(processRunner),
       new TerraformDocsCliDetector(processRunner),
       new NpmCliDetector(processRunner),
