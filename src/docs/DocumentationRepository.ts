@@ -7,7 +7,7 @@ export class DocumentationRepository {
   // we use a "hidden" directory with a leading "." because terragrunt excludes hidden files and dirs
   // when building a terragrunt-cache folder, see  https://terragrunt.gruntwork.io/docs/reference/config-blocks-and-attributes/#terraform "include_in_copy"
   // >  By default, Terragrunt excludes hidden files and folders during the copy step.
-  private readonly docsRootDir = ".docs";
+  private readonly docsRootDir = ".docs-v2";
   private readonly docsContentDir = "docs";
 
   constructor(private readonly foundation: FoundationRepository) {}
