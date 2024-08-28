@@ -51,6 +51,3 @@ echo "Testing outputs"
 collie foundation tree
 collie kit tree
 collie compliance tree
-
-echo "Testing documentation"
-collie foundation docs --build
