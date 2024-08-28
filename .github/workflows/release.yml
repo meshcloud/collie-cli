@@ -111,7 +111,7 @@ jobs:
         env:
           COLLIE_VERSION: ${{ github.event.release.tag_name }}
         run: |
-          curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
+          curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo -E bash
           collie info
           ./test/e2e.sh
   e2e-macos:
@@ -128,6 +128,6 @@ jobs:
         env:
           COLLIE_VERSION: ${{ github.event.release.tag_name }}
         run: |
-          curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo bash
+          curl -sf -L https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.sh | sudo -E bash
           collie info
           ./test/e2e.sh
