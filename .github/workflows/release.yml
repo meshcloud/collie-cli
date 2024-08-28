@@ -10,10 +10,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: denoland/setup-deno@main
         with:
-          deno-version: "~1.41"
+          deno-version: "~1.45"
       - uses: actions/cache@v3
         with:
           path: ~/.cache/deno        # see https://deno.land/manual/linking_to_external_code
