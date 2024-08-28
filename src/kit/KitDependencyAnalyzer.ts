@@ -5,6 +5,7 @@ import { KitModule } from "./KitModule.ts";
 import { Logger } from "../cli/Logger.ts";
 import { ProgressReporter } from "../cli/ProgressReporter.ts";
 import { CollieRepository } from "../model/CollieRepository.ts";
+import { ComplianceControlRepository } from "../compliance/ComplianceControlRepository.ts";
 
 export interface FoundationDependencies {
   foundation: string;
@@ -42,6 +43,7 @@ export class KitDependencyAnalyzer {
   constructor(
     private readonly collie: CollieRepository,
     private readonly kitModules: KitModuleRepository,
+    private readonly complianceControls: ComplianceControlRepository,
     private readonly logger: Logger,
   ) {}
 
@@ -112,13 +114,28 @@ export class KitDependencyAnalyzer {
       const msg =
         `Could not find kit module with id ${kitModuleId} included from ${sourcePath}`;
       this.logger.warn(msg);
+    } else {
+      this.validateKitModuleComplianceStatements(kitModule, kitModulePath);
     }
+
     return {
       sourcePath,
       kitModuleId,
       kitModulePath,
       kitModule,
     };
+  }
+  validateKitModuleComplianceStatements(
+    kitModule: KitModule,
+    kitModulePath: string,
+  ) {
+    (kitModule?.compliance || []).forEach((x) => {
+      if (!this.complianceControls.tryFindById(x.control)) {
+        this.logger.warn(
+          `Could not find compliance control ${x.control} referenced in a compliance statement in ${kitModulePath}`,
+        );
+      }
+    });
   }
 
   static parseTerraformSource(hcl: string): string | undefined {

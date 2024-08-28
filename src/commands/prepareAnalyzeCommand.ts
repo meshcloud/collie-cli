@@ -1,4 +1,5 @@
 import { Logger } from "../cli/Logger.ts";
+import { ComplianceControlRepository } from "../compliance/ComplianceControlRepository.ts";
 import {
   FoundationDependencies,
   KitDependencyAnalyzer,
@@ -32,11 +33,22 @@ async function analyze(
   const validator = new ModelValidator(logger);
 
   const modules = await KitModuleRepository.load(collie, validator, logger);
+  const controls = await ComplianceControlRepository.load(
+    collie,
+    validator,
+    logger,
+  );
+
   const foundations = await collie.listFoundations();
 
   const tasks = foundations.map(async (f) => {
     const foundation = await FoundationRepository.load(collie, f, validator);
-    const analyzer = new KitDependencyAnalyzer(collie, modules, logger);
+    const analyzer = new KitDependencyAnalyzer(
+      collie,
+      modules,
+      controls,
+      logger,
+    );
 
     return {
       foundation,
