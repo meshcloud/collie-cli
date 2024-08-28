@@ -123,7 +123,7 @@ async function previewDocumentation(
 
   const npm = factory.buildNpm();
 
-  await npm.run(["install"], { cwd: dir });
+  await npm.run(["ci"], { cwd: dir });
   await npm.run(["run", "docs:dev"], { cwd: dir });
 }
 
@@ -136,6 +136,6 @@ async function buildDocumentation(
 
   const npm = factory.buildNpm();
 
-  await npm.run(["install"], { cwd: dir });
+  await npm.run(["ci"], { cwd: dir });
   await npm.run(["run", "docs:build"], { cwd: dir });
 }
