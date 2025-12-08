@@ -78,8 +78,9 @@ irm https://raw.githubusercontent.com/meshcloud/collie-cli/main/install.ps1 | ie
 
 To use collie, you'll need to have the following tools installed.
 
-- [terraform](https://www.terraform.io/downloads) to define landing zones using
-  infrastructure as code
+- [tofu](https://opentofu.org/docs/intro/install/)
+  or [terraform](https://www.terraform.io/downloads)
+  to define landing zones using infrastructure as code
 - [terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/) to
   build and deploy terraform
 - [terraform-docs](https://github.com/terraform-docs/terraform-docs/#installation)
