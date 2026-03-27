@@ -1,3 +1,18 @@
+> ⚠️ **Deprecation Notice**
+>
+> This repository has been deprecated and is no longer actively maintained.
+>
+> The Collie CLI was originally developed to provide visibility and governance across multi-cloud environments such as AWS, Azure, and GCP.
+>
+> Today, these concepts have evolved and are now part of the **meshStack Hub**, which serves as the central place to discover, manage, and reuse building blocks and platform capabilities within the meshStack ecosystem.
+>
+> 👉 Please refer to meshStack Hub instead:
+> - Website: https://hub.meshcloud.io
+> - GitHub: https://github.com/meshcloud/meshstack-hub
+>
+> We recommend migrating to meshStack Hub for a supported, actively maintained, and more integrated experience.
+
+
 # Collie CLI
 
 <p align="center">
